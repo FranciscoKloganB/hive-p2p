@@ -44,7 +44,7 @@ class Simulation:
         :returns the raw content of the file, used to assert if simulation was successful after max_stages happens
         """
         part_number = 0
-        shared_file = {}
+        shared_file_parts = {}
         shared_file_name = Path(shared_file_path).resolve().stem
         with open(shared_file_path, "rb") as shared_file:
             while True:
@@ -54,11 +54,11 @@ class Simulation:
                     part_id = shared_file_name + str(part_number)
                     with open(part_id, 'w') as out_file:
                         shared_file_part = SharedFilePart(part_id, read_buffer)
-                        shared_file[part_id] = shared_file_part
+                        shared_file_parts[part_id] = shared_file_part
                         json.dump(shared_file_part.__dict__, out_file, sort_keys=True, indent=4)
                 else:
                     break
-        return shared_file
+        return shared_file_parts
 
     def execute(self):
         pass
