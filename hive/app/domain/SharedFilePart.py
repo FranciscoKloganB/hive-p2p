@@ -1,5 +1,4 @@
-from domain import CryptoUtils
-from domain import ConvertUtils
+from utils import ConvertUtils, CryptoUtils
 
 
 class SharedFilePart:
