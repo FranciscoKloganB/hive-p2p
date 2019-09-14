@@ -4,7 +4,8 @@ from domain.SharedFilePart import SharedFilePart
 
 
 class SharedFilePartCreationAndJSONSerialization(unittest.TestCase):
-    def test_json_creation(self):
+    @staticmethod
+    def test_json_creation():
         sfp1 = SharedFilePart("partIdTest01", "hello")
         sfp1_d = sfp1.__dict__
         print(sfp1_d)
@@ -19,6 +20,6 @@ class SharedFilePartCreationAndJSONSerialization(unittest.TestCase):
         with open("jsontest02.json", "w") as j2:
             json.dump(sfp2_d, j2)
 
-            
+
 if __name__ == '__main__':
     unittest.main()
