@@ -34,7 +34,7 @@ class Simulation:
         return json.load(simulation_file_path)
 
     @staticmethod
-    def __read_shared_file_bytes(self, shared_file_path):
+    def __read_shared_file_bytes(shared_file_path):
         """
         Reads a file from disk which the simulation wants to persist on the hive network.
         The contents of the file are read in 2KB blocks and are encapsulated along with their ID and SHA256 for proper
