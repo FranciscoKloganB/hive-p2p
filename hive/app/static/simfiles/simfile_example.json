@@ -1,0 +1,7 @@
+{
+	"workers" : 3,
+	"ddv": [0.33, 0.66, 0.0],
+	"maxStages": 100,
+	"multipleCasualties" : false,
+	"casualtyChance" : 0.05
+}
