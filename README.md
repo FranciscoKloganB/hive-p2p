@@ -1,4 +1,7 @@
 # Hive
-## MsC Thesis
+## Computer Science and Engineering MsC Thesis
+#### Authors: Francisco Teixeira de Barros
+##### Coordinator: Carlos Silvestre
+##### Co-Coordinatior: Daniel Silvestre
 
-Resilient File survivability in Peer-to-Peer Networks based on Stochastic Swarm Guidance
+Resilient file survivability in Peer-to-Peer Networks based on Stochastic Swarm Guidance
