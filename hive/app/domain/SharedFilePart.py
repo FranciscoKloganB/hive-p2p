@@ -30,7 +30,7 @@ class SharedFilePart:
         :param part_data: Up to 2KB blocks of raw data that can be either strings or bytes
         :type bytes or str
         """
-        
+
         self.markov_matrix = markov_matrix
         self.desired_distribution = np.array(ddv).transpose()
         self.part_id = part_id
