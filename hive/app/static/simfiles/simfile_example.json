@@ -1,5 +1,6 @@
 {
-	"workers" : 3,
+	"workers" : ["A", "B", "C"],
+	"transition_vectors" : [[0.5, 0.5, 0], [0.4, 0.2, 0.4], [0.2, 0.2, 0.6]],
 	"ddv": [0.33, 0.66, 0.0],
 	"maxStages": 100,
 	"multipleCasualties" : false,

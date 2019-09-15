@@ -5,32 +5,40 @@ import numpy as np
 class MarkovMatrix:
     """
     Implements a matrix which adheres to markov chain theory and implements some basic markov chains' behaviour
-
-    :param :ivar transition_line_vectors: line vector stating probability from 'this_worker' to 'another_worker'
-    :type list<list<float>>
-    :param :ivar worker_id_list: unique ID that identifies the worker bucket in the hive.
-    :type list<str>  An array representing the states of the Markov Chain. It
-
+    :ivar states: identifiers for the buckets existing on network passed in matching order to their transition arrays
+    :type list<str>
+    :ivar transition_matrix: concrete markov matrix data structure with named rows and columns according to passed states
+    :type 2D pandas.DataFrame
     """
 
-    def __init__(self, transition_line_vectors, worker_id_list):
+    def __init__(self, states, transition_arrays):
         """
         Initialize the Markov Chain instance.
+        :param states: names of the buckets of the P2P network that will form the resillient Hive.
+        :type list<str>
+        :param transition_arrays: list containing lists, each defining jump probabilities of each state between stages
+        :type list<list<float>>
         """
-        self.worker_id = worker_id_list
+
+        self.states = states
         self.transition_matrix = pd.DataFrame(
-            np.array(transition_line_vectors).transpose(),
-            columns=worker_id_list,
-            index=worker_id_list
+            np.array(transition_arrays).transpose(),
+            columns=states,
+            index=states
         )
 
     def next_state(self, current_state):
         """
         Returns the state of the random variable at the next time instance.
-        :param current_state: the current state of the system.
+        :param current_state: state a file
         :type int or str
         """
-        return np.random.choice(self.states, p=self.transition_matrix[self.index_dict[current_state], :])
+        # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.random.choice.html
+        return np.random.choice(
+            self.states,
+            p=self.transition_matrix[current_state]
+        )
+        # return np.random.choice(self.hive_states, p=self.transition_matrix[current_state])
 
     def generate_states(self, current_state, no=10):
         """
@@ -46,3 +54,14 @@ class MarkovMatrix:
             future_states.append(next_state)
             current_state = next_state
         return future_states
+
+
+def main():
+    mm = MarkovMatrix([[0.5, 0.5, 0], [0.4, 0.2, 0.4], [0.2, 0.2, 0.6]], ["A", "B", "C"])
+    print(mm.transition_matrix.to_string())
+    var = np.random.choice(mm.states, p=mm.transition_matrix["A"])
+    print(var)
+
+
+if __name__ == "__main__":
+    main()
