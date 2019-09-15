@@ -12,13 +12,29 @@ class Simulation:
     :type str
     :param shared_file_path: points to the file that this simulation will try persist on the hive network
     :type str
+
+    :ivar worker_count: number of workers that belong to the P2P network (hive) whose goal is to persist the shared_file
+    :type int
+    :ivar ddv: desired stochastic steady state column vector for any initial Markov Chain state for the simulated hive
+    :type 1-D array
+    :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
+    :type int
+    :ivar casualty_chance: probability of having one random worker leaving the hive per stage.
+    :type float
+    :ivar multiple_casualties_allowed: defines the possibility of more than a worker leaving the hive at each stage.
+        When set to true casualty_chance is calculated independently for each worker!
+    :type bool
+    :ivar worker_health_status: keeps track of dead workers in the simulation
+    :type list<bool>
+    :ivar shared_file: aggregation of SharedFilePart objects each acting as a container of up to 2KB content blocks
+    :type dict<str, SharedFilePart>
     """
     read_size = 2048
 
     def __init__(self, simulation_file_path, shared_file_path):
         json_file = self.__read_simulation_file(simulation_file_path)
         self.worker_count = json_file['workers']
-        self.desired_distribution_vector = json_file['ddv']
+        self.ddv = json_file['ddv']
         self.max_stages = json_file['maxStages']
         self.casualty_chance = json_file['casualtyChance']
         self.multiple_casualties_allowed = json_file['multipleCasualties']
