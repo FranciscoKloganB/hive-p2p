@@ -35,17 +35,16 @@ class Simulation:
         :type str
         """
         json_file = self.__read_simulation_file(simulation_file_path)
-        worker_list = json_file['workers']
+        self.__workers = json_file['workers']
         self.ddv = json_file['ddv']
         self.markov_chain = json_file['transition_vectors']
-        self.worker_status = dict.fromkeys(worker_list, True)
+        self.worker_status = dict.fromkeys(self.__workers, True)
         self.max_stages = json_file['maxStages']
         self.casualty_chance = json_file['casualtyChance']
         self.multiple_casualties_allowed = json_file['multipleCasualties']
         self.shared_file = self.__read_shared_file_bytes(shared_file_path)
 
-    @staticmethod
-    def __read_shared_file_bytes(shared_file_path):
+    def __read_shared_file_bytes(self, shared_file_path):
         """
         Reads a file from disk which the simulation wants to persist on the hive network.
         The contents of the file are read in 2KB blocks and are encapsulated along with their ID and SHA256 for proper
@@ -63,9 +62,14 @@ class Simulation:
                     part_number = part_number + 1
                     part_id = shared_file_name + str(part_number)
                     with open(part_id, 'w') as out_file:
-                        shared_file_part = SharedFilePart(part_id, read_buffer)
+                        shared_file_part = SharedFilePart(
+                            part_id,
+                            read_buffer,
+                            self.ddv,
+                            (self.__workers, self.markov_chain)
+                        )
                         shared_file_parts[part_id] = shared_file_part
-                        json.dump(shared_file_part.__dict__, out_file, sort_keys=True, indent=4)
+                        # json.dump(shared_file_part.__dict__, out_file, sort_keys=True, indent=4)
                 else:
                     break
         return shared_file_parts
