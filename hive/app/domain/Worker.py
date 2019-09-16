@@ -1,8 +1,4 @@
-import psutil
-
-from pathlib import Path
-from domain.SharedFilePart import SharedFilePart
-
+from utils.ResourceTracker import ResourceTracker as rT
 
 class Worker:
     """
@@ -15,3 +11,21 @@ class Worker:
 
     def __init__(self):
         self.shared_file_parts = {}
+
+    @staticmethod
+    def get_resource_utilization(*args):
+        """
+        :param *args: Variable length argument list. See below
+        :keyword arg:
+        :arg 'cpu': get_cpu_usage,
+        :arg 'gpu': get_gpu_usage,
+        :arg 'disk': get_disk_usage,
+        :arg 'mem': get_mem_usage,
+        :arg 'bandwidth': get_bandwidth_usage,
+        :return dict<str, float> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
+        """
+        results = {}
+        for arg in args:
+            results[arg] = rT.get_value(arg)
+        return results
+
