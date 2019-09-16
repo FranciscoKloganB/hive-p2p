@@ -17,12 +17,12 @@ class Worker:
         """
         :param *args: Variable length argument list. See below
         :keyword arg:
-        :arg 'cpu': get_cpu_usage,
-        :arg 'gpu': get_gpu_usage,
-        :arg 'disk': get_disk_usage,
-        :arg 'mem': get_mem_usage,
-        :arg 'bandwidth': get_bandwidth_usage,
-        :return dict<str, float> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
+        :arg 'cpu': system wide float detailing cpu usage as a percentage,
+        :arg 'cpu_count': number of non-logical cpu on the machine as an int
+        :arg 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
+        :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available), expressed in bytes as floats
+        :arg 'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
+        :return dict<str, obj> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
         """
         results = {}
         for arg in args:
