@@ -29,16 +29,14 @@ class MarkovMatrix:
 
     def next_state(self, current_state):
         """
-        Returns the state of the random variable at the next time instance.
+        Choose list variable given probability of each variable
         :param current_state: state a file
         :type int or str
+        :return next stage's state given the probabilities of each variable within transition_matrix for the current_state
+        :type str
         """
         # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.random.choice.html
-        return np.random.choice(
-            self.states,
-            p=self.transition_matrix[current_state]
-        )
-        # return np.random.choice(self.hive_states, p=self.transition_matrix[current_state])
+        return np.random.choice(self.states, p=self.transition_matrix[current_state])
 
     def generate_states(self, current_state, no=10):
         """

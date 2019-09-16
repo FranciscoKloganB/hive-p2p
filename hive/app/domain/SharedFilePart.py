@@ -1,6 +1,6 @@
 import numpy as np
 
-from domain.MarkovMatrix import MarkovMatrix
+from domain.MarkovChain import MarkovMatrix
 from utils import ConvertUtils, CryptoUtils
 
 

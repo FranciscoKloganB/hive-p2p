@@ -2,7 +2,7 @@ import json
 
 from pathlib import Path
 
-from domain.MarkovMatrix import MarkovMatrix
+from domain.MarkovChain import MarkovMatrix
 from domain.SharedFilePart import SharedFilePart
 
 
