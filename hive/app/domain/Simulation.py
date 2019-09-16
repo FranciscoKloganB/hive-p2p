@@ -63,7 +63,8 @@ class Simulation:
                     part_id = shared_file_name + str(part_number)
                     with open(part_id, 'w') as out_file:
                         shared_file_part = SharedFilePart(
-                            part_id,
+                            shared_file_name,
+                            part_number,
                             read_buffer,
                             self.ddv,
                             (self.__workers, self.markov_chain)
