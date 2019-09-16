@@ -1,14 +1,16 @@
 import json
 
 from pathlib import Path
-
-from domain.MarkovChain import MarkovMatrix
 from domain.SharedFilePart import SharedFilePart
 
 
 class Simulation:
     """
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
+    :cvar READ_SIZE: defines the max amount of bytes are read at a time from file to be shared, consequently the parts size
+    :type int
+    :cvar MY_SHARED_FILES: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
+    :type dict<string, dict<int, SharedFilePart>>
     :ivar ddv: stochastic like list to define the desired distribution vector the hive should reach before max_stages
     :type list<float>
     :ivar markov_chain: list containing lists, each defining jump probabilities of each state between stages
@@ -21,11 +23,10 @@ class Simulation:
     :type float
     :ivar multiple_casualties_allowed: defines the possibility of more than a worker leaving the hive at each stage.
     :type bool: when True casualty_chance is calculated independently for each worker!
-    :ivar shared_file: aggregation of SharedFilePart objects each acting as a container of up to 2KB content blocks
-    :type dict<str, SharedFilePart>
     """
 
-    read_size = 2048
+    READ_SIZE = 2048
+    MY_SHARED_FILES = {}
 
     def __init__(self, simulation_file_path, shared_file_path):
         """
@@ -42,7 +43,15 @@ class Simulation:
         self.max_stages = json_file['maxStages']
         self.casualty_chance = json_file['casualtyChance']
         self.multiple_casualties_allowed = json_file['multipleCasualties']
-        self.shared_file = self.__read_shared_file_bytes(shared_file_path)
+        self.__read_shared_file_bytes(shared_file_path)
+
+    @staticmethod
+    def __read_simulation_file(simulation_file_path):
+        """
+        :param simulation_file_path: path to a .json file
+        :returns a json object based on contents within the pointed file
+        """
+        return json.load(simulation_file_path)
 
     def __read_shared_file_bytes(self, shared_file_path):
         """
@@ -57,36 +66,25 @@ class Simulation:
         shared_file_name = Path(shared_file_path).resolve().stem
         with open(shared_file_path, "rb") as shared_file:
             while True:
-                read_buffer = shared_file.read(Simulation.read_size)
+                read_buffer = shared_file.read(Simulation.READ_SIZE)
                 if read_buffer:
                     part_number = part_number + 1
-                    part_id = shared_file_name + str(part_number)
-                    with open(part_id, 'w') as out_file:
-                        shared_file_part = SharedFilePart(
-                            shared_file_name,
-                            part_number,
-                            read_buffer,
-                            self.ddv,
-                            (self.__workers, self.markov_chain)
-                        )
-                        shared_file_parts[part_id] = shared_file_part
-                        # json.dump(shared_file_part.__dict__, out_file, sort_keys=True, indent=4)
+                    shared_file_part = SharedFilePart(
+                        shared_file_name,
+                        part_number,
+                        read_buffer,
+                        self.ddv,
+                        (self.__workers, self.markov_chain)
+                    )
+                    shared_file_parts[part_number] = shared_file_part
                 else:
                     break
-        return shared_file_parts
+        Simulation.MY_SHARED_FILES[shared_file_name] = shared_file_parts
 
-    @staticmethod
-    def __read_simulation_file(simulation_file_path):
-        """
-        :param simulation_file_path: path to a .json file
-        :returns a json object based on contents within the pointed file
-        """
-        return json.load(simulation_file_path)
-
-'''
-    def execute(self):
-        mm = MarkovMatrix(["A", "B", "C"], [[0.5, 0.5, 0], [0.4, 0.2, 0.4], [0.2, 0.2, 0.6]])
-        print(mm.transition_matrix.to_string())
-        var = np.random.choice(mm.states, p=mm.transition_matrix["A"])
-        print(var)
-'''
+        '''
+            def execute(self):
+                mm = MarkovMatrix(["A", "B", "C"], [[0.5, 0.5, 0], [0.4, 0.2, 0.4], [0.2, 0.2, 0.6]])
+                print(mm.transition_matrix.to_string())
+                var = np.random.choice(mm.states, p=mm.transition_matrix["A"])
+                print(var)
+        '''
