@@ -1,5 +1,5 @@
 import psutil
-from collections import namedtuple
+
 
 class ResourceTracker:
     """
