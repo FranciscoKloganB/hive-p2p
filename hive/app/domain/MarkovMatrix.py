@@ -14,12 +14,12 @@ class MarkovMatrix:
     def __init__(self, states, transition_arrays):
         """
         Initialize the Markov Chain instance.
-        :param states: names of the buckets of the P2P network that will form the resillient Hive.
+        :param states: names of the buckets of the P2P network that will form the resilient Hive.
         :type list<str>
         :param transition_arrays: list containing lists, each defining jump probabilities of each state between stages
         :type list<list<float>>
         """
-
+        self.current_state = None
         self.states = states
         self.transition_matrix = pd.DataFrame(
             np.array(transition_arrays).transpose(),
@@ -37,18 +37,3 @@ class MarkovMatrix:
         """
         # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.random.choice.html
         return np.random.choice(self.states, p=self.transition_matrix[current_state])
-
-    def generate_states(self, current_state, no=10):
-        """
-        Generates the next states of the system.
-        :param current_state: The state of the current random variable.
-        :type int or str
-        :param no: The number of future states to generate.
-        :type int
-        """
-        future_states = []
-        for i in range(no):
-            next_state = self.next_state(current_state)
-            future_states.append(next_state)
-            current_state = next_state
-        return future_states
