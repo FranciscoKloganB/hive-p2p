@@ -52,14 +52,3 @@ class MarkovMatrix:
             future_states.append(next_state)
             current_state = next_state
         return future_states
-
-
-def main():
-    mm = MarkovMatrix([[0.5, 0.5, 0], [0.4, 0.2, 0.4], [0.2, 0.2, 0.6]], ["A", "B", "C"])
-    print(mm.transition_matrix.to_string())
-    var = np.random.choice(mm.states, p=mm.transition_matrix["A"])
-    print(var)
-
-
-if __name__ == "__main__":
-    main()
