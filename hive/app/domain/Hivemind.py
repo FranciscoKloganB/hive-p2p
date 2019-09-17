@@ -1,4 +1,5 @@
 import json
+import numpy as np
 
 from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
@@ -81,10 +82,30 @@ class Simulation:
                     break
         Simulation.MY_SHARED_FILES[shared_file_name] = shared_file_parts
 
-        '''
-            def execute(self):
-                mm = MarkovMatrix(["A", "B", "C"], [[0.5, 0.5, 0], [0.4, 0.2, 0.4], [0.2, 0.2, 0.6]])
-                print(mm.transition_matrix.to_string())
-                var = np.random.choice(mm.states, p=mm.transition_matrix["A"])
-                print(var)
-        '''
+    def hivemind_send_update(self, worker, shared_file_part):
+        if self.worker_status[worker]:
+            worker.receive_sfp(shared_file_part)
+            return 200
+        else:
+            return 404
+
+    def __run_stage(self):
+        for worker in self.__workers:
+            worker.send_sfp()
+
+    def __kill_phase(self):
+        cc = self.casualty_chance
+        if cc > 0.0:
+            living = [*map(lambda k: k[0], [*filter(lambda i: i[1], self.worker_status.items())])]
+            if not self.multiple_casualties_allowed:
+                if np.random.choice([True, False], p=[cc, 1 - cc]):
+                    dead_worker = np.random.choice(living)
+                    self.__kill_worker(dead_worker)
+            else:
+                dead_workers = [*filter(lambda dw: np.random.choice([True, False], p=[cc, 1 - cc]), living)]
+                for worker in dead_workers:
+                    self.__kill_worker(worker)
+
+    def __kill_worker(self, worker):
+        worker.remove_from_hive(orderly=False)
+        self.worker_status[worker] = False
