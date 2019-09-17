@@ -18,7 +18,7 @@ class SharedFilePart:
     :ivar ddv: stochastic like list to define the desired distribution vector that this SharedFilePart is pursuing
     :type 1D line numpy.array
     :ivar markov_matrix: container object describing and implementing Markov Chain behaviour
-    :type hive.domain.MarkovMatrix
+    :type hive.domain.MarkovChain
     """
 
     def __init__(self, part_name, part_id, part_data, ddv=None, transition_matrix_definition=None):
@@ -38,6 +38,6 @@ class SharedFilePart:
         self.part_id = part_id
         self.part_data = ConvertUtils.bytes_to_base64_string(part_data)
         self.sha256 = CryptoUtils.sha256(part_data)
-        self.desired_distribution = np.array(ddv).transpose() if ddv is not None else ddv
+        # self.desired_distribution = np.array(ddv).transpose() if ddv is not None else ddv
         self.markov_matrix = MarkovMatrix(transition_matrix_definition[0], transition_matrix_definition[1])
 
