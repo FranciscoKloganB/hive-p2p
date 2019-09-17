@@ -1,6 +1,6 @@
 import numpy as np
 
-from domain.MarkovChain import MarkovMatrix
+from domain.MarkovMatrix import MarkovMatrix
 from utils import ConvertUtils, CryptoUtils
 
 
@@ -15,7 +15,7 @@ class SharedFilePart:
     :type str
     :ivar sha256: hash value resultant of applying sha256 hash function over part_data param
     :type str
-    :ivar ddv: stochastic like list to define the desired distribution vector that this SharedFilePart is pursuing
+    :ivar desired_distribution: stochastic like list to define the desired distribution vector that this SharedFilePart is pursuing
     :type 1D line numpy.array
     :ivar markov_matrix: container object describing and implementing Markov Chain behaviour
     :type hive.domain.MarkovChain
@@ -34,10 +34,36 @@ class SharedFilePart:
         :param transition_matrix_definition: tuple containing state names and the respective transition vectors
         :type tuple<list, list<lit<float>>
         """
-        self.part_name = part_name
-        self.part_id = part_id
-        self.part_data = ConvertUtils.bytes_to_base64_string(part_data)
-        self.sha256 = CryptoUtils.sha256(part_data)
-        # self.desired_distribution = np.array(ddv).transpose() if ddv is not None else ddv
-        self.markov_matrix = MarkovMatrix(transition_matrix_definition[0], transition_matrix_definition[1])
+        self.__part_name = part_name
+        self.__part_id = part_id
+        self.__part_data = ConvertUtils.bytes_to_base64_string(part_data)
+        self.__sha256 = CryptoUtils.sha256(part_data)
+        self.__desired_distribution = np.array(ddv).transpose() if ddv is not None else ddv
+        self.__markov_matrix = MarkovMatrix(transition_matrix_definition[0], transition_matrix_definition[1])
 
+    @property
+    def part_name(self):
+        return self.__part_name
+
+    @property
+    def part_id(self):
+        return self.__part_id
+
+    @property
+    def part_data(self):
+        return self.__part_data
+
+    @property
+    def sha256(self):
+        return self.__sha256
+
+    @property
+    def desired_distribution(self):
+        return self.__desired_distribution
+
+    @property
+    def markov_matrix(self):
+        return self.__markov_matrix
+
+    def get_next_state(self, worker_id):
+        return self.__markov_matrix.next_state(worker_id)
