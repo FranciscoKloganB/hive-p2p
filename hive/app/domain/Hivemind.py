@@ -6,10 +6,10 @@ from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 
 
-class Simulation:
+class Hivemind:
     """
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
-    :cvar READ_SIZE: defines the max amount of bytes are read at a time from file to be shared, consequently the parts size
+    :cvar READ_SIZE: defines the max amount of bytes are read at a time from file to be shared
     :type int
     :cvar MY_SHARED_FILES: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
@@ -31,6 +31,8 @@ class Simulation:
 
     READ_SIZE = 2048
     MY_SHARED_FILES = {}
+    STAGES_WITH_CONVERGENCE = []
+    MAX_CONSECUTIVE_CONVERGENCE_STAGES = 0
 
     def __init__(self, simulation_file_path, shared_file_path):
         """
@@ -40,22 +42,21 @@ class Simulation:
         :type str
         """
         json_file = json.load(simulation_file_path)
-
         self.__worker_status = {}
-        self.__worker_names = json_file['workers']
+        self.__workers = json_file['workers']
         self.__init_workers()
         self.ddv = json_file['ddv']
         self.markov_chain = json_file['transition_vectors']
         self.max_stages = json_file['maxStages']
         self.casualty_chance = json_file['casualtyChance']
         self.multiple_casualties_allowed = json_file['multipleCasualties']
-
         self.__read_shared_file_bytes(shared_file_path)
 
     def __init_workers(self):
-        for name in self.__worker_names:
-            worker = Worker(self, name)
-            self.__worker_status[worker] = True
+        worker_count = len(self.__workers)
+        for name in range(0, worker_count):
+            self.__workers[name] = Worker(self, name)
+            self.__worker_status[self.__workers[name]] = True
 
     def __read_shared_file_bytes(self, shared_file_path):
         """
@@ -70,7 +71,7 @@ class Simulation:
         with open(shared_file_path, "rb") as shared_file:
             part_number = 0
             while True:
-                read_buffer = shared_file.read(Simulation.READ_SIZE)
+                read_buffer = shared_file.read(Hivemind.READ_SIZE)
                 if read_buffer:
                     part_number = part_number + 1
                     shared_file_part = SharedFilePart(
@@ -78,31 +79,14 @@ class Simulation:
                         part_number,
                         read_buffer,
                         self.ddv,
-                        (self.__worker_names, self.markov_chain)
+                        (self.__workers, self.markov_chain)
                     )
                     shared_file_parts[part_number] = shared_file_part
                 else:
                     break
-        # TODO review this code
-        Simulation.MY_SHARED_FILES[shared_file_name] = shared_file_parts
+        Hivemind.MY_SHARED_FILES[shared_file_name] = shared_file_parts
 
-    def hivemind_send_update(self, worker, shared_file_part):
-        if self.worker_status[worker]:
-            worker.receive_sfp(shared_file_part)
-            return 200
-        else:
-            return 404
-
-    def execute_simulation(self):
-        living = self.__map_and_filter_living_workers
-        for i in range(0, self.max_stages):
-            if self.casualty_chance > 0.0:
-                self.__kill_phase(living)
-                living = self.__map_and_filter_living_workers
-            for worker in living:
-                worker.step()
-
-    def __map_and_filter_living_workers(self):
+    def __filter_and_map_living_workers(self):
         return [*map(lambda a_worker: a_worker[0], [*filter(lambda item: item[1], self.worker_status.items())])]
 
     def __kill_phase(self, living_workers):
@@ -117,6 +101,45 @@ class Simulation:
                 self.__kill_worker(target)
 
     def __kill_worker(self, target):
-        # TODO Check if simulation doesn't because this worker is being killed
+        # TODO Check if simulation fails because killed worker had more than N - K parts (see github)
         target.remove_from_hive(orderly=False)
         self.worker_status[target] = False
+
+    def __process_stage_results(self, shared_file_name, stage, cswc_count):
+        # TODO Create a margin of error that defines stage_distribution == self.ddv equality
+        stage_distribution = []
+        for worker in self.__workers:
+            stage_distribution.append(worker.request_file_count(shared_file_name))
+        if stage_distribution == self.ddv:
+            cswc_count += 1
+            if cswc_count > Hivemind.MAX_CONSECUTIVE_CONVERGENCE_STAGES:
+                Hivemind.MAX_CONSECUTIVE_CONVERGENCE_STAGES = cswc_count
+            Hivemind.STAGES_WITH_CONVERGENCE.append(stage)
+            return cswc_count
+        else:
+            return - cswc_count
+
+    def execute_simulation(self):
+        consecutive_convergences = 0
+        living = self.__filter_and_map_living_workers()
+        for stage in range(0, self.max_stages):
+            if self.casualty_chance > 0.0:
+                self.__kill_phase(living)
+                living = self.__filter_and_map_living_workers()
+            for worker in living:
+                worker.do_stage()
+            consecutive_convergences += self.__process_stage_results(
+                [*(Hivemind.MY_SHARED_FILES.keys())][0], stage, consecutive_convergences
+            )
+
+    def simulate_transmission(self, worker, shared_file_part):
+        # TODO Simulate alive (200 - transmission complete)
+        # TODO Simulate worker left hive orderly, no file reconstruction needed (302 - redirect to other worker)
+        # TODO Simulate worker left abruptly or has delay (408, suspected not to be alive)
+        if self.worker_status[worker]:
+            worker.receive_sfp(shared_file_part)
+            return 200
+        elif not self.worker_status[worker]:
+            return 408
+        else:
+            return 302
