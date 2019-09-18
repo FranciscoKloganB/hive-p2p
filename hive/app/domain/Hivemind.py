@@ -3,6 +3,7 @@ import numpy as np
 
 from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
+from domain.Worker import Worker
 
 
 class Simulation:
@@ -12,12 +13,14 @@ class Simulation:
     :type int
     :cvar MY_SHARED_FILES: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
+    :ivar worker_status: keeps track of dead workers in the simulation
+    :type dict<str, bool>
+    :ivar worker_names: simple list of names to avoid repetitive unpacking of worker_status.keys()
+    :type list<str>
     :ivar ddv: stochastic like list to define the desired distribution vector the hive should reach before max_stages
     :type list<float>
     :ivar markov_chain: list containing lists, each defining jump probabilities of each state between stages
     :type list<list<float>>
-    :ivar worker_status: keeps track of dead workers in the simulation
-    :type dict<str, bool>
     :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
     :type int
     :ivar casualty_chance: probability of having one random worker leaving the hive per stage.
@@ -36,23 +39,23 @@ class Simulation:
         :param shared_file_path: path to file that this simulation will try persist on the hive network
         :type str
         """
-        json_file = self.__read_simulation_file(simulation_file_path)
-        self.__workers = json_file['workers']
+        json_file = json.load(simulation_file_path)
+
+        self.__worker_status = {}
+        self.__worker_names = json_file['workers']
+        self.__init_workers()
         self.ddv = json_file['ddv']
         self.markov_chain = json_file['transition_vectors']
-        self.worker_status = dict.fromkeys(self.__workers, True)
         self.max_stages = json_file['maxStages']
         self.casualty_chance = json_file['casualtyChance']
         self.multiple_casualties_allowed = json_file['multipleCasualties']
+
         self.__read_shared_file_bytes(shared_file_path)
 
-    @staticmethod
-    def __read_simulation_file(simulation_file_path):
-        """
-        :param simulation_file_path: path to a .json file
-        :returns a json object based on contents within the pointed file
-        """
-        return json.load(simulation_file_path)
+    def __init_workers(self):
+        for name in self.__worker_names:
+            worker = Worker(self, name)
+            self.__worker_status[worker] = True
 
     def __read_shared_file_bytes(self, shared_file_path):
         """
@@ -62,10 +65,10 @@ class Simulation:
         :param shared_file_path: path to an arbitrary file to persist on the hive network
         :returns the raw content of the file, used to assert if simulation was successful after max_stages happens
         """
-        part_number = 0
         shared_file_parts = {}
         shared_file_name = Path(shared_file_path).resolve().stem
         with open(shared_file_path, "rb") as shared_file:
+            part_number = 0
             while True:
                 read_buffer = shared_file.read(Simulation.READ_SIZE)
                 if read_buffer:
@@ -75,11 +78,12 @@ class Simulation:
                         part_number,
                         read_buffer,
                         self.ddv,
-                        (self.__workers, self.markov_chain)
+                        (self.__worker_names, self.markov_chain)
                     )
                     shared_file_parts[part_number] = shared_file_part
                 else:
                     break
+        # TODO review this code
         Simulation.MY_SHARED_FILES[shared_file_name] = shared_file_parts
 
     def hivemind_send_update(self, worker, shared_file_part):
@@ -89,23 +93,30 @@ class Simulation:
         else:
             return 404
 
-    def __run_stage(self):
-        for worker in self.__workers:
-            worker.send_sfp()
+    def execute_simulation(self):
+        living = self.__map_and_filter_living_workers
+        for i in range(0, self.max_stages):
+            if self.casualty_chance > 0.0:
+                self.__kill_phase(living)
+                living = self.__map_and_filter_living_workers
+            for worker in living:
+                worker.step()
 
-    def __kill_phase(self):
+    def __map_and_filter_living_workers(self):
+        return [*map(lambda a_worker: a_worker[0], [*filter(lambda item: item[1], self.worker_status.items())])]
+
+    def __kill_phase(self, living_workers):
         cc = self.casualty_chance
-        if cc > 0.0:
-            living = [*map(lambda k: k[0], [*filter(lambda i: i[1], self.worker_status.items())])]
-            if not self.multiple_casualties_allowed:
-                if np.random.choice([True, False], p=[cc, 1 - cc]):
-                    dead_worker = np.random.choice(living)
-                    self.__kill_worker(dead_worker)
-            else:
-                dead_workers = [*filter(lambda dw: np.random.choice([True, False], p=[cc, 1 - cc]), living)]
-                for worker in dead_workers:
-                    self.__kill_worker(worker)
+        if self.multiple_casualties_allowed:
+            targets = [*filter(lambda dw: np.random.choice([True, False], p=[cc, 1 - cc]), living_workers)]
+            for target in targets:
+                self.__kill_worker(target)
+        else:
+            if np.random.choice([True, False], p=[cc, 1 - cc]):
+                target = np.random.choice(living_workers)
+                self.__kill_worker(target)
 
-    def __kill_worker(self, worker):
-        worker.remove_from_hive(orderly=False)
-        self.worker_status[worker] = False
+    def __kill_worker(self, target):
+        # TODO Check if simulation doesn't because this worker is being killed
+        target.remove_from_hive(orderly=False)
+        self.worker_status[target] = False

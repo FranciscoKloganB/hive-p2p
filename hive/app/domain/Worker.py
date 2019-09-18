@@ -9,7 +9,7 @@ class Worker:
     have the ability to reconstruct lost file parts when needed.
     :ivar hivemind: coordinator of the unstructured Hybrid P2P network that enlisted this worker for a Hive
     :type str
-    :ivar id: name of this worker node that uniquely identifies him in the network
+    :ivar name: id of this worker node that uniquely identifies him in the network
     :type str
     :ivar shared_file_parts: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
@@ -17,8 +17,18 @@ class Worker:
 
     def __init__(self, hivemind, name):
         self.hivemind = hivemind
-        self.id = name
+        self.name = name
         self.shared_file_parts = {}
+
+    def __hash__(self):
+        # allows a worker object to be used as a dictionary key
+        return hash(str(self.name))
+
+    def __eq__(self, other):
+        return (self.hivemind, self.name) == (other.hivemind, other.name)
+
+    def __ne__(self, other):
+        return not(self == other)
 
     def receive_sfp(self, part):
         if CryptoUtils.sha256(part.part_data) == part.sha256:
@@ -31,8 +41,8 @@ class Worker:
         tmp_dict = {}
         for part_name, part_id_dict in self.shared_file_parts.items():
             for part_id, shared_file_part in part_id_dict.items():
-                next_worker = shared_file_part.get_next_state(self.id)
-                if next_worker == self.id:
+                next_worker = shared_file_part.get_next_state(self.name)
+                if next_worker == self.name:
                     tmp_dict[part_name][part_id] = shared_file_part
                 else:
                     code = self.hivemind.hivemind_send_update(next_worker, shared_file_part)
@@ -43,9 +53,9 @@ class Worker:
 
     def remove_from_hive(self, orderly=False):
         if orderly:
-            self.hivemind.receive_shared_file_parts(self.id, self.shared_file_parts)
+            self.hivemind.receive_shared_file_parts(self.name, self.shared_file_parts)
         self.hivemind = None
-        self.id = None
+        self.name = None
         self.shared_file_parts = None
 
     def init_recovery_protocol(self, part):
