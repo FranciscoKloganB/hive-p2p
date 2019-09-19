@@ -1,3 +1,5 @@
+import numpy as np
+
 from utils import CryptoUtils
 from utils.ResourceTracker import ResourceTracker as rT
 from domain.Enums import HttpCodes
@@ -21,7 +23,7 @@ class Worker:
 
     def __init__(self, hivemind, name):
         self.file_parts = {}
-        self.routing_table = {}
+        self.__routing_table = {}
         self.name = name
         self.hivemind = hivemind
 
@@ -51,7 +53,7 @@ class Worker:
         :param labeled_transition_vector: probability vector indicating transitions to other states for the given file
         :type 1-D numpy.Array in column format
         """
-        self.routing_table[file_name] = labeled_transition_vector
+        self.__routing_table[file_name] = labeled_transition_vector
 
     def receive_part(self, part):
         if CryptoUtils.sha256(part.part_data) == part.sha256:
@@ -63,7 +65,7 @@ class Worker:
     def send_part(self):
         tmp = {}
         for part_id, part in self.file_parts.items():
-                dest_worker = part.get_next_state(self.name)
+                dest_worker = self.get_next_state(file_name=part.part_name)
                 if dest_worker == self.name:
                     tmp[part_id] = part
                 else:
@@ -73,11 +75,28 @@ class Worker:
         self.file_parts = tmp
 
     def leave_hive(self, orderly=True):
+        """
+        Resets the field of the Worker instance
+        :param orderly: When True asks the hivemind (master node) to redistribute files belonging to the Worker instance
+        :type bool
+        """
         if orderly:
             self.hivemind.simulate_redistribution(self.file_parts)
         self.hivemind = None
         self.name = None
         self.file_parts = None
+
+    def get_next_state(self, file_name):
+        """
+        :param file_name: the name of the file the part to be routed belongs to
+        :type: str
+        :return: the name of the worker to whom the file should be routed too
+        :type: str
+        """
+        file_routing_table = self.__routing_table[file_name]
+        row_labels = [*file_routing_table.index.values]
+        label_probabilities = [*file_routing_table[self.name]]
+        return np.random.choice(a=row_labels, p=label_probabilities)
 
     @staticmethod
     def get_resource_utilization(*args):
@@ -95,6 +114,7 @@ class Worker:
         for arg in args:
             results[arg] = rT.get_value(arg)
         return results
+
 
 
 
