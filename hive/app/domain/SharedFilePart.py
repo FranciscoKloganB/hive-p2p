@@ -61,14 +61,3 @@ class SharedFilePart:
     @property
     def sha256(self):
         return self.__sha256
-
-    @property
-    def desired_distribution(self):
-        return self.__desired_distribution
-
-    @property
-    def markov_matrix(self):
-        return self.__markov_matrix
-
-    def get_next_state(self, worker_id):
-        return self.__markov_matrix.next_state(worker_id)
