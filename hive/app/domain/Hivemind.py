@@ -88,21 +88,35 @@ class Hivemind:
         Hivemind.MY_SHARED_FILES[shared_file_name] = shared_file_parts
 
     def __filter_and_map_living_workers(self):
+        """
+        Filters all worker items(key:val) from the worker_status dict known to this hivemind who have Status.Online
+        :returns list<domain.Worker>: a list containing only the keys (workers, w/o their status) returned by the filter
+        """
         filtered_items = [*filter(lambda item: item[1] == Status.ONLINE, self.worker_status.items())]
         return [*map(lambda a_worker: a_worker[0], filtered_items)]
 
-    def __kill_phase(self, living_workers):
+    def __kill_phase(self, workers):
+        """
+        :param workers: collection of workers that are known to be online
+        :type list<domain.Worker>
+        """
         cc = self.casualty_chance
         if self.multiple_casualties_allowed:
-            targets = [*filter(lambda dw: np.random.choice([True, False], p=[cc, 1 - cc]), living_workers)]
+            targets = [*filter(lambda dw: np.random.choice([True, False], p=[cc, 1 - cc]), workers)]
             for target in targets:
                 self.__kill_worker(target, clean_kill=False)
         else:
             if np.random.choice([True, False], p=[cc, 1 - cc]):
-                target = np.random.choice(living_workers)
+                target = np.random.choice(workers)
                 self.__kill_worker(target, clean_kill=False)
 
     def __kill_worker(self, target, clean_kill=True):
+        """
+        :param target: worker who is going to be removed from the simulation network
+        :type domain.Worker
+        :param clean_kill: When True worker will ask for his files to be redistributed before leaving the network
+        :type bool
+        """
         if clean_kill:
             target.leave_hive(orderly=True)
         else:
