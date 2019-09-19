@@ -21,11 +21,11 @@ class SharedFilePart:
     :type hive.domain.MarkovChain
     """
 
-    def __init__(self, part_name, part_id, part_data, ddv=None, transition_matrix_definition=None):
+    def __init__(self, part_name, part_number, part_data, ddv=None, transition_matrix_definition=None):
         """
         :param part_name: original name of the file this part belongs to
         :type str
-        :param part_id: number that uniquely identifies this file part
+        :param part_number: number that uniquely identifies this file part
         :type int
         :param part_data: Up to 2KB blocks of raw data that can be either strings or bytes
         :type bytes or str
@@ -35,7 +35,8 @@ class SharedFilePart:
         :type tuple<list, list<lit<float>>
         """
         self.__part_name = part_name
-        self.__part_id = part_id
+        self.__part_number = part_number
+        self.__part_id = part_name + "_#_" + str(part_number)
         self.__part_data = ConvertUtils.bytes_to_base64_string(part_data)
         self.__sha256 = CryptoUtils.sha256(part_data)
         self.__desired_distribution = np.array(ddv).transpose() if ddv is not None else ddv
@@ -46,9 +47,13 @@ class SharedFilePart:
         return self.__part_name
 
     @property
+    def part_number(self):
+        return self.__part_number
+
+    @property
     def part_id(self):
         return self.__part_id
-
+    
     @property
     def part_data(self):
         return self.__part_data
