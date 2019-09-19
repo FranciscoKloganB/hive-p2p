@@ -9,8 +9,10 @@ class SharedFilePart:
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :ivar part_name: original name of the file this part belongs to
     :type str
-    :ivar part_id: unique identifier for this file on the P2P network
+    :ivar part_number: unique identifier for this file on the P2P network
     :type int
+    :ivar part_id: concatenation of part_name | part_number
+    :type str
     :ivar part_data: base64 string corresponding to the actual contents of this file part
     :type str
     :ivar sha256: hash value resultant of applying sha256 hash function over part_data param
@@ -53,7 +55,7 @@ class SharedFilePart:
     @property
     def part_id(self):
         return self.__part_id
-    
+
     @property
     def part_data(self):
         return self.__part_data
