@@ -1,6 +1,10 @@
 from utils import CryptoUtils
 from utils.ResourceTracker import ResourceTracker as rT
+from enum import Enum
 
+class HttpCodes(Enum):
+    OK = 200
+    NOT_FOUND = 404
 
 class Worker:
     """
@@ -11,14 +15,14 @@ class Worker:
     :type str
     :ivar name: id of this worker node that uniquely identifies him in the network
     :type str
-    :ivar shared_file_parts: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
-    :type dict<string, dict<int, SharedFilePart>>
+    :ivar file_parts: part_id is a key to a SharedFilePart
+    :type dict<string, SharedFilePart>
     """
 
     def __init__(self, hivemind, name):
         self.hivemind = hivemind
         self.name = name
-        self.shared_file_parts = {}
+        self.file_parts = {}
 
     def __hash__(self):
         # allows a worker object to be used as a dictionary key
@@ -30,37 +34,40 @@ class Worker:
     def __ne__(self, other):
         return not(self == other)
 
-    def receive_sfp(self, part):
-        if CryptoUtils.sha256(part.part_data) == part.sha256:
-            self.shared_file_parts[part.part_name][part.part_id] = part
-        else:
-            print("part_name: {}, part_id: {} - corrupted".format(part.part_name, part.part_id))
-            self.init_recovery_protocol(part)
+    def __init_recovery_protocol(self, part):
+        """
+        # TODO
+        When a corrupt file is received initiate recovery protocol, if this is the node with the most file parts
+        The recovery protocol consists of reconstructing the damaged file part from other parts on the system, it may be
+        necessary to obtain other files from other nodes to initiate reconstruction
+        """
+        pass
 
-    def send_sfp(self):
-        tmp_dict = {}
-        for part_name, part_id_dict in self.shared_file_parts.items():
-            for part_id, shared_file_part in part_id_dict.items():
-                next_worker = shared_file_part.get_next_state(self.name)
-                if next_worker == self.name:
-                    tmp_dict[part_name][part_id] = shared_file_part
+    def receive_part(self, part):
+        if CryptoUtils.sha256(part.part_data) == part.sha256:
+            self.file_parts[part.part_id] = part
+        else:
+            print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
+            self.__init_recovery_protocol(part)
+
+    def send_part(self):
+        tmp = {}
+        for part_id, part in self.file_parts.items():
+                dest_worker = part.get_next_state(self.name)
+                if dest_worker == self.name:
+                    tmp[part_id] = part
                 else:
-                    code = self.hivemind.hivemind_send_update(next_worker, shared_file_part)
-                    if code != 200:
-                        # TODO
-                        pass
-        self.shared_file_parts = tmp_dict
+                    response_code = self.hivemind.simulate_transmission(dest_worker, part)
+                    if response_code != HttpCodes.OK:
+                        tmp[part_id] = part
+        self.file_parts = tmp
 
     def leave_hive(self, orderly=True):
         if orderly:
-            self.hivemind.redistribute_parts(self.name, self.shared_file_parts)
+            self.hivemind.redistribute_parts(self.name, self.file_parts)
         self.hivemind = None
         self.name = None
-        self.shared_file_parts = None
-
-    def init_recovery_protocol(self, part):
-        # TODO
-        pass
+        self.file_parts = None
 
     @staticmethod
     def get_resource_utilization(*args):
