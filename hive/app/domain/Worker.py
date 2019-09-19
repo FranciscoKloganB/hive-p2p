@@ -1,10 +1,7 @@
 from utils import CryptoUtils
 from utils.ResourceTracker import ResourceTracker as rT
-from enum import Enum
+from domain.Enums import HttpCodes
 
-class HttpCodes(Enum):
-    OK = 200
-    NOT_FOUND = 404
 
 class Worker:
     """
