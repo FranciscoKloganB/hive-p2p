@@ -138,6 +138,12 @@ class Hivemind:
             )
 
     def simulate_transmission(self, worker, part):
+        """
+        :param worker: destination of the file part
+        :type domain.Worker
+        :param part: the file part to send to specified worker
+        :type domain.SharedFilePart
+        """
         if self.worker_status[worker] == Status.ONLINE:
             worker.receive_part(part)
             return HttpCodes.OK
@@ -147,6 +153,10 @@ class Hivemind:
             return HttpCodes.TIME_OUT
 
     def simulate_redistribution(self, parts):
+        """
+        :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
+        :type dict<str, domain.SharedFilePart>
+        """
         online_workers = self.__filter_and_map_living_workers()
         for part in parts.values():
             dest_worker = np.random.choice(online_workers)
