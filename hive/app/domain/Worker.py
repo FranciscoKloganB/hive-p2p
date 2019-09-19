@@ -61,7 +61,7 @@ class Worker:
 
     def leave_hive(self, orderly=True):
         if orderly:
-            self.hivemind.redistribute_parts(self.name, self.file_parts)
+            self.hivemind.simulate_redistribution(self.file_parts)
         self.hivemind = None
         self.name = None
         self.file_parts = None

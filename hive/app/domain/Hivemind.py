@@ -124,10 +124,6 @@ class Hivemind:
         else:
             return - cswc_count
 
-    def __redistribute_parts(self, worker_name, worker_parts):
-        # ivar shared_file_parts: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
-        pass # TODO
-
     def execute_simulation(self):
         consecutive_convergences = 0
         living = self.__filter_and_map_living_workers()
@@ -150,3 +146,8 @@ class Hivemind:
         else:
             return HttpCodes.TIME_OUT
 
+    def simulate_redistribution(self, parts):
+        online_workers = self.__filter_and_map_living_workers()
+        for part in parts.values():
+            dest_worker = np.random.choice(online_workers)
+            dest_worker.receive_part(part)
