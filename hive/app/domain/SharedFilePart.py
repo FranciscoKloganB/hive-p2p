@@ -41,8 +41,6 @@ class SharedFilePart:
         self.__part_id = part_name + "_#_" + str(part_number)
         self.__part_data = ConvertUtils.bytes_to_base64_string(part_data)
         self.__sha256 = CryptoUtils.sha256(part_data)
-        self.__desired_distribution = np.array(ddv).transpose() if ddv is not None else ddv
-        self.__markov_matrix = MarkovMatrix(transition_matrix_definition[0], transition_matrix_definition[1])
 
     @property
     def part_name(self):
