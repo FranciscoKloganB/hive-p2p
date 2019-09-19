@@ -8,18 +8,22 @@ class Worker:
     Defines a node on the P2P network. Workers are subject to constraints imposed by Hivemind, constraints they inflict
     on themselves based on available computing power (CPU, RAM, etc...) and can have [0, N] shared file parts. Workers
     have the ability to reconstruct lost file parts when needed.
-    :ivar hivemind: coordinator of the unstructured Hybrid P2P network that enlisted this worker for a Hive
-    :type str
-    :ivar name: id of this worker node that uniquely identifies him in the network
-    :type str
     :ivar file_parts: part_id is a key to a SharedFilePart
     :type dict<string, SharedFilePart>
+    :ivar name: id of this worker node that uniquely identifies him in the network
+    :type str
+    :ivar hivemind: coordinator of the unstructured Hybrid P2P network that enlisted this worker for a Hive
+    :type str
+    :ivar routing_table
+    :type dict<str, pandas.DataFrame>
+        filename : column vector mapping, indicating probability of going to each of the other worker from this worker
     """
 
     def __init__(self, hivemind, name):
-        self.hivemind = hivemind
-        self.name = name
         self.file_parts = {}
+        self.routing_table = {}
+        self.name = name
+        self.hivemind = hivemind
 
     def __hash__(self):
         # allows a worker object to be used as a dictionary key
@@ -39,6 +43,15 @@ class Worker:
         necessary to obtain other files from other nodes to initiate reconstruction
         """
         pass
+
+    def set_file_routing(self, file_name, labeled_transition_vector):
+        """
+        :param file_name: a file name that is being shared on the hive
+        :type str
+        :param labeled_transition_vector: probability vector indicating transitions to other states for the given file
+        :type 1-D numpy.Array in column format
+        """
+        self.routing_table[file_name] = labeled_transition_vector
 
     def receive_part(self, part):
         if CryptoUtils.sha256(part.part_data) == part.sha256:
