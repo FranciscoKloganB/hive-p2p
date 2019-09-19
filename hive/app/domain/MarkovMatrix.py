@@ -36,4 +36,4 @@ class MarkovMatrix:
         :type str
         """
         # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.random.choice.html
-        return np.random.choice(self.states, p=self.transition_matrix[current_state])
+        return np.random.choice(a=self.states, p=self.transition_matrix[current_state])
