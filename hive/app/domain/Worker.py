@@ -51,9 +51,9 @@ class Worker:
                         pass
         self.shared_file_parts = tmp_dict
 
-    def remove_from_hive(self, orderly=False):
+    def leave_hive(self, orderly=True):
         if orderly:
-            self.hivemind.receive_shared_file_parts(self.name, self.shared_file_parts)
+            self.hivemind.redistribute_parts(self.name, self.shared_file_parts)
         self.hivemind = None
         self.name = None
         self.shared_file_parts = None
