@@ -43,6 +43,8 @@ class Worker:
         When a corrupt file is received initiate recovery protocol, if this is the node with the most file parts
         The recovery protocol consists of reconstructing the damaged file part from other parts on the system, it may be
         necessary to obtain other files from other nodes to initiate reconstruction
+        # Note to self - This is not important right now! This is only important after MCMC with metropolis hastings works
+        # For now assume that when a node dies, if it had less than N-K parts, his parts are given to someone else
         """
         pass
 
