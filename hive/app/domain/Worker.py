@@ -1,6 +1,5 @@
 import numpy as np
 
-from collections import defaultdict
 from utils import CryptoUtils
 from utils.ResourceTracker import ResourceTracker as rT
 from domain.Enums import HttpCodes
