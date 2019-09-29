@@ -15,6 +15,8 @@ class Hivemind:
     :type int
     :ivar shared_files: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
+    :ivar shared_files_parts_count: part_name is a key to the number of parts the file was divided into
+    :type dict<string, int>
     :ivar worker_status: keeps track workers in the simulation
     :type dict<str, bool>
     :ivar worker_names: simple list of names to avoid repetitive unpacking of worker_status.keys()
@@ -44,6 +46,7 @@ class Hivemind:
         """
         json_file = json.load(simulation_file_path)
         self.__shared_files = {}
+        self.__shared_files_parts_count = {}
         self.__worker_status = {}
         self.__workers = json_file['workers']
         self.__ddv = json_file['ddv']
@@ -51,20 +54,26 @@ class Hivemind:
         self.max_stages = json_file['maxStages']
         self.casualty_chance = json_file['casualtyChance']
         self.multiple_casualties_allowed = json_file['multipleCasualties']
+        # TODO Refactor the code below into a function that is called for every file path given has input (in simulation v4)
         file_name = Path(shared_file_path).resolve().stem
         self.__read_shared_file_bytes(shared_file_path, file_name)
         self.__init_workers(file_name)
 
-    def __init_workers(self, file_name=None):
+    def __init_workers(self, file_name):
         worker_names = self.__workers
         worker_count = len(worker_names)
         for i in range(0, worker_count):
+            # Create a named worker that knows his Super Node (Hivemind) and list him as online on the hivemind
             self.__workers[i] = Worker(self, worker_names[i])
             self.__worker_status[self.__workers[i]] = Status.ONLINE
-            if file_name is not None:
-                column_vector = np.array(self.__markov_columns[i]).transpose()
-                df = pd.DataFrame(column_vector, index=worker_names, columns=list(worker_names[i]))
-                self.__workers[i].set_file_routing(file_name, df)
+            self.__assign_part_to_worker(self.__workers[i], file_name)
+
+    def __assign_part_to_worker(self, worker_obj, file_name):
+        if worker_obj is not None and file_name is not None:
+            # TODO - Replace column vectors with actual vectors returned by metropolis hastings
+            column_vector = np.array(self.__markov_columns[i]).transpose()
+            df = pd.DataFrame(column_vector, index=worker_names, columns=list(worker_names[i]))
+            worker_obj.set_file_routing(file_name, df)
 
     def __read_shared_file_bytes(self, file_path, file_name):
         """
@@ -76,8 +85,9 @@ class Hivemind:
         :param file_name: the name of the file without extensions or base path.
         :returns the raw content of the file, used to assert if simulation was successful after max_stages happens
         """
-        file_parts = {}
+
         with open(file_path, "rb") as shared_file:
+            file_parts = {}
             part_number = 0
             while True:
                 read_buffer = shared_file.read(Hivemind.READ_SIZE)
@@ -90,8 +100,10 @@ class Hivemind:
                     )
                     file_parts[part_number] = shared_file_part
                 else:
+                    # Keeps track of how many parts the file was divided into
+                    self.__shared_files_parts_count[file_name] = part_number
+                    self.__shared_files[file_name] = file_parts
                     break
-        self.__shared_files[file_name] = file_parts
 
     def __filter_and_map_online_workers(self):
         """
