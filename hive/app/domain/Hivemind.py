@@ -1,3 +1,4 @@
+import os
 import json
 import numpy as np
 import pandas as pd
@@ -15,77 +16,74 @@ class Hivemind:
     :type int
     :ivar shared_files: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
-    :ivar shared_files_parts_count: part_name is a key to the number of parts the file was divided into
-    :type dict<string, int>
     :ivar worker_status: keeps track workers in the simulation
     :type dict<str, bool>
-    :ivar worker_names: simple list of names to avoid repetitive unpacking of worker_status.keys()
-    :type list<str>
+    :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
+    :type int
+    :ivar node_uptime_dict: contains each worker node uptime, used to calculate kill probability
+    :type dict<str, float>
+    :ivar workers: A list of all workers known to the Hivemind
+    :type list<domain.Worker>
     :ivar __ddv: stochastic like list to define the desired distribution vector the hive should reach before max_stages
     :type list<float>
     :ivar __markov_columns: list containing lists, each defining jump probabilities of each state between stages
     :type list<list<float>>
-    :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
-    :type int
-    :ivar casualty_chance: probability of having one random worker leaving the hive per stage.
-    :type float
-    :ivar multiple_casualties_allowed: defines the possibility of more than a worker leaving the hive at each stage.
-    :type bool: when True casualty_chance is calculated independently for each worker!
     """
 
     READ_SIZE = 2048
+    SHARED_ROOT = os.path.join(os.getcwd(), 'static', 'shared')
     STAGES_WITH_CONVERGENCE = []
     MAX_CONSECUTIVE_CONVERGENCE_STAGES = 0
 
-    def __init__(self, simulation_file_path, shared_file_path):
+    def __init__(self, simfile_path):
         """
-        :param simulation_file_path: path to json file containing the parameters this simulation should execute with
-        :type str
-        :param shared_file_path: path to file that this simulation will try persist on the hive network
+        :param simfile_path: path to json file containing the parameters this simulation should execute with
         :type str
         """
-        json_file = json.load(simulation_file_path)
-        self.__shared_files = {}
-        self.__shared_files_parts_count = {}
-        self.__worker_status = {}
-        self.__workers = json_file['workers']
-        self.__ddv = json_file['ddv']
-        self.__markov_columns = json_file['transition_vectors']
-        self.max_stages = json_file['maxStages']
-        self.casualty_chance = json_file['casualtyChance']
-        self.multiple_casualties_allowed = json_file['multipleCasualties']
-        # TODO Refactor the code below into a function that is called for every file path given has input (in simulation v4)
-        file_name = Path(shared_file_path).resolve().stem
-        self.__read_shared_file_bytes(shared_file_path, file_name)
-        self.__init_workers(file_name)
+        with open(simfile_path) as json_obj:
+            json_obj = json.load(simfile_path)
+            # Init basic simulation variables
+            self.shared_files = {}
+            self.worker_status = {}
+            self.max_stages = json_obj['max_simulation_stages']
+            self.node_uptime_dict = json_obj['nodes_uptime']
+            self.workers = [*self.node_uptime_dict.keys()]
+            # Create the P2P network nodes (domain.Workers) without any job
+            self.__init_workers()
+            # Read and split all shareable files specified on the input
+            self.__split_all_shared_files([*json_obj['shared'].keys()])
+            # For all shareable files, set that shared file_routing table
+            self.__set_worker_routing_tables(json_obj['shared'])
+            self.__ddv = json_obj['ddv']
+            self.__markov_columns = json_obj['transition_vectors']
+            # Distribute files before starting simulation
+            self.__uniformely_assign_parts_to_workers(self.shared_files, enforce_online=False)
 
-    def __init_workers(self, file_name):
-        worker_names = self.__workers
+    def __init_workers(self):
+        worker_names = self.workers
         worker_count = len(worker_names)
         for i in range(0, worker_count):
             # Create a named worker that knows his Super Node (Hivemind) and list him as online on the hivemind
-            self.__workers[i] = Worker(self, worker_names[i])
-            self.__worker_status[self.__workers[i]] = Status.ONLINE
-            self.__assign_part_to_worker(self.__workers[i], file_name)
+            self.workers[i] = Worker(self, worker_names[i])
+            self.worker_status[self.workers[i]] = Status.ONLINE
 
-    def __assign_part_to_worker(self, worker_obj, file_name):
-        if worker_obj is not None and file_name is not None:
-            # TODO - Replace column vectors with actual vectors returned by metropolis hastings
-            column_vector = np.array(self.__markov_columns[i]).transpose()
-            df = pd.DataFrame(column_vector, index=worker_names, columns=list(worker_names[i]))
-            worker_obj.set_file_routing(file_name, df)
-
-    def __read_shared_file_bytes(self, file_path, file_name):
+    def __split_all_shared_files(self, file_names):
         """
-        Reads a file from disk which the simulation wants to persist on the hive network.
-        The contents of the file are read in 2KB blocks and are encapsulated along with their ID and SHA256 for proper
-        distribution on the hive.
+        Obtains the path of all files that are going to be divided for sharing simulation and splits them into parts
+        :param file_names: a list containing the name of the files to be shared with their extensions included
+        :type str
+        """
+        for file_name in file_names:
+            self.__split_shared_file(os.path.join(self.SHARED_ROOT, file_name))
+
+    def __split_shared_file(self, file_path):
+        """
+        Reads contents of the file in 2KB blocks and encapsulates them along with their ID and SHA256
         :param file_path: path to an arbitrary file to persist on the hive network
         :type str
-        :param file_name: the name of the file without extensions or base path.
-        :returns the raw content of the file, used to assert if simulation was successful after max_stages happens
         """
-
+        # file_extension = Path(file_path).resolve().suffix
+        file_name = Path(file_path).resolve().stem
         with open(file_path, "rb") as shared_file:
             file_parts = {}
             part_number = 0
@@ -101,9 +99,30 @@ class Hivemind:
                     file_parts[part_number] = shared_file_part
                 else:
                     # Keeps track of how many parts the file was divided into
-                    self.__shared_files_parts_count[file_name] = part_number
-                    self.__shared_files[file_name] = file_parts
+                    self.shared_files[file_name] = file_parts
                     break
+
+    def __set_worker_routing_tables(self, shared_dict):
+        """
+        :param shared_dict: maps file name with extensions to a dictinonary with three keys containing worker_labels who
+        are going to receive the file parts associated wih the named file, along with the transition vectors before being
+        metropolis hastings processed as well as the desired distributions # TODO make it proper
+        :type dict<str, dict<str, obj>
+        """
+        for extended_name, markov_chain_data in shared_dict.items():
+            file_name = Path(extended_name).resolve().stem
+            df = pd.DataFrame(transition_probabilities, index=markov_chain_data['workers_labels'])
+            for worker in self.workers:
+                df.columns = list(worker.name)
+                worker.set_file_routing(file_name, df)
+
+    def __uniformely_assign_parts_to_workers(self, shared_files_dict, enforce_online=True):
+        # iterate dict<part_name, dict<part_number, shared file part object>>
+        for name, parts in shared_files_dict.items():
+            for part in parts.values:
+                # choose a worker to receive this part
+                worker_obj = np.random.choice(self.__filter_and_map_online_workers() if enforce_online else self.workers)
+                worker_obj.receive_part(part, no_check=True)
 
     def __filter_and_map_online_workers(self):
         """
@@ -145,7 +164,7 @@ class Hivemind:
     def __process_stage_results(self, shared_file_name, stage, cswc_count):
         # TODO Create a margin of error that defines stage_distribution == self.ddv equality
         stage_distribution = []
-        for worker in self.__workers:
+        for worker in self.workers:
             stage_distribution.append(worker.request_file_count(shared_file_name))
         if stage_distribution == self.__ddv:
             cswc_count += 1
@@ -166,7 +185,7 @@ class Hivemind:
             for worker in workers:
                 worker.do_stage()
             consecutive_convergences += self.__process_stage_results(
-                [*(self.__shared_files.keys())][0], stage, consecutive_convergences
+                [*(self.shared_files.keys())][0], stage, consecutive_convergences
             )
 
     def simulate_transmission(self, worker, part):
@@ -189,7 +208,4 @@ class Hivemind:
         :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
         :type dict<str, domain.SharedFilePart>
         """
-        online_workers = self.__filter_and_map_online_workers()
-        for part in parts.values():
-            dest_worker = np.random.choice(online_workers)
-            dest_worker.receive_part(part)
+        self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
