@@ -1,5 +1,6 @@
 import numpy as np
 
+from collections import defaultdict
 from utils import CryptoUtils
 from utils.ResourceTracker import ResourceTracker as rT
 from domain.Enums import HttpCodes
@@ -10,8 +11,8 @@ class Worker:
     Defines a node on the P2P network. Workers are subject to constraints imposed by Hivemind, constraints they inflict
     on themselves based on available computing power (CPU, RAM, etc...) and can have [0, N] shared file parts. Workers
     have the ability to reconstruct lost file parts when needed.
-    :ivar file_parts: part_id is a key to a SharedFilePart
-    :type dict<string, SharedFilePart>
+    :ivar file_parts: key part_name maps to a dict of part_id keys whose values are SharedFilePart
+    :type dict<str, dict<str, SharedFilePart>
     :ivar name: id of this worker node that uniquely identifies him in the network
     :type str
     :ivar hivemind: coordinator of the unstructured Hybrid P2P network that enlisted this worker for a Hive
@@ -20,6 +21,22 @@ class Worker:
     :type dict<str, pandas.DataFrame>
         filename : column vector mapping, indicating probability of going to each of the other worker from this worker
     """
+    @staticmethod
+    def get_resource_utilization(*args):
+        """
+        :param *args: Variable length argument list. See below
+        :keyword arg:
+        :arg 'cpu': system wide float detailing cpu usage as a percentage,
+        :arg 'cpu_count': number of non-logical cpu on the machine as an int
+        :arg 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
+        :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available), expressed in bytes as floats
+        :arg 'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
+        :return dict<str, obj> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
+        """
+        results = {}
+        for arg in args:
+            results[arg] = rT.get_value(arg)
+        return results
 
     def __init__(self, hivemind, name):
         self.file_parts = {}
@@ -57,24 +74,29 @@ class Worker:
         """
         self.__routing_table[file_name] = labeled_transition_vector
 
-    def receive_part(self, part):
-        if CryptoUtils.sha256(part.part_data) == part.sha256:
-            self.file_parts[part.part_id] = part
+    def receive_part(self, part, no_check=False):
+        if no_check or CryptoUtils.sha256(part.part_data) == part.sha256:
+            if part.name in self.file_parts:
+                self.file_parts[part.name][part.part_id] = part
+            else:
+                self.file_parts[part.name] = {}
+                self.file_parts[part.name][part.part_id] = part
         else:
             print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
             self.__init_recovery_protocol(part)
 
     def send_part(self):
-        tmp = {}
-        for part_id, part in self.file_parts.items():
-                dest_worker = self.get_next_state(file_name=part.part_name)
-                if dest_worker == self.name:
-                    tmp[part_id] = part
-                else:
-                    response_code = self.hivemind.simulate_transmission(dest_worker, part)
-                    if response_code != HttpCodes.OK:
-                        tmp[part_id] = part
-        self.file_parts = tmp
+        for part_name, part_id_sfp_dict in self.file_parts.items():
+            tmp = {}
+            for part_id, sfp_obj in part_id_sfp_dict.items():
+                    dest_worker = self.get_next_state(file_name=part_name)
+                    if dest_worker == self.name:
+                        tmp[part_id] = sfp_obj
+                    else:
+                        response_code = self.hivemind.simulate_transmission(dest_worker, sfp_obj)
+                        if response_code != HttpCodes.OK:
+                            tmp[part_id] = sfp_obj
+            self.file_parts[part_name] = tmp
 
     def leave_hive(self, orderly=True):
         """
@@ -99,24 +121,3 @@ class Worker:
         row_labels = [*file_routing_table.index.values]
         label_probabilities = [*file_routing_table[self.name]]
         return np.random.choice(a=row_labels, p=label_probabilities)
-
-    @staticmethod
-    def get_resource_utilization(*args):
-        """
-        :param *args: Variable length argument list. See below
-        :keyword arg:
-        :arg 'cpu': system wide float detailing cpu usage as a percentage,
-        :arg 'cpu_count': number of non-logical cpu on the machine as an int
-        :arg 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
-        :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available), expressed in bytes as floats
-        :arg 'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
-        :return dict<str, obj> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
-        """
-        results = {}
-        for arg in args:
-            results[arg] = rT.get_value(arg)
-        return results
-
-
-
-
