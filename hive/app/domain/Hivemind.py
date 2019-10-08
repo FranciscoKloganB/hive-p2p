@@ -53,9 +53,7 @@ class Hivemind:
             # Read and split all shareable files specified on the input
             self.__split_all_shared_files([*json_obj['shared'].keys()])
             # For all shareable files, set that shared file_routing table
-            self.__set_worker_routing_tables(json_obj['shared'])
-            self.__ddv = json_obj['ddv']
-            self.__markov_columns = json_obj['transition_vectors']
+            self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
             # Distribute files before starting simulation
             self.__uniformely_assign_parts_to_workers(self.shared_files, enforce_online=False)
 
@@ -102,19 +100,49 @@ class Hivemind:
                     self.shared_files[file_name] = file_parts
                     break
 
-    def __set_worker_routing_tables(self, shared_dict):
+    def __synthesize_shared_files_transition_matrices(self, shared_dict):
         """
+        For all keys in the dictionary, obtain file names, the respective proposal matrix and the desired distribution
+        then calculate the transition matrix using metropolis hastings algorithm and feed the result to each worker who
+        is a contributor for the survivability of that file
         :param shared_dict: maps file name with extensions to a dictinonary with three keys containing worker_labels who
         are going to receive the file parts associated wih the named file, along with the transition vectors before being
-        metropolis hastings processed as well as the desired distributions # TODO make it proper
-        :type dict<str, dict<str, obj>
+        metropolis hastings processed as well as the desired distributions
+        :return:
         """
-        for extended_name, markov_chain_data in shared_dict.items():
-            file_name = Path(extended_name).resolve().stem
-            df = pd.DataFrame(transition_probabilities, index=markov_chain_data['workers_labels'])
+        for extended_file_name, markov_chain_data in shared_dict.items():
+            file_name = Path(extended_file_name).resolve().stem
+            state_labels = markov_chain_data['workers_labels']
+            proposal_matrix = markov_chain_data['proposal_matrix']
+            desired_distribution = markov_chain_data['ddv']
+            transition_matrix = self.__synthesize_transition_matrix(proposal_matrix, desired_distribution)
+            # idea: get work
             for worker in self.workers:
-                df.columns = list(worker.name)
-                worker.set_file_routing(file_name, df)
+                # TODO Error in transition_probabilities, this is only a placeholder until we actually have the param to give to method
+                self.__set_worker_routing_tables(file_name, state_labels, transition_probabilities=None)
+
+    def __synthesize_transition_matrix(self, proposal_matrix, desired_distribution):
+        # TODO placeholders everywhere
+        pass
+        return [[None, None, None], [None, None, None], [None, None, None]]
+
+    def __set_worker_routing_tables(self, file_name, state_labels, transition_probabilities):
+        """
+        Give all workers their respective transition probabilities regarding a given shared file.
+        i.e.: neither workers nor file parts have a transition matrix, instead, each worker knows only for each file the
+        column vector containing the transition probabilities for each filename. For a given file, if all workers were
+        merged into one, the concatenation of their column vectors would result into the correct transition matrix.
+        """
+        # TODO there is a known error here. We are giving all workers the same transition vector. Ideally, we want to
+        # TODO... give each worker his own transition vector. State labels, file name, index+columns labeling are correct
+        # TODO... Reminder: since worker count = columns in matrix, iterate both at the same time and set each worker column
+        # TODO... Reminder2: since some workers might not be involved in the file sharing, than set all probabilities in
+        #  the vector to be equal to 1/StateCount, thus making files that are accidently received by a node, being sent to
+        #  any proper node with equal probability
+        df = pd.DataFrame(transition_probabilities, index=state_labels)
+        for worker in self.workers:
+            df.columns = list(worker.name)
+            worker.set_file_routing(file_name, df)
 
     def __uniformely_assign_parts_to_workers(self, shared_files_dict, enforce_online=True):
         # iterate dict<part_name, dict<part_number, shared file part object>>
