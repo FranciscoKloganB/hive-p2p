@@ -6,6 +6,7 @@ from domain.Enums import HttpCodes
 
 
 class Worker:
+    # region docstrings
     """
     Defines a node on the P2P network. Workers are subject to constraints imposed by Hivemind, constraints they inflict
     on themselves based on available computing power (CPU, RAM, etc...) and can have [0, N] shared file parts. Workers
@@ -19,29 +20,17 @@ class Worker:
     :ivar routing_table: maps file name with state transition probabilities, from this worker to other workers
     :type dict<str, pandas.DataFrame>
     """
-    @staticmethod
-    def get_resource_utilization(*args):
-        """
-        :param *args: Variable length argument list. See below
-        :keyword arg:
-        :arg 'cpu': system wide float detailing cpu usage as a percentage,
-        :arg 'cpu_count': number of non-logical cpu on the machine as an int
-        :arg 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
-        :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available), expressed in bytes as floats
-        :arg 'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
-        :return dict<str, obj> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
-        """
-        results = {}
-        for arg in args:
-            results[arg] = rT.get_value(arg)
-        return results
+    # endregion
 
+    # region class variables, instance variables and constructors
     def __init__(self, hivemind, name):
         self.file_parts = {}
         self.__routing_table = {}
         self.name = name
         self.hivemind = hivemind
+    # endregion
 
+    # region overriden class methods
     def __hash__(self):
         # allows a worker object to be used as a dictionary key
         return hash(str(self.name))
@@ -53,7 +42,9 @@ class Worker:
 
     def __ne__(self, other):
         return not(self == other)
+    # endregion
 
+    # region file recovery methods
     def __init_recovery_protocol(self, part):
         """
         # TODO
@@ -64,7 +55,9 @@ class Worker:
         # For now assume that when a node dies, if it had less than N-K parts, his parts are given to someone else
         """
         pass
+    # endregion
 
+    # region instance methods
     def set_file_routing(self, file_name, labeled_transition_vector):
         """
         :param file_name: a file name that is being shared on the hive
@@ -122,3 +115,23 @@ class Worker:
         row_labels = [*file_routing_table.index.values]
         label_probabilities = [*file_routing_table[self.name]]
         return np.random.choice(a=row_labels, p=label_probabilities)
+    # endregion
+
+    # region static methods
+    @staticmethod
+    def get_resource_utilization(*args):
+        """
+        :param *args: Variable length argument list. See below
+        :keyword arg:
+        :arg 'cpu': system wide float detailing cpu usage as a percentage,
+        :arg 'cpu_count': number of non-logical cpu on the machine as an int
+        :arg 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
+        :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available), expressed in bytes as floats
+        :arg 'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
+        :return dict<str, obj> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
+        """
+        results = {}
+        for arg in args:
+            results[arg] = rT.get_value(arg)
+        return results
+    # endregion

@@ -35,7 +35,7 @@ class Hivemind:
     """
     # endregion
 
-    # region class variables and contructors
+    # region class variables, instance variables and constructors
     READ_SIZE = 2048
     __SHARED_ROOT = os.path.join(os.getcwd(), 'static', 'shared')
     __STAGES_WITH_CONVERGENCE = []
@@ -148,6 +148,7 @@ class Hivemind:
                     break
     # endregion
 
+    # region metropolis hastings and transition vector assignment methods
     def __synthesize_shared_files_transition_matrices(self, shared_dict):
         """
         For all keys in the dictionary, obtain file names, the respective proposal matrix and the desired distribution
@@ -171,17 +172,6 @@ class Hivemind:
                 transition_vector = [*transition_matrix[worker_name].values]
                 self.__set_worker_routing_tables(self.worker_status[worker_name], file_name, states, transition_vector)
 
-    def __set_distribution_trackers(self, file_name, desired_distribution, labels):
-        """
-        :param file_name: the name of the file to be tracked by the hivemind
-        :type str
-        :param desired_distribution: the desired distribution vector of the given named file
-        :type list<float>
-        """
-        self.sf_desired_distribution[file_name] = pd.DataFrame(desired_distribution, index=labels)
-        self.sf_current_distribution[file_name] = pd.DataFrame([0] * len(desired_distribution), index=labels)
-        self.sf_convergence_data[file_name] = ConvergenceData()
-
     @staticmethod
     def __synthesize_transition_matrix(proposal_matrix, desired_distribution, states):
         """
@@ -200,6 +190,7 @@ class Hivemind:
         """
         transition_matrix = None
         return pd.DataFrame(transition_matrix, index=states, columns=states)
+    # endregion
 
     # region simulation execution methods
     def execute_simulation(self):
@@ -312,4 +303,15 @@ class Hivemind:
             lambda a_worker: a_worker[0],
             [*filter(lambda item: item[1] == Status.ONLINE, self.worker_status.items())]
         )]
+
+    def __set_distribution_trackers(self, file_name, desired_distribution, labels):
+        """
+        :param file_name: the name of the file to be tracked by the hivemind
+        :type str
+        :param desired_distribution: the desired distribution vector of the given named file
+        :type list<float>
+        """
+        self.sf_desired_distribution[file_name] = pd.DataFrame(desired_distribution, index=labels)
+        self.sf_current_distribution[file_name] = pd.DataFrame([0] * len(desired_distribution), index=labels)
+        self.sf_convergence_data[file_name] = ConvergenceData()
     # endregion

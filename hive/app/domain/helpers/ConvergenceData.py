@@ -1,4 +1,5 @@
 class ConvergenceData:
+    # region docstrings
     """
     Holds data that helps an domain.Hivemind keep track of converge in a simulation
     :cvar __DEVIATION_TOLERANCE: percentage in which a value on a distribution vector can deviate from another in eq cmp
@@ -14,6 +15,9 @@ class ConvergenceData:
     :ivar convergence_sets: list with all convergence sets found for this file during a simulation
     :type list<list<int>>
     """
+    # endregion
+
+    # region class variables, instance variables and constructors
     __DEVIATION_TOLERANCE = 0.01
     MIN_CONVERGENCE_THRESHOLD = 3
 
@@ -22,7 +26,9 @@ class ConvergenceData:
         self.convergence_set = []
         self.convergence_sets = []
         self.largest_convergence_set = 0
+    # endregion
 
+    # region instance methods
     def cswc_increment_and_get(self, increment):
         self.cswc += increment
         return self.cswc
@@ -44,7 +50,9 @@ class ConvergenceData:
             self.try_set_largest()
             self.convergence_sets.append(self.largest_convergence_set)
             self.convergence_set = []
+    # endregion
 
+    # region static methods
     @staticmethod
     def equal_distributions(one, another):
         row_count = len(one)
@@ -59,3 +67,4 @@ class ConvergenceData:
             else:
                 return False
         return True
+    # endregion

@@ -5,6 +5,7 @@ from utils import ConvertUtils, CryptoUtils
 
 
 class SharedFilePart:
+    # region docstrings
     """
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :ivar part_name: original name of the file this part belongs to
@@ -22,7 +23,9 @@ class SharedFilePart:
     :ivar markov_matrix: container object describing and implementing Markov Chain behaviour
     :type hive.domain.MarkovChain
     """
+    # endregion
 
+    # region class variables, instance variables and constructors
     def __init__(self, part_name, part_number, part_data, ddv=None, transition_matrix_definition=None):
         """
         :param part_name: original name of the file this part belongs to
@@ -41,7 +44,9 @@ class SharedFilePart:
         self.__part_id = part_name + "_#_" + str(part_number)
         self.__part_data = ConvertUtils.bytes_to_base64_string(part_data)
         self.__sha256 = CryptoUtils.sha256(part_data)
+    # endregion
 
+    # region properties
     @property
     def part_name(self):
         return self.__part_name
@@ -61,3 +66,4 @@ class SharedFilePart:
     @property
     def sha256(self):
         return self.__sha256
+    # endregion
