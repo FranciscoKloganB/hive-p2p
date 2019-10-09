@@ -16,9 +16,8 @@ class Worker:
     :type str
     :ivar hivemind: coordinator of the unstructured Hybrid P2P network that enlisted this worker for a Hive
     :type str
-    :ivar routing_table
+    :ivar routing_table: maps file name with state transition probabilities, from this worker to other workers
     :type dict<str, pandas.DataFrame>
-        filename : column vector mapping, indicating probability of going to each of the other worker from this worker
     """
     @staticmethod
     def get_resource_utilization(*args):
