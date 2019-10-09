@@ -14,13 +14,11 @@ class Hivemind:
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :cvar READ_SIZE: defines the max amount of bytes are read at a time from file to be shared
     :type int
-    :ivar workers: maps worker_name (key) to worker obj (value)
-    :type dict<string, domain.Worker>
-    :ivar worker_status: keeps track workers in the simulation
-    :type dict<str, ENUM>
+    :ivar worker_status: keeps track workers objects in the simulation
+    :type dict<domain.Worker, domain.Status(Enum)>
     :ivar shared_files: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
-    :ivar sf_desired_distribution: registers the desired destribution of a shared file, file_name is key
+    :ivar sf_desired_distribution: registers the desired distribution of a shared file, file_name is key
     :type dict<str, list<float>>
     :ivar sf_current_distribution: keeps track of each shared file distribution, at each discrete time stage
     :type dict<str, list<float>>
@@ -43,7 +41,6 @@ class Hivemind:
         with open(simfile_path) as json_obj:
             json_obj = json.load(simfile_path)
             # Init basic simulation variables
-            self.workers = {}
             self.worker_status = {}
             self.shared_files = {}
             self.sf_desired_distribution = {}
@@ -66,8 +63,7 @@ class Hivemind:
         :type list<str>
         """
         for name in worker_names:
-            self.workers[name] = Worker(self, name)
-            self.worker_status[name] = Status.ONLINE
+            self.worker_status[Worker(self, name)] = Status.ONLINE
 
     def __split_all_shared_files(self, file_names):
         """
@@ -110,22 +106,22 @@ class Hivemind:
         then calculate the transition matrix using metropolis hastings algorithm and feed the result to each worker who
         is a contributor for the survivability of that file
         :param shared_dict: maps file name with extensions to a dictinonary with three keys containing worker_labels who
-        are going to receive the file parts associated wih the named file, along with the transition vectors before being
-        metropolis hastings processed as well as the desired distributions
+        are going to receive the file parts associated wih the named file, along with the transition vectors before
+        being metropolis hastings processed as well as the desired distributions
         """
         for extended_file_name, markov_chain_data in shared_dict.items():
             file_name = Path(extended_file_name).resolve().stem
-            state_labels = markov_chain_data['workers_labels']
+            labels = markov_chain_data['workers_labels']
             proposal_matrix = markov_chain_data['proposal_matrix']
             desired_distribution = markov_chain_data['ddv']
             # Setting the trackers in this phase speeds up simulation
             self.__set_distribution_trackers(file_name, desired_distribution)
             # Compute transition matrix
-            transition_matrix = self.__synthesize_transition_matrix(state_labels, proposal_matrix, desired_distribution)
+            transition_matrix = self.__synthesize_transition_matrix(labels, proposal_matrix, desired_distribution)
             # Split transition matrix into column vectors
-            for worker_name in state_labels:
+            for worker_name in labels:
                 transition_vector = [*transition_matrix[worker_name].values]
-                self.__set_worker_routing_tables(self.workers[worker_name], file_name, state_labels, transition_vector)
+                self.__set_worker_routing_tables(self.worker_status[worker_name], file_name, labels, transition_vector)
 
     def __set_distribution_trackers(self, file_name, desired_distribution):
         """
@@ -178,18 +174,18 @@ class Hivemind:
         """
         for name, parts in shared_files_dict.items():
             for part in parts.values:
-                # choose a worker to receive this part
-                worker_obj = np.random.choice(self.__filter_and_map_online_workers() if enforce_online else self.workers)
-                worker_obj.receive_part(part, no_check=True)
+                # Randomly choose a domain.Worker with equal probability to receive the current domain.SharedFilePart
+                choices = self.__filter_and_map_online_workers() if enforce_online else [*self.worker_status.keys()]
+                np.random.choice(choices).receive_part(part, no_check=True)
 
     def __filter_and_map_online_workers(self):
         """
-        Filters all worker items(worker_name:Status) from the worker_status dict known to this hivemind who have Status.Online
-        :returns a list containing only the keys (workers names, w/o their status) returned by the first filter
-        :type list<str>
+        :returns Workers objects whose status is online
+        :type list<domain.Worker>
         """
-        filtered_workers = [*filter(lambda item: item[1] == Status.ONLINE, self.worker_status.items())]
-        return [*map(lambda a_worker_name: a_worker_name[0], filtered_workers)]
+        return [*map(
+            lambda a_worker: a_worker[0], [*filter(lambda item: item[1] == Status.ONLINE, self.worker_status.items())]
+        )]
 
     def __remove_workers_phase(self, online_workers):
         """
@@ -198,85 +194,89 @@ class Hivemind:
         :param online_workers: collection of workers that are known to be online
         :type list<domain.Worker>
         """
-        for name in online_workers:
-            uptime = self.node_uptime_dict[name] / 100
+        for worker in online_workers:
+            uptime = self.node_uptime_dict[worker.name] / 100
             remains_alive = np.random.choice([True, False], p=[uptime, 1 - uptime])
             if not remains_alive:
-                self.__remove_worker(name, clean_kill=False)
+                self.__remove_worker(worker, clean_kill=False)
 
     def __remove_worker(self, target, clean_kill=True):
         """
-        :param target: name of the worker who is going to be removed from the simulation network
-        :type str
+        :param target: worker who is going to be removed from the simulation network
+        :type domain.Worker
         :param clean_kill: When True worker will ask for his files to be redistributed before leaving the network
         :type bool
         """
         if clean_kill:
-            self.workers[target].leave_hive(orderly=True)
+            target.leave_hive(orderly=True)
             self.worker_status[target] = Status.OFFLINE
         else:
-            # TODO Check if simulation fails because killed worker had more than N - K parts (see github & ask dani for algorithm)
-            self.workers[target].leave_hive(orderly=False)
+            # TODO Check if simulation fails because killed worker had more than N - K parts (see github)
+            target.leave_hive(orderly=False)
             self.worker_status[target] = Status.SUSPECT
 
     def __process_stage_results(self, stage, cswc_count):
         """
         TODO
             Redo this! There must be an effecient way to do this.
-        For each file being shared on this hivemind network, check if its desired distribution has been, trully, achieved.
+        For each file being shared on this hivemind network, check if its desired distribution has been achieved.
         :param stage: stage number - the one that is being processed
         :type int
         :param cswc_count: value, for the named file, that counts for how many consecutive steps has the ddv been respected
         :type int
         """
-        # For each file name the hivemind is controlling, create a vector
         for file_name in self.sf_desired_distribution.keys():
-            for worker in self.workers.values():
-                stage_distribution.append(worker.request_file_count(file_name))
-                if self.sf_current_distribution[file_name] == self.sf_desired_distribution[file_name]:
-                    cswc_count += 1
-                    if cswc_count > Hivemind.MAX_CONSECUTIVE_CONVERGENCE_STAGES:
-                        Hivemind.MAX_CONSECUTIVE_CONVERGENCE_STAGES = cswc_count
-                    Hivemind.STAGES_WITH_CONVERGENCE.append(stage)
-                    return cswc_count
+            for worker, status in self.worker_status.items():
+                if status != Status.ONLINE:
+                    pass  # Todo
                 else:
-                    return - cswc_count
+                    """
+                    stage_distribution.append(worker.request_file_count(file_name))
+                    if self.sf_current_distribution[file_name] == self.sf_desired_distribution[file_name]:
+                        cswc_count += 1
+                        if cswc_count > Hivemind.MAX_CONSECUTIVE_CONVERGENCE_STAGES:
+                            Hivemind.MAX_CONSECUTIVE_CONVERGENCE_STAGES = cswc_count
+                        Hivemind.STAGES_WITH_CONVERGENCE.append(stage)
+                        return cswc_count
+                    else:
+                        return - cswc_count
+                    """
+                    pass  # Todo
 
     def execute_simulation(self):
         """
-        TODO:
-            Modify __filter_and_map_online_workers to work with dictionaries or modify this function to convert the list properly
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
+        # TODO:
+        #   Correct the line below to work for multiple files.
         cswc_count = 0
-        workers = self.__filter_and_map_online_workers()
+        online_workers_list = self.__filter_and_map_online_workers()
         for stage in range(0, self.max_stages):
-            self.__remove_workers_phase(workers)
-            workers = self.__filter_and_map_online_workers()
-            for worker in workers:
+            self.__remove_workers_phase(online_workers_list)
+            online_workers_list = self.__filter_and_map_online_workers()
+            for worker in online_workers_list:
                 worker.do_stage()
             # TODO:
             #   Correct the line below to work for multiple files.
-            cswc_count += self.__process_stage_results([*(self.shared_files.keys())][0], stage, cswc_count)
+            cswc_count += self.__process_stage_results(stage, cswc_count)
 
-    def simulate_transmission(self, worker, part):
+    def simulate_transmission(self, dest_worker, part):
         """
-        TODO:
-            Either convert the worker_status to be a dict of domain.Worker : Status, like it apparently was before
-            Or
-            Modify this to be work with names instead of Objects!
-        :param worker: destination of the file part
-        :type domain.Worker
+        :param dest_worker: destinatary of the file part
+        :type domain.Worker OR str (domain.Worker.name)
         :param part: the file part to send to specified worker
         :type domain.SharedFilePart
         """
-        if self.worker_status[worker] == Status.ONLINE:
-            worker.receive_part(part)
+        dest_status = self.worker_status[dest_worker]
+        if dest_status == Status.ONLINE:
+            dest_worker.receive_part(part)
             return HttpCodes.OK
-        elif not self.worker_status[worker] == Status.OFFLINE:
-            return HttpCodes.NOT_FOUND
-        else:
+        elif dest_status == Status.OFFLINE:
+            return HttpCodes.SERVER_DOWN
+        elif dest_status == Status.SUSPECT:
             return HttpCodes.TIME_OUT
+        else:
+            return HttpCodes.NOT_FOUND
 
     def simulate_redistribution(self, parts):
         """
