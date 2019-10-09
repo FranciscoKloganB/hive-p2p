@@ -3,6 +3,7 @@ import numpy as np
 
 
 class MarkovMatrix:
+    # region docstrings
     """
     Implements a matrix which adheres to markov chain theory and implements some basic markov chains' behaviour
     :ivar states: identifiers for the buckets existing on network passed in matching order to their transition arrays
@@ -10,7 +11,9 @@ class MarkovMatrix:
     :ivar transition_matrix: concrete markov matrix data structure with named rows and columns according to passed states
     :type 2D pandas.DataFrame
     """
+    # endregion
 
+    # region class variables, instance variables and constructors
     def __init__(self, states, transition_arrays):
         """
         Initialize the Markov Chain instance.
@@ -26,7 +29,9 @@ class MarkovMatrix:
             columns=states,
             index=states
         )
+    # endregion
 
+    # region instance methods
     def next_state(self, current_state):
         """
         Choose list variable given probability of each variable
@@ -36,4 +41,5 @@ class MarkovMatrix:
         :type str
         """
         # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.random.choice.html
-        return np.random.choice(self.states, p=self.transition_matrix[current_state])
+        return np.random.choice(a=self.states, p=self.transition_matrix[current_state])
+    # endregion

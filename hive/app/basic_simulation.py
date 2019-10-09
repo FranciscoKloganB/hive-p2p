@@ -8,7 +8,7 @@ def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
     print(" Run a simulation for Markov Chain Based Swarm Guidance algorithm on a P2P Network that persists files\n")
-    print(" Typical usage: basic_simulation.py --simfile=sim01.json --filepath=yourfile.txt\n")
+    print(" Typical usage: basic_simulation.py --simfile=sim01.json\n")
     print(" Display all optional flags and other important notices: basic_simulation.py --help\n")
     print(" -------------------------------------------------------------------------\n")
     sys.exit(" ")
@@ -25,8 +25,7 @@ def help():
 def main():
 
     try:
-        options, args = getopt.getopt(sys.argv[1:], "uhs:f:", ["usage", "help", "simfile=", "filepath="])
-
+        options, args = getopt.getopt(sys.argv[1:], "uhs:", ["usage", "help", "simfile="])
         for options, args in options:
             if options in ("-u", "--usage"):
                 usage()
@@ -36,10 +35,6 @@ def main():
                 sim_file_path = str(args).strip()
                 if not sim_file_path:
                     sys.exit("Invalid simulation filepath. A simulation file is required for execution rules.")
-            if options in ("-f", "--filepath"):
-                file_path = str(args)
-                if not file_path:
-                    sys.exit("Invalid share file. Simulation requires file to simulate sharing.")
 
     except getopt.GetoptError:
         usage()
