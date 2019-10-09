@@ -194,16 +194,42 @@ class Hivemind:
                 # Randomly choose a destinatary worker from possible choices and give him the shared file part
                 np.random.choice(choices).receive_part(part)
 
-    def __filter_and_map_online_workers(self):
+    def simulate_transmission(self, dest_worker, part):
         """
-        :returns Workers objects whose status is online
-        :type list<domain.Worker>
+        :param dest_worker: destinatary of the file part
+        :type domain.Worker OR str (domain.Worker.name)
+        :param part: the file part to send to specified worker
+        :type domain.SharedFilePart
         """
-        return [*map(
-            lambda a_worker: a_worker[0], [*filter(lambda item: item[1] == Status.ONLINE, self.worker_status.items())]
-        )]
+        dest_status = self.worker_status[dest_worker]
+        if dest_status == Status.ONLINE:
+            dest_worker.receive_part(part)
+            return HttpCodes.OK
+        elif dest_status == Status.OFFLINE:
+            return HttpCodes.SERVER_DOWN
+        elif dest_status == Status.SUSPECT:
+            return HttpCodes.TIME_OUT
+        else:
+            return HttpCodes.NOT_FOUND
 
-    def __remove_workers_phase(self, online_workers):
+    def simulate_redistribution(self, parts):
+        """
+        :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
+        :type dict<str, domain.SharedFilePart>
+        """
+        self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
+
+    def execute_simulation(self):
+        """
+        Runs a stochastic swarm guidance algorithm applied to a P2P network
+        """
+        online_workers_list = self.__filter_and_map_online_workers()
+        for stage in range(0, self.max_stages):
+            self.__try_remove_some_workers(online_workers_list)
+            self.__remaining_workers_execute()
+            self.__process_stage_results(stage)
+
+    def __try_remove_some_workers(self, online_workers):
         """
         For each online worker, if they are online, see if they remain alive for the next stage or if they die, according
         to their uptime record.
@@ -231,12 +257,15 @@ class Hivemind:
             target.leave_hive(orderly=False)
             self.worker_status[target] = Status.SUSPECT
 
-    def __process_stage_results(self, stage, cswc_count):
+    def __remaining_workers_execute(self):
+        online_workers_list = self.__filter_and_map_online_workers()
+        for worker in online_workers_list:
+            worker.do_stage()
+
+    def __process_stage_results(self, stage):
         """
         For each file being shared on this hivemind network, check if its desired distribution has been achieved.
         :param stage: stage number - the one that is being processed
-        :type int
-        :param cswc_count: value, for the named file, that counts for how many consecutive steps has the ddv been respected
         :type int
         """
         if stage == self.max_stages:
@@ -245,6 +274,7 @@ class Hivemind:
         for file_name, desired_distribution in self.sf_desired_distribution.items():
             peer_names = [*desired_distribution.index]
             current_distribution = self.sf_current_distribution[file_name]
+            # query all workers sharing this file for survivability to tell hivemind how many parts they own from it
             for name in peer_names:
                 # Update the stage distribution for this file by querying every worker in its hive
                 worker = self.workers[name]
@@ -252,57 +282,23 @@ class Hivemind:
                     current_distribution.at[name, Hivemind.__DEFAULT_COLUMN] = 0
                 else:
                     current_distribution.at[name, Hivemind.__DEFAULT_COLUMN] = worker.request_file_count(file_name)
-            # when all queries are done, verify convergence for current file
+            # when all queries for a file are done, verify convergence for current file
+            data = self.sf_convergence_data[file_name]
             if ConvergenceData.equal_distributions(current_distribution, desired_distribution):
-                self.sf_convergence_data[file_name].cswc += 1
-                if self.sf_convergence_data[file_name].cswc > self.sf_convergence_data[file_name].max_swc:
-                    self.sf_convergence_data[file_name].max_swc = self.sf_convergence_data[file_name].cswc
-                    self.sf_convergence_data[file_name].swc.append(stage)
-                    # Todo Im here
-                return cswc_count
+                data.cswc_increment_and_get(1)
+                if data.sf_convergence_data[file_name].try_update_convergence_set(stage):
+                    print("File: {} converged at stage: {}...".format(file_name, stage))
+                    print("Desired Distribution:\n{}".format(desired_distribution.to_string()))
+                    print("Current Distribution:\n{}".format(current_distribution.to_string()))
             else:
-                return - cswc_count
+                data.save_sets_and_reset_data()
 
-
-
-    def execute_simulation(self):
+    def __filter_and_map_online_workers(self):
         """
-        Runs a stochastic swarm guidance algorithm applied to a P2P network
+        :returns Workers objects whose status is online
+        :type list<domain.Worker>
         """
-        # TODO:
-        #   Correct the line below to work for multiple files.
-        cswc_count = 0
-        online_workers_list = self.__filter_and_map_online_workers()
-        for stage in range(0, self.max_stages):
-            self.__remove_workers_phase(online_workers_list)
-            online_workers_list = self.__filter_and_map_online_workers()
-            for worker in online_workers_list:
-                worker.do_stage()
-            # TODO:
-            #   Correct the line below to work for multiple files.
-            cswc_count += self.__process_stage_results(stage, cswc_count)
-
-    def simulate_transmission(self, dest_worker, part):
-        """
-        :param dest_worker: destinatary of the file part
-        :type domain.Worker OR str (domain.Worker.name)
-        :param part: the file part to send to specified worker
-        :type domain.SharedFilePart
-        """
-        dest_status = self.worker_status[dest_worker]
-        if dest_status == Status.ONLINE:
-            dest_worker.receive_part(part)
-            return HttpCodes.OK
-        elif dest_status == Status.OFFLINE:
-            return HttpCodes.SERVER_DOWN
-        elif dest_status == Status.SUSPECT:
-            return HttpCodes.TIME_OUT
-        else:
-            return HttpCodes.NOT_FOUND
-
-    def simulate_redistribution(self, parts):
-        """
-        :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
-        :type dict<str, domain.SharedFilePart>
-        """
-        self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
+        return [*map(
+            lambda a_worker: a_worker[0],
+            [*filter(lambda item: item[1] == Status.ONLINE, self.worker_status.items())]
+        )]
