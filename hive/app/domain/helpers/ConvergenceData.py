@@ -12,13 +12,15 @@ class ConvergenceData:
 
     __DEVIATION_TOLERANCE = 0.01
 
-    def __init__(self):
-        self.cswc = 0
-        self.max_swc = 0
-        self.swc = []
+    def __init__(self, cswc=0, max_swc=0, swc=None):
+        if swc is None:
+            swc = []
+        self.cswc = cswc
+        self.max_swc = max_swc
+        self.swc = swc
 
     @staticmethod
-    def __equal_distributions(one, another):
+    def equal_distributions(one, another):
         row_count = len(one)
         if row_count != len(another):
             return False

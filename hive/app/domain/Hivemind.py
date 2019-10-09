@@ -7,6 +7,7 @@ from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
+from domain.helpers.ConvergenceData import ConvergenceData
 
 
 class Hivemind:
@@ -14,14 +15,19 @@ class Hivemind:
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :cvar READ_SIZE: defines the max amount of bytes are read at a time from file to be shared
     :type int
-    :ivar worker_status: keeps track workers objects in the simulation
+    # TODO
+    :ivar worker: keeps track workers objects in the simulation
+    :type dict<str, domain.Worker>
+    :ivar worker_status: keeps track workers objects in the simulation regarding their health
     :type dict<domain.Worker, domain.Status(Enum)>
     :ivar shared_files: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
-    :ivar sf_desired_distribution: registers the desired distribution of a shared file, file_name is key
-    :type dict<str, list<float>>
+    :ivar sf_desired_distribution: registers the desired distribution for a file, including state labels
+    :type dict<str, pandas.Dataframe>
     :ivar sf_current_distribution: keeps track of each shared file distribution, at each discrete time stage
     :type dict<str, list<float>>
+    :ivar sf_convergence_data: dictionary that tracks convergence of a given file
+    :type dict<str, domain.helpers.ConvergenceData]
     :ivar node_uptime_dict: contains each worker node uptime, used to calculate kill probability
     :type dict<str, float>
     :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
@@ -29,9 +35,10 @@ class Hivemind:
     """
 
     READ_SIZE = 2048
-    SHARED_ROOT = os.path.join(os.getcwd(), 'static', 'shared')
-    STAGES_WITH_CONVERGENCE = []
-    MAX_CONSECUTIVE_CONVERGENCE_STAGES = 0
+    __SHARED_ROOT = os.path.join(os.getcwd(), 'static', 'shared')
+    __STAGES_WITH_CONVERGENCE = []
+    __MAX_CONSECUTIVE_CONVERGENCE_STAGES = 0
+    __DEFAULT_COLUMN = 0
 
     def __init__(self, simfile_path):
         """
@@ -41,10 +48,12 @@ class Hivemind:
         with open(simfile_path) as json_obj:
             json_obj = json.load(simfile_path)
             # Init basic simulation variables
+            self.workers = {}
             self.worker_status = {}
             self.shared_files = {}
             self.sf_desired_distribution = {}
             self.sf_current_distribution = {}
+            self.sf_convergence_data = {}
             self.node_uptime_dict = json_obj['nodes_uptime']
             self.max_stages = json_obj['max_simulation_stages']
             # Create the P2P network nodes (domain.Workers) without any job
@@ -63,7 +72,9 @@ class Hivemind:
         :type list<str>
         """
         for name in worker_names:
-            self.worker_status[Worker(self, name)] = Status.ONLINE
+            worker = Worker(self, name)
+            self.workers[name] = worker
+            self.worker_status[worker] = Status.ONLINE
 
     def __split_all_shared_files(self, file_names):
         """
@@ -72,7 +83,7 @@ class Hivemind:
         :type str
         """
         for file_name in file_names:
-            self.__split_shared_file(os.path.join(self.SHARED_ROOT, file_name))
+            self.__split_shared_file(os.path.join(self.__SHARED_ROOT, file_name))
 
     def __split_shared_file(self, file_path):
         """
@@ -131,7 +142,8 @@ class Hivemind:
         :type list<float>
         """
         self.sf_desired_distribution[file_name] = pd.DataFrame(desired_distribution, index=labels)
-        self.sf_current_distribution[file_name] = [0] * len(desired_distribution)
+        self.sf_current_distribution[file_name] = pd.DataFrame([0] * len(desired_distribution), index=labels)
+        self.sf_convergence_data[file_name] = ConvergenceData()
 
     @staticmethod
     def __synthesize_transition_matrix(proposal_matrix, desired_distribution, states):
@@ -173,11 +185,11 @@ class Hivemind:
         workers_objs = self.__filter_and_map_online_workers() if enforce_online else [*self.worker_status.keys()]
         for file_name, part_number in shared_files_dict.items():
             # Retrive state labels from the file distribution vector
-            file_sharers_names = [*self.sf_desired_distribution[file_name].index]
+            peer_names = [*self.sf_desired_distribution[file_name].index]
             # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
             # Do not change positions of file_sharers_names with worker_objs...
             # Doing so changes would make us obtain list<str> containing their names instead of list<domain.Workers>
-            choices = [*filter(set(file_sharers_names).__contains__, workers_objs)]
+            choices = [*filter(set(peer_names).__contains__, workers_objs)]
             for part in part_number.values():
                 # Randomly choose a destinatary worker from possible choices and give him the shared file part
                 np.random.choice(choices).receive_part(part)
@@ -221,31 +233,37 @@ class Hivemind:
 
     def __process_stage_results(self, stage, cswc_count):
         """
-        TODO
-            Redo this! There must be an effecient way to do this.
         For each file being shared on this hivemind network, check if its desired distribution has been achieved.
         :param stage: stage number - the one that is being processed
         :type int
         :param cswc_count: value, for the named file, that counts for how many consecutive steps has the ddv been respected
         :type int
         """
-        for file_name in self.sf_desired_distribution.keys():
-            for worker, status in self.worker_status.items():
-                if status != Status.ONLINE:
-                    pass  # Todo
+        if stage == self.max_stages:
+            exit(0)
+
+        for file_name, desired_distribution in self.sf_desired_distribution.items():
+            peer_names = [*desired_distribution.index]
+            current_distribution = self.sf_current_distribution[file_name]
+            for name in peer_names:
+                # Update the stage distribution for this file by querying every worker in its hive
+                worker = self.workers[name]
+                if self.worker_status[name] != Status.ONLINE:
+                    current_distribution.at[name, Hivemind.__DEFAULT_COLUMN] = 0
                 else:
-                    """
-                    stage_distribution.append(worker.request_file_count(file_name))
-                    if self.sf_current_distribution[file_name] == self.sf_desired_distribution[file_name]:
-                        cswc_count += 1
-                        if cswc_count > Hivemind.MAX_CONSECUTIVE_CONVERGENCE_STAGES:
-                            Hivemind.MAX_CONSECUTIVE_CONVERGENCE_STAGES = cswc_count
-                        Hivemind.STAGES_WITH_CONVERGENCE.append(stage)
-                        return cswc_count
-                    else:
-                        return - cswc_count
-                    """
-                    pass  # Todo
+                    current_distribution.at[name, Hivemind.__DEFAULT_COLUMN] = worker.request_file_count(file_name)
+            # when all queries are done, verify convergence for current file
+            if ConvergenceData.equal_distributions(current_distribution, desired_distribution):
+                self.sf_convergence_data[file_name].cswc += 1
+                if self.sf_convergence_data[file_name].cswc > self.sf_convergence_data[file_name].max_swc:
+                    self.sf_convergence_data[file_name].max_swc = self.sf_convergence_data[file_name].cswc
+                    self.sf_convergence_data[file_name].swc.append(stage)
+                    # Todo Im here
+                return cswc_count
+            else:
+                return - cswc_count
+
+
 
     def execute_simulation(self):
         """
