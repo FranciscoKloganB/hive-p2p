@@ -95,6 +95,7 @@ class Worker:
                 else:
                     response_code = self.hivemind.simulate_transmission(dest_worker, sfp_obj)
                     if response_code != HttpCodes.OK:
+                        # TODO make use of the HttpCode responses with more than a binary behaviour
                         tmp[part_id] = sfp_obj
             self.file_parts[part_name] = tmp
 
