@@ -89,13 +89,13 @@ class Worker:
         for part_name, part_id_sfp_dict in self.file_parts.items():
             tmp = {}
             for part_id, sfp_obj in part_id_sfp_dict.items():
-                    dest_worker = self.get_next_state(file_name=part_name)
-                    if dest_worker == self.name:
+                dest_worker = self.get_next_state(file_name=part_name)
+                if dest_worker == self.name:
+                    tmp[part_id] = sfp_obj
+                else:
+                    response_code = self.hivemind.simulate_transmission(dest_worker, sfp_obj)
+                    if response_code != HttpCodes.OK:
                         tmp[part_id] = sfp_obj
-                    else:
-                        response_code = self.hivemind.simulate_transmission(dest_worker, sfp_obj)
-                        if response_code != HttpCodes.OK:
-                            tmp[part_id] = sfp_obj
             self.file_parts[part_name] = tmp
 
     def leave_hive(self, orderly=True):
