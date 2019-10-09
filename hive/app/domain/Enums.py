@@ -11,3 +11,4 @@ class HttpCodes(Enum):
     OK = 200
     NOT_FOUND = 404
     TIME_OUT = 408
+    SERVER_DOWN = 521
