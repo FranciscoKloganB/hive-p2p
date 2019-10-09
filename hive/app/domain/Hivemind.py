@@ -111,37 +111,37 @@ class Hivemind:
         """
         for extended_file_name, markov_chain_data in shared_dict.items():
             file_name = Path(extended_file_name).resolve().stem
-            labels = markov_chain_data['workers_labels']
+            states = markov_chain_data['workers_labels']
             proposal_matrix = markov_chain_data['proposal_matrix']
             desired_distribution = markov_chain_data['ddv']
             # Setting the trackers in this phase speeds up simulation
-            self.__set_distribution_trackers(file_name, desired_distribution)
+            self.__set_distribution_trackers(file_name, desired_distribution, states)
             # Compute transition matrix
-            transition_matrix = self.__synthesize_transition_matrix(labels, proposal_matrix, desired_distribution)
+            transition_matrix = self.__synthesize_transition_matrix(proposal_matrix, desired_distribution, states)
             # Split transition matrix into column vectors
-            for worker_name in labels:
+            for worker_name in states:
                 transition_vector = [*transition_matrix[worker_name].values]
-                self.__set_worker_routing_tables(self.worker_status[worker_name], file_name, labels, transition_vector)
+                self.__set_worker_routing_tables(self.worker_status[worker_name], file_name, states, transition_vector)
 
-    def __set_distribution_trackers(self, file_name, desired_distribution):
+    def __set_distribution_trackers(self, file_name, desired_distribution, labels):
         """
         :param file_name: the name of the file to be tracked by the hivemind
         :type str
         :param desired_distribution: the desired distribution vector of the given named file
         :type list<float>
         """
-        self.sf_desired_distribution[file_name] = desired_distribution
+        self.sf_desired_distribution[file_name] = pd.DataFrame(desired_distribution, index=labels)
         self.sf_current_distribution[file_name] = [0] * len(desired_distribution)
 
     @staticmethod
-    def __synthesize_transition_matrix(state_labels, proposal_matrix, desired_distribution):
+    def __synthesize_transition_matrix(proposal_matrix, desired_distribution, states):
         """
         TODO:
             1. metropolis hastings algorithm to synthetize the transition matrix
          Reminder don't forget to transpose the input vectors the dataframe might end up being represented as line vector
          transitions instead of column vector transitions as desired! This transposition isn't necessary with 1-D arrays
          but is when we are passing matrices (N-D Arrays)
-        :param state_labels: list of worker names who form an hive
+        :param states: list of worker names who form an hive
         :type list<str>
         :param proposal_matrix: list of probability vectors. Each vector, represents a column, and belogns to the same index label
         :type list<list<float>>
@@ -150,7 +150,7 @@ class Hivemind:
         :type pandas.DataFrame
         """
         transition_matrix = None
-        return pd.DataFrame(transition_matrix, index=state_labels, columns=state_labels)
+        return pd.DataFrame(transition_matrix, index=states, columns=states)
 
     @staticmethod
     def __set_worker_routing_tables(worker, file_name, state_labels, transition_vector):
@@ -165,18 +165,22 @@ class Hivemind:
 
     def __uniformely_assign_parts_to_workers(self, shared_files_dict, enforce_online=True):
         """
-        TODO:
-            Only some nodes responsible for a given file should be selected regardless of their Connection Status
         Distributes received file parts over the Hive network.
         :param shared_files_dict: receives anyone's dictionary of <file_name, dict<file_number, SharedFilePart>>
         :type dict<str, dict<int, domain.SharedFilePart>>
         :param enforce_online: makes sure receiving workers are online.
         """
-        for name, parts in shared_files_dict.items():
-            for part in parts.values:
-                # Randomly choose a domain.Worker with equal probability to receive the current domain.SharedFilePart
-                choices = self.__filter_and_map_online_workers() if enforce_online else [*self.worker_status.keys()]
-                np.random.choice(choices).receive_part(part, no_check=True)
+        workers_objs = self.__filter_and_map_online_workers() if enforce_online else [*self.worker_status.keys()]
+        for file_name, part_number in shared_files_dict.items():
+            # Retrive state labels from the file distribution vector
+            file_sharers_names = [*self.sf_desired_distribution[file_name].index]
+            # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
+            # Do not change positions of file_sharers_names with worker_objs...
+            # Doing so changes would make us obtain list<str> containing their names instead of list<domain.Workers>
+            choices = [*filter(set(file_sharers_names).__contains__, workers_objs)]
+            for part in part_number.values():
+                # Randomly choose a destinatary worker from possible choices and give him the shared file part
+                np.random.choice(choices).receive_part(part)
 
     def __filter_and_map_online_workers(self):
         """
