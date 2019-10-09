@@ -11,11 +11,11 @@ from domain.helpers.ConvergenceData import ConvergenceData
 
 
 class Hivemind:
+    # region docstrings
     """
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :cvar READ_SIZE: defines the max amount of bytes are read at a time from file to be shared
     :type int
-    # TODO
     :ivar worker: keeps track workers objects in the simulation
     :type dict<str, domain.Worker>
     :ivar worker_status: keeps track workers objects in the simulation regarding their health
@@ -33,7 +33,9 @@ class Hivemind:
     :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
     :type int
     """
+    # endregion
 
+    # region class variables and contructors
     READ_SIZE = 2048
     __SHARED_ROOT = os.path.join(os.getcwd(), 'static', 'shared')
     __STAGES_WITH_CONVERGENCE = []
@@ -64,7 +66,9 @@ class Hivemind:
             self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
             # Distribute files before starting simulation
             self.__uniformely_assign_parts_to_workers(self.shared_files, enforce_online=False)
+    # endregion
 
+    # region domain.Worker related methods
     def __init_workers(self, worker_names):
         """
         Creates worker objects that knows this Hivemind and starts tracking their health
@@ -76,6 +80,38 @@ class Hivemind:
             self.workers[name] = worker
             self.worker_status[worker] = Status.ONLINE
 
+    def __set_worker_routing_tables(self, worker, file_name, state_labels, transition_vector):
+        """
+        Allows given worker to decide to whom he should send a named file part when he receives it.
+        i.e.: Neither workers, nor file parts, have a transition matrix, instead, each worker knows for each named file
+        the column vector containing the transition probabilities for that file. For a given file, if all workers were
+        merged into one, the concatenation of their column vectors would result into the correct transition matrix.
+        """
+        df = pd.DataFrame(transition_vector, index=state_labels, columns=[*worker.name])
+        worker.set_file_routing(file_name, df)
+
+    def __uniformely_assign_parts_to_workers(self, shared_files_dict, enforce_online=True):
+        """
+        Distributes received file parts over the Hive network.
+        :param shared_files_dict: receives anyone's dictionary of <file_name, dict<file_number, SharedFilePart>>
+        :type dict<str, dict<int, domain.SharedFilePart>>
+        :param enforce_online: makes sure receiving workers are online.
+        """
+        workers_objs = self.__filter_and_map_online_workers() if enforce_online else [
+            *self.worker_status.keys()]
+        for file_name, part_number in shared_files_dict.items():
+            # Retrive state labels from the file distribution vector
+            peer_names = [*self.sf_desired_distribution[file_name].index]
+            # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
+            # Do not change positions of file_sharers_names with worker_objs...
+            # Doing so changes would make us obtain list<str> containing their names instead of list<domain.Workers>
+            choices = [*filter(set(peer_names).__contains__, workers_objs)]
+            for part in part_number.values():
+                # Randomly choose a destinatary worker from possible choices and give him the shared file part
+                np.random.choice(choices).receive_part(part)
+    # endregion
+
+    # region file partitioning methods
     def __split_all_shared_files(self, file_names):
         """
         Obtains the path of all files that are going to be divided for sharing simulation and splits them into parts
@@ -110,6 +146,7 @@ class Hivemind:
                     # Keeps track of how many parts the file was divided into
                     self.shared_files[file_name] = file_parts
                     break
+    # endregion
 
     def __synthesize_shared_files_transition_matrices(self, shared_dict):
         """
@@ -164,61 +201,7 @@ class Hivemind:
         transition_matrix = None
         return pd.DataFrame(transition_matrix, index=states, columns=states)
 
-    @staticmethod
-    def __set_worker_routing_tables(worker, file_name, state_labels, transition_vector):
-        """
-        Allows given worker to decide to whom he should send a named file part when he receives it.
-        i.e.: Neither workers, nor file parts, have a transition matrix, instead, each worker knows for each named file
-        the column vector containing the transition probabilities for that file. For a given file, if all workers were
-        merged into one, the concatenation of their column vectors would result into the correct transition matrix.
-        """
-        df = pd.DataFrame(transition_vector, index=state_labels, columns=[*worker.name])
-        worker.set_file_routing(file_name, df)
-
-    def __uniformely_assign_parts_to_workers(self, shared_files_dict, enforce_online=True):
-        """
-        Distributes received file parts over the Hive network.
-        :param shared_files_dict: receives anyone's dictionary of <file_name, dict<file_number, SharedFilePart>>
-        :type dict<str, dict<int, domain.SharedFilePart>>
-        :param enforce_online: makes sure receiving workers are online.
-        """
-        workers_objs = self.__filter_and_map_online_workers() if enforce_online else [*self.worker_status.keys()]
-        for file_name, part_number in shared_files_dict.items():
-            # Retrive state labels from the file distribution vector
-            peer_names = [*self.sf_desired_distribution[file_name].index]
-            # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
-            # Do not change positions of file_sharers_names with worker_objs...
-            # Doing so changes would make us obtain list<str> containing their names instead of list<domain.Workers>
-            choices = [*filter(set(peer_names).__contains__, workers_objs)]
-            for part in part_number.values():
-                # Randomly choose a destinatary worker from possible choices and give him the shared file part
-                np.random.choice(choices).receive_part(part)
-
-    def simulate_transmission(self, dest_worker, part):
-        """
-        :param dest_worker: destinatary of the file part
-        :type domain.Worker OR str (domain.Worker.name)
-        :param part: the file part to send to specified worker
-        :type domain.SharedFilePart
-        """
-        dest_status = self.worker_status[dest_worker]
-        if dest_status == Status.ONLINE:
-            dest_worker.receive_part(part)
-            return HttpCodes.OK
-        elif dest_status == Status.OFFLINE:
-            return HttpCodes.SERVER_DOWN
-        elif dest_status == Status.SUSPECT:
-            return HttpCodes.TIME_OUT
-        else:
-            return HttpCodes.NOT_FOUND
-
-    def simulate_redistribution(self, parts):
-        """
-        :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
-        :type dict<str, domain.SharedFilePart>
-        """
-        self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
-
+    # region simulation execution methods
     def execute_simulation(self):
         """
         Runs a stochastic swarm guidance algorithm applied to a P2P network
@@ -262,6 +245,31 @@ class Hivemind:
         for worker in online_workers_list:
             worker.do_stage()
 
+    def simulate_transmission(self, dest_worker, part):
+        """
+        :param dest_worker: destinatary of the file part
+        :type domain.Worker OR str (domain.Worker.name)
+        :param part: the file part to send to specified worker
+        :type domain.SharedFilePart
+        """
+        dest_status = self.worker_status[dest_worker]
+        if dest_status == Status.ONLINE:
+            dest_worker.receive_part(part)
+            return HttpCodes.OK
+        elif dest_status == Status.OFFLINE:
+            return HttpCodes.SERVER_DOWN
+        elif dest_status == Status.SUSPECT:
+            return HttpCodes.TIME_OUT
+        else:
+            return HttpCodes.NOT_FOUND
+
+    def simulate_redistribution(self, parts):
+        """
+        :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
+        :type dict<str, domain.SharedFilePart>
+        """
+        self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
+
     def __process_stage_results(self, stage):
         """
         For each file being shared on this hivemind network, check if its desired distribution has been achieved.
@@ -292,7 +300,9 @@ class Hivemind:
                     print("Current Distribution:\n{}".format(current_distribution.to_string()))
             else:
                 data.save_sets_and_reset_data()
+    # endregion
 
+    # region helper methods
     def __filter_and_map_online_workers(self):
         """
         :returns Workers objects whose status is online
@@ -302,3 +312,4 @@ class Hivemind:
             lambda a_worker: a_worker[0],
             [*filter(lambda item: item[1] == Status.ONLINE, self.worker_status.items())]
         )]
+    # endregion
