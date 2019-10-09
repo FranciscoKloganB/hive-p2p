@@ -47,6 +47,8 @@ class Worker:
         return hash(str(self.name))
 
     def __eq__(self, other):
+        if isinstance(other, str):
+            return self.name == other
         return (self.hivemind, self.name) == (other.hivemind, other.name)
 
     def __ne__(self, other):
