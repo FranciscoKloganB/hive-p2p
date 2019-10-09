@@ -47,13 +47,14 @@ class Worker:
     # region file recovery methods
     def __init_recovery_protocol(self, part):
         """
-        # TODO
         When a corrupt file is received initiate recovery protocol, if this is the node with the most file parts
         The recovery protocol consists of reconstructing the damaged file part from other parts on the system, it may be
         necessary to obtain other files from other nodes to initiate reconstruction
         # Note to self - This is not important right now! This is only important after MCMC with metropolis hastings works
         # For now assume that when a node dies, if it had less than N-K parts, his parts are given to someone else
         """
+        # TODO:
+        #  corrupted or missing file recovery algorithm
         pass
     # endregion
 
@@ -88,7 +89,8 @@ class Worker:
                 else:
                     response_code = self.hivemind.simulate_transmission(dest_worker, sfp_obj)
                     if response_code != HttpCodes.OK:
-                        # TODO make use of the HttpCode responses with more than a binary behaviour
+                        # TODO:
+                        #  make use of the HttpCode responses with more than a binary behaviour
                         tmp[part_id] = sfp_obj
             self.file_parts[part_name] = tmp
 

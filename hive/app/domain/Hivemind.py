@@ -175,11 +175,6 @@ class Hivemind:
     @staticmethod
     def __synthesize_transition_matrix(proposal_matrix, desired_distribution, states):
         """
-        TODO:
-            1. metropolis hastings algorithm to synthetize the transition matrix
-         Reminder don't forget to transpose the input vectors the dataframe might end up being represented as line vector
-         transitions instead of column vector transitions as desired! This transposition isn't necessary with 1-D arrays
-         but is when we are passing matrices (N-D Arrays)
         :param states: list of worker names who form an hive
         :type list<str>
         :param proposal_matrix: list of probability vectors. Each vector, represents a column, and belogns to the same index label
@@ -188,6 +183,11 @@ class Hivemind:
         :return: A matrix with named lines and columns with the computed transition matrix
         :type pandas.DataFrame
         """
+        # TODO:
+        #  1. metropolis hastings algorithm to synthetize the transition matrix 
+        #  Reminder don't forget to transpose the input vectors the dataframe might end up being represented as line vector
+        #  transitions instead of column vector transitions as desired! This transposition isn't necessary with 1-D arrays
+        #  but is when we are passing matrices (N-D Arrays)
         transition_matrix = None
         return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
@@ -227,7 +227,8 @@ class Hivemind:
             target.leave_hive(orderly=True)
             self.worker_status[target] = Status.OFFLINE
         else:
-            # TODO Check if simulation fails because killed worker had more than N - K parts (see github)
+            # TODO:
+            #  Check if simulation fails because killed worker had more than N - K parts (see github)
             target.leave_hive(orderly=False)
             self.worker_status[target] = Status.SUSPECT
 
