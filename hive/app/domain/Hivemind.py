@@ -185,10 +185,8 @@ class Hivemind:
         """
         # TODO:
         #  1. metropolis hastings algorithm to synthetize the transition matrix
-        #  Reminder don't forget to transpose the input vectors the dataframe might end up being represented as line vector
-        #  transitions instead of column vector transitions as desired! This transposition isn't necessary with 1-D arrays
-        #  but is when we are passing matrices (N-D Arrays)
-        transition_matrix = None
+        proposal_matrix = pd.DataFrame(proposal_matrix, index=states, columns=states).transpose()
+        transition_matrix = proposal_matrix  # TODO replace this proposal matrix assign with actual transition matrix
         return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
 
