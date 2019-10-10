@@ -186,7 +186,9 @@ class Hivemind:
         # TODO:
         #  1. metropolis hastings algorithm to synthetize the transition matrix
         proposal_matrix = pd.DataFrame(proposal_matrix, index=states, columns=states).transpose()
-        transition_matrix = proposal_matrix  # TODO replace this proposal matrix assign with actual transition matrix
+        MarkovMatrix
+        transition_matrix = proposal_matrix # TODO replace this proposal matrix assign with actual transition matrix
+
         return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
 
