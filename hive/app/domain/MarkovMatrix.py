@@ -43,10 +43,3 @@ class MarkovMatrix:
         # https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.random.choice.html
         return np.random.choice(a=self.states, p=self.transition_matrix[current_state])
     # endregion
-
-    # region static methods
-    @staticmethod
-    def metropols_algorithm(proposal_matrix, desired_distribution):
-        # Todo here
-        return None
-    # endregion
