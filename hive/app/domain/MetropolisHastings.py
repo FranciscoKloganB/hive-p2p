@@ -164,8 +164,8 @@ def test_mh_results():
         [0.1, 0.6, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
         [0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1]
     ]
-    m = metropols_algorithm(k=k, v=[0.3, 0.3, 0.1, 0.05, 0.1, 0, 1.0, 0.05])
-    print(m)
-    powma = np.linalg.matrix_power(m, 100)
-    print(powma[:, 0])
+    m = metropols_algorithm(k=k, v=[0.3, 0.3, 0.1, 0.05, 0.1, 0.033, 0.067, 0.05])
+    powma = np.linalg.matrix_power(m, 10000)
+    print("ddv:\n{}".format(str([0.3, 0.3, 0.1, 0.05, 0.1, 0.033, 0.067, 0.05])))
+    print("result:\n{}".format(powma[:, 0]))
 # endregion lame unit testing
