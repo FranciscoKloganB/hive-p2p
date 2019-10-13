@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
+import domain.MetropolisHastings as mh
 
 from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
@@ -185,10 +186,9 @@ class Hivemind:
         """
         # TODO:
         #  1. metropolis hastings algorithm to synthetize the transition matrix
-        proposal_matrix = pd.DataFrame(proposal_matrix, index=states, columns=states).transpose()
-        MarkovMatrix
-        transition_matrix = proposal_matrix # TODO replace this proposal matrix assign with actual transition matrix
-
+        #  proposal_matrix = pd.DataFrame(proposal_matrix, index=states, columns=states).transpose() w/o being a df
+        #  obtain unlabeled transition_matrix from m-h algorithm, pass as arg the transposed proposal matrix and the ddv
+        transition_matrix = mh.metropols_algorithm(proposal_matrix, desired_distribution)
         return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
 
