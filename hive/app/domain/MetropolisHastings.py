@@ -65,7 +65,7 @@ def _construct_f_matrix(a, k, v):
     f = np.zeros(shape=k.shape, dtype=np.float64, order='F')
     for i in range(size):
         for j in range(size):
-            f[i][j] = a * min(1, r[i][j])
+            f[i, j] = a * min(1, r[i, j])
     return f
 
 
@@ -84,7 +84,7 @@ def _construct_r_matrix(k, v):
     r = np.zeros(shape=k.shape, dtype=np.float64, order='F')
     for i in range(size):
         for j in range(size):
-            r[i][j] = v[i] * k[j][i] / v[j] * k[i][j]
+            r[i, j] = v[i] * k[j, i] / v[j] * k[i, j]
     return r
 
 
@@ -104,9 +104,9 @@ def _construct_m_matrix(k, f):
     for i in range(size):
         for j in range(size):
             if i != j:
-                m[i][j] = k[i][j] * f[i][j]
+                m[i, j] = k[i, j] * f[i, j]
             else:
-                m[i][j] = k[j][j] + _mh_weighted_sum(k, f, j)
+                m[i, j] = k[j, j] + _mh_weighted_sum(k, f, j)
     return m
 
 
@@ -125,7 +125,7 @@ def _mh_weighted_sum(k, f, j):
     for _ in range(size):
         if _ == j:
             continue
-        result += (1 - f[_][j]) * k[_][j]
+        result += (1 - f[_, j]) * k[_, j]
 
 
 # endregion
