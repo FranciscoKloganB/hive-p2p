@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
+import domain.MetropolisHastings as mh
 
 from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
@@ -185,10 +186,9 @@ class Hivemind:
         """
         # TODO:
         #  1. metropolis hastings algorithm to synthetize the transition matrix
-        #  Reminder don't forget to transpose the input vectors the dataframe might end up being represented as line vector
-        #  transitions instead of column vector transitions as desired! This transposition isn't necessary with 1-D arrays
-        #  but is when we are passing matrices (N-D Arrays)
-        transition_matrix = None
+        #  proposal_matrix = pd.DataFrame(proposal_matrix, index=states, columns=states).transpose() w/o being a df
+        #  obtain unlabeled transition_matrix from m-h algorithm, pass as arg the transposed proposal matrix and the ddv
+        transition_matrix = mh.metropols_algorithm(proposal_matrix, desired_distribution)
         return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
 
