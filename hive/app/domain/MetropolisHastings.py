@@ -1,4 +1,5 @@
 import logging
+from numba import jit
 
 import numpy as np
 
@@ -48,6 +49,7 @@ def metropols_algorithm(k, v, major='r', f_alpha=0.5):
 
 
 # region module private functions
+@jit(nopython=True)
 def _construct_f_matrix(a, k, v):
     """
     Constructs a acceptance matrix for a proposal matrix according to Behcet Acikmese & David S. Bayard in their paper:
@@ -69,6 +71,7 @@ def _construct_f_matrix(a, k, v):
     return f
 
 
+@jit(nopython=True)
 def _construct_r_matrix(k, v):
     """
     Constructs a acceptance probabilities matrix according to Behcet Acikmese & David S. Bayard in their paper:
@@ -88,6 +91,7 @@ def _construct_r_matrix(k, v):
     return r
 
 
+@jit(nopython=True)
 def _construct_m_matrix(k, f):
     """
     Constructs a transition matrix according to Behcet Acikmese & David S. Bayard in their paper:
@@ -110,6 +114,7 @@ def _construct_m_matrix(k, f):
     return m
 
 
+@jit(nopython=True)
 def _mh_weighted_sum(k, f, j):
     """
     Performs summation of the m-h branch when indices of m[i, j] are the same, i.e.: when i=j
