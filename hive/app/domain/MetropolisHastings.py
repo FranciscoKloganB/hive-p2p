@@ -2,7 +2,6 @@ import sys
 import logging
 import numpy as np
 
-from numba import jit
 from domain.exceptions.AlphaError import AlphaError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
 from domain.exceptions.DistributionShapeError import DistributionShapeError
@@ -22,8 +21,8 @@ def metropols_algorithm(k, v, major='r', f_alpha=0.8):
     :return: column major N-D numpy.array matrix
     """
     try:
-        v = np.asarray(v, dtype=np.float64)
-        k = np.asarray(k, dtype=np.float64)
+        v = np.asarray(v)
+        k = np.asarray(k)
     except ValueError as ve:
         logging.exception(str(ve))
         logging.debug("proposal matrix or distribution vector are missing elements or have incorrect sizes")
@@ -49,7 +48,6 @@ def metropols_algorithm(k, v, major='r', f_alpha=0.8):
 
 
 # region module private functions
-@jit(nopython=True)
 def _construct_f_matrix(a, k, v):
     """
     Constructs a acceptance matrix for a proposal matrix according to Behcet Acikmese & David S. Bayard in their paper:
@@ -64,14 +62,13 @@ def _construct_f_matrix(a, k, v):
     """
     size = k.shape[0]
     r = _construct_r_matrix(k, v)
-    f = np.zeros(shape=k.shape, dtype=np.float64, order='F')
+    f = np.zeros(shape=k.shape)
     for i in range(size):
         for j in range(size):
             f[i, j] = a * min(1, r[i, j])
     return f
 
 
-@jit(nopython=True)
 def _construct_r_matrix(k, v):
     """
     Constructs a acceptance probabilities matrix according to Behcet Acikmese & David S. Bayard in their paper:
@@ -84,14 +81,13 @@ def _construct_r_matrix(k, v):
     :type N-D numpy.array
     """
     size = k.shape[0]
-    r = np.zeros(shape=k.shape, dtype=np.float64, order='F')
+    r = np.zeros(shape=k.shape)
     for i in range(size):
         for j in range(size):
             r[i, j] = v[i] * k[j, i] / v[j] * k[i, j]
     return r
 
 
-@jit(nopython=True)
 def _construct_m_matrix(k, f):
     """
     Constructs a transition matrix according to Behcet Acikmese & David S. Bayard in their paper:
@@ -104,7 +100,7 @@ def _construct_m_matrix(k, f):
     :type N-D numpy.array
     """
     size = k.shape[0]
-    m = np.zeros(shape=k.shape, dtype=np.float64, order='F')
+    m = np.zeros(shape=k.shape)
     for i in range(size):
         for j in range(size):
             if i != j:
@@ -114,7 +110,6 @@ def _construct_m_matrix(k, f):
     return m
 
 
-@jit(nopython=True)
 def _mh_weighted_sum(k, f, j):
     """
     Performs summation of the m-h branch when indices of m[i, j] are the same, i.e.: when i=j
@@ -126,11 +121,12 @@ def _mh_weighted_sum(k, f, j):
     :type float
     """
     size = k.shape[0]
-    result = 0
+    result = 0.0
     for _ in range(size):
         if _ == j:
             continue
         result += (1 - f[_, j]) * k[_, j]
+    return result
 # endregion
 
 
@@ -148,7 +144,7 @@ def test_matrix_pow():
         [0, 0.8, 0.05, 0, 0.05, 0, 0.05, 0.05],
         [0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1]
     ]
-    ma = np.asarray(m, dtype=np.float64).transpose()
+    ma = np.asarray(m).transpose()
     print(ma)
     powma = np.linalg.matrix_power(ma, 100)
     print(powma[:, 0])
