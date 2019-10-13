@@ -1,15 +1,15 @@
+import sys
 import logging
-from numba import jit
-
 import numpy as np
 
+from numba import jit
 from domain.exceptions.AlphaError import AlphaError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
 from domain.exceptions.DistributionShapeError import DistributionShapeError
 
 
 # region module public functions
-def metropols_algorithm(k, v, major='r', f_alpha=0.5):
+def metropols_algorithm(k, v, major='r', f_alpha=0.8):
     """
     :param k: any square stochastic matrix, usually represented in row-major due to simfile inputs
     :type list<list<float>>
@@ -36,15 +36,15 @@ def metropols_algorithm(k, v, major='r', f_alpha=0.5):
     if k.shape[0] != k.shape[1]:
         raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(k.shape[0], k.shape[1]))
 
-    # Ensure matrice is column major
+    # Ensure that proposal matrix is column major
     if major == 'r':
         k.transpose()
 
-    acceptance_matrix = _construct_f_matrix(f_alpha, k, v)
-    # Construct the transition_matrix that will be returned to the user
-    transition_matrix = np.zeros(shape=k.shape, dtype=np.float64, order='F')
+    f = _construct_f_matrix(f_alpha, k, v)
+    # Construct the transition matrix that will be returned to the user
+    m = _construct_m_matrix(k, f)
 
-    return None
+    return m
 # endregion
 
 
@@ -131,6 +131,45 @@ def _mh_weighted_sum(k, f, j):
         if _ == j:
             continue
         result += (1 - f[_, j]) * k[_, j]
-
-
 # endregion
+
+
+# region lame unit testing
+# noinspection DuplicatedCode
+def test_matrix_pow():
+    np.set_printoptions(threshold=sys.maxsize)
+    m = [
+        [0.1, 0.2, 0.3, 0, 0, 0.3, 0.05, 0.05],
+        [0.2, 0, 0, 0.2, 0.4, 0.1, 0.1, 0],
+        [0, 0.3, 0.3, 0.3, 0, 0, 0, 0.1],
+        [0, 0, 0.05, 0.05, 0, 0.4, 0.3, 0.2],
+        [0.5, 0.5, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0.3, 0.4, 0.2, 0.1, 0, 0],
+        [0, 0.8, 0.05, 0, 0.05, 0, 0.05, 0.05],
+        [0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1]
+    ]
+    ma = np.asarray(m, dtype=np.float64).transpose()
+    print(ma)
+    powma = np.linalg.matrix_power(ma, 100)
+    print(powma[:, 0])
+
+
+# noinspection DuplicatedCode
+def test_mh_results():
+    np.set_printoptions(threshold=sys.maxsize)
+
+    k = [
+        [0.1, 0.2, 0.3, 0, 0, 0.3, 0.05, 0.05],
+        [0.2, 0, 0, 0.2, 0.4, 0.1, 0.1, 0],
+        [0, 0.3, 0.3, 0.3, 0, 0, 0, 0.1],
+        [0, 0, 0.05, 0.05, 0, 0.4, 0.3, 0.2],
+        [0.5, 0.5, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0.3, 0.4, 0.2, 0.1, 0, 0],
+        [0, 0.8, 0.05, 0, 0.05, 0, 0.05, 0.05],
+        [0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1]
+    ]
+    m = metropols_algorithm(k=k, v=[0.3, 0.3, 0.1, 0, 0.1, 0, 2.0, 0])
+    print(m)
+    powma = np.linalg.matrix_power(m, 100)
+    print(powma[:, 0])
+# endregion lame unit testing
