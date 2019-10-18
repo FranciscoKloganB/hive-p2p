@@ -122,11 +122,11 @@ def _construct_m_matrix(k, f):
             if i != j:
                 m[i, j] = k[i, j] * f[i, j]
             else:
-                m[i, j] = k[j, j] + _mh_weighted_sum(k, f, j)
+                m[i, j] = k[j, j] + mh_summation(k, f, j)
     return m
 
 
-def _mh_weighted_sum(k, f, j):
+def mh_summation(k, f, j):
     """
     Performs summation of the m-h branch when indices of m[i, j] are the same, i.e.: when i=j
     :param k: column stochastic, column major, square, proposal matrix
@@ -138,10 +138,10 @@ def _mh_weighted_sum(k, f, j):
     """
     size = k.shape[0]
     result = 0.0
-    for _ in range(size):
-        if _ == j:
+    for k_ in range(size):
+        if k_ == j:
             continue
-        result += (1 - f[_, j]) * k[_, j]
+        result += (1 - f[k_, j]) * k[k_, j]
     return result
 # endregion
 
