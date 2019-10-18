@@ -8,11 +8,11 @@ from domain.exceptions.DistributionShapeError import DistributionShapeError
 
 
 # region module public functions
-def metropols_algorithm(k, v, major='r', f_alpha=0.8):
+def metropols_algorithm(q, r, major='r', f_alpha=0.8):
     """
-    :param k: any square stochastic matrix, usually represented in row-major due to simfile inputs
+    :param q: any square stochastic matrix, usually represented in row-major due to simfile inputs
     :type list<list<float>>
-    :param v: python list given by user, doesn't matter if it's row or column major
+    :param r: python list given by user, doesn't matter if it's row or column major
     :type list<float>
     :param major: wether the proposal matrix is given as a row major ('r') or column ('c') major list of lists.
     :type str
@@ -20,35 +20,21 @@ def metropols_algorithm(k, v, major='r', f_alpha=0.8):
     :type float
     :return: column major N-D numpy.array matrix
     """
-    try:
-        v = np.asarray(v)
-        k = np.asarray(k)
-    except ValueError as ve:
-        logging.exception(str(ve))
-        logging.debug("proposal matrix or distribution vector are missing elements or have incorrect sizes")
 
-    # Input checking
-    if f_alpha <= 0 or f_alpha > 1:
-        raise AlphaError("(0, 1]")
-    if v.shape[0] != k.shape[1]:
-        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(v.shape, k.shape))
-    if k.shape[0] != k.shape[1]:
-        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(k.shape[0], k.shape[1]))
+    r = np.asarray(r)
+    q = np.asarray(q)
 
-    # Ensure that proposal matrix is column major
     if major == 'r':
-        k.transpose()
+        q = q.transpose()
 
-    f = _construct_f_matrix(f_alpha, k, v)
-    # Construct the transition matrix that will be returned to the user
-    m = _construct_m_matrix(k, f)
-
+    a = _construct_acceptance_matrix(q, r)
+    m = _construct_transition_matrix(q, a)
     return m
 # endregion
 
 
 # region module private functions
-def _construct_f_matrix(a, k, v):
+def _construct_acceptance_matrix(k, v):
     """
     Constructs a acceptance matrix for a proposal matrix according to Behcet Acikmese & David S. Bayard in their paper:
     'A Markov Chain Approach to Probabilistic Swarm Guidance'
@@ -61,71 +47,50 @@ def _construct_f_matrix(a, k, v):
     :return:
     """
     size = k.shape[0]
-    r = _construct_r_matrix(k, v)
     f = np.zeros(shape=k.shape)
     for i in range(size):
         for j in range(size):
-            f[i, j] = a * min(1, r[i, j])
+            f[i, j] = min(1, (v[i] * k[i, i]) / (v[i]) * k[i, j])
     return f
 
 
-def _construct_r_matrix(k, v):
-    """
-    Constructs a acceptance probabilities matrix according to Behcet Acikmese & David S. Bayard in their paper:
-    'A Markov Chain Approach to Probabilistic Swarm Guidance'
-    :param k: column stochastic, column major, square, proposal matrix
-    :type: N-D numpy.array
-    :param v: distribution vector, irrelevant if it's column or row major
-    :type: 1-D numpy.array
-    :return: r: acceptance probabilities used by the acceptance matrix in metropols_algorithm
-    :type N-D numpy.array
-    """
-    size = k.shape[0]
-    r = np.zeros(shape=k.shape)
-    for i in range(size):
-        for j in range(size):
-            r[i, j] = v[i] * k[j, i] / v[j] * k[i, j]
-    return r
-
-
-def _construct_m_matrix(k, f):
+def _construct_transition_matrix(q, a):
     """
     Constructs a transition matrix according to Behcet Acikmese & David S. Bayard in their paper:
     'A Markov Chain Approach to Probabilistic Swarm Guidance'
-    :param k: column stochastic, column major, square, proposal matrix
+    :param q: column stochastic, column major, square, proposal matrix
     :type: N-D numpy.array
-    :param f: column stochastic, column major, square, acceptance matrix
+    :param a: column stochastic, column major, square, acceptance matrix
     :type: N-D numpy.array
-    :return: m: transition matrix used by each node for probabilistic swarm guidance
+    :return: p: transition matrix used by each node for probabilistic swarm guidance
     :type N-D numpy.array
     """
-    size = k.shape[0]
-    m = np.zeros(shape=k.shape)
+    size = q.shape[0]
+    p = np.zeros(shape=q.shape)
     for i in range(size):
         for j in range(size):
             if i != j:
-                m[i, j] = k[i, j] * f[i, j]
+                p[i, j] = a[i, j] * q[i, j]
             else:
-                m[i, j] = k[j, j] + _mh_weighted_sum(k, f, j)
-    return m
+                p[i, j] = 1 - _mh_weighted_sum(q, a, i)
+    return p
 
 
-def _mh_weighted_sum(k, f, j):
+def _mh_weighted_sum(q, a, i):
     """
     Performs summation of the m-h branch when indices of m[i, j] are the same, i.e.: when i=j
-    :param k: column stochastic, column major, square, proposal matrix
+    :param q: column stochastic, column major, square, proposal matrix
     :type: N-D numpy.array
-    :param f: column stochastic, column major, square, acceptance matrix
+    :param a: column stochastic, column major, square, acceptance matrix
     :type: N-D numpy.array
     :return: result
     :type float
     """
-    size = k.shape[0]
+    size = q.shape[0]
     result = 0.0
-    for _ in range(size):
-        if _ == j:
-            continue
-        result += (1 - f[_, j]) * k[_, j]
+    for k in range(size):
+        if k != i:
+            result += a[i, k] * q[i, k]
     return result
 # endregion
 
@@ -164,7 +129,7 @@ def test_mh_results():
         [0, 0.8, 0.05, 0, 0.05, 0, 0.05, 0.05],
         [0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1]
     ]
-    m = metropols_algorithm(k=k, v=[0.3, 0.3, 0.1, 0, 0.1, 0, 2.0, 0])
+    m = metropols_algorithm(q=k, r=[0.3, 0.3, 0.1, 0, 0.1, 0, 2.0, 0])
     print(m)
     powma = np.linalg.matrix_power(m, 100)
     print(powma[:, 0])
