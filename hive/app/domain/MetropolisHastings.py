@@ -39,6 +39,13 @@ def metropolis_algorithm(k, v, major='r', f_alpha=0.8):
     if major == 'r':
         k = k.transpose()
 
+    # size = k.shape[0]
+    # smallest_positive = np.nextafter(0, 1)
+    # for i in range(size):
+    #    for j in range(size):
+    #        if k[i, j] <= 0:
+    #            k[i, j] = smallest_positive
+
     f = _construct_f_matrix(f_alpha, k, v)
     # Construct the transition matrix that will be returned to the user
     m = _construct_m_matrix(k, f)
@@ -52,6 +59,9 @@ def _construct_f_matrix(a, k, v):
     """
     Constructs a acceptance matrix for a proposal matrix according to Behcet Acikmese & David S. Bayard in their paper:
     'A Markov Chain Approach to Probabilistic Swarm Guidance'
+    F must satisfy the following conditions to be valid:
+    1. 0 <= F[i,j] <= min(1, R[i,j])
+    2. F[j,i] = (1/R[i,j]) * F[i,j]
     :param a: an arbitrary value in ]0, 1]
     :type float
     :param k: column stochastic, column major, square, proposal matrix
@@ -80,12 +90,17 @@ def _construct_r_matrix(k, v):
     :return: r: acceptance probabilities used by the acceptance matrix in metropols_algorithm
     :type N-D numpy.array
     """
+    # TODO fix div by zero errors not handled in papers (our fix is naive)
+    smallest_positive = np.nextafter(0, 1)
+
     size = k.shape[0]
     r = np.zeros(shape=k.shape)
     for i in range(size):
         for j in range(size):
-            # TODO fix div by zero errors not handled in papers
-            r[i, j] = v[i] * k[j, i] / v[j] * k[i, j]
+            try:
+                r[i, j] = v[i] * k[j, i] / v[j] * k[i, j]
+            except ZeroDivisionError as zde:
+                r[i, j] = smallest_positive
     return r
 
 
@@ -160,14 +175,14 @@ def matrix_converges_to_known_ddv_test():
     print("accept:{}\n\n".format(np.allclose(target, k_[:, 0])))
 
 
-def arbitrary_m_converges_to_ddv():
+def arbitrary_matrix_converges_to_ddv():
     target = np.asarray([0.35714286, 0.27142857, 0.37142857])
     k = [[0.3, 0.3, 0.4], [0.2, 0.4, 0.4], [0.25, 0.5, 0.25]]
     metropolis_result = metropolis_algorithm(k, target)
     k_ = np.linalg.matrix_power(metropolis_result, 1000)
     print("metropols_algorithm_test")
     print("expect:\n{}".format(target))
-    print("got:\n{}".format(k_[:, 0]))
+    print("got:\n{}\nfrom:\n{}".format(k_[:, 0], k_))
     print("accept:{}\n\n".format(np.allclose(target, k_[:, 0])))
 # endregion lame unit testing
 
@@ -177,6 +192,6 @@ if __name__ == "__main__":
     # matrix_column_select_test()
     # linalg_matrix_power_test()
     # matrix_converges_to_known_ddv_test()
-    arbitrary_m_converges_to_ddv()
+    arbitrary_matrix_converges_to_ddv()
 
 
