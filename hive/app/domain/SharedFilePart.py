@@ -1,6 +1,3 @@
-import numpy as np
-
-from domain.MarkovMatrix import MarkovMatrix
 from utils import ConvertUtils, CryptoUtils
 
 
@@ -18,10 +15,6 @@ class SharedFilePart:
     :type str
     :ivar sha256: hash value resultant of applying sha256 hash function over part_data param
     :type str
-    :ivar desired_distribution: stochastic like list to define the desired distribution vector that this SharedFilePart is pursuing
-    :type 1D line numpy.array
-    :ivar markov_matrix: container object describing and implementing Markov Chain behaviour
-    :type hive.domain.MarkovChain
     """
     # endregion
 
