@@ -8,7 +8,7 @@ from domain.exceptions.DistributionShapeError import DistributionShapeError
 
 
 # region module public functions
-def metropols_algorithm(k, v, major='r', f_alpha=0.8):
+def metropolis_algorithm(k, v, major='r', f_alpha=0.8):
     """
     :param k: any square stochastic matrix, usually represented in row-major due to simfile inputs
     :type list<list<float>>
@@ -132,40 +132,50 @@ def _mh_weighted_sum(k, f, j):
 
 # region lame unit testing
 # noinspection DuplicatedCode
-def test_matrix_pow():
-    np.set_printoptions(threshold=sys.maxsize)
-    m = [
-        [0.1, 0.2, 0.3, 0, 0, 0.3, 0.05, 0.05],
-        [0.2, 0, 0, 0.2, 0.4, 0.1, 0.1, 0],
-        [0, 0.3, 0.3, 0.3, 0, 0, 0, 0.1],
-        [0, 0, 0.05, 0.05, 0, 0.4, 0.3, 0.2],
-        [0.5, 0.5, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0.3, 0.4, 0.2, 0.1, 0, 0],
-        [0, 0.8, 0.05, 0, 0.05, 0, 0.05, 0.05],
-        [0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1]
-    ]
-    ma = np.asarray(m).transpose()
-    print(ma)
-    powma = np.linalg.matrix_power(ma, 100)
-    print(powma[:, 0])
+def matrix_column_select_test():
+    target = np.asarray([0.3, 0.2, 0.5])
+    k = np.asarray([[0.3, 0.2, 0.5], [0.1, 0.2, 0.7], [0.2, 0.2, 0.6]]).transpose()
+    print("matrix_column_select_test")
+    print("expect:\n{}".format(str([0.3, 0.2, 0.5])))
+    print("got:\n{}".format(k[:, 0]))
+    print("accept: {}\n\n".format(np.array_equal(target, k[:, 0])))
 
 
-# noinspection DuplicatedCode
-def test_mh_results():
-    np.set_printoptions(threshold=sys.maxsize)
+def linalg_matrix_power_test():
+    target = np.asarray([[0.201, 0.2, 0.599], [0.199, 0.2, 0.601], [0.2, 0.2, 0.6]]).transpose()
+    kn = np.linalg.matrix_power(np.asarray([[0.3, 0.2, 0.5], [0.1, 0.2, 0.7], [0.2, 0.2, 0.6]]).transpose(), 3)
+    print("linalg_matrix_power_test")
+    print("expect:\n{}".format(target))
+    print("got:\n{}".format(kn))
+    print("accept: {}\n\n".format(np.allclose(target, kn)))
 
-    k = [
-        [0.1, 0.2, 0.1, 0.1, 0.1, 0.3, 0.05, 0.05],
-        [0.05, 0.05, 0.05, 0.2, 0.4, 0.1, 0.1, 0.05],
-        [0.05, 0.3, 0.3, 0.2, 0.05, 0.05, 0.05, 0.1],
-        [0.1, 0.1, 0.05, 0.05, 0.1, 0.1, 0.3, 0.2],
-        [0.1, 0.1, 0.1, 0.1, 0.1, 0.4, 0.05, 0.05],
-        [0.05, 0.05, 0.2, 0.2, 0.2, 0.1, 0.1, 0.1],
-        [0.1, 0.6, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05],
-        [0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2, 0.1]
-    ]
-    m = metropols_algorithm(k=k, v=[0.3, 0.3, 0.1, 0.05, 0.1, 0.033, 0.067, 0.05])
-    powma = np.linalg.matrix_power(m, 250)
-    print("ddv:\n{}".format(str([0.3, 0.3, 0.1, 0.05, 0.1, 0.033, 0.067, 0.05])))
-    print("result:\n{}".format(powma[:, 0]))
+
+def matrix_converges_to_known_ddv_test():
+    target = np.asarray([0.35714286, 0.27142857, 0.37142857])
+    k_ = np.linalg.matrix_power(np.asarray([[0.3, 0.4, 0.3], [0.1, 0.2, 0.7], [0.6, 0.2, 0.2]]).transpose(), 25)
+    print("matrix_converges_to_known_ddv_test")
+    print("expect:\n{}".format(target))
+    print("got:\n{}".format(k_[:, 0]))
+    print("accept:{}\n\n".format(np.allclose(target, k_[:, 0])))
+
+
+def arbitrary_m_converges_to_ddv():
+    target = np.asarray([0.35714286, 0.27142857, 0.37142857])
+    k = [[0.3, 0.3, 0.4], [0.2, 0.4, 0.4], [0.25, 0.5, 0.25]]
+    metropolis_result = metropolis_algorithm(k, target)
+    k_ = np.linalg.matrix_power(metropolis_result, 1000)
+    print("metropols_algorithm_test")
+    print("expect:\n{}".format(target))
+    print("got:\n{}".format(k_[:, 0]))
+    print("accept:{}\n\n".format(np.allclose(target, k_[:, 0])))
 # endregion lame unit testing
+
+
+if __name__ == "__main__":
+    np.set_printoptions(threshold=sys.maxsize, precision=5)
+    # matrix_column_select_test()
+    # linalg_matrix_power_test()
+    # matrix_converges_to_known_ddv_test()
+    arbitrary_m_converges_to_ddv()
+
+
