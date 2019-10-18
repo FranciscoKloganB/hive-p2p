@@ -37,7 +37,7 @@ def metropolis_algorithm(k, v, major='r', f_alpha=0.8):
 
     # Ensure that proposal matrix is column major
     if major == 'r':
-        k.transpose()
+        k = k.transpose()
 
     f = _construct_f_matrix(f_alpha, k, v)
     # Construct the transition matrix that will be returned to the user
@@ -84,6 +84,7 @@ def _construct_r_matrix(k, v):
     r = np.zeros(shape=k.shape)
     for i in range(size):
         for j in range(size):
+            # TODO fix div by zero errors not handled in papers
             r[i, j] = v[i] * k[j, i] / v[j] * k[i, j]
     return r
 
