@@ -28,8 +28,8 @@ def metropolis_algorithm(adj_matrix, ddv, column_major_in=False, column_major_ou
     if column_major_in:
         adj_matrix = adj_matrix.transpose()
 
-    shape = adj_matrix.shape[0]
-    size = shape[0]
+    shape = adj_matrix.shape
+    size = adj_matrix.shape[0]
 
     rw = _construct_random_walk_matrix(adj_matrix, shape, size)
     r = _construct_rejection_matrix(ddv, rw, shape, size)
@@ -51,7 +51,7 @@ def metropolis_algorithm(adj_matrix, ddv, column_major_in=False, column_major_ou
 def _construct_random_walk_matrix(adj_matrix, shape, size):
     rw = np.zeros(shape=shape)
     for i in range(size):
-        ext_degree = np.sum(adj_matrix[i, :])  # states reachable from node i, counting itself (hence ext)
+        ext_degree = np.sum(adj_matrix[i, :])  # states reachable from node i, counting itself (hence ext) [0, 1, 1] = 2
         for j in range(size):
             rw[i, j] = adj_matrix[i, j] / ext_degree
     return rw
@@ -136,14 +136,17 @@ def construct_rejection_matrix_div_by_zero_error_exist_test():
 
 
 def arbitrary_matrix_converges_to_ddv():
-    target = np.asarray([0.35714286, 0.27142857, 0.37142857])
-    k = [[0.3, 0.3, 0.4], [0.2, 0.4, 0.4], [0.25, 0.5, 0.25]]
-    metropolis_result = metropolis_algorithm(k, target)
-    k_ = np.linalg.matrix_power(metropolis_result, 1000)
+    ddv = [0.2, 0.3, 0.5, 0.0]
+    adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
+    rw = _construct_random_walk_matrix(adj, adj.shape, adj.shape[0])
+    r = _construct_rejection_matrix(ddv, rw, adj.shape, adj.shape[0])
+    target = ddv
+    mh = metropolis_algorithm(adj, ddv, column_major_in=False, column_major_out=False)
+    mh_pow = np.linalg.matrix_power(mh, 1000)
     print("metropols_algorithm_test")
     print("expect:\n{}".format(target))
-    print("got:\n{}\nfrom:\n{}".format(k_[:, 0], k_))
-    print("accept:{}\n\n".format(np.allclose(target, k_[:, 0])))
+    print("got:\n{}\nfrom:\n{}".format(mh_pow[:, 0], mh_pow))
+    print("accept:{}\n\n".format(np.allclose(target, mh_pow[:, 0])))
 # endregion lame unit testing
 
 
@@ -154,4 +157,4 @@ if __name__ == "__main__":
     # matrix_converges_to_known_ddv_test()
     # construct_random_walk_test()
     # construct_rejection_matrix_div_by_zero_error_exist_test()
-    # arbitrary_matrix_converges_to_ddv()
+    arbitrary_matrix_converges_to_ddv()
