@@ -8,190 +8,86 @@ from domain.exceptions.DistributionShapeError import DistributionShapeError
 
 
 # region module public functions
-def metropolis_algorithm(k, v, major='r', f_alpha=0.8):
+def metropolis_algorithm(adj, ddv, column_major_in=False, column_major_out=True):
     """
-    :param k: any square stochastic matrix, usually represented in row-major due to simfile inputs
+    :param adj: any adjacency matrix (list of lits) provided by the user in row major form
     :type list<list<float>>
-    :param v: python list given by user, doesn't matter if it's row or column major
+    :param ddv: a stochastic desired distribution vector
     :type list<float>
-    :param major: wether the proposal matrix is given as a row major ('r') or column ('c') major list of lists.
-    :type str
-    :param f_alpha: an arbitrary value in ]0, 1]
-    :type float
-    :return: column major N-D numpy.array matrix
+    :param column_major_in: indicates wether adj_matrix given in input is in row or column major form
+    :type bool
+    :param column_major_out: indicates wether to return transition_matrix output is in row or column major form
+    :type bool
+    :return: transition matrix that converges to ddv in the long term
+    :type: N-D numpy.array
     """
-    try:
-        v = np.asarray(v)
-        k = np.asarray(k)
-    except ValueError as ve:
-        logging.exception(str(ve))
-        logging.debug("proposal matrix or distribution vector are missing elements or have incorrect sizes")
+
+    ddv = np.asarray(ddv)
+    adj = np.asarray(adj)
 
     # Input checking
-    if f_alpha <= 0 or f_alpha > 1:
-        raise AlphaError("(0, 1]")
-    if v.shape[0] != k.shape[1]:
-        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(v.shape, k.shape))
-    if k.shape[0] != k.shape[1]:
-        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(k.shape[0], k.shape[1]))
+    if ddv.shape[0] != adj.shape[1]:
+        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(ddv.shape, adj.shape))
+    if adj.shape[0] != adj.shape[1]:
+        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(adj.shape[0], adj.shape[1]))
 
-    # Ensure that proposal matrix is column major
-    if major == 'r':
-        k = k.transpose()
+    if column_major_in:
+        adj = adj.transpose()
 
-    # size = k.shape[0]
-    # smallest_positive = np.nextafter(0, 1)
-    # for i in range(size):
-    #    for j in range(size):
-    #        if k[i, j] <= 0:
-    #            k[i, j] = smallest_positive
+    shape = adj.shape
+    size = adj.shape[0]
 
-    f = _construct_f_matrix(f_alpha, k, v)
-    # Construct the transition matrix that will be returned to the user
-    m = _construct_m_matrix(k, f)
+    rw = _construct_random_walk_matrix(adj, shape, size)
+    r = _construct_rejection_matrix(ddv, rw, shape, size)
 
-    return m
-# endregion
+    transition_matrix = np.zeros(shape=shape)
 
-
-# region module private functions
-def _construct_f_matrix(a, k, v):
-    """
-    Constructs a acceptance matrix for a proposal matrix according to Behcet Acikmese & David S. Bayard in their paper:
-    'A Markov Chain Approach to Probabilistic Swarm Guidance'
-    F must satisfy the following conditions to be valid:
-    1. 0 <= F[i,j] <= min(1, R[i,j])
-    2. F[j,i] = (1/R[i,j]) * F[i,j]
-    :param a: an arbitrary value in ]0, 1]
-    :type float
-    :param k: column stochastic, column major, square, proposal matrix
-    :type: N-D numpy.array
-    :param v: distribution vector, irrelevant if it's column or row major
-    :type: 1-D numpy.array
-    :return:
-    """
-    size = k.shape[0]
-    r = _construct_r_matrix(k, v)
-    f = np.zeros(shape=k.shape)
-    for i in range(size):
-        for j in range(size):
-            f[i, j] = a * min(1, r[i, j])
-    return f
-
-
-def _construct_r_matrix(k, v):
-    """
-    Constructs a acceptance probabilities matrix according to Behcet Acikmese & David S. Bayard in their paper:
-    'A Markov Chain Approach to Probabilistic Swarm Guidance'
-    :param k: column stochastic, column major, square, proposal matrix
-    :type: N-D numpy.array
-    :param v: distribution vector, irrelevant if it's column or row major
-    :type: 1-D numpy.array
-    :return: r: acceptance probabilities used by the acceptance matrix in metropols_algorithm
-    :type N-D numpy.array
-    """
-    # TODO fix div by zero errors not handled in papers (our fix is naive)
-    smallest_positive = np.nextafter(0, 1)
-
-    size = k.shape[0]
-    r = np.zeros(shape=k.shape)
-    for i in range(size):
-        for j in range(size):
-            try:
-                r[i, j] = v[i] * k[j, i] / v[j] * k[i, j]
-            except ZeroDivisionError as zde:
-                r[i, j] = smallest_positive
-    return r
-
-
-def _construct_m_matrix(k, f):
-    """
-    Constructs a transition matrix according to Behcet Acikmese & David S. Bayard in their paper:
-    'A Markov Chain Approach to Probabilistic Swarm Guidance'
-    :param k: column stochastic, column major, square, proposal matrix
-    :type: N-D numpy.array
-    :param f: column stochastic, column major, square, acceptance matrix
-    :type: N-D numpy.array
-    :return: m: transition matrix used by each node for probabilistic swarm guidance
-    :type N-D numpy.array
-    """
-    size = k.shape[0]
-    m = np.zeros(shape=k.shape)
     for i in range(size):
         for j in range(size):
             if i != j:
-                m[i, j] = k[i, j] * f[i, j]
-            else:
-                m[i, j] = k[j, j] + mh_summation(k, f, j)
-    return m
+                transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
+        # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
+        transition_matrix[i, i] = _mh_summation(rw, r, i)
+
+    return transition_matrix.transpose() if column_major_out else transition_matrix
+    # endregion
 
 
-def mh_summation(k, f, j):
+# region module private functions
+def _construct_random_walk_matrix(adj_matrix, shape, size):
+    rw = np.zeros(shape=shape)
+    for i in range(size):
+        ext_degree = np.sum(adj_matrix[i, :])  # states reachable from node i, counting itself (hence ext) [0, 1, 1] = 2
+        for j in range(size):
+            rw[i, j] = adj_matrix[i, j] / ext_degree
+    return rw
+
+
+def _construct_rejection_matrix(ddv, rw, shape, size):
+    r = np.zeros(shape=shape)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        for i in range(size):
+            for j in range(size):
+                r[i, j] = (ddv[j] * rw[j, i]) / (ddv[i] * rw[i, j])
+    return r
+
+
+def _mh_summation(rw, r, i):
     """
     Performs summation of the m-h branch when indices of m[i, j] are the same, i.e.: when i=j
-    :param k: column stochastic, column major, square, proposal matrix
+    :param rw: column stochastic, square, random walk matrix
     :type: N-D numpy.array
-    :param f: column stochastic, column major, square, acceptance matrix
+    :param r: column stochastic, square, rejection matrix
     :type: N-D numpy.array
-    :return: result
+    :return: pii, the jump probability from state i to state i in the metropolis hastings output (transition matrix)
     :type float
     """
-    size = k.shape[0]
-    result = 0.0
-    for k_ in range(size):
-        if k_ == j:
-            continue
-        result += (1 - f[k_, j]) * k[k_, j]
-    return result
+    size = rw.shape[0]
+    pii = rw[i, i]
+    for k in range(size):
+        pii += rw[i, k] * (1 - min(1, r[i, k]))
+    return pii
 # endregion
 
-
-# region lame unit testing
-# noinspection DuplicatedCode
-def matrix_column_select_test():
-    target = np.asarray([0.3, 0.2, 0.5])
-    k = np.asarray([[0.3, 0.2, 0.5], [0.1, 0.2, 0.7], [0.2, 0.2, 0.6]]).transpose()
-    print("matrix_column_select_test")
-    print("expect:\n{}".format(str([0.3, 0.2, 0.5])))
-    print("got:\n{}".format(k[:, 0]))
-    print("accept: {}\n\n".format(np.array_equal(target, k[:, 0])))
-
-
-def linalg_matrix_power_test():
-    target = np.asarray([[0.201, 0.2, 0.599], [0.199, 0.2, 0.601], [0.2, 0.2, 0.6]]).transpose()
-    kn = np.linalg.matrix_power(np.asarray([[0.3, 0.2, 0.5], [0.1, 0.2, 0.7], [0.2, 0.2, 0.6]]).transpose(), 3)
-    print("linalg_matrix_power_test")
-    print("expect:\n{}".format(target))
-    print("got:\n{}".format(kn))
-    print("accept: {}\n\n".format(np.allclose(target, kn)))
-
-
-def matrix_converges_to_known_ddv_test():
-    target = np.asarray([0.35714286, 0.27142857, 0.37142857])
-    k_ = np.linalg.matrix_power(np.asarray([[0.3, 0.4, 0.3], [0.1, 0.2, 0.7], [0.6, 0.2, 0.2]]).transpose(), 25)
-    print("matrix_converges_to_known_ddv_test")
-    print("expect:\n{}".format(target))
-    print("got:\n{}".format(k_[:, 0]))
-    print("accept:{}\n\n".format(np.allclose(target, k_[:, 0])))
-
-
-def arbitrary_matrix_converges_to_ddv():
-    target = np.asarray([0.35714286, 0.27142857, 0.37142857])
-    k = [[0.3, 0.3, 0.4], [0.2, 0.4, 0.4], [0.25, 0.5, 0.25]]
-    metropolis_result = metropolis_algorithm(k, target)
-    k_ = np.linalg.matrix_power(metropolis_result, 1000)
-    print("metropols_algorithm_test")
-    print("expect:\n{}".format(target))
-    print("got:\n{}\nfrom:\n{}".format(k_[:, 0], k_))
-    print("accept:{}\n\n".format(np.allclose(target, k_[:, 0])))
-# endregion lame unit testing
-
-
-if __name__ == "__main__":
-    np.set_printoptions(threshold=sys.maxsize, precision=5)
-    # matrix_column_select_test()
-    # linalg_matrix_power_test()
-    # matrix_converges_to_known_ddv_test()
-    arbitrary_matrix_converges_to_ddv()
 
 
