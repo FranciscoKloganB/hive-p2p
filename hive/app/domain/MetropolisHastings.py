@@ -8,88 +8,79 @@ from domain.exceptions.DistributionShapeError import DistributionShapeError
 
 
 # region module public functions
-def metropolis_algorithm(q, r, major='r', f_alpha=0.8):
+def metropolis_algorithm(adj_matrix, ddv, column_major_in=False, column_major_out=True):
     """
-    :param q: any square stochastic matrix, usually represented in row-major due to simfile inputs
+    :param adj_matrix: any adjacency matrix (list of lits) provided by the user in row major form
     :type list<list<float>>
-    :param r: python list given by user, doesn't matter if it's row or column major
+    :param ddv: a stochastic desired distribution vector
     :type list<float>
-    :param major: wether the proposal matrix is given as a row major ('r') or column ('c') major list of lists.
-    :type str
-    :param f_alpha: an arbitrary value in ]0, 1]
-    :type float
-    :return: column major N-D numpy.array matrix
+    :param column_major_in: indicates wether adj_matrix given in input is in row or column major form
+    :type bool
+    :param column_major_out: indicates wether to return transition_matrix output is in row or column major form
+    :type bool
+    :return: transition matrix that converges to ddv in the long term
+    :type: N-D numpy.array
     """
 
-    r = np.asarray(r)
-    q = np.asarray(q)
+    ddv = np.asarray(ddv)
+    adj_matrix = np.asarray(adj_matrix)
 
-    if major == 'r':
-        q = q.transpose()
+    if column_major_in:
+        adj_matrix = adj_matrix.transpose()
 
-    a = _construct_acceptance_matrix(q, r)
-    m = _construct_transition_matrix(q, a)
-    return m
+    shape = adj_matrix.shape[0]
+    size = shape[0]
+
+    rw = _construct_random_walk_matrix(adj_matrix, shape, size)
+    r = _construct_rejection_matrix(ddv, rw, shape, size)
+
+    transition_matrix = np.zeros(shape=shape)
+
+    for i in range(size):
+        for j in range(size):
+            if i != j:
+                transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
+        # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
+        transition_matrix[i, i] = _mh_summation(rw, r, i)
+
+    return transition_matrix
 # endregion
 
 
 # region module private functions
-def _construct_acceptance_matrix(q, r):
-    """
-    Constructs a acceptance matrix for a proposal matrix according to Behcet Acikmese & David S. Bayard in their paper:
-    'A Markov Chain Approach to Probabilistic Swarm Guidance'
-    :param q: column stochastic, column major, square, proposal matrix
-    :type: N-D numpy.array
-    :param r: distribution vector, irrelevant if it's column or row major
-    :type: 1-D numpy.array
-    :return:
-    """
-    size = q.shape[0]
-    f = np.zeros(shape=q.shape)
+def _construct_random_walk_matrix(adj_matrix, shape, size):
+    rw = np.zeros(shape=shape)
     for i in range(size):
+        ext_degree = np.sum(adj_matrix[i, :])  # states reachable from node i, counting itself (hence ext)
         for j in range(size):
-            f[i, j] = min(1, (r[i] * q[i, i]) / (r[i]) * q[i, j])
-    return f
+            rw[i, j] = adj_matrix[i, j] / ext_degree
+    return rw
 
 
-def _construct_transition_matrix(q, a):
-    """
-    Constructs a transition matrix according to Behcet Acikmese & David S. Bayard in their paper:
-    'A Markov Chain Approach to Probabilistic Swarm Guidance'
-    :param q: column stochastic, column major, square, proposal matrix
-    :type: N-D numpy.array
-    :param a: column stochastic, column major, square, acceptance matrix
-    :type: N-D numpy.array
-    :return: p: transition matrix used by each node for probabilistic swarm guidance
-    :type N-D numpy.array
-    """
-    size = q.shape[0]
-    p = np.zeros(shape=q.shape)
-    for i in range(size):
-        for j in range(size):
-            if i != j:
-                p[i, j] = a[i, j] * q[i, j]
-            else:
-                p[i, j] = 1 - _mh_weighted_sum(q, a, i)
-    return p
+def _construct_rejection_matrix(ddv, rw, shape, size):
+    r = np.zeros(shape=shape)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        for i in range(size):
+            for j in range(size):
+                r[i, j] = (ddv[j] * rw[j, i]) / (ddv[i] * rw[i, j])
+    return r
 
 
-def _mh_weighted_sum(q, a, i):
+def _mh_summation(rw, r, i):
     """
     Performs summation of the m-h branch when indices of m[i, j] are the same, i.e.: when i=j
-    :param q: column stochastic, column major, square, proposal matrix
+    :param rw: column stochastic, square, random walk matrix
     :type: N-D numpy.array
-    :param a: column stochastic, column major, square, acceptance matrix
+    :param r: column stochastic, square, rejection matrix
     :type: N-D numpy.array
-    :return: result
+    :return: pii, the jump probability from state i to state i in the metropolis hastings output (transition matrix)
     :type float
     """
-    size = q.shape[0]
-    result = 0.0
+    size = rw.shape[0]
+    pii = rw[i, i]
     for k in range(size):
-        if k != i:
-            result += a[i, k] * q[i, k]
-    return result
+        pii += rw[i, k] * (1 - min(1, r[i, k]))
+    return pii
 # endregion
 
 
@@ -122,6 +113,28 @@ def matrix_converges_to_known_ddv_test():
     print("accept:{}\n\n".format(np.allclose(target, k_[:, 0])))
 
 
+def construct_random_walk_test():
+    target = np.asarray([[0.25, 0.25, 0.25, 0.25], [0.5, 0, 0.5, 0], [0.25, 0.25, 0.25, 0.25], [0, 0.5, 0.5, 0]])
+    adj_matrix = np.asarray([[1, 1, 1, 1], [1, 0, 1, 0], [1, 1, 1, 1], [0, 1, 1, 0]])
+    random_walk = _construct_random_walk_matrix(adj_matrix, adj_matrix.shape, adj_matrix.shape[0])
+    print("matrix_converges_to_known_ddv_test")
+    print("expect:\n{}".format(target))
+    print("got:\n{}".format(random_walk))
+    print("accept:{}\n\n".format(np.array_equal(target, random_walk)))
+
+
+def construct_rejection_matrix_div_by_zero_error_exist_test():
+    try:
+        ddv = [0.1, 0.4, 0.3, 0.2]
+        adj_matrix = np.asarray([[1, 1, 1, 1], [1, 0, 1, 0], [1, 1, 1, 1], [0, 1, 1, 0]])
+        random_walk = _construct_random_walk_matrix(adj_matrix, adj_matrix.shape, adj_matrix.shape[0])
+        rejection_matrix = _construct_rejection_matrix(ddv, random_walk, adj_matrix.shape, adj_matrix.shape[0])
+        print("got:\n{}".format(rejection_matrix))
+        print("accept:{}\n\n".format(True))
+    except ZeroDivisionError:
+        print("accept:{}\n\n".format(False))
+
+
 def arbitrary_matrix_converges_to_ddv():
     target = np.asarray([0.35714286, 0.27142857, 0.37142857])
     k = [[0.3, 0.3, 0.4], [0.2, 0.4, 0.4], [0.25, 0.5, 0.25]]
@@ -139,4 +152,6 @@ if __name__ == "__main__":
     # matrix_column_select_test()
     # linalg_matrix_power_test()
     # matrix_converges_to_known_ddv_test()
-    arbitrary_matrix_converges_to_ddv()
+    # construct_random_walk_test()
+    # construct_rejection_matrix_div_by_zero_error_exist_test()
+    # arbitrary_matrix_converges_to_ddv()
