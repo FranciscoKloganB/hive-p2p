@@ -21,16 +21,22 @@ def metropolis_algorithm(adj_matrix, ddv, column_major_in=False, column_major_ou
     :return: transition matrix that converges to ddv in the long term
     :type: N-D numpy.array
     """
-
+        
     ddv = np.asarray(ddv)
     adj_matrix = np.asarray(adj_matrix)
 
+     # Input checking
+    if ddv.shape[0] != adj_matrix.shape[1]:
+        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(v.shape, k.shape))
+    if adj_matrix.shape[0] != adj_matrix.shape[1]:
+        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(k.shape[0], k.shape[1]))
+        
     if column_major_in:
         adj_matrix = adj_matrix.transpose()
 
     shape = adj_matrix.shape
     size = adj_matrix.shape[0]
-
+   
     rw = _construct_random_walk_matrix(adj_matrix, shape, size)
     r = _construct_rejection_matrix(ddv, rw, shape, size)
 
@@ -82,6 +88,3 @@ def _mh_summation(rw, r, i):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
 # endregion
-
-
-
