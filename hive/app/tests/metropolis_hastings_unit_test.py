@@ -52,7 +52,7 @@ def arbitrary_matrix_converges_to_ddv_1():
     print(mh)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     for j in range(mh_pow.shape[1]):
-        if not np.allclose(target, mh_pow[:, 0]):
+        if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_1", target, mh_pow[:, j], False)
     return print_test("arbitrary_matrix_converges_to_ddv_1", target, mh_pow[:, 0], True)
 
@@ -64,7 +64,7 @@ def arbitrary_matrix_converges_to_ddv_2():
     print(mh)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     for j in range(mh_pow.shape[1]):
-        if not np.allclose(target, mh_pow[:, 0]):
+        if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_2", target, mh_pow[:, j], False)
     return print_test("arbitrary_matrix_converges_to_ddv_2", target, mh_pow[:, 0], True)
 
@@ -76,7 +76,7 @@ def arbitrary_matrix_converges_to_ddv_3():
     print(mh)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     for j in range(mh_pow.shape[1]):
-        if not np.allclose(target, mh_pow[:, 0]):
+        if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_3", target, mh_pow[:, j], False)
     return print_test("arbitrary_matrix_converges_to_ddv_3", target, mh_pow[:, 0], True)
 
@@ -88,7 +88,7 @@ def arbitrary_matrix_converges_to_ddv_4():
     print(mh)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     for j in range(mh_pow.shape[1]):
-        if not np.allclose(target, mh_pow[:, 0]):
+        if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_4", target, mh_pow[:, j], False)
     return print_test("arbitrary_matrix_converges_to_ddv_4", target, mh_pow[:, 0], True)
 
@@ -100,7 +100,7 @@ def arbitrary_matrix_converges_to_ddv_5():
     print(mh)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     for j in range(mh_pow.shape[1]):
-        if not np.allclose(target, mh_pow[:, 0]):
+        if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_5", target, mh_pow[:, j], False)
     return print_test("arbitrary_matrix_converges_to_ddv_5", target, mh_pow[:, 0], True)
 
@@ -112,7 +112,7 @@ def arbitrary_matrix_converges_to_ddv_6():
     print(mh)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     for j in range(mh_pow.shape[1]):
-        if not np.allclose(target, mh_pow[:, 0]):
+        if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_6", target, mh_pow[:, j], False)
     return print_test("arbitrary_matrix_converges_to_ddv_6", target, mh_pow[:, 0], True)
 
@@ -124,7 +124,7 @@ def arbitrary_matrix_does_not_converges_to_ddv_1():
     print(mh)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     for j in range(mh_pow.shape[1]):
-        if not np.allclose(target, mh_pow[:, 0]):
+        if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_does_not_converges_to_ddv_1", target, mh_pow[:, j], False)
     return print_test("arbitrary_matrix_does_not_converges_to_ddv_1", target, mh_pow[:, 0], True)
 
