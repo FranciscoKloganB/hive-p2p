@@ -137,7 +137,7 @@ def construct_rejection_matrix_div_by_zero_error_exist_test():
 def arbitrary_matrix_converges_to_ddv():
     target = [0.2, 0.3, 0.5, 0.0]
     adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
-    mh = metropolis_algorithm(adj, ddv, column_major_in=False, column_major_out=True)
+    mh = metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     print("metropols_algorithm_test")
     print("expect:\n{}".format(target))
@@ -147,17 +147,11 @@ def arbitrary_matrix_converges_to_ddv():
 
 if __name__ == "__main__":
     np.set_printoptions(threshold=sys.maxsize, precision=5)
-    # matrix_column_select_test()
-    # linalg_matrix_power_test()
-    # matrix_converges_to_known_ddv_test()
-    # construct_random_walk_test()
-    # construct_rejection_matrix_div_by_zero_error_exist_test()
+    matrix_column_select_test()
+    linalg_matrix_power_test()
+    matrix_converges_to_known_ddv_test()
+    construct_random_walk_test()
+    construct_rejection_matrix_div_by_zero_error_exist_test()
     arbitrary_matrix_converges_to_ddv()
-    """
-    ddv = [0.2, 0.3, 0.5, 0.0]
-    adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
-    rw = _construct_random_walk_matrix(adj, adj.shape, adj.shape[0])
-    print(rw)
-    """
 
 # endregion lame unit testing
