@@ -43,8 +43,8 @@ def metropolis_algorithm(adj_matrix, ddv, column_major_in=False, column_major_ou
         # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
         transition_matrix[i, i] = _mh_summation(rw, r, i)
 
-    return transition_matrix
-# endregion
+    return transition_matrix.transpose() if column_major_out else transition_matrix
+    # endregion
 
 
 # region module private functions
@@ -135,12 +135,9 @@ def construct_rejection_matrix_div_by_zero_error_exist_test():
 
 
 def arbitrary_matrix_converges_to_ddv():
-    ddv = [0.2, 0.3, 0.5, 0.0]
+    target = [0.2, 0.3, 0.5, 0.0]
     adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
-    rw = _construct_random_walk_matrix(adj, adj.shape, adj.shape[0])
-    r = _construct_rejection_matrix(ddv, rw, adj.shape, adj.shape[0])
-    target = ddv
-    mh = metropolis_algorithm(adj, ddv, column_major_in=False, column_major_out=False)
+    mh = metropolis_algorithm(adj, ddv, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     print("metropols_algorithm_test")
     print("expect:\n{}".format(target))
@@ -155,9 +152,12 @@ if __name__ == "__main__":
     # matrix_converges_to_known_ddv_test()
     # construct_random_walk_test()
     # construct_rejection_matrix_div_by_zero_error_exist_test()
-    # TODO make this test pass arbitrary_matrix_converges_to_ddv()
+    arbitrary_matrix_converges_to_ddv()
+    """
     ddv = [0.2, 0.3, 0.5, 0.0]
     adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
     rw = _construct_random_walk_matrix(adj, adj.shape, adj.shape[0])
+    print(rw)
+    """
 
 # endregion lame unit testing
