@@ -188,7 +188,7 @@ class Hivemind:
         #  1. metropolis hastings algorithm to synthetize the transition matrix
         #  proposal_matrix = pd.DataFrame(proposal_matrix, index=states, columns=states).transpose() w/o being a df
         #  obtain unlabeled transition_matrix from m-h algorithm, pass as arg the transposed proposal matrix and the ddv
-        transition_matrix = mH.metropols_algorithm(proposal_matrix, desired_distribution)
+        transition_matrix = mH.metropolis_algorithm(proposal_matrix, desired_distribution)
         return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
 
