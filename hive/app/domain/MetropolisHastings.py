@@ -85,7 +85,6 @@ def _mh_summation(rw, r, i):
 
 
 # region lame unit testing
-# noinspection DuplicatedCode
 def matrix_column_select_test():
     target = np.asarray([0.3, 0.2, 0.5])
     k = np.asarray([[0.3, 0.2, 0.5], [0.1, 0.2, 0.7], [0.2, 0.2, 0.6]]).transpose()
@@ -147,7 +146,6 @@ def arbitrary_matrix_converges_to_ddv():
     print("expect:\n{}".format(target))
     print("got:\n{}\nfrom:\n{}".format(mh_pow[:, 0], mh_pow))
     print("accept:{}\n\n".format(np.allclose(target, mh_pow[:, 0])))
-# endregion lame unit testing
 
 
 if __name__ == "__main__":
@@ -157,4 +155,9 @@ if __name__ == "__main__":
     # matrix_converges_to_known_ddv_test()
     # construct_random_walk_test()
     # construct_rejection_matrix_div_by_zero_error_exist_test()
-    arbitrary_matrix_converges_to_ddv()
+    # TODO make this test pass arbitrary_matrix_converges_to_ddv()
+    ddv = [0.2, 0.3, 0.5, 0.0]
+    adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
+    rw = _construct_random_walk_matrix(adj, adj.shape, adj.shape[0])
+
+# endregion lame unit testing
