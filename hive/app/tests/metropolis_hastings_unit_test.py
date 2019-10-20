@@ -5,6 +5,7 @@ import domain.MetropolisHastings as mH
 from tests.utils.pretty_print import print_test
 
 
+# region unit tests
 def matrix_column_select_test():
     target = np.asarray([0.3, 0.2, 0.5])
     k = np.asarray([[0.3, 0.2, 0.5], [0.1, 0.2, 0.7], [0.2, 0.2, 0.6]]).transpose()
@@ -122,6 +123,7 @@ def arbitrary_matrix_does_not_converges_to_ddv_1():
         elif j != 1 and not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_does_not_converges_to_ddv_1", target, mh_pow[:, j], False)
     return print_test("arbitrary_matrix_does_not_converges_to_ddv_1", target, mh_pow[:, 0], True)
+# endregion
 
 
 if __name__ == "__main__":
