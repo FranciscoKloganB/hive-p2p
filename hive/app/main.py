@@ -27,6 +27,7 @@ def help():
 
 
 if __name__ == "__main__":
+    simfile_name = None
     try:
         options, args = getopt.getopt(sys.argv[1:], "uhs:", ["usage", "help", "simfile="])
         for options, args in options:
@@ -35,8 +36,16 @@ if __name__ == "__main__":
             if options in ("-h", "--help"):
                 help()
             if options in ("-s", "--simfile"):
-                sim_file_path = str(args).strip()
-                if not sim_file_path:
-                    sys.exit("Invalid simulation file name - blank name not allowed)...")
+                simfile_name = str(args).strip()
     except getopt.GetoptError:
         usage()
+
+    if not simfile_name:
+        sys.exit("Invalid simulation file name - blank name not allowed)...")
+
+    from domain.Hivemind import Hivemind
+
+    simulation = Hivemind(simfile_name)
+    simulation.execute_simulation()
+    # TODO:
+    #  Might need some improvement here, you will discover when you first run this file...
