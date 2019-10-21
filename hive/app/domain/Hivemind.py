@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
-import domain.MetropolisHastings as mH
+import domain.metropolis_hastings as mH
 
 from pathlib import Path
 from domain.SharedFilePart import SharedFilePart

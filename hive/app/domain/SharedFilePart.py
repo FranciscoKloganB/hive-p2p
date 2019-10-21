@@ -1,4 +1,4 @@
-from utils import ConvertUtils, CryptoUtils
+from utils import convertions, crypto
 
 
 class SharedFilePart:
@@ -35,8 +35,8 @@ class SharedFilePart:
         self.__part_name = part_name
         self.__part_number = part_number
         self.__part_id = part_name + "_#_" + str(part_number)
-        self.__part_data = ConvertUtils.bytes_to_base64_string(part_data)
-        self.__sha256 = CryptoUtils.sha256(part_data)
+        self.__part_data = convertions.bytes_to_base64_string(part_data)
+        self.__sha256 = crypto.sha256(part_data)
     # endregion
 
     # region properties

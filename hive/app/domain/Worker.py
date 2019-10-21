@@ -1,6 +1,6 @@
 import numpy as np
 
-from utils import CryptoUtils
+from utils import crypto
 from utils.ResourceTracker import ResourceTracker as rT
 from domain.Enums import HttpCodes
 
@@ -69,7 +69,7 @@ class Worker:
         self.__routing_table[file_name] = labeled_transition_vector
 
     def receive_part(self, part, no_check=False):
-        if no_check or CryptoUtils.sha256(part.part_data) == part.sha256:
+        if no_check or crypto.sha256(part.part_data) == part.sha256:
             if part.name in self.file_parts:
                 self.file_parts[part.name][part.part_id] = part
             else:
