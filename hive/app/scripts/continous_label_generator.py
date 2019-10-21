@@ -7,7 +7,7 @@ def yield_label():
             print(s)
             yield "".join(s)
 
-def _generate_sequence(n):
+def __generate_sequence(n):
     """
     This function is just to demonstrate how yield label works
     """
