@@ -4,6 +4,7 @@ import getopt
 import logging
 import itertools
 
+import numpy as np
 import scripts.continous_label_generator as cg
 import scripts.skewed_distribution_generator as sg
 
@@ -34,21 +35,21 @@ def __in_max_stages():
             continue
 
 
-def __in_number_of_nodes():
-    node_count = input("Enter the number of nodes you wish to have in the network [2, 9999]: ")
+def __in_number_of_nodes(msg, lower_bound=1, upper_bound=10000):
+    node_count = input(msg)
     while True:
         try:
             node_count = int(node_count)
-            if 1 < node_count < 10000:
+            if lower_bound < node_count < upper_bound:
                 return node_count
-            node_count = input("At least two nodes should be created. Try again with value in [2, 9999]: ")
+            node_count = input("At least two nodes should be indicated. Try again with value in [2, 9999]: ")
         except ValueError:
             node_count = input("Input should be an integer... Try again: ")
             continue
 
 
-def __in_min_node_uptime():
-    min_uptime = input("Enter the number of nodes you wish to have in the network [0.0, 100.0]: ")
+def __in_min_node_uptime(msg):
+    min_uptime = input(msg)
     while True:
         try:
             min_uptime = float(min_uptime)
@@ -87,8 +88,8 @@ def __in_file_name():
 
 
 def __init_nodes_uptime_dict():
-    number_of_nodes = __in_number_of_nodes()
-    min_uptime = __in_min_node_uptime()
+    number_of_nodes = __in_number_of_nodes("Enter the number of nodes you wish to have in the network [2, 9999]: ")
+    min_uptime = __in_min_node_uptime("Enter the mininum node uptime of nodes in the network [0.0, 100.0]: ")
     skewness = __in_samples_skewness()
     print("Please wait ¯\\_(ツ)_/¯ Generation of uptimes for each node may take a while.")
     samples = sg.generate_skewed_samples(skewness=skewness).tolist()
@@ -101,20 +102,28 @@ def __init_nodes_uptime_dict():
     return nodes_uptime_dict
 
 
-def __init_shared_dict():
+def __init_shared_dict(labels):
     shared_dict = {}
 
-    print("Any file you want to simulate persistance of must be inside the following folder: ~/hive/app/static/shared")
-    print("You may also want to keep a backup of such file in:  ~/hive/app/static/shared/shared_backups")
+    print(
+        "Any file you want to simulate persistance of must be inside the following folder: ~/hive/app/static/shared\n"
+        "You may also want to keep a backup of such file in:  ~/hive/app/static/shared/shared_backups"
+    )
 
     add_file = True
     while add_file:
         file_name = __in_file_name()
         shared_dict[file_name] = {}
-        # TODO you are here, ask how many nodes will handle this file and what the min uptime for them should be
 
-
-
+        current_node_count = 0
+        desired_node_count = __in_number_of_nodes("Enter the number of nodes that should be sharing this file: ")
+        state_labels = []
+        while current_node_count < desired_node_count:
+            choice = np.random.choice(labels)
+            labels.remove(choice)
+            state_labels.append(choice)
+        shared_dict[file_name]["state_labels"] = state_labels
+        # TODO You are here. Ask if manual ddv / adj matrix, then ask if more files...
 
     return shared_dict
 
@@ -125,10 +134,12 @@ def main(simfile_name):
 
     os.path.join(SHARED_ROOT, simfile_name)
 
-    simfile_json = {}
-    simfile_json["max_stages"] = __in_max_stages()
-    simfile_json["nodes_uptime"] = __init_nodes_uptime_dict()
-    simfile_json["shared"] = __init_shared_dict()
+    nodes_uptime_dict = __init_nodes_uptime_dict()
+    simfile_json = {
+        "max_stages": __in_max_stages(),
+        "nodes_uptime": nodes_uptime_dict,
+        "shared": __init_shared_dict([*nodes_uptime_dict.keys()])
+    }
 
 
 # noinspection DuplicatedCode
