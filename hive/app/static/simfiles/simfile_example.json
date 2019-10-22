@@ -13,8 +13,8 @@
 	},
 	"shared" : {
 		"powerglove.exe" : {
-			"workers_labels" : [ "a", "b", "c"],
-			"proposal_matrix" : [
+			"state_labels": [ "a", "b", "c"],
+			"adj_matrix" : [
 				[1, 0, 1],
 				[0, 1, 1],
 				[1, 1, 1]
@@ -22,8 +22,8 @@
 			"ddv": [0.3, 0.6, 0.1]
 		},
 		"FTB_4376.jpg" : {
-			"workers_labels" : ["c", "h", "i"],
-			"proposal_matrix" : [
+			"state_labels": ["c", "h", "i"],
+			"adj_matrix" : [
 				[1, 1, 1],
 				[1, 1, 1],
 				[1, 1, 1]

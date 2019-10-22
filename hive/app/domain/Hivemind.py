@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
-import domain.metropolis_hastings as mH
+import domain.metropolis_hastings as mh
 
 from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
@@ -152,7 +152,7 @@ class Hivemind:
     # region metropolis hastings and transition vector assignment methods
     def __synthesize_shared_files_transition_matrices(self, shared_dict):
         """
-        For all keys in the dictionary, obtain file names, the respective proposal matrix and the desired distribution
+        For all keys in the dictionary, obtain file names, the respective adjacency matrix and the desired distribution
         then calculate the transition matrix using metropolis hastings algorithm and feed the result to each worker who
         is a contributor for the survivability of that file
         :param shared_dict: maps file name with extensions to a dictinonary with three keys containing worker_labels who
@@ -161,24 +161,24 @@ class Hivemind:
         """
         for extended_file_name, markov_chain_data in shared_dict.items():
             file_name = Path(extended_file_name).resolve().stem
-            states = markov_chain_data['workers_labels']
-            proposal_matrix = markov_chain_data['proposal_matrix']
+            states = markov_chain_data['state_labels']
+            adj_matrix = markov_chain_data['adj_matrix']
             desired_distribution = markov_chain_data['ddv']
             # Setting the trackers in this phase speeds up simulation
             self.__set_distribution_trackers(file_name, desired_distribution, states)
             # Compute transition matrix
-            transition_matrix = self.__synthesize_transition_matrix(proposal_matrix, desired_distribution, states)
+            transition_matrix = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, states)
             # Split transition matrix into column vectors
             for worker_name in states:
                 transition_vector = [*transition_matrix[worker_name].values]
                 self.__set_worker_routing_tables(self.worker_status[worker_name], file_name, states, transition_vector)
 
     @staticmethod
-    def __synthesize_transition_matrix(proposal_matrix, desired_distribution, states):
+    def __synthesize_transition_matrix(adj_matrix, desired_distribution, states):
         """
         :param states: list of worker names who form an hive
         :type list<str>
-        :param proposal_matrix: list of probability vectors. Each vector, represents a column, and belogns to the same index label
+        :param adj_matrix: list of probability vectors. Each vector, represents a column, and belogns to the same index label
         :type list<list<float>>
         :param desired_distribution: a single column vector representing the file distribution that must be achieved by the workers
         :return: A matrix with named lines and columns with the computed transition matrix
@@ -186,9 +186,9 @@ class Hivemind:
         """
         # TODO:
         #  1. metropolis hastings algorithm to synthetize the transition matrix
-        #  proposal_matrix = pd.DataFrame(proposal_matrix, index=states, columns=states).transpose() w/o being a df
-        #  obtain unlabeled transition_matrix from m-h algorithm, pass as arg the transposed proposal matrix and the ddv
-        transition_matrix = mH.metropolis_algorithm(proposal_matrix, desired_distribution)
+        #  adj_matrix = pd.DataFrame(adj_matrix, index=states, columns=states).transpose() w/o being a df
+        #  obtain unlabeled transition_matrix from m-h algorithm,
+        transition_matrix = mh.metropolis_algorithm(adj_matrix, desired_distribution, column_major_out=True)
         return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
 
