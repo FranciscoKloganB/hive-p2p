@@ -102,7 +102,8 @@ def __in_yes_no(msg):
 
 def __in_adj_matrix(msg, n):
     print(msg + "\nExample input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1")
-    print("Warning: simulations aren't well behaved when adjency matrices have absorbent nodes or transient states!\n")
+    print("Warning: only symmetric matrices are accepted. Assymetric matrices may, but aren't guaranteed to converge!")
+    print("Warning: this algorithm isn't well when adjency matrices have absorbent nodes or transient states!\n")
 
     goto_while = False
     while True:
@@ -126,9 +127,9 @@ def __in_adj_matrix(msg, n):
 
         for i in range(n):
             for j in range(n):
-                if adj_matrix[i][j] == 0 or adj_matrix[i][j] == 1:
+                if (adj_matrix[i][j] == adj_matrix[j][i]) and (adj_matrix[i][j] == 0 or adj_matrix[i][j] == 1):
                     continue
-                print("Matrix was square, but found value that was neither 0 or 1 as expected. Try again: ")
+                print("Matrix was square, but is either assymetric or had entries different than 0 or 1. Try again: ")
                 goto_while = True
                 break
             if goto_while:
