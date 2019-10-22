@@ -100,7 +100,10 @@ def __in_yes_no(msg):
 
 
 def __in_adj_matrix(msg, n):
-    print("example input for a 3x3 matrix:\n1 1 1\n1 1 0\n0 1 1\n")
+    print(msg)
+    print("Example input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1")
+    print("Warning: simulations aren't well behaved when adjency matrices have absorbent nodes or transient states!\n")
+
     while True:
         adj = []
         try:
@@ -117,7 +120,7 @@ def __in_adj_matrix(msg, n):
             for i in range(0, n):
                 if len(adj[i]) == n:
                     for j in range(0, n):
-                        if (adj[i][j] == 1 and adj[j][i] == 1) or (adj[i][j] == 0 and adj[j][i] == 0):
+                        if adj[i][j] == 1 or adj[j][i] == 0:
                             continue
                         else:
                             approved = False
