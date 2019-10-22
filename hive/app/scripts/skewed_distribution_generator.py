@@ -8,7 +8,7 @@ from scipy.stats import skewnorm
 DEBUG = False
 
 
-def generate_skewed_samples(sample_count=10000, skewness=-90.0):
+def generate_skewed_samples(sample_count=20000, skewness=-90.0):
     """
     Generates samples from a skewed normal distribution.
     Note:
