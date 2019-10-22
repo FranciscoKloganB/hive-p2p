@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import domain.metropolis_hastings as mH
 
-from utils.printers import print_test
+from utils.printers import print_test, print_pow
 
 
 # region unit tests
@@ -51,6 +51,7 @@ def arbitrary_matrix_converges_to_ddv_1():
     adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
     mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
+    print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
         if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_1", target, mh_pow[:, j], False)
@@ -62,6 +63,7 @@ def arbitrary_matrix_converges_to_ddv_2():
     adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
     mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
+    print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
         if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_2", target, mh_pow[:, j], False)
@@ -73,6 +75,7 @@ def arbitrary_matrix_converges_to_ddv_3():
     adj = np.asarray([[1, 1, 1, 1], [1, 1, 1, 1], [0, 1, 1, 1], [1, 1, 1, 1]])
     mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
+    print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
         if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_3", target, mh_pow[:, j], False)
@@ -84,6 +87,7 @@ def arbitrary_matrix_converges_to_ddv_4():
     adj = np.asarray([[1, 1, 0, 0], [1, 0, 0, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
     mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
+    print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
         if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_4", target, mh_pow[:, j], False)
@@ -95,6 +99,7 @@ def arbitrary_matrix_converges_to_ddv_5():
     adj = np.asarray([[1, 1, 0, 0], [1, 0, 1, 0], [0, 1, 1, 0], [0, 1, 1, 0]])
     mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
+    print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
         if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_5", target, mh_pow[:, j], False)
@@ -106,6 +111,7 @@ def arbitrary_matrix_converges_to_ddv_6():
     adj = np.asarray([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [1, 0, 0, 0]])
     mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
+    print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
         if not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_converges_to_ddv_6", target, mh_pow[:, j], False)
@@ -117,18 +123,33 @@ def arbitrary_matrix_does_not_converges_to_ddv_1():
     adj = np.asarray([[0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [1, 0, 0, 0]])
     mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
+    print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
         if j == 1 and np.allclose(target, mh_pow[:, 1]):
             return print_test("arbitrary_matrix_does_not_converges_to_ddv_1", [0, 1, 0, 0], mh_pow[:, 1], False)
         elif j != 1 and not np.allclose(target, mh_pow[:, j]):
             return print_test("arbitrary_matrix_does_not_converges_to_ddv_1", target, mh_pow[:, j], False)
-    return print_test("arbitrary_matrix_does_not_converges_to_ddv_1", target, mh_pow[:, 0], True)
+    return print_test("arbitrary_matrix_does_not_converges_to_ddv_1", "_", "_", True)
+
+
+def arbitrary_matrix_converges_to_ddv_with_some_zero_entries_1():
+    target = [0.2, 0, 0.8, 0]
+    adj = np.asarray([[0, 1, 0, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 0]])
+    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh_pow = np.linalg.matrix_power(mh, 100000)
+    print_pow(mh_pow)
+    for j in range(mh_pow.shape[1]):
+        if not np.allclose(target, mh_pow[:, j]):
+            return print_test("arbitrary_matrix_converges_to_ddv_with_some_zero_entries_1", target, mh_pow[:, j], False)
+    return print_test("arbitrary_matrix_converges_to_ddv_with_some_zero_entries_1", target, mh_pow[:, 0], True)
+
 # endregion
 
 
 if __name__ == "__main__":
     np.set_printoptions(threshold=sys.maxsize, precision=5)
 
+    """
     tests = [
         matrix_column_select_test,
         linalg_matrix_power_test,
@@ -141,8 +162,12 @@ if __name__ == "__main__":
         arbitrary_matrix_converges_to_ddv_4,
         arbitrary_matrix_converges_to_ddv_5,
         arbitrary_matrix_converges_to_ddv_6,
-        arbitrary_matrix_does_not_converges_to_ddv_1
+        arbitrary_matrix_does_not_converges_to_ddv_1,
+        arbitrary_matrix_converges_to_ddv_with_some_zero_entries_1
     ]
+    """
+
+    tests = [arbitrary_matrix_converges_to_ddv_with_some_zero_entries_1]
 
     passed = 0
     test_count = len(tests)
