@@ -2,6 +2,7 @@ import os
 import sys
 import getopt
 import itertools
+import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,6 +10,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import skewnorm
 from globals.globals import SHARED_ROOT
 from scripts.continous_label_generator import yield_label
+
+DEBUG = False
 
 def usage():
     print(" -------------------------------------------------------------------------")
@@ -59,69 +62,81 @@ def __in_min_node_uptime():
             continue
 
 
-def __generate_skewed_samples():
+def __generate_skewed_samples(sample_count=10000):
+    """
+    If you use this sample generation, simply select pick up the elements and assign them to a label in sequence.
+    # In this case sample_count is just the number of samples I wish to take. See difference w.r.t extendend version
+    """
     max_uptime = 100.0
-    skewness = -60.0  # Negative values are left skewed, positive values are right skewed. DON'T REMOVE (-) sign
-    samples = skewnorm.rvs(a=skewness, size=599999)  # Skewnorm function
+    skewness = -90.0  # Negative values are left skewed, positive values are right skewed. DON'T REMOVE (-) sign
+    samples = skewnorm.rvs(a=skewness, size=sample_count)  # Skewnorm function
     samples = samples - min(samples)  # Shift the set so the minimum value is equal to zero
     samples = samples / max(samples)  # Standadize all the vlues between 0 and 1.
     samples = samples * max_uptime    # Multiply the standardized values by the maximum value.
     return samples
 
 
-def __generate_skwed_samples_extended():
-    samples = __generate_skewed_samples()
-    n, bins, patches = plt.hist(samples, bins='auto', density=True)
+def __generate_skwed_samples_extended(bin_count=7001, sample_count=7001):
+    """
+    If you use this sample generation, use np.random.choice
+    # 7001 represents all values between [30.00, 100.00] with 0.01 step
+    # 800001 Could represents all values between [20.0000, 100.000] with 0.0001 step, etc
+    # To define an auto number of bins use bin='auto'
+    # Keep bins_count = sample_count is just an hack to facilitate np.random.choice(bins_count, sample_count)
+    """
+    samples = __generate_skewed_samples(sample_count)
+    bin_density, bins, patches = plt.hist(samples, bins=bin_count, density=True)
 
-    bin_count = len(n)
+    if DEBUG:
+        plt.show()
+        print("total_density (numpy): " + str(np.sum(bin_density)))
+
+    size = len(bin_density)
 
     total_density = 0.0
-    for i in range(bin_count):
-        total_density += n[i]
+    for i in range(size):
+        total_density += bin_density[i]
 
-    probabilities = []
     total_probability = 0.0
-    for i in range(bin_count):
-        pvi = n[i] / total_density
-        total_probability += pvi
-        probabilities.append(pvi)
+    bin_probability = bin_density
+    for i in range(size):
+        bin_probability[i] = bin_density[i] / total_density
+        total_probability += bin_probability[i]
 
     if total_probability != 1.0:
-        raise RuntimeError("Sample probabilities != 1.0 - Please report error at francisco.t.barros@tecnico.ulisboa.pt")
+        logging.warning("probability_compensation: " + str(1.0 - total_probability))
+
+    if DEBUG:
+        print("total_density (for loop): " + str(total_density))
+        print("total_probability (numpy): " + str(np.sum(bin_probability)))
+        print("total_probability (for loop): " + str(total_probability))
+        print("number_of_bins: " + str(len(bin_density)))
+        print("number_of_samples: " + str(len(samples)))
+
+    return samples, bin_probability
 
 
-def __print_node_uptime_distribution(samples):
-    n, bins, patches = plt.hist(samples, bins='auto', density=True)
+def plot_uptime_distribution(bin_count, sample_count):
+    samples = __generate_skewed_samples(sample_count)
+    n, bins, patches = plt.hist(samples, bin_count, density=True)
     plt.title("Peer Node Uptime Distribution")
     plt.xlabel("uptime")
-    plt.ylabel("frequency")
+    plt.ylabel("density")
     plt.show()
+
 
 def __init_nodes_uptime_dict():
     nodes_uptime_dict = {}
     number_of_nodes = __in_number_of_nodes()
     min_uptime = __in_min_node_uptime()
     print("Please wait... Generation of uptimes for each node may take a while.")
-    samples = __generate_skewed_samples()
-    node_uptime = np.random.choice(samples)
+    samples = __generate_skewed_samples().tolist()
     for label in itertools.islice(yield_label(), number_of_nodes):
-        uptime = np.random.choice(a=samples)
-        nodes_uptime_dict[label] = node_uptime
+        uptime = samples.pop()  # gets and removes last element in samples to assign it to label
+        nodes_uptime_dict[label] = uptime if uptime > min_uptime else min_uptime
 
 
-# noinspection DuplicatedCode
-if __name__ == "__main__":
-    simfile_name = None
-    try:
-        options, args = getopt.getopt(sys.argv[1:], "uhs:", ["usage", "help", "simfile="])
-        for options, args in options:
-            if options in ("-u", "--usage"):
-                usage()
-            if options in ("-s", "--simfile"):
-                simfile_name = str(args).strip()
-    except getopt.GetoptError:
-        usage()
-
+def main(simfile_name):
     if not simfile_name:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
@@ -130,3 +145,24 @@ if __name__ == "__main__":
     simfile_json = {}
     simfile_json["max_stages"] = __in_max_stages()
     simfile_json["nodes_uptime"] = __init_nodes_uptime_dict()
+
+
+# noinspection DuplicatedCode
+if __name__ == "__main__":
+    simfile_name_ = None
+    try:
+        options, args = getopt.getopt(sys.argv[1:], "ups:", ["usage", "plotuptimedistr", "simfile="])
+        for options, args in options:
+            if options in ("-u", "--usage"):
+                usage()
+            if options in ("-p", "--plotuptimedistr"):
+                bin_count_ = int(input("How many bins should the distribution have?"))
+                sample_count_ = int(input("How many samples should be drawn?"))
+                plot_uptime_distribution(bin_count_, sample_count_)
+            if options in ("-s", "--simfile"):
+                simfile_name_ = str(args).strip()
+                main(simfile_name_)
+    except getopt.GetoptError:
+        usage()
+
+
