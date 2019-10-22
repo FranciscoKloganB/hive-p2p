@@ -59,15 +59,16 @@ def __in_min_node_uptime():
 
 
 def __init_nodes_uptime_dict():
-    nodes_uptime_dict = {}
     number_of_nodes = __in_number_of_nodes()
     min_uptime = __in_min_node_uptime()
-    print("Please wait... Generation of uptimes for each node may take a while.")
+    print("Please wait ¯\\_(ツ)_/¯ Generation of uptimes for each node may take a while.")
     samples = sg.generate_skewed_samples().tolist()
+    print("Keep calm. We are almost there...")
+    nodes_uptime_dict = {}
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
         uptime = samples.pop()  # gets and removes last element in samples to assign it to label
         nodes_uptime_dict[label] = uptime if uptime > min_uptime else min_uptime
-
+    return nodes_uptime_dict
 
 def main(simfile_name):
     if not simfile_name:
