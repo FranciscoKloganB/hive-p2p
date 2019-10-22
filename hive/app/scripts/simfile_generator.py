@@ -1,6 +1,7 @@
 import os
 import sys
 import copy
+import random
 import getopt
 import logging
 import itertools
@@ -189,6 +190,21 @@ def __init_file_state_labels(desired_node_count, labels):
     return chosen_labels
 
 
+def __init_stochastic_vector(size):
+    secure_random = random.SystemRandom()
+    stochastic_vector = [0.0] * size
+    summation_pool = 1.0
+
+    for i in range(size):
+        if i == size - 1:
+            stochastic_vector[i] = summation_pool
+            return stochastic_vector
+        else:
+            probability = secure_random.uniform(0, summation_pool)
+            stochastic_vector[i] = probability
+            summation_pool -= probability
+
+
 def __init_shared_dict(labels):
     shared_dict = {}
 
@@ -213,7 +229,7 @@ def __init_shared_dict(labels):
         if __in_yes_no("Would you like to manually insert a desired distribution vector?"):
             shared_dict[file_name]["ddv"] = __in_stochastic_vector("Insert a stochastic vector: ".format(n), n)
         else:
-            # TODO: This is the next task
+            shared_dict[file_name]["ddv"] = __init_stochastic_vector(n)
             pass
 
         add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
