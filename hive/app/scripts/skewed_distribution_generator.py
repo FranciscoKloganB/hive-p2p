@@ -7,17 +7,24 @@ from scipy.stats import skewnorm
 
 DEBUG = False
 
-def generate_skewed_samples(sample_count=10000):
+
+def generate_skewed_samples(sample_count=10000, skewness=-90.0):
     """
-    If you use this sample generation, simply select pick up the elements and assign them to a label in sequence.
-    # In this case sample_count is just the number of samples I wish to take. See difference w.r.t extendend version
+    Generates samples from a skewed normal distribution.
+     Note:
+         If you use this sample generation, simply select pick up the elements and assign them to a label in sequence.
+         In this case sample_count is just the number of samples I wish to take. See difference w.r.t extendend version
+    :param sample_count: the number of skewed samples to be drawn
+    :type int
+    :param skewness: where peak density will be found. (-) values are left skewed, (+) values are right skewed
+    :type float
+    :return samples: drawn from skewed normal distribution
+    :type 1-D numpy.array
     """
-    max_uptime = 100.0
-    skewness = -90.0  # Negative values are left skewed, positive values are right skewed. DON'T REMOVE (-) sign
     samples = skewnorm.rvs(a=skewness, size=sample_count)  # Skewnorm function
     samples = samples - min(samples)  # Shift the set so the minimum value is equal to zero
     samples = samples / max(samples)  # Standadize all the vlues between 0 and 1.
-    samples = samples * max_uptime    # Multiply the standardized values by the maximum value.
+    samples = samples * 100.0         # Multiply the standardized values by the maximum value.
     return samples
 
 
