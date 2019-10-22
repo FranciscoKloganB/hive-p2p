@@ -1,8 +1,8 @@
 import sys
 import numpy as np
-import domain.MetropolisHastings as mH
+import domain.metropolis_hastings as mH
 
-from tests.utils.pretty_print import print_test
+from utils.printers import print_test
 
 
 # region unit tests

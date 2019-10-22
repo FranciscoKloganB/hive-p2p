@@ -2,13 +2,14 @@ import os
 import json
 import numpy as np
 import pandas as pd
-import domain.MetropolisHastings as mH
+import domain.metropolis_hastings as mH
 
 from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
 from domain.helpers.ConvergenceData import ConvergenceData
+from globals.globals import SHARED_ROOT
 
 
 class Hivemind:
@@ -38,18 +39,17 @@ class Hivemind:
 
     # region class variables, instance variables and constructors
     READ_SIZE = 2048
-    __SHARED_ROOT = os.path.join(os.getcwd(), 'static', 'shared')
     __STAGES_WITH_CONVERGENCE = []
     __MAX_CONSECUTIVE_CONVERGENCE_STAGES = 0
     __DEFAULT_COLUMN = 0
 
-    def __init__(self, simfile_path):
+    def __init__(self, simfile_name):
         """
-        :param simfile_path: path to json file containing the parameters this simulation should execute with
+        :param simfile_name: path to json file containing the parameters this simulation should execute with
         :type str
         """
-        with open(simfile_path) as json_obj:
-            json_obj = json.load(simfile_path)
+        with open(simfile_name) as json_obj:
+            json_obj = json.load(simfile_name)
             # Init basic simulation variables
             self.workers = {}
             self.worker_status = {}
@@ -120,7 +120,7 @@ class Hivemind:
         :type str
         """
         for file_name in file_names:
-            self.__split_shared_file(os.path.join(self.__SHARED_ROOT, file_name))
+            self.__split_shared_file(os.path.join(SHARED_ROOT, file_name))
 
     def __split_shared_file(self, file_path):
         """
