@@ -22,41 +22,55 @@ def usage():
 
 
 def __in_max_stages():
-    max_stages = input("Enter the maximum amount of stages [100, inf) the simulation should run:\n")
+    max_stages = input("Enter the maximum amount of stages [100, inf) the simulation should run: ")
     while True:
         try:
             max_stages = float(max_stages)
             if max_stages > 99:
                 return int(max_stages) if not float('inf') else sys.maxsize
-            max_stages = input("Maximum stages input should be a number in [100, inf)... Try again:")
+            max_stages = input("Maximum stages input should be a number in [100, inf)... Try again: ")
         except ValueError:
-            max_stages = input("Input should be an integer.. Try again:")
+            max_stages = input("Input should be an integer.. Try again: ")
             continue
 
 
 def __in_number_of_nodes():
-    node_count = input("Enter the number of nodes you wish to have in the network [2, 9999]:\n")
+    node_count = input("Enter the number of nodes you wish to have in the network [2, 9999]: ")
     while True:
         try:
             node_count = int(node_count)
             if 1 < node_count < 10000:
                 return node_count
-            node_count = input("At least two nodes should be created. Try again with value in [2, 9999]:")
+            node_count = input("At least two nodes should be created. Try again with value in [2, 9999]: ")
         except ValueError:
-            node_count = input("Input should be an integer... Try again:")
+            node_count = input("Input should be an integer... Try again: ")
             continue
 
 
 def __in_min_node_uptime():
-    min_uptime = input("Enter the number of nodes you wish to have in the network [0.0, 100.0]:\n")
+    min_uptime = input("Enter the number of nodes you wish to have in the network [0.0, 100.0]: ")
     while True:
         try:
             min_uptime = float(min_uptime)
             if 0.0 <= min_uptime <= 100.0:
                 return min_uptime
-            min_uptime = input("Minimum node uptime should be in [0.0, 100.0]... Try again:")
+            min_uptime = input("Minimum node uptime should be in [0.0, 100.0]... Try again: ")
         except ValueError:
-            min_uptime = input("Input should be an integer or a float... Try again:")
+            min_uptime = input("Input should be an integer or a float... Try again: ")
+            continue
+
+
+def __in_samples_skewness():
+    print("Skewness should be [-100.0, 100.0]; Negative skews shift distribution mean to bigger positive values!")
+    skewness = input("Enter the desired skewness for skewnorm distribution: ")
+    while True:
+        try:
+            skewness = float(skewness)
+            if -100.0 <= skewness <= 100.0:
+                return skewness
+            skewness = input("Skewness should be in [-100.0, 100.0]... Try again: ")
+        except ValueError:
+            skewness = input("Input should be an integer or a float... Try again: ")
             continue
 
 
@@ -64,7 +78,7 @@ def __in_file_name():
     file_name = input("Insert the name of the file you wish to persist (include extension if it has one): ").strip()
     while True:
         if not file_name:
-            file_name = input("A non-blank file name is expected... Try again:")
+            file_name = input("A non-blank file name is expected... Try again: ")
             continue
         if not Path(os.path.join(SHARED_ROOT, file_name)).is_file():
             logging.warning(str(file_name) + " isn't inside ~/hive/app/static/shared folder.")
@@ -75,12 +89,13 @@ def __in_file_name():
 def __init_nodes_uptime_dict():
     number_of_nodes = __in_number_of_nodes()
     min_uptime = __in_min_node_uptime()
+    skewness = __in_samples_skewness()
     print("Please wait ¯\\_(ツ)_/¯ Generation of uptimes for each node may take a while.")
-    samples = sg.generate_skewed_samples().tolist()
+    samples = sg.generate_skewed_samples(skewness=skewness).tolist()
     print("Keep calm. We are almost there...")
     nodes_uptime_dict = {}
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
-        uptime = samples.pop()  # gets and removes last element in samples to assign it to label
+        uptime = abs(samples.pop())  # gets and removes last element in samples to assign it to label
         nodes_uptime_dict[label] = round(uptime, 6) if uptime > min_uptime else round(min_uptime, 6)
     samples.clear()
     return nodes_uptime_dict
@@ -95,7 +110,9 @@ def __init_shared_dict():
     add_file = True
     while add_file:
         file_name = __in_file_name()
-        
+        shared_dict[file_name] = {}
+        # TODO you are here, ask how many nodes will handle this file and what the min uptime for them should be
+
 
 
 

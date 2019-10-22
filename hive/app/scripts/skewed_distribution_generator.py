@@ -79,7 +79,7 @@ def generate_skwed_samples_extended(bin_count=7001, sample_count=7001, skewness=
     return samples, bin_probability
 
 
-def plot_uptime_distribution(bin_count, sample_count, skewness):
+def plot_uptime_distribution(bin_count='auto', sample_count=10000, skewness=-90.0):
     """
     Displays generate_skewed_samples in a two axis plot
     :param bin_count: the number of bins to be depicted in the matplotlib.pyplot.hist plot
