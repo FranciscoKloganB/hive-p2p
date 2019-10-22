@@ -67,7 +67,7 @@ def __init_nodes_uptime_dict():
     nodes_uptime_dict = {}
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
         uptime = samples.pop()  # gets and removes last element in samples to assign it to label
-        nodes_uptime_dict[label] = uptime if uptime > min_uptime else min_uptime
+        nodes_uptime_dict[label] = round(uptime, 6) if uptime > min_uptime else round(min_uptime, 6)
     return nodes_uptime_dict
 
 def main(simfile_name):
