@@ -1,5 +1,6 @@
 import os
 import sys
+import copy
 import getopt
 import logging
 import itertools
@@ -9,7 +10,7 @@ import scripts.continous_label_generator as cg
 import scripts.skewed_distribution_generator as sg
 
 from pathlib import Path
-from globals.globals import SHARED_ROOT
+from globals.globals import SHARED_ROOT, DEBUG
 
 
 def usage():
@@ -75,8 +76,8 @@ def __in_samples_skewness():
             continue
 
 
-def __in_file_name():
-    file_name = input("Insert the name of the file you wish to persist (include extension if it has one): ").strip()
+def __in_file_name(msg):
+    file_name = input(msg).strip()
     while True:
         if not file_name:
             file_name = input("A non-blank file name is expected... Try again: ")
@@ -85,6 +86,54 @@ def __in_file_name():
             logging.warning(str(file_name) + " isn't inside ~/hive/app/static/shared folder.")
             print("File not found in~/hive/app/static/shared). Running the present simfile might cause bad behaviour.")
         return file_name
+
+
+def __in_yes_no(msg):
+    char = input(msg)
+    while True:
+        if char == 'y' or char == 'Y':
+            return True
+        elif char == 'n' or char == 'N':
+            return False
+        else:
+            char = input("Answer should be 'y' for yes or 'n' for no... Try again: ")
+
+
+def __in_adj_matrix(msg, n):
+    print("example input for a 3x3 matrix:\n1 1 1\n1 1 0\n0 1 1\n")
+    while True:
+        adj = []
+        try:
+            for _ in range(n):
+                line = input("")
+                row_vector = [int(i) for i in line.strip().split()]
+                adj.append(row_vector)
+        except ValueError:
+            print("Values must be 0 or 1 integers. Rows seperated by newlines, entries seperated by space. Try again: ")
+            continue
+
+        approved = True
+        if len(adj) == n:
+            for i in range(0, n):
+                if len(adj[i]) == n:
+                    for j in range(0, n):
+                        if (adj[i][j] == 1 and adj[j][i] == 1) or (adj[i][j] == 0 and adj[j][i] == 0):
+                            continue
+                        else:
+                            approved = False
+                            break
+                else:
+                    break
+
+                if not approved:
+                    break
+
+        if approved:
+            if DEBUG:
+                print(np.asarray(adj))
+            return adj
+
+        print("Expected a {}x{} matrix filled with 0s or 1s. Each row in a line... Try again: ".format(n, n))
 
 
 def __init_nodes_uptime_dict():
@@ -102,6 +151,23 @@ def __init_nodes_uptime_dict():
     return nodes_uptime_dict
 
 
+def __init_file_state_labels(desired_node_count, labels):
+    chosen_labels = []
+    labels_copy = copy.deepcopy(labels)
+
+    current_node_count = 0
+    while current_node_count < desired_node_count:
+        current_node_count += 1
+        choice = np.random.choice(a=labels_copy)
+        labels_copy.remove(choice)
+        chosen_labels.append(choice)
+
+    if DEBUG:
+        print("Original labels:\n{}\nLeft over labels in copies:\n{}\n".format(labels, labels_copy))
+
+    return chosen_labels
+
+
 def __init_shared_dict(labels):
     shared_dict = {}
 
@@ -112,18 +178,22 @@ def __init_shared_dict(labels):
 
     add_file = True
     while add_file:
-        file_name = __in_file_name()
+        n = __in_number_of_nodes("Enter the number of nodes that should be sharing this file: ")
+        file_name = __in_file_name("Insert name of the file you wish to persist (include extension if it has one): ")
         shared_dict[file_name] = {}
+        shared_dict[file_name]["state_labels"] = __init_file_state_labels(n, labels)
 
-        current_node_count = 0
-        desired_node_count = __in_number_of_nodes("Enter the number of nodes that should be sharing this file: ")
-        state_labels = []
-        while current_node_count < desired_node_count:
-            choice = np.random.choice(labels)
-            labels.remove(choice)
-            state_labels.append(choice)
-        shared_dict[file_name]["state_labels"] = state_labels
-        # TODO You are here. Ask if manual ddv / adj matrix, then ask if more files...
+        if __in_yes_no("Would you like to manually construct an adjency matrix?"):
+            shared_dict[file_name]["adj_matrix"] = __in_adj_matrix("Insert a row major {}x{} matrix: ".format(n, n), n)
+        else:
+            pass
+
+        if __in_yes_no("Would you like to manually insert a desired distribution vector?"):
+            pass
+        else:
+            pass
+
+        add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
 
     return shared_dict
 
@@ -142,6 +212,7 @@ def main(simfile_name):
     }
 
 
+"""
 # noinspection DuplicatedCode
 if __name__ == "__main__":
     simfile_name_ = None
@@ -159,5 +230,7 @@ if __name__ == "__main__":
                 main(simfile_name_)
     except getopt.GetoptError:
         usage()
+"""
 
-
+if __name__ == "__main__":
+    __in_adj_matrix("hi", 3)
