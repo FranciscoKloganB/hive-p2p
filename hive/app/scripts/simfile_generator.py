@@ -104,39 +104,44 @@ def __in_adj_matrix(msg, n):
     print("Example input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1")
     print("Warning: simulations aren't well behaved when adjency matrices have absorbent nodes or transient states!\n")
 
+    goto_while = False
     while True:
-        adj = []
-        try:
-            for _ in range(n):
-                line = input("")
-                row_vector = [int(i) for i in line.strip().split()]
-                adj.append(row_vector)
-        except ValueError:
-            print("Values must be 0 or 1 integers. Rows seperated by newlines, entries seperated by space. Try again: ")
+        adj_matrix = []
+        for _ in range(n):
+            line = input().strip().split()
+            if len(line) == n:
+                try:
+                    line = [*map(lambda char: int(char), line)]  # transform line in row_vector
+                    adj_matrix.append(line)
+                    continue  # if all lines are successfully converted, none of the print errors will occur
+                except ValueError:
+                    pass
+            print("Matrices are expected to be {}x{} with all entries being 0s or 1s. Try again: ".format(n, n))
+            goto_while = True
+            break
+
+        if goto_while:
+            goto_while = False
             continue
 
-        approved = True
-        if len(adj) == n:
-            for i in range(0, n):
-                if len(adj[i]) == n:
-                    for j in range(0, n):
-                        if adj[i][j] == 1 or adj[j][i] == 0:
-                            continue
-                        else:
-                            approved = False
-                            break
-                else:
-                    break
+        for i in range(n):
+            for j in range(n):
+                if adj_matrix[i][j] == 0 or adj_matrix[i][j] == 1:
+                    continue
+                print("Matrix was square, but found value that was neither 0 or 1 as expected. Try again: ")
+                goto_while = True
+                break
+            if goto_while:
+                break
 
-                if not approved:
-                    break
+        if goto_while:
+            goto_while = False
+            continue
 
-        if approved:
-            if DEBUG:
-                print(np.asarray(adj))
-            return adj
+        if DEBUG:
+            print(np.asarray(adj_matrix))
 
-        print("Expected a {}x{} matrix filled with 0s or 1s. Each row in a line... Try again: ".format(n, n))
+        return adj_matrix
 
 
 def __init_nodes_uptime_dict():
@@ -215,7 +220,6 @@ def main(simfile_name):
     }
 
 
-"""
 # noinspection DuplicatedCode
 if __name__ == "__main__":
     simfile_name_ = None
@@ -233,7 +237,3 @@ if __name__ == "__main__":
                 main(simfile_name_)
     except getopt.GetoptError:
         usage()
-"""
-
-if __name__ == "__main__":
-    __in_adj_matrix("hi", 3)
