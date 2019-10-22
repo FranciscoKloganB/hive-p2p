@@ -70,6 +70,14 @@ def __init_nodes_uptime_dict():
         nodes_uptime_dict[label] = round(uptime, 6) if uptime > min_uptime else round(min_uptime, 6)
     return nodes_uptime_dict
 
+
+def __init_shared_dict():
+    shared_dict = {}
+    # TODO:
+    #  You are here
+    return shared_dict
+
+
 def main(simfile_name):
     if not simfile_name:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
@@ -79,6 +87,7 @@ def main(simfile_name):
     simfile_json = {}
     simfile_json["max_stages"] = __in_max_stages()
     simfile_json["nodes_uptime"] = __init_nodes_uptime_dict()
+    simfile_json["shared"] = __init_shared_dict()
 
 
 # noinspection DuplicatedCode
