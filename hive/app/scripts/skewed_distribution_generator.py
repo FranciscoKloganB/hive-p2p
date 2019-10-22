@@ -11,9 +11,9 @@ DEBUG = False
 def generate_skewed_samples(sample_count=10000, skewness=-90.0):
     """
     Generates samples from a skewed normal distribution.
-     Note:
-         If you use this sample generation, simply select pick up the elements and assign them to a label in sequence.
-         In this case sample_count is just the number of samples I wish to take. See difference w.r.t extendend version
+    Note:
+     If you use this sample generation, simply select pick up the elements and assign them to a label in sequence.
+     In this case sample_count is just the number of samples I wish to take. See difference w.r.t extendend version
     :param sample_count: the number of skewed samples to be drawn
     :type int
     :param skewness: where peak density will be found. (-) values are left skewed, (+) values are right skewed
@@ -28,15 +28,26 @@ def generate_skewed_samples(sample_count=10000, skewness=-90.0):
     return samples
 
 
-def generate_skwed_samples_extended(bin_count=7001, sample_count=7001):
+def generate_skwed_samples_extended(bin_count=7001, sample_count=7001, skewness=-90.0):
     """
-    If you use this sample generation, use np.random.choice
-    # 7001 represents all values between [30.00, 100.00] with 0.01 step
-    # 800001 Could represents all values between [20.0000, 100.000] with 0.0001 step, etc
-    # To define an auto number of bins use bin='auto'
-    # Keep bins_count = sample_count is just an hack to facilitate np.random.choice(bins_count, sample_count)
+    Generates samples from a skewed normal distribution.
+    Note:
+     bin_count at 7001 represents all values between [30.00, 100.00] with 0.01 step
+     bin_count at 800001 would represents all values between [20.0000, 100.000] with 0.0001 step, and so on...
+     To let matplotlib.skewnorm module define an automatic number of bins use bin_count='auto'
+     Keeping bins_count = sample_count is just an hack to facilitate np.random.choice(bins_count, sample_count)
+     Because we are using bin_counts here, it is advised not to draw to many samples, as the function will be exponen-
+     tially slower
+    :param bin_count: the number of bins to be created in the matplotlib.pyplot.hist.bins
+    :type int
+    :param sample_count: the number of skewed samples to be drawn
+    :type int
+    :param skewness: where peak density will be found. (-) values are left skewed, (+) values are right skewed
+    :type float
+    :returns samples, bin_probability: drawn from skewed normal distribution, probability of each sample ocurring
+    :type tuple<1-D numpy.array, 1-D numpy.array>
     """
-    samples = generate_skewed_samples(sample_count)
+    samples = generate_skewed_samples(sample_count, skewness)
     bin_density, bins, patches = plt.hist(samples, bins=bin_count, density=True)
 
     if DEBUG:
@@ -68,9 +79,18 @@ def generate_skwed_samples_extended(bin_count=7001, sample_count=7001):
     return samples, bin_probability
 
 
-def plot_uptime_distribution(bin_count, sample_count):
-    samples = generate_skewed_samples(sample_count)
-    n, bins, patches = plt.hist(samples, bin_count, density=True)
+def plot_uptime_distribution(bin_count, sample_count, skewness):
+    """
+    Displays generate_skewed_samples in a two axis plot
+    :param bin_count: the number of bins to be depicted in the matplotlib.pyplot.hist plot
+    :type int
+    :param sample_count: the number of skewed samples to be drawn
+    :type int
+    :param skewness: where peak density will be found. (-) values are left skewed, (+) values are right skewed
+    :type float
+    """
+    samples = generate_skewed_samples(sample_count, skewness)
+    plt.hist(samples, bin_count, density=True)
     plt.title("Peer Node Uptime Distribution")
     plt.xlabel("uptime")
     plt.ylabel("density")
