@@ -6,6 +6,7 @@ import itertools
 import scripts.continous_label_generator as cg
 import scripts.skewed_distribution_generator as sg
 
+from pathlib import Path
 from globals.globals import SHARED_ROOT
 
 
@@ -33,13 +34,13 @@ def __in_max_stages():
 
 
 def __in_number_of_nodes():
-    node_count = input("Enter the number of nodes you wish to have in the network (2, inf):\n")
+    node_count = input("Enter the number of nodes you wish to have in the network [2, 9999]:\n")
     while True:
         try:
             node_count = int(node_count)
-            if node_count > 1:
+            if 1 < node_count < 10000:
                 return node_count
-            print("At least two nodes should be created. Insert a number bigger or equal to 2... Try again;")
+            print("At least two nodes should be created. Insert a value between, and including, 2 and 9999...")
         except ValueError:
             print("Input should be an integer.. Try again;")
             continue
@@ -68,13 +69,20 @@ def __init_nodes_uptime_dict():
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
         uptime = samples.pop()  # gets and removes last element in samples to assign it to label
         nodes_uptime_dict[label] = round(uptime, 6) if uptime > min_uptime else round(min_uptime, 6)
+    samples.clear()
     return nodes_uptime_dict
 
 
 def __init_shared_dict():
     shared_dict = {}
-    # TODO:
-    #  You are here
+
+    print("Any file you want to simulate persistance of must be inside the following folder: ~/hive/app/static/shared")
+    print("You may also want to keep a backup of such file in:  ~/hive/app/static/shared/shared_backups")
+
+    add_file = True
+    while add_file:
+        file_name = input("Insert the name of the file you wish to persist (include extension): ")
+
     return shared_dict
 
 
