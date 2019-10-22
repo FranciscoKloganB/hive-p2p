@@ -198,7 +198,7 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         online_workers_list = self.__filter_and_map_online_workers()
-        for stage in range(0, self.max_stages):
+        for stage in range(self.max_stages):
             self.__try_remove_some_workers(online_workers_list)
             self.__remaining_workers_execute()
             self.__process_stage_results(stage)
