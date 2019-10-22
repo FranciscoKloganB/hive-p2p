@@ -1,6 +1,7 @@
 import os
 import sys
 import getopt
+import logging
 import itertools
 
 import scripts.continous_label_generator as cg
@@ -21,15 +22,15 @@ def usage():
 
 
 def __in_max_stages():
-    max_stages = input("Enter the maximum amount of stages (100, inf) the simulation should run:\n")
+    max_stages = input("Enter the maximum amount of stages [100, inf) the simulation should run:\n")
     while True:
         try:
-            max_stages = int(max_stages)
+            max_stages = float(max_stages)
             if max_stages > 99:
-                return max_stages
-            print("Maximum stages input should be a number bigger or equal to 100... Try again;")
+                return int(max_stages) if not float('inf') else sys.maxsize
+            max_stages = input("Maximum stages input should be a number in [100, inf)... Try again:")
         except ValueError:
-            print("Input should be an integer.. Try again;")
+            max_stages = input("Input should be an integer.. Try again:")
             continue
 
 
@@ -40,23 +41,35 @@ def __in_number_of_nodes():
             node_count = int(node_count)
             if 1 < node_count < 10000:
                 return node_count
-            print("At least two nodes should be created. Insert a value between, and including, 2 and 9999...")
+            node_count = input("At least two nodes should be created. Try again with value in [2, 9999]:")
         except ValueError:
-            print("Input should be an integer.. Try again;")
+            node_count = input("Input should be an integer... Try again:")
             continue
 
 
 def __in_min_node_uptime():
-    min_uptime = input("Enter the number of nodes you wish to have in the network (0.0, 100.0):\n")
+    min_uptime = input("Enter the number of nodes you wish to have in the network [0.0, 100.0]:\n")
     while True:
         try:
             min_uptime = float(min_uptime)
             if 0.0 <= min_uptime <= 100.0:
                 return min_uptime
-            print("Minimum node uptime should be between 0.0 and 100.0... Try again;")
+            min_uptime = input("Minimum node uptime should be in [0.0, 100.0]... Try again:")
         except ValueError:
-            print("Input should be an float.. Try again;")
+            min_uptime = input("Input should be an integer or a float... Try again:")
             continue
+
+
+def __in_file_name():
+    file_name = input("Insert the name of the file you wish to persist (include extension if it has one): ").strip()
+    while True:
+        if not file_name:
+            file_name = input("A non-blank file name is expected... Try again:")
+            continue
+        if not Path(os.path.join(SHARED_ROOT, file_name)).is_file():
+            logging.warning(str(file_name) + " isn't inside ~/hive/app/static/shared folder.")
+            print("File not found in~/hive/app/static/shared). Running the present simfile might cause bad behaviour.")
+        return file_name
 
 
 def __init_nodes_uptime_dict():
@@ -81,7 +94,10 @@ def __init_shared_dict():
 
     add_file = True
     while add_file:
-        file_name = input("Insert the name of the file you wish to persist (include extension): ")
+        file_name = __in_file_name()
+        
+
+
 
     return shared_dict
 
