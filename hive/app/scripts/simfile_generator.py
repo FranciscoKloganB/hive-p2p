@@ -100,8 +100,7 @@ def __in_yes_no(msg):
 
 
 def __in_adj_matrix(msg, n):
-    print(msg)
-    print("Example input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1")
+    print(msg + "\nExample input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1")
     print("Warning: simulations aren't well behaved when adjency matrices have absorbent nodes or transient states!\n")
 
     goto_while = False
@@ -142,6 +141,20 @@ def __in_adj_matrix(msg, n):
             print(np.asarray(adj_matrix))
 
         return adj_matrix
+
+
+def __in_stochastic_vector(msg, n):
+    print(msg + "\nExample input stochatic vector for three nodes sharing a file:\n0.35 0.15 0.5")
+    while True:
+        line = input().strip().split()
+        if len(line) == n:
+            try:
+                line = [*map(lambda char: float(char), line)]  # transform line in stochastic vector
+                if np.sum(line) == 1:
+                    return line
+            except ValueError:
+                pass
+            print("Expected size {}, entries must be floats and their summation must equal 1.0. Try again: ".format(n))
 
 
 def __init_nodes_uptime_dict():
@@ -194,11 +207,13 @@ def __init_shared_dict(labels):
         if __in_yes_no("Would you like to manually construct an adjency matrix?"):
             shared_dict[file_name]["adj_matrix"] = __in_adj_matrix("Insert a row major {}x{} matrix: ".format(n, n), n)
         else:
+            # TODO: This is the next task
             pass
 
         if __in_yes_no("Would you like to manually insert a desired distribution vector?"):
-            pass
+            shared_dict[file_name]["ddv"] = __in_stochastic_vector("Insert a stochastic vector: ".format(n), n)
         else:
+            # TODO: This is the next task
             pass
 
         add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
