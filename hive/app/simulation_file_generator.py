@@ -278,7 +278,7 @@ def __init_adj_matrix(size):
     for i in range(size):
         for j in range(i, size):
             probability = secure_random.uniform(0.0, 1.0)
-            edge_val = np.random.choice(a=choices, p=[probability, 1-probability])
+            edge_val = np.random.choice(a=choices, p=[probability, 1-probability]).item()  # converts numpy.int32 to int
             adj_matrix[i][j] = adj_matrix[j][i] = edge_val
 
     # Use guilty until proven innocent approach for both checks
