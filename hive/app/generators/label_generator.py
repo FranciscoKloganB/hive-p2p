@@ -1,7 +1,6 @@
+import string
 import itertools
 import logging
-
-from string import ascii_lowercase
 
 
 def yield_label():
@@ -13,7 +12,7 @@ def yield_label():
     :return s: a label that follows s-1 in the label sequence.
     """
     for size in itertools.count(1):
-        for s in itertools.product(ascii_lowercase, repeat=size):
+        for s in itertools.product(string.ascii_lowercase, repeat=size):
             print(s)
             yield "".join(s)
 
