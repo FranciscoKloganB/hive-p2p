@@ -14,6 +14,7 @@ from pathlib import Path
 from globals.globals import SHARED_ROOT, DEBUG
 
 
+# region usage
 def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
@@ -22,8 +23,10 @@ def usage():
     print(" Display all optional flags and other important notices: main.py --help\n")
     print(" -------------------------------------------------------------------------\n")
     sys.exit(" ")
+# endregion
 
 
+# region input consumption and checking functions
 def __in_max_stages():
     max_stages = input("Enter the maximum amount of stages [100, inf) the simulation should run: ")
     while True:
@@ -100,7 +103,7 @@ def __in_yes_no(msg):
             char = input("Answer should be 'y' for yes or 'n' for no... Try again: ")
 
 
-def __in_adj_matrix(msg, n):
+def __in_adj_matrix(msg, size):
     print(msg + "\nExample input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1")
     print("Warning: only symmetric matrices are accepted. Assymetric matrices may, but aren't guaranteed to converge!")
     print("Warning: this algorithm isn't well when adjency matrices have absorbent nodes or transient states!\n")
@@ -108,16 +111,16 @@ def __in_adj_matrix(msg, n):
     goto_while = False
     while True:
         adj_matrix = []
-        for _ in range(n):
+        for _ in range(size):
             line = input().strip().split()
-            if len(line) == n:
+            if len(line) == size:
                 try:
                     line = [*map(lambda char: int(char), line)]  # transform line in row_vector
                     adj_matrix.append(line)
                     continue  # if all lines are successfully converted, none of the print errors will occur
                 except ValueError:
                     pass
-            print("Matrices are expected to be {}x{} with all entries being 0s or 1s. Try again: ".format(n, n))
+            print("Matrices are expected to be {}x{} with all entries being 0s or 1s. Try again: ".format(size, size))
             goto_while = True
             break
 
@@ -125,8 +128,8 @@ def __in_adj_matrix(msg, n):
             goto_while = False
             continue
 
-        for i in range(n):
-            for j in range(i, n):
+        for i in range(size):
+            for j in range(i, size):
                 if (adj_matrix[i][j] == adj_matrix[j][i]) and (adj_matrix[i][j] == 0 or adj_matrix[i][j] == 1):
                     continue
                 print("Matrix was square, but is either assymetric or had entries different than 0 or 1. Try again: ")
@@ -145,20 +148,22 @@ def __in_adj_matrix(msg, n):
         return adj_matrix
 
 
-def __in_stochastic_vector(msg, n):
+def __in_stochastic_vector(msg, size):
     print(msg + "\nExample input stochatic vector for three nodes sharing a file:\n0.35 0.15 0.5")
     while True:
         line = input().strip().split()
-        if len(line) == n:
+        if len(line) == size:
             try:
                 line = [*map(lambda char: float(char), line)]  # transform line in stochastic vector
                 if np.sum(line) == 1:
                     return line
             except ValueError:
                 pass
-            print("Expected size {}, entries must be floats and their summation must equal 1.0. Try again: ".format(n))
+            print("Expected size {}, entries must be floats, their summation must equal 1.0. Try again: ".format(size))
+# endregion
 
 
+# region init and generation functions
 def __init_nodes_uptime_dict():
     number_of_nodes = __in_number_of_nodes("Enter the number of nodes you wish to have in the network [2, 9999]: ")
     min_uptime = __in_min_node_uptime("Enter the mininum node uptime of nodes in the network [0.0, 100.0]: ")
@@ -189,6 +194,18 @@ def __init_file_state_labels(desired_node_count, labels):
         print("Original labels:\n{}\nLeft over labels in copies:\n{}\n".format(labels, labels_copy))
 
     return chosen_labels
+
+
+def __init_adj_matrix(size):
+    secure_random = random.SystemRandom()
+    adj_matrix = [[0] * size for _ in range(size)]
+    choices = [0, 1]
+    for i in range(size):
+        for j in range(i, size):
+            probability = secure_random.uniform(0.0, 1.0)
+            edge_val = np.random.choice(a=choices, p=[probability, 1-probability])
+            adj_matrix[i][j] = adj_matrix[j][i] = edge_val
+    return adj_matrix
 
 
 def __init_stochastic_vector(size):
@@ -224,20 +241,21 @@ def __init_shared_dict(labels):
         if __in_yes_no("Would you like to manually construct an adjency matrix?"):
             shared_dict[file_name]["adj_matrix"] = __in_adj_matrix("Insert a row major {}x{} matrix: ".format(n, n), n)
         else:
-            # TODO: This is the next task
-            pass
+            shared_dict[file_name]["adj_matrix"] = __init_adj_matrix(size=n)
 
         if __in_yes_no("Would you like to manually insert a desired distribution vector?"):
             shared_dict[file_name]["ddv"] = __in_stochastic_vector("Insert a stochastic vector: ".format(n), n)
         else:
-            shared_dict[file_name]["ddv"] = __init_stochastic_vector(n)
+            shared_dict[file_name]["ddv"] = __init_stochastic_vector(size=n)
             pass
 
         add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
 
     return shared_dict
+# endregion
 
 
+# region actual main function
 def main(simfile_name):
     if not simfile_name:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
@@ -250,8 +268,10 @@ def main(simfile_name):
         "nodes_uptime": nodes_uptime_dict,
         "shared": __init_shared_dict([*nodes_uptime_dict.keys()])
     }
+# endregion
 
 
+# region terminal comsumption function __main__
 # noinspection DuplicatedCode
 if __name__ == "__main__":
     simfile_name_ = None
@@ -269,3 +289,4 @@ if __name__ == "__main__":
                 main(simfile_name_)
     except getopt.GetoptError:
         usage()
+# endregion
