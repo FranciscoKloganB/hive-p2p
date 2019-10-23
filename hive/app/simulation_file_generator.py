@@ -189,9 +189,6 @@ def __in_adj_matrix(msg, size):
             goto_while = False
             continue
 
-        if DEBUG:
-            print(np.asarray(adj_matrix))
-
         return adj_matrix
 
 
@@ -261,9 +258,6 @@ def __init_file_state_labels(desired_node_count, labels):
         choice = np.random.choice(a=labels_copy)
         labels_copy.remove(choice)
         chosen_labels.append(choice)
-
-    if DEBUG:
-        print("Original labels:\n{}\nLeft over labels in copies:\n{}\n".format(labels, labels_copy))
 
     return chosen_labels
 

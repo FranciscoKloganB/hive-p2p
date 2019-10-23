@@ -49,10 +49,6 @@ def generate_skwed_samples_extended(bin_count=7001, sample_count=7001, skewness=
     samples = generate_skewed_samples(sample_count, skewness)
     bin_density, bins, patches = plt.hist(samples, bins=bin_count, density=True)
 
-    if DEBUG:
-        plt.show()
-        print("total_density (numpy): " + str(np.sum(bin_density)))
-
     size = len(bin_density)
 
     total_density = 0.0
@@ -67,13 +63,6 @@ def generate_skwed_samples_extended(bin_count=7001, sample_count=7001, skewness=
 
     if total_probability != 1.0:
         logging.warning("probability_compensation: " + str(1.0 - total_probability))
-
-    if DEBUG:
-        print("total_density (for loop): " + str(total_density))
-        print("total_probability (numpy): " + str(np.sum(bin_probability)))
-        print("total_probability (for loop): " + str(total_probability))
-        print("number_of_bins: " + str(len(bin_density)))
-        print("number_of_samples: " + str(len(samples)))
 
     return samples, bin_probability
 
