@@ -133,7 +133,7 @@ def __in_yes_no(msg):
     :return boolean: True or False
     :type bool
     """
-    char = input(msg + "y/n")
+    char = input(msg + " y/n: ")
     while True:
         if char == 'y' or char == 'Y':
             return True

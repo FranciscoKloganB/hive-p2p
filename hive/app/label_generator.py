@@ -13,7 +13,6 @@ def yield_label():
     """
     for size in itertools.count(1):
         for s in itertools.product(string.ascii_lowercase, repeat=size):
-            print(s)
             yield "".join(s)
 
 
