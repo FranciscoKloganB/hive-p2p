@@ -384,6 +384,8 @@ def main(simfile_name):
         "nodes_uptime": nodes_uptime_dict,
         "shared": __init_shared_dict([*nodes_uptime_dict.keys()])
     }
+
+    # TODO Finish this function and review shared_dict
 # endregion
 
 
