@@ -8,7 +8,7 @@ def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
     print(" Run a simulation for Markov Chain Based Swarm Guidance algorithm on a P2P Network that persists files\n")
-    print(" Typical usage: hive_simulation.py --simfile=<name>.json\n")
+    print(" Typical usage: python hive_simulation.py --simfile=simulationfilename.json\n")
     print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
     print(" -------------------------------------------------------------------------\n")
     sys.exit(" ")

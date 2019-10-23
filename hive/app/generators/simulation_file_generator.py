@@ -8,10 +8,11 @@ import logging
 import itertools
 
 import numpy as np
-from generators import label_generator as cg, skewed_distribution_generator as sg
 
 from pathlib import Path
 from globals.globals import SHARED_ROOT, DEBUG
+from generators import label_generator as cg
+from generators import skewed_distribution_generator as sg
 from utils.randoms import excluding_randrange
 
 
@@ -20,7 +21,7 @@ def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
     print(" Generates a simulation file that can be used as input to an HIVE simulation\n")
-    print(" Typical usage: simulation_file_generator.py --simfile=<name>.json\n")
+    print(" Typical usage: python simulation_file_generator.py --simfile=filename.json\n")
     print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
     print(" -------------------------------------------------------------------------\n")
     sys.exit(" ")
