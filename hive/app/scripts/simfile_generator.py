@@ -126,7 +126,7 @@ def __in_adj_matrix(msg, n):
             continue
 
         for i in range(n):
-            for j in range(n):
+            for j in range(i, n):
                 if (adj_matrix[i][j] == adj_matrix[j][i]) and (adj_matrix[i][j] == 0 or adj_matrix[i][j] == 1):
                     continue
                 print("Matrix was square, but is either assymetric or had entries different than 0 or 1. Try again: ")
