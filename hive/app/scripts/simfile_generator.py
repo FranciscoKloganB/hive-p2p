@@ -14,6 +14,7 @@ from pathlib import Path
 from globals.globals import SHARED_ROOT, DEBUG
 from utils.randoms import excluding_randrange
 
+
 # region usage
 def usage():
     print(" -------------------------------------------------------------------------")
@@ -28,6 +29,10 @@ def usage():
 
 # region input consumption and checking functions
 def __in_max_stages():
+    """
+    :return max_stages: the number of stages this simulation should run at most
+    :type int
+    """
     max_stages = input("Enter the maximum amount of stages [100, inf) the simulation should run: ")
     while True:
         try:
@@ -41,6 +46,16 @@ def __in_max_stages():
 
 
 def __in_number_of_nodes(msg, lower_bound=1, upper_bound=10000):
+    """
+    :param msg: message to be printed to the user upon first input request
+    :type str
+    :param lower_bound: rejects any input equal or below it
+    :type int
+    :param upper_bound: rejects any input that is equal or above it
+    :type int
+    :return node_count: the number of nodes
+    :type int
+    """
     node_count = input(msg)
     while True:
         try:
@@ -54,6 +69,12 @@ def __in_number_of_nodes(msg, lower_bound=1, upper_bound=10000):
 
 
 def __in_min_node_uptime(msg):
+    """
+    :param msg: message to be printed to the user upon first input request
+    :type str
+    :return min_uptime: minimum node uptime value
+    :type float
+    """
     min_uptime = input(msg)
     while True:
         try:
@@ -67,6 +88,10 @@ def __in_min_node_uptime(msg):
 
 
 def __in_samples_skewness():
+    """
+    :return skewness: the skew value
+    :type float
+    """
     print("Skewness should be [-100.0, 100.0]; Negative skews shift distribution mean to bigger positive values!")
     skewness = input("Enter the desired skewness for skewnorm distribution: ")
     while True:
@@ -81,6 +106,12 @@ def __in_samples_skewness():
 
 
 def __in_file_name(msg):
+    """
+    :param msg: message to be printed to the user upon first input request
+    :type str
+    :return file_name: the name of the file to be shared
+    :type str
+    """
     file_name = input(msg).strip()
     while True:
         if not file_name:
@@ -93,6 +124,12 @@ def __in_file_name(msg):
 
 
 def __in_yes_no(msg):
+    """
+    :param msg: message to be printed to the user upon first input request
+    :type str
+    :return boolean: True or False
+    :type bool
+    """
     char = input(msg)
     while True:
         if char == 'y' or char == 'Y':
@@ -104,9 +141,18 @@ def __in_yes_no(msg):
 
 
 def __in_adj_matrix(msg, size):
+    """
+    This method ensures the matrix is symmetric but doesn't to prevent transient state sets or absorbent nodes
+    :param msg: message to be printed to the user upon first input request
+    :type str
+    :param size: the size of the square matrix (size * size)
+    :type int
+    :return adj_matrix: the adjency matrix representing the connections between a group of peers
+    :type list<list<float>>
+    """
     print(msg + "\nExample input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1")
     print("Warning: only symmetric matrices are accepted. Assymetric matrices may, but aren't guaranteed to converge!")
-    print("Warning: this algorithm isn't well when adjency matrices have absorbent nodes or transient states!\n")
+    print("Warning: this algorithm isn't well when adjency matrices have absorbent nodes or transient state sets!\n")
 
     goto_while = False
     while True:
@@ -149,14 +195,23 @@ def __in_adj_matrix(msg, size):
 
 
 def __in_stochastic_vector(msg, size):
+    """
+    This method guarantees the vector is stochastic
+    :param msg: message to be printed to the user upon first input request
+    :type str
+    :param size: the length of the vector
+    :type int
+    :return row_vector: the row_vector representing the desired distribution (steady state vector)
+    :type <list<float>
+    """
     print(msg + "\nExample input stochatic vector for three nodes sharing a file:\n0.35 0.15 0.5")
     while True:
-        line = input().strip().split()
-        if len(line) == size:
+        row_vector = input().strip().split()
+        if len(row_vector) == size:
             try:
-                line = [*map(lambda char: float(char), line)]  # transform line in stochastic vector
-                if np.sum(line) == 1:
-                    return line
+                row_vector = [*map(lambda char: float(char), row_vector)]  # transform line in stochastic vector
+                if np.sum(row_vector) == 1:
+                    return row_vector
             except ValueError:
                 pass
             print("Expected size {}, entries must be floats, their summation must equal 1.0. Try again: ".format(size))
@@ -165,6 +220,10 @@ def __in_stochastic_vector(msg, size):
 
 # region init and generation functions
 def __init_nodes_uptime_dict():
+    """
+    :return nodes_uptime_dict: a dictionary the maps peers (state labels) to their machine uptimes.
+    :type dict<str, float>
+    """
     number_of_nodes = __in_number_of_nodes("Enter the number of nodes you wish to have in the network [2, 9999]: ")
     min_uptime = __in_min_node_uptime("Enter the mininum node uptime of nodes in the network [0.0, 100.0]: ")
     skewness = __in_samples_skewness()
@@ -180,6 +239,18 @@ def __init_nodes_uptime_dict():
 
 
 def __init_file_state_labels(desired_node_count, labels):
+    """
+    :param desired_node_count: the number of peers that will be responsible for sharing a file
+    :type int
+    :param labels: names of all peers in the system; the length of labels must be >= desired_node_count
+    :type list<str>
+    :return chosen_labels: a subset of :param labels; the peers from the system that were selected for sharing
+    :type list<str>
+    """
+
+    if len(labels) < desired_node_count:
+        raise RuntimeError("User requested that file is shared by more peers than the number of peers in the system")
+
     chosen_labels = []
     labels_copy = copy.deepcopy(labels)
 
@@ -197,6 +268,13 @@ def __init_file_state_labels(desired_node_count, labels):
 
 
 def __init_adj_matrix(size):
+    """
+    This method generates a random symmetric matrix without transient state sets or absorbeent nodes
+    :param size: the size of the square matrix (size * size)
+    :type int
+    :return adj_matrix: the adjency matrix representing the connections between a group of peers
+    :type list<list<float>>
+    """
     secure_random = random.SystemRandom()
     adj_matrix = [[0] * size for _ in range(size)]
     choices = [0, 1]
@@ -228,6 +306,13 @@ def __init_adj_matrix(size):
 
 
 def __init_stochastic_vector(size):
+    """
+    This generates a row vector whose entries summation is one.
+    :param size: the length of the vector
+    :type int
+    :return stochastic_vector: the row_vector representing the desired distribution (steady state vector)
+    :type <list<float>
+    """
     secure_random = random.SystemRandom()
     stochastic_vector = [0.0] * size
     summation_pool = 1.0
