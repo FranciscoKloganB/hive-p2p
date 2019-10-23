@@ -8,8 +8,8 @@ import logging
 import itertools
 
 import numpy as np
-import scripts.python.continous_label_generator as cg
-import scripts.python.skewed_distribution_generator as sg
+import hivescripts.continous_label_generator as cg
+import hivescripts.skewed_distribution_generator as sg
 
 from pathlib import Path
 from globals.globals import SHARED_ROOT, DEBUG
