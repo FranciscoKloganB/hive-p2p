@@ -10,7 +10,7 @@ import itertools
 import numpy as np
 
 from pathlib import Path
-from globals import SHARED_ROOT, DEBUG
+from globals import SHARED_ROOT, SIMULATIONS_ROOT
 import label_generator as cg
 import skewed_distribution_generator as sg
 from utils.randoms import excluding_randrange
@@ -373,7 +373,7 @@ def main(simfile_name):
     if not simfile_name:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
-    file_path = os.path.join(SHARED_ROOT, simfile_name)
+    file_path = os.path.join(SIMULATIONS_ROOT, simfile_name)
 
     nodes_uptime_dict = __init_nodes_uptime_dict()
     simfile_json = {
