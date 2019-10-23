@@ -1,14 +1,15 @@
 import os
 import sys
 import copy
+import json
 import random
 import getopt
 import logging
 import itertools
 
 import numpy as np
-import scripts.continous_label_generator as cg
-import scripts.skewed_distribution_generator as sg
+import scripts.python.continous_label_generator as cg
+import scripts.python.skewed_distribution_generator as sg
 
 from pathlib import Path
 from globals.globals import SHARED_ROOT, DEBUG
@@ -376,7 +377,7 @@ def main(simfile_name):
     if not simfile_name:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
-    os.path.join(SHARED_ROOT, simfile_name)
+    file_path = os.path.join(SHARED_ROOT, simfile_name)
 
     nodes_uptime_dict = __init_nodes_uptime_dict()
     simfile_json = {
@@ -385,6 +386,8 @@ def main(simfile_name):
         "shared": __init_shared_dict([*nodes_uptime_dict.keys()])
     }
 
+    with open(file_path, 'w') as outfile:
+        json.dump(simfile_json, outfile)
     # TODO Finish this function and review shared_dict
 # endregion
 
