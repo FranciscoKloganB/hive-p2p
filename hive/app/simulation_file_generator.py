@@ -8,7 +8,7 @@ import logging
 import itertools
 
 import numpy as np
-import hivescripts.continous_label_generator as cg
+import hivescripts.label_generator as cg
 import hivescripts.skewed_distribution_generator as sg
 
 from pathlib import Path
@@ -21,8 +21,8 @@ def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
     print(" Generates a simulation file that can be used as input to an HIVE simulation\n")
-    print(" Typical usage: simfile_generator.py --simfile=<name>.json\n")
-    print(" Display all optional flags and other important notices: main.py --help\n")
+    print(" Typical usage: simulation_file_generator.py --simfile=<name>.json\n")
+    print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
     print(" -------------------------------------------------------------------------\n")
     sys.exit(" ")
 # endregion

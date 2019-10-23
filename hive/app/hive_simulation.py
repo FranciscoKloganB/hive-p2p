@@ -8,8 +8,8 @@ def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
     print(" Run a simulation for Markov Chain Based Swarm Guidance algorithm on a P2P Network that persists files\n")
-    print(" Typical usage: main.py --simfile=<name>.json\n")
-    print(" Display all optional flags and other important notices: main.py --help\n")
+    print(" Typical usage: hive_simulation.py --simfile=<name>.json\n")
+    print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
     print(" -------------------------------------------------------------------------\n")
     sys.exit(" ")
 
@@ -17,7 +17,7 @@ def usage():
 def help():
     with open("{}/static/simfiles/simfile_example.json".format(os.getcwd())) as json_file:
         print("-------------------------------------------------------------------------\n")
-        print("To create a simulation file automatically use simfile_generator.py script in ~/scripts/python folder.\n")
+        print("To create a simulation file automatically use simulation_file_generator.py script in ~/scripts/python folder.\n")
         print("-------------------------------------------------------------------------\n")
         print("If you wish to manually create a simulation file here is an example of its structure:\n")
         print("-------------------------------------------------------------------------\n")
