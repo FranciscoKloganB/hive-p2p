@@ -215,8 +215,15 @@ def __init_adj_matrix(size):
                 is_absorbent_or_transient = False
                 break
         if is_absorbent_or_transient:
-            j = excluding_randrange(0, i, i+1, size-1)
-            adj_matrix[i][j] = adj_matrix[j][i] = 1  # make a bidirectional connection with a random state j
+            # make a bidirectional connection with a random state j, where i != j
+            j = None
+            if i == 0:
+                j = random.randrange(1, size)
+            elif i == size-1:
+                j = random.randrange(size - 1)
+            else:
+                j = excluding_randrange(0, i, i+1, size)
+            adj_matrix[i][j] = adj_matrix[j][i] = 1
     return adj_matrix
 
 
