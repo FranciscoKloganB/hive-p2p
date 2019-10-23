@@ -10,9 +10,9 @@ import itertools
 import numpy as np
 
 from pathlib import Path
-from globals.globals import SHARED_ROOT, DEBUG
-from generators import label_generator as cg
-from generators import skewed_distribution_generator as sg
+from globals import SHARED_ROOT, DEBUG
+import label_generator as cg
+import skewed_distribution_generator as sg
 from utils.randoms import excluding_randrange
 
 
@@ -131,7 +131,7 @@ def __in_yes_no(msg):
     :return boolean: True or False
     :type bool
     """
-    char = input(msg)
+    char = input(msg + "y/n")
     while True:
         if char == 'y' or char == 'Y':
             return True
@@ -387,7 +387,7 @@ def main(simfile_name):
     }
 
     with open(file_path, 'w') as outfile:
-        json.dump(simfile_json, outfile)
+        json.dump(simfile_json, outfile, indent=4, sort_keys=True)
     # TODO Finish this function and review shared_dict
 # endregion
 

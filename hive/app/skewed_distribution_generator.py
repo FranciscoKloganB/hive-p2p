@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.stats import skewnorm
-from globals.globals import DEBUG
+from globals import DEBUG
 
 
 def generate_skewed_samples(sample_count=20000, skewness=-90.0):
