@@ -269,7 +269,7 @@ def __init_file_state_labels(desired_node_count, labels):
 
 def __init_adj_matrix(size):
     """
-    This method generates a random symmetric matrix without transient state sets or absorbeent nodes
+    Generates a random symmetric matrix without transient state sets or absorbeent nodes
     :param size: the size of the square matrix (size * size)
     :type int
     :return adj_matrix: the adjency matrix representing the connections between a group of peers
@@ -307,7 +307,7 @@ def __init_adj_matrix(size):
 
 def __init_stochastic_vector(size):
     """
-    This generates a row vector whose entries summation is one.
+    Generates a row vector whose entries summation is one.
     :param size: the length of the vector
     :type int
     :return stochastic_vector: the row_vector representing the desired distribution (steady state vector)
@@ -328,6 +328,13 @@ def __init_stochastic_vector(size):
 
 
 def __init_shared_dict(labels):
+    """
+    Creates the "shared" key of simulation file (json file)
+    :param labels: names of all peers in the system; the length of labels must be >= desired_node_count
+    :type list<str>
+    :return shared_dict: the dictionary containing data respecting files to be shared in the system
+    :type dict<dict<obj>>
+    """
     shared_dict = {}
 
     print(
