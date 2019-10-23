@@ -8,8 +8,7 @@ import logging
 import itertools
 
 import numpy as np
-import generators.label_generator as cg
-import generators.skewed_distribution_generator as sg
+from generators import label_generator as cg, skewed_distribution_generator as sg
 
 from pathlib import Path
 from globals.globals import SHARED_ROOT, DEBUG
