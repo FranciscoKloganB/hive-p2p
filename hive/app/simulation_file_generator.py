@@ -38,8 +38,10 @@ def __in_max_stages():
     while True:
         try:
             max_stages = float(max_stages)
-            if max_stages > 99:
-                return int(max_stages) if not float('inf') else sys.maxsize
+            if max_stages == 'inf':
+                return sys.maxsize
+            elif max_stages > 99:
+                return int(max_stages)
             max_stages = input("Maximum stages input should be a number in [100, inf)... Try again: ")
         except ValueError:
             max_stages = input("Input should be an integer.. Try again: ")
