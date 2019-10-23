@@ -368,6 +368,11 @@ def __init_shared_dict(labels):
 
 # region actual main function
 def main(simfile_name):
+    """
+    Creates a structured json file within the user's file system that can be used as input for an HIVE system simulation
+    :param simfile_name: name to be assigned to the simulation file (json file) in the user's file system
+    :type str
+    """
     if not simfile_name:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
