@@ -12,7 +12,7 @@ import scripts.skewed_distribution_generator as sg
 
 from pathlib import Path
 from globals.globals import SHARED_ROOT, DEBUG
-
+from utils.randoms import excluding_randrange
 
 # region usage
 def usage():
@@ -205,6 +205,18 @@ def __init_adj_matrix(size):
             probability = secure_random.uniform(0.0, 1.0)
             edge_val = np.random.choice(a=choices, p=[probability, 1-probability])
             adj_matrix[i][j] = adj_matrix[j][i] = edge_val
+
+    # Use guilty until proven innocent approach for both checks
+    for i in range(size):
+        is_absorbent_or_transient = True
+        for j in range(size):
+            # Ensure state i can reach and be reached by some other state j, where i != j
+            if adj_matrix[i][j] == 1 and i != j:
+                is_absorbent_or_transient = False
+                break
+        if is_absorbent_or_transient:
+            j = excluding_randrange(0, i, i+1, size-1)
+            adj_matrix[i][j] = adj_matrix[j][i] = 1  # make a bidirectional connection with a random state j
     return adj_matrix
 
 
