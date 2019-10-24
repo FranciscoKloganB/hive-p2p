@@ -58,7 +58,7 @@ class ConvergenceData:
         row_count = len(one)
         if row_count != len(another):
             return False
-        for i in range(0, row_count):
+        for i in range(row_count):
             deviation = another[i] * ConvergenceData.__DEVIATION_TOLERANCE
             lower_bound = another[i] - deviation
             upper_bound = another[i] + deviation
