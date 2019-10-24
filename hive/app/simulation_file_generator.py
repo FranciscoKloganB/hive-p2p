@@ -161,11 +161,11 @@ def __in_adj_matrix(msg, size):
     while True:
         adj_matrix = []
         for _ in range(size):
-            line = input().strip().split(" ")
-            if len(line) == size:
+            row_vector = input().strip().split(" ")
+            if len(row_vector) == size:
                 try:
-                    line = [*map(lambda char: int(char), line)]  # transform line in row_vector
-                    adj_matrix.append(line)
+                    row_vector = [float(char) for char in row_vector]  # transform line in row_vector
+                    adj_matrix.append(row_vector)
                     continue  # if all lines are successfully converted, none of the print errors will occur
                 except ValueError:
                     pass
