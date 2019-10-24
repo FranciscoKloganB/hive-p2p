@@ -2,15 +2,16 @@ import os
 import sys
 import copy
 import json
-import random
 import getopt
 import logging
+import random
+import functools
 import itertools
 
 import numpy as np
 
 from pathlib import Path
-from globals import SHARED_ROOT, SIMULATIONS_ROOT
+from globals import SHARED_ROOT, SIMULATIONS_ROOT, DEBUG
 import label_generator as cg
 import skewed_distribution_generator as sg
 from utils.randoms import excluding_randrange
@@ -120,7 +121,7 @@ def __in_file_name(msg):
             file_name = input("A non-blank file name is expected... Try again: ")
             continue
         if not Path(os.path.join(SHARED_ROOT, file_name)).is_file():
-            logging.warning(str(file_name) + " isn't inside ~/hive/app/static/shared folder.")
+            logging.warning(" {} isn't inside ~/hive/app/static/shared folder.".format(file_name))
             print("File not found in~/hive/app/static/shared). Running the present simfile might cause bad behaviour.")
         return file_name
 
@@ -160,7 +161,7 @@ def __in_adj_matrix(msg, size):
     while True:
         adj_matrix = []
         for _ in range(size):
-            line = input().strip().split()
+            line = input().strip().split(" ")
             if len(line) == size:
                 try:
                     line = [*map(lambda char: int(char), line)]  # transform line in row_vector
@@ -205,11 +206,12 @@ def __in_stochastic_vector(msg, size):
     """
     print(msg + "\nExample input stochatic vector for three nodes sharing a file:\n0.35 0.15 0.5")
     while True:
-        row_vector = input().strip().split()
+        row_vector = input().strip().split(" ")
+        print(row_vector)
         if len(row_vector) == size:
             try:
-                row_vector = [*map(lambda char: float(char), row_vector)]  # transform line in stochastic vector
-                if np.sum(row_vector) == 1:
+                row_vector = [float(char) for char in row_vector]  # transform line in stochastic vector
+                if round(sum(row_vector), 6) == 1:
                     return row_vector
             except ValueError:
                 pass
@@ -315,10 +317,12 @@ def __init_stochastic_vector(size):
 
     for i in range(size):
         if i == size - 1:
-            stochastic_vector[i] = summation_pool
+            stochastic_vector[i] = round(summation_pool, 6)
+            if DEBUG:
+                logging.info("desired distribution vector summation value: {}".format(np.sum(stochastic_vector)))
             return stochastic_vector
         else:
-            probability = secure_random.uniform(0, summation_pool)
+            probability = round(secure_random.uniform(0, summation_pool), 6)
             stochastic_vector[i] = probability
             summation_pool -= probability
 
@@ -340,8 +344,9 @@ def __init_shared_dict(labels):
 
     add_file = True
     while add_file:
-        n = __in_number_of_nodes("Enter the number of nodes that should be sharing this file: ")
+        n = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: ")
         file_name = __in_file_name("Insert name of the file you wish to persist (include extension if it has one): ")
+
         shared_dict[file_name] = {}
         shared_dict[file_name]["state_labels"] = __init_file_state_labels(n, labels)
 
@@ -389,6 +394,8 @@ def main(simfile_name):
 # region terminal comsumption function __main__
 # noinspection DuplicatedCode
 if __name__ == "__main__":
+    __in_stochastic_vector("hello", 3)
+    """
     simfile_name_ = None
     try:
         options, args = getopt.getopt(sys.argv[1:], "ups:", ["usage", "plotuptimedistr", "simfile="])
@@ -404,4 +411,5 @@ if __name__ == "__main__":
                 main(simfile_name_)
     except getopt.GetoptError:
         usage()
+    """
 # endregion
