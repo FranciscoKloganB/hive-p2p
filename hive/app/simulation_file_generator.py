@@ -34,13 +34,12 @@ def __in_max_stages():
     :return max_stages: the number of stages this simulation should run at most
     :type int
     """
-    max_stages = input("Enter the maximum amount of stages [100, inf) the simulation should run: ")
+    max_stages = input("\nEnter the maximum amount of stages [100, inf) the simulation should run: ")
     while True:
         try:
-            max_stages = float(max_stages)
             if max_stages == 'inf':
-                return sys.maxsize
-            elif max_stages > 99:
+                return int(sys.maxsize)
+            elif int(max_stages) > 99:
                 return int(max_stages)
             max_stages = input("Maximum stages input should be a number in [100, inf)... Try again: ")
         except ValueError:
@@ -95,7 +94,7 @@ def __in_samples_skewness():
     :return skewness: the skew value
     :type float
     """
-    print("Skewness should be [-100.0, 100.0]; Negative skews shift distribution mean to bigger positive values!")
+    print("\nSkewness should be [-100.0, 100.0]; Negative skews shift distribution mean to bigger positive values!")
     skewness = input("Enter the desired skewness for skewnorm distribution: ")
     while True:
         try:
@@ -153,7 +152,7 @@ def __in_adj_matrix(msg, size):
     :return adj_matrix: the adjency matrix representing the connections between a group of peers
     :type list<list<float>>
     """
-    print(msg + "\nExample input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1")
+    print(msg + "\nExample input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1\n")
     print("Warning: only symmetric matrices are accepted. Assymetric matrices may, but aren't guaranteed to converge!")
     print("Warning: this algorithm isn't well when adjency matrices have absorbent nodes or transient state sets!\n")
 
@@ -224,10 +223,10 @@ def __init_nodes_uptime_dict():
     :return nodes_uptime_dict: a dictionary the maps peers (state labels) to their machine uptimes.
     :type dict<str, float>
     """
-    number_of_nodes = __in_number_of_nodes("Enter the number of nodes you wish to have in the network [2, 9999]: ")
-    min_uptime = __in_min_node_uptime("Enter the mininum node uptime of nodes in the network [0.0, 100.0]: ")
+    number_of_nodes = __in_number_of_nodes("\nEnter the number of nodes you wish to have in the network [2, 9999]: ")
+    min_uptime = __in_min_node_uptime("\nEnter the mininum node uptime of nodes in the network [0.0, 100.0]: ")
     skewness = __in_samples_skewness()
-    print("Please wait ¯\\_(ツ)_/¯ Generation of uptimes for each node may take a while.")
+    print("\nPlease wait ¯\\_(ツ)_/¯ Generation of uptimes for each node may take a while.")
     samples = sg.generate_skewed_samples(skewness=skewness).tolist()
     print("Keep calm. We are almost there...")
     nodes_uptime_dict = {}
@@ -335,7 +334,7 @@ def __init_shared_dict(labels):
     shared_dict = {}
 
     print(
-        "Any file you want to simulate persistance of must be inside the following folder: ~/hive/app/static/shared\n"
+        "\nAny file you want to simulate persistance of must be inside the following folder: ~/hive/app/static/shared\n"
         "You may also want to keep a backup of such file in:  ~/hive/app/static/shared/shared_backups"
     )
 
@@ -383,8 +382,7 @@ def main(simfile_name):
     }
 
     with open(file_path, 'w') as outfile:
-        json.dump(simfile_json, outfile, indent=4, sort_keys=True)
-    # TODO Finish this function and review shared_dict
+        json.dump(simfile_json, outfile, indent=2)
 # endregion
 
 
