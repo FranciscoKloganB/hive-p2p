@@ -394,8 +394,6 @@ def main(simfile_name):
 # region terminal comsumption function __main__
 # noinspection DuplicatedCode
 if __name__ == "__main__":
-    __in_stochastic_vector("hello", 3)
-    """
     simfile_name_ = None
     try:
         options, args = getopt.getopt(sys.argv[1:], "ups:", ["usage", "plotuptimedistr", "simfile="])
@@ -411,5 +409,4 @@ if __name__ == "__main__":
                 main(simfile_name_)
     except getopt.GetoptError:
         usage()
-    """
 # endregion
