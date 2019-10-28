@@ -9,12 +9,13 @@ import functools
 import itertools
 
 import numpy as np
-
-from pathlib import Path
-from globals import SHARED_ROOT, SIMULATIONS_ROOT, DEBUG
 import label_generator as cg
 import skewed_distribution_generator as sg
+
+from pathlib import Path
+from decimal import Decimal
 from utils.randoms import excluding_randrange
+from globals import SHARED_ROOT, SIMULATIONS_ROOT
 
 
 # region usage
@@ -320,14 +321,15 @@ def __init_adj_matrix(size):
                 is_absorbent_or_transient = False
                 break
         if is_absorbent_or_transient:
+            size_minus_one = size - 1
             # make a bidirectional connection with a random state j, where i != j
             j = None
             if i == 0:
-                j = random.randrange(1, size)
-            elif i == size-1:
-                j = random.randrange(size - 1)
-            else:
-                j = excluding_randrange(0, i, i+1, size)
+                j = random.randrange(start=1, stop=size)  # any node j other than the first (0)
+            elif i == size_minus_one:
+                j = random.randrange(start=0, stop=size_minus_one)  # any node j except than the last (size-1)
+            elif 0 < i < size_minus_one:
+                j = excluding_randrange(start=0, stop=i, start_again=(i+1), stop_again=size)
             adj_matrix[i][j] = adj_matrix[j][i] = 1
     return adj_matrix
 
@@ -346,7 +348,7 @@ def __init_stochastic_vector(size):
 
     for i in range(size):
         if i == size - 1:
-            stochastic_vector[i] = round(summation_pool, 6)
+            stochastic_vector[i] = float(round(Decimal(summation_pool), 6))
             print(stochastic_vector)
             print(sum(stochastic_vector))
             return stochastic_vector
