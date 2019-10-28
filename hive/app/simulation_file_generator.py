@@ -348,12 +348,12 @@ def __init_stochastic_vector(size):
 
     for i in range(size):
         if i == size - 1:
-            stochastic_vector[i] = float(round(Decimal(summation_pool), 6))
+            stochastic_vector[i] = float(str(float(round(Decimal(summation_pool), 6)))[:8])
             print(stochastic_vector)
             print(sum(stochastic_vector))
             return stochastic_vector
         else:
-            probability = float(str(secure_random.uniform(0, summation_pool))[:9])  # Force all entries to 6 decimals
+            probability = float(str(secure_random.uniform(0, summation_pool))[:8])  # Force all entries to 6 decimals
             stochastic_vector[i] = probability
             summation_pool -= probability
 
