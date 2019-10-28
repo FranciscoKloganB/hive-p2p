@@ -348,7 +348,7 @@ def __init_stochastic_vector(size):
 
     for i in range(size):
         if i == size - 1:
-            stochastic_vector[i] = float(str(float(round(Decimal(summation_pool), 6)))[:8])
+            stochastic_vector[i] = float(round(Decimal(summation_pool), 6))
             print(stochastic_vector)
             print(sum(stochastic_vector))
             return stochastic_vector
