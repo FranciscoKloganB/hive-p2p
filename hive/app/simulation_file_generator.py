@@ -83,7 +83,7 @@ def __in_min_node_uptime(msg):
         try:
             min_uptime = float(min_uptime)
             if 0.0 <= min_uptime <= 100.0:
-                return min_uptime
+                return float(str(min_uptime)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
             min_uptime = input("Minimum node uptime should be in [0.0, 100.0]... Try again: ")
         except ValueError:
             min_uptime = input("Input should be an integer or a float... Try again: ")
@@ -100,9 +100,12 @@ def __in_samples_skewness():
     while True:
         try:
             skewness = float(skewness)
-            if -100.0 <= skewness <= 100.0:
-                return skewness
-            skewness = input("Skewness should be in [-100.0, 100.0]... Try again: ")
+            if -100.0 <= skewness < 0.0:
+                return float(str(skewness)[:10])  # truncates valid float value to up 6 decimals w/o any rounding!
+            elif 0.0 <= skewness <= 100.0:
+                return float(str(skewness)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
+            else:
+                skewness = input("Skewness should be in [-100.0, 100.0]... Try again: ")
         except ValueError:
             skewness = input("Input should be an integer or a float... Try again: ")
             continue
@@ -133,14 +136,31 @@ def __in_yes_no(msg):
     :return boolean: True or False
     :type bool
     """
-    char = input(msg + " y/n: ")
+    char = input(msg + " y/n: ").lower()
     while True:
-        if char == 'y' or char == 'Y':
+        if char == 'y':
             return True
-        elif char == 'n' or char == 'N':
+        elif char == 'n':
             return False
         else:
             char = input("Answer should be 'y' for yes or 'n' for no... Try again: ")
+
+
+def __in_file_labels(node_uptime_dict, labels_list):
+    """
+    :param node_uptime_dict: names of all peers in the system and their uptimes;
+    :type dict<str, float>
+    :param labels_list: names of all peers in the system; the length of labels must be >= desired_node_count
+    :type list<str>
+    :returns: a subset of :param labels_list; labels selected by the user which are known to exist
+    :type list<str>
+    """
+    chosen_labels = input("The following labels are available:\n{}\nInsert a list of the ones you desire...\n"
+                          "Example of a five label list input: a b c aa bcd\nTIP: You are not required to input"
+                          "all labels manually...\nIf you assign less labels than required for the file "
+                          "or accidently assign an unexisting label, the missing labels are automatically chosen"
+                          "for you!\n".format(node_uptime_dict)).strip().split(" ")
+    return [*filter(lambda label: label in labels_list, chosen_labels)]
 
 
 def __in_adj_matrix(msg, size):
@@ -210,8 +230,8 @@ def __in_stochastic_vector(msg, size):
         print(row_vector)
         if len(row_vector) == size:
             try:
-                row_vector = [float(char) for char in row_vector]  # transform line in stochastic vector
-                if round(sum(row_vector), 6) == 1:
+                row_vector = [float(number[:9]) for number in row_vector]  # transform line in stochastic vector
+                if round(sum(row_vector), 6) == 1:  # this round sum deals with machine's incorrect 0.1 representation
                     return row_vector
             except ValueError:
                 pass
@@ -234,34 +254,44 @@ def __init_nodes_uptime_dict():
     nodes_uptime_dict = {}
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
         uptime = abs(samples.pop())  # gets and removes last element in samples to assign it to label
-        nodes_uptime_dict[label] = round(uptime, 6) if uptime > min_uptime else round(min_uptime, 6)
+        if uptime > 100.0:
+            nodes_uptime_dict[label] = 100.0
+        elif uptime > min_uptime:
+            nodes_uptime_dict[label] = float(str(uptime)[:9])
+        else:
+            nodes_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
     samples.clear()
     return nodes_uptime_dict
 
 
-def __init_file_state_labels(desired_node_count, labels):
+def __init_file_state_labels(desired_node_count, node_uptime_dict, labels_list):
     """
     :param desired_node_count: the number of peers that will be responsible for sharing a file
     :type int
-    :param labels: names of all peers in the system; the length of labels must be >= desired_node_count
+    :param node_uptime_dict: names of all peers in the system and their uptimes;
+    :type dict<str, float>
+    :param labels_list: names of all peers in the system; the length of labels must be >= desired_node_count
     :type list<str>
     :return chosen_labels: a subset of :param labels; the peers from the system that were selected for sharing
     :type list<str>
     """
 
-    if len(labels) < desired_node_count:
+    if len(labels_list) < desired_node_count:
         raise RuntimeError("User requested that file is shared by more peers than the number of peers in the system")
 
     chosen_labels = []
-    labels_copy = copy.deepcopy(labels)
+    labels_copy = copy.deepcopy(labels_list)
 
-    current_node_count = 0
-    while current_node_count < desired_node_count:
-        current_node_count += 1
+    if __in_yes_no("Do you wish to manually insert some labels for this file?"):
+        chosen_labels = __in_file_labels(node_uptime_dict, labels_list)
+        labels_copy = [label for label in labels_copy if label not in chosen_labels]
+
+    chosen_count = len(chosen_labels)
+    while chosen_count < desired_node_count:
+        chosen_count += 1
         choice = np.random.choice(a=labels_copy)
         labels_copy.remove(choice)
         chosen_labels.append(choice)
-
     return chosen_labels
 
 
@@ -317,12 +347,10 @@ def __init_stochastic_vector(size):
 
     for i in range(size):
         if i == size - 1:
-            stochastic_vector[i] = round(summation_pool, 6)
-            if DEBUG:
-                logging.info("desired distribution vector summation value: {}".format(np.sum(stochastic_vector)))
+            stochastic_vector[i] = summation_pool   # All previous entries were 6 decimals, thus this one forcefully is
             return stochastic_vector
         else:
-            probability = round(secure_random.uniform(0, summation_pool), 6)
+            probability = float(str(secure_random.uniform(0, summation_pool))[:9])  # Force all entries to 6 decimals
             stochastic_vector[i] = probability
             summation_pool -= probability
 
@@ -330,12 +358,13 @@ def __init_stochastic_vector(size):
 def __init_shared_dict(labels):
     """
     Creates the "shared" key of simulation file (json file)
-    :param labels: names of all peers in the system; the length of labels must be >= desired_node_count
-    :type list<str>
+    :param labels: names of all peers in the system and their uptimes, the size of labels must be >= desired_node_count
+    :type dict<str, float>
     :return shared_dict: the dictionary containing data respecting files to be shared in the system
     :type dict<dict<obj>>
     """
     shared_dict = {}
+    labels_list = [*labels.keys()]
 
     print(
         "\nAny file you want to simulate persistance of must be inside the following folder: ~/hive/app/static/shared\n"
@@ -348,7 +377,7 @@ def __init_shared_dict(labels):
         file_name = __in_file_name("Insert name of the file you wish to persist (include extension if it has one): ")
 
         shared_dict[file_name] = {}
-        shared_dict[file_name]["state_labels"] = __init_file_state_labels(n, labels)
+        shared_dict[file_name]["state_labels"] = __init_file_state_labels(n, labels, labels_list)
 
         if __in_yes_no("Would you like to manually construct an adjency matrix?"):
             shared_dict[file_name]["adj_matrix"] = __in_adj_matrix("Insert a row major {}x{} matrix: ".format(n, n), n)
@@ -383,11 +412,11 @@ def main(simfile_name):
     simfile_json = {
         "max_stages": __in_max_stages(),
         "nodes_uptime": nodes_uptime_dict,
-        "shared": __init_shared_dict([*nodes_uptime_dict.keys()])
+        "shared": __init_shared_dict(nodes_uptime_dict)
     }
 
     with open(file_path, 'w') as outfile:
-        json.dump(simfile_json, outfile, indent=2)
+        json.dump(simfile_json, outfile)
 # endregion
 
 
