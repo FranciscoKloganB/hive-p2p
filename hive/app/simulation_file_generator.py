@@ -173,7 +173,7 @@ def __in_adj_matrix(msg, size):
     :return adj_matrix: the adjency matrix representing the connections between a group of peers
     :type list<list<float>>
     """
-    print(msg + "\nExample input for 3x3 matrix nodes:\n1 1 1\n1 1 0\n0 1 1\n")
+    print(msg + "\nExample input for 3x3 matrix nodes would be:\n1 1 1\n1 1 0\n0 1 1\n")
     print("Warning: only symmetric matrices are accepted. Assymetric matrices may, but aren't guaranteed to converge!")
     print("Warning: this algorithm isn't well when adjency matrices have absorbent nodes or transient state sets!\n")
 
@@ -224,10 +224,9 @@ def __in_stochastic_vector(msg, size):
     :return row_vector: the row_vector representing the desired distribution (steady state vector)
     :type <list<float>
     """
-    print(msg + "\nExample input stochatic vector for three nodes sharing a file:\n0.35 0.15 0.5")
+    print(msg + "\nExample input stochatic vector for three nodes sharing a file would be: 0.35 0.15 0.5")
     while True:
         row_vector = input().strip().split(" ")
-        print(row_vector)
         if len(row_vector) == size:
             try:
                 row_vector = [float(number[:9]) for number in row_vector]  # transform line in stochastic vector
@@ -282,7 +281,7 @@ def __init_file_state_labels(desired_node_count, node_uptime_dict, labels_list):
     chosen_labels = []
     labels_copy = copy.deepcopy(labels_list)
 
-    if __in_yes_no("Do you wish to manually insert some labels for this file?"):
+    if __in_yes_no("\nDo you wish to manually insert some labels for this file?"):
         chosen_labels = __in_file_labels(node_uptime_dict, labels_list)
         labels_copy = [label for label in labels_copy if label not in chosen_labels]
 
@@ -347,7 +346,9 @@ def __init_stochastic_vector(size):
 
     for i in range(size):
         if i == size - 1:
-            stochastic_vector[i] = summation_pool   # All previous entries were 6 decimals, thus this one forcefully is
+            stochastic_vector[i] = round(summation_pool, 6)
+            print(stochastic_vector)
+            print(sum(stochastic_vector))
             return stochastic_vector
         else:
             probability = float(str(secure_random.uniform(0, summation_pool))[:9])  # Force all entries to 6 decimals
