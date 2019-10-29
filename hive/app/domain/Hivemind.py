@@ -1,5 +1,6 @@
 import os
 import json
+import math
 import numpy as np
 import pandas as pd
 import domain.metropolis_hastings as mh
@@ -203,11 +204,11 @@ class Hivemind:
         """
         online_workers_list = self.__filter_and_map_online_workers()
         for stage in range(self.max_stages):
-            self.__try_remove_some_workers(online_workers_list)
+            self.__try_remove_some_workers(online_workers_list, stage)
             self.__remaining_workers_execute()
             self.__process_stage_results(stage)
 
-    def __try_remove_some_workers(self, online_workers):
+    def __try_remove_some_workers(self, online_workers, stage=None):
         """
         For each online worker, if they are online, see if they remain alive for the next stage or if they die,
         according to their uptime record.
@@ -218,9 +219,9 @@ class Hivemind:
             uptime = self.node_uptime_dict[worker.name] / 100
             remains_alive = np.random.choice([True, False], p=[uptime, 1 - uptime])
             if not remains_alive:
-                self.__remove_worker(worker, clean_kill=False)
+                self.__remove_worker(worker, clean_kill=False, stage=stage)
 
-    def __remove_worker(self, target, clean_kill=True):
+    def __remove_worker(self, target, clean_kill=True, stage=None):
         """
         :param target: worker who is going to be removed from the simulation network
         :type domain.Worker
@@ -230,18 +231,23 @@ class Hivemind:
         if clean_kill:
             target.leave_hive(orderly=True)
             self.worker_status[target] = Status.OFFLINE
+            # TODO future-iterations:
+            #  Recalculate ddv, redistribute ddv over remaining nodes
         else:
+            out_file = open("outfile.txt", "a+")
             file_parts = target.request_shared_file_dict()
             for sf_name, sfp_id in file_parts.items():
-                # TODO:
+                # TODO this-iteration:
                 #  this code will need improvement, because we are assuming that when the 'bestNode' always has the
                 #  highest file count...
                 data = self.sf_data[sf_name]
-                failure_threshold = data.parts_count - data.parts_count * data.highest_density_node_density
                 worker_parts_count = len(sfp_id)
+                failure_threshold = data.parts_count - math.ceil(data.parts_count * data.highest_density_node_density)
                 if worker_parts_count > failure_threshold:
-                    # TODO here
-                    pass
+                    out_file.write("Worker ({}) died with {} files belonging to {}, threshold was {}, at stage {}\n"
+                                   .format(target, sf_name, worker_parts_count, failure_threshold, stage))
+                    # TODO remove this file from simulation
+            out_file.close()
             target.leave_hive(orderly=False)
             self.worker_status[target] = Status.SUSPECT
 
