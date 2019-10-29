@@ -221,6 +221,15 @@ class Hivemind:
             if not remains_alive:
                 self.__remove_worker(worker, clean_kill=False, stage=stage)
 
+    def __rebuild_hive(self, worker):
+        # TODO future-iterations (simulations don't use orderly leavings and probably never will, thus not urgent):
+        #  calculate new ddv (uniform distribution of dead node density to other nodes)
+        #  calculate new transition matrix (feed a new adj matrix to mh algorithm along with new ddv)
+        #  update FileData fields
+        #  update any sf_structure as required
+        #  broadcast new transition.vectors to respective sharers
+        pass
+
     def __remove_worker(self, target, clean_kill=True, stage=None):
         """
         :param target: worker who is going to be removed from the simulation network
@@ -231,8 +240,7 @@ class Hivemind:
         if clean_kill:
             target.leave_hive(orderly=True)
             self.worker_status[target] = Status.OFFLINE
-            # TODO future-iterations:
-            #  Recalculate ddv, redistribute ddv over remaining nodes
+            self.__rebuild_hive(target)
         else:
             out_file = open("outfile.txt", "a+")
             file_parts = target.request_shared_file_dict()
