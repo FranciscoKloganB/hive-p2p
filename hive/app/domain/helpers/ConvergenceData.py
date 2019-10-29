@@ -57,10 +57,8 @@ class ConvergenceData:
     # region static methods
     @staticmethod
     def equal_distributions(one, another):
-        row_count = len(one)
-        if row_count != len(another):
+        if len(one) != len(another):
             return False
         else:
-            np.allclose(one, another, rtol=1e-03, atol=1e-05)  # TODO find best rtol and atol params
-        return True
+            return np.allclose(one, another, rtol=1e-03, atol=1e-05)  # TODO find best rtol and atol params
     # endregion
