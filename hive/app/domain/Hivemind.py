@@ -9,7 +9,7 @@ from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
 from domain.helpers.ConvergenceData import ConvergenceData
-from globals import SHARED_ROOT
+from globals.globals import SHARED_ROOT
 
 
 class Hivemind:
