@@ -106,6 +106,13 @@ class Worker:
         self.name = None
         self.file_parts = None
 
+    def request_shared_file_dict(self):
+        """
+        :return file_parts: dictionary mapping file name to dictionary of file part integers and respective raw content
+        :type dict<str, dict<str, SharedFilePart>
+        """
+        return self.file_parts
+
     def get_next_state(self, file_name):
         """
         :param file_name: the name of the file the part to be routed belongs to

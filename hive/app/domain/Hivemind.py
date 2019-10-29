@@ -8,6 +8,7 @@ from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
+from domain.helpers.FileData import FileData
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT
 
@@ -24,6 +25,8 @@ class Hivemind:
     :type dict<domain.Worker, domain.Status(Enum)>
     :ivar shared_files: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
+    :ivar sf_data: part_name is a key to containing general information about the file
+    :type tuple<str, domain.Helpers.FileData>
     :ivar sf_desired_distribution: registers the desired distribution for a file, including state labels
     :type dict<str, pandas.Dataframe>
     :ivar sf_current_distribution: keeps track of each shared file distribution, at each discrete time stage
@@ -54,6 +57,7 @@ class Hivemind:
             self.workers = {}
             self.worker_status = {}
             self.shared_files = {}
+            self.sf_data = {}
             self.sf_desired_distribution = {}
             self.sf_current_distribution = {}
             self.sf_convergence_data = {}
@@ -227,8 +231,17 @@ class Hivemind:
             target.leave_hive(orderly=True)
             self.worker_status[target] = Status.OFFLINE
         else:
-            # TODO:
-            #  Check if simulation fails because killed worker had more than N - K parts (see github)
+            file_parts = target.request_shared_file_dict()
+            for sf_name, sfp_id in file_parts.items():
+                # TODO:
+                #  this code will need improvement, because we are assuming that when the 'bestNode' always has the
+                #  highest file count...
+                data = self.sf_data[sf_name]
+                failure_threshold = data.parts_count - data.parts_count * data.highest_density_node_density
+                worker_parts_count = len(sfp_id)
+                if worker_parts_count > failure_threshold:
+                    # TODO here
+                    pass
             target.leave_hive(orderly=False)
             self.worker_status[target] = Status.SUSPECT
 
