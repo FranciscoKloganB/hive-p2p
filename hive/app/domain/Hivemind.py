@@ -18,7 +18,7 @@ class Hivemind:
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :cvar READ_SIZE: defines the max amount of bytes are read at a time from file to be shared
     :type int
-    :ivar worker: keeps track workers objects in the simulation
+    :ivar workers: keeps track workers objects in the simulation
     :type dict<str, domain.Worker>
     :ivar worker_status: keeps track workers objects in the simulation regarding their health
     :type dict<domain.Worker, domain.Status(Enum)>
@@ -81,15 +81,20 @@ class Hivemind:
             self.workers[name] = worker
             self.worker_status[worker] = Status.ONLINE
 
-    def __set_worker_routing_tables(self, worker, file_name, state_labels, transition_vector):
+    def __set_worker_routing_tables(self, worker, file_name, transition_vector):
         """
         Allows given worker to decide to whom he should send a named file part when he receives it.
         i.e.: Neither workers, nor file parts, have a transition matrix, instead, each worker knows for each named file
         the column vector containing the transition probabilities for that file. For a given file, if all workers were
         merged into one, the concatenation of their column vectors would result into the correct transition matrix.
+        :param worker: the worker whose routing table will be updated
+        :type domain.Worker
+        :param file_name: name of the shared file to which the transition_vector will be mapped to
+        :type str
+        :param transition_vector: state labeled transition probabilities for all sharers of the named file
+        :type list<float>
         """
-        df = pd.DataFrame(transition_vector, index=state_labels, columns=[*worker.name])
-        worker.set_file_routing(file_name, df)
+        worker.set_file_routing(file_name, transition_vector)
 
     def __uniformely_assign_parts_to_workers(self, shared_files_dict, enforce_online=True):
         """
@@ -183,8 +188,8 @@ class Hivemind:
             transition_matrix = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, states)
             # Split transition matrix into column vectors
             for worker_name in states:
-                transition_vector = [*transition_matrix[worker_name].values]  # gets worker transition vector as list
-                self.__set_worker_routing_tables(self.worker_status[worker_name], file_name, states, transition_vector)
+                transition_vector = transition_matrix.loc[:, worker_name]  # <label, value> pairs in column[worker_name]
+                self.__set_worker_routing_tables(self.workers[worker_name], file_name, transition_vector)
     # endregion
 
     # region simulation execution methods

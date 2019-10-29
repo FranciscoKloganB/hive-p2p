@@ -113,10 +113,10 @@ class Worker:
         :return: the name of the worker to whom the file should be routed too
         :type: str
         """
-        file_routing_table = self.__routing_table[file_name]
-        row_labels = [*file_routing_table.index.values]
-        label_probabilities = [*file_routing_table[self.name]]
-        return np.random.choice(a=row_labels, p=label_probabilities)
+        routing_data = self.__routing_table[file_name]
+        row_labels = [*routing_data.index.values]  # gets the names of sharers as a list
+        label_probabilities = [*routing_data[self.name]]  # gets the probabilities of sending to corresponding sharer
+        return np.random.choice(a=row_labels, p=label_probabilities).item()  # converts numpy.str to python str
     # endregion
 
     # region static methods
