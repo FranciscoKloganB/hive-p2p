@@ -222,12 +222,21 @@ class Hivemind:
                 self.__remove_worker(worker, clean_kill=False, stage=stage)
 
     def __rebuild_hive(self, worker):
-        # TODO future-iterations (simulations don't use orderly leavings and probably never will, thus not urgent):
-        #  calculate new ddv (uniform distribution of dead node density to other nodes)
-        #  calculate new transition matrix (feed a new adj matrix to mh algorithm along with new ddv)
-        #  update FileData fields
-        #  update any sf_structure as required
-        #  broadcast new transition.vectors to respective sharers
+        # TODO:
+        #  future-iterations (simulations don't use orderly leavings and probably never will, thus not urgent):
+        #  1. calculate new ddv (uniform distribution of dead node density to other nodes)
+        #  2. calculate new transition matrix (feed a new adj matrix to mh algorithm along with new ddv)
+        #  3. update FileData fields
+        #  4. update any self.sf_* structure as required
+        #  5. broadcast new transition.vectors to respective sharers
+        #  6. upgrade to byzantine tolerante
+        pass
+
+    def __receive_complain(self, suspects_name):
+        # TODO:
+        #  future-iterations (the goal of the thesis is not to be do a full fledged dependable network, just a demo)
+        #  1. When byzantine complaints > threshold
+        #       __rebuild_hive(suspect_name)
         pass
 
     def __remove_worker(self, target, clean_kill=True, stage=None):
@@ -242,22 +251,32 @@ class Hivemind:
             self.worker_status[target] = Status.OFFLINE
             self.__rebuild_hive(target)
         else:
+            target.leave_hive(orderly=False)
+            self.worker_status[target] = Status.OFFLINE
+
             out_file = open("outfile.txt", "a+")
+
             file_parts = target.request_shared_file_dict()
             for sf_name, sfp_id in file_parts.items():
-                # TODO this-iteration:
-                #  this code will need improvement, because we are assuming that when the 'bestNode' always has the
-                #  highest file count...
                 data = self.sf_data[sf_name]
                 worker_parts_count = len(sfp_id)
                 failure_threshold = data.parts_count - math.ceil(data.parts_count * data.highest_density_node_density)
+
                 if worker_parts_count > failure_threshold:
-                    out_file.write("Worker ({}) died with {} files belonging to {}, threshold was {}, at stage {}\n"
-                                   .format(target, sf_name, worker_parts_count, failure_threshold, stage))
-                    # TODO remove this file from simulation
+                    # TODO this-iteration:
+                    #  1. remove sf_name from simulation
+                    #   1.1 broadcast message to all workers asking to discard sf_name_parts and sf_transition_vectors
+                    #   1.2 remove all data related with file_name from self structures
+                    out_file.write("Simulation failure at stage {}, for file {}, because of worker {} sudden death...\n"
+                                   "worker_parts_count {} > threshold {}, \n"
+                                   .format(stage, sf_name, target, worker_parts_count, failure_threshold))
+                else:
+                    # TODO this-iteration:
+                    #  1. assume perfect failure detector
+                    #  3. call __rebuild_hive for remaining nodes
+                    out_file.write("Simulation recovered from sudden death at stage {}, for file {}...\n"
+                                   .format(stage, sf_name, target))
             out_file.close()
-            target.leave_hive(orderly=False)
-            self.worker_status[target] = Status.SUSPECT
 
     def __remaining_workers_execute(self):
         online_workers_list = self.__filter_and_map_online_workers()
