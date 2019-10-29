@@ -2,6 +2,7 @@ import random
 import numpy as np
 import logging
 
+
 def excluding_randrange(start, stop, start_again, stop_again, step=1):
     if (stop <= start) or (stop_again <= start_again) or (start_again <= stop):
         logging.error("{} < {} < {} < {}\n".format(start, stop, start_again, stop_again))

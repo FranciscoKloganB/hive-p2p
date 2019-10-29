@@ -5,17 +5,15 @@ import json
 import getopt
 import logging
 import random
-import functools
 import itertools
 
 import numpy as np
-import label_generator as cg
-import skewed_distribution_generator as sg
+from pyscripts import skewed_distribution_generator as sg, label_generator as cg
 
 from pathlib import Path
 from decimal import Decimal
 from utils.randoms import excluding_randrange
-from globals import SHARED_ROOT, SIMULATIONS_ROOT
+from globals.globals import SHARED_ROOT, SIMULATIONS_ROOT
 
 
 # region usage
