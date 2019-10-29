@@ -173,8 +173,7 @@ class Hivemind:
                 transition_vector = [*transition_matrix[worker_name].values]
                 self.__set_worker_routing_tables(self.worker_status[worker_name], file_name, states, transition_vector)
 
-    @staticmethod
-    def __synthesize_transition_matrix(adj_matrix, desired_distribution, states):
+    def __synthesize_transition_matrix(self, adj_matrix, desired_distribution, states):
         """
         :param states: list of worker names who form an hive
         :type list<str>
@@ -184,10 +183,6 @@ class Hivemind:
         :return: A matrix with named lines and columns with the computed transition matrix
         :type pandas.DataFrame
         """
-        # TODO:
-        #  1. metropolis hastings algorithm to synthetize the transition matrix
-        #  adj_matrix = pd.DataFrame(adj_matrix, index=states, columns=states).transpose() w/o being a df
-        #  obtain unlabeled transition_matrix from m-h algorithm,
         transition_matrix = mh.metropolis_algorithm(adj_matrix, desired_distribution, column_major_out=True)
         return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
