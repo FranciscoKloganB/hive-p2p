@@ -178,9 +178,9 @@ class Hivemind:
         """
         :param states: list of worker names who form an hive
         :type list<str>
-        :param adj_matrix: list of probability vectors. Each vector, represents a column, and belogns to the same index label
+        :param adj_matrix: adjacency matrix representing connections between various states
         :type list<list<float>>
-        :param desired_distribution: a single column vector representing the file distribution that must be achieved by the workers
+        :param desired_distribution: column vector representing the distribution that must be achieved by the workers
         :return: A matrix with named lines and columns with the computed transition matrix
         :type pandas.DataFrame
         """
@@ -205,8 +205,8 @@ class Hivemind:
 
     def __try_remove_some_workers(self, online_workers):
         """
-        For each online worker, if they are online, see if they remain alive for the next stage or if they die, according
-        to their uptime record.
+        For each online worker, if they are online, see if they remain alive for the next stage or if they die,
+        according to their uptime record.
         :param online_workers: collection of workers that are known to be online
         :type list<domain.Worker>
         """
