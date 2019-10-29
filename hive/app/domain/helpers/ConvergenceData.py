@@ -1,3 +1,5 @@
+import numpy as np
+
 class ConvergenceData:
     # region docstrings
     """
@@ -58,13 +60,7 @@ class ConvergenceData:
         row_count = len(one)
         if row_count != len(another):
             return False
-        for i in range(row_count):
-            deviation = another[i] * ConvergenceData.__DEVIATION_TOLERANCE
-            lower_bound = another[i] - deviation
-            upper_bound = another[i] + deviation
-            if lower_bound < one[i] < upper_bound:
-                continue
-            else:
-                return False
+        else:
+            np.allclose(one, another, rtol=1e-03, atol=1e-05)  # TODO find best rtol and atol params
         return True
     # endregion
