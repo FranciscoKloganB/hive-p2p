@@ -8,7 +8,7 @@ import random
 import itertools
 
 import numpy as np
-from pyscripts import skewed_distribution_generator as sg, label_generator as cg
+from scripts.pyscripts import skewed_distribution_generator as sg, label_generator as cg
 
 from pathlib import Path
 from decimal import Decimal
