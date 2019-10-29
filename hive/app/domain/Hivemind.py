@@ -150,6 +150,19 @@ class Hivemind:
     # endregion
 
     # region metropolis hastings and transition vector assignment methods
+    def __synthesize_transition_matrix(self, adj_matrix, desired_distribution, states):
+        """
+        :param states: list of worker names who form an hive
+        :type list<str>
+        :param adj_matrix: adjacency matrix representing connections between various states
+        :type list<list<float>>
+        :param desired_distribution: column vector representing the distribution that must be achieved by the workers
+        :return: A matrix with named lines and columns with the computed transition matrix
+        :type pandas.DataFrame
+        """
+        transition_matrix = mh.metropolis_algorithm(adj_matrix, desired_distribution, column_major_out=True)
+        return pd.DataFrame(transition_matrix, index=states, columns=states)
+
     def __synthesize_shared_files_transition_matrices(self, shared_dict):
         """
         For all keys in the dictionary, obtain file names, the respective adjacency matrix and the desired distribution
@@ -170,21 +183,8 @@ class Hivemind:
             transition_matrix = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, states)
             # Split transition matrix into column vectors
             for worker_name in states:
-                transition_vector = [*transition_matrix[worker_name].values]
+                transition_vector = [*transition_matrix[worker_name].values]  # gets worker transition vector as list
                 self.__set_worker_routing_tables(self.worker_status[worker_name], file_name, states, transition_vector)
-
-    def __synthesize_transition_matrix(self, adj_matrix, desired_distribution, states):
-        """
-        :param states: list of worker names who form an hive
-        :type list<str>
-        :param adj_matrix: adjacency matrix representing connections between various states
-        :type list<list<float>>
-        :param desired_distribution: column vector representing the distribution that must be achieved by the workers
-        :return: A matrix with named lines and columns with the computed transition matrix
-        :type pandas.DataFrame
-        """
-        transition_matrix = mh.metropolis_algorithm(adj_matrix, desired_distribution, column_major_out=True)
-        return pd.DataFrame(transition_matrix, index=states, columns=states)
     # endregion
 
     # region simulation execution methods
