@@ -291,7 +291,7 @@ class Hivemind:
         else:
             return HttpCodes.NOT_FOUND
 
-    def simulate_redistribution(self, parts):
+    def redistribute_files(self, parts):
         """
         :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
         :type dict<str, domain.SharedFilePart>

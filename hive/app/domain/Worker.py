@@ -101,7 +101,7 @@ class Worker:
         :type bool
         """
         if orderly:
-            self.hivemind.simulate_redistribution(self.file_parts)
+            self.hivemind.redistribute_files(self.file_parts)
         self.hivemind = None
         self.name = None
         self.file_parts = None
