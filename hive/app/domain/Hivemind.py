@@ -273,7 +273,7 @@ class Hivemind:
         for worker in online_workers_list:
             worker.do_stage()
 
-    def simulate_transmission(self, dest_worker, part):
+    def route_file_part(self, dest_worker, part):
         """
         :param dest_worker: destinatary of the file part
         :type domain.Worker OR str (domain.Worker.name)
@@ -291,7 +291,7 @@ class Hivemind:
         else:
             return HttpCodes.NOT_FOUND
 
-    def redistribute_files(self, parts):
+    def redistribute_file_parts(self, parts):
         """
         :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
         :type dict<str, domain.SharedFilePart>

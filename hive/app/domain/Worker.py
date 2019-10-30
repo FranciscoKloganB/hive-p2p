@@ -87,7 +87,7 @@ class Worker:
                 if dest_worker == self.name:
                     tmp[part_id] = sfp_obj
                 else:
-                    response_code = self.hivemind.simulate_transmission(dest_worker, sfp_obj)
+                    response_code = self.hivemind.route_file_part(dest_worker, sfp_obj)
                     if response_code != HttpCodes.OK:
                         # TODO:
                         #  make use of the HttpCode responses with more than a binary behaviour
@@ -101,7 +101,7 @@ class Worker:
         :type bool
         """
         if orderly:
-            self.hivemind.redistribute_files(self.file_parts)
+            self.hivemind.redistribute_file_parts(self.file_parts)
         self.hivemind = None
         self.name = None
         self.file_parts = None
