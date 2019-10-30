@@ -1,4 +1,4 @@
-from domain.helpers.ConvergenceData import ConvergenceData
+from math import ceil
 
 class FileData:
     # region docstrings
@@ -38,4 +38,13 @@ class FileData:
         self.desired_distribution = ddv
         self.current_distritubiton = cdv
         self.convergence_data = convergence_data
+    # endregion
+
+    # region instance class methods
+    def get_failure_threshold(self):
+        """
+        :returns: the failure threshold for the given file
+        :type int
+        """
+        return self.parts_count - ceil(self.parts_count * self.highest_density_node_density)
     # endregion

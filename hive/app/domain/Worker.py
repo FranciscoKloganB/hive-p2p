@@ -1,6 +1,7 @@
 import numpy as np
 
 from utils import crypto
+from copy import deepcopy
 from utils.ResourceTracker import ResourceTracker as rT
 from domain.Enums import HttpCodes
 
@@ -94,28 +95,26 @@ class Worker:
                         tmp[part_id] = sfp_obj
             self.file_parts[part_name] = tmp
 
-    def leave_hive(self, orderly=True):
+    def leave_hive(self):
         """
-        Resets the field of the Worker instance
-        :param orderly: When True asks the hivemind (master node) to redistribute files belonging to the Worker instance
-        :type bool
+        Resets the field of the Worker instance, returns a deep copy of self.file_parts for hivemind convinience!
+        Actual method shouldn't return anything! I repeat, this is just a shortcut! Thus is not docstringed.
         """
-        if orderly:
-            self.hivemind.redistribute_file_parts(self.file_parts)
+        sf_parts = deepcopy(self.send_shared_parts())
         self.hivemind = None
-        self.name = None
         self.file_parts = None
+        return sf_parts
 
     def drop_shared_file(self, shared_file_name):
         # TODO
         raise NotImplementedError
 
-    def request_shared_file_dict(self):
+    def send_shared_parts(self):
         """
-        :return file_parts: dictionary mapping file name to dictionary of file part integers and respective raw content
-        :type dict<str, dict<str, SharedFilePart>
+        :returns a deep copy of self.file_parts
+        :rtype dict<str, dict<int, domain.SharedFileParts>>
         """
-        return self.file_parts
+        return deepcopy(self.file_parts)
 
     def get_next_state(self, file_name):
         """

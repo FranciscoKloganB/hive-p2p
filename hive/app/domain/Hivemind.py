@@ -198,26 +198,7 @@ class Hivemind:
                 worker.do_stage()
             self.__process_stage_results(stage)
 
-    def __remove_some_workers(self, online_workers, stage=None):
-        """
-        For each online worker, if they are online, see if they remain alive for the next stage or if they die,
-        according to their uptime record.
-        :param online_workers: collection of workers that are known to be online
-        :type list<domain.Worker>
-        :returns surviving_workers: subset of online_workers, who weren't selected to be removed from the hive
-        :rtype list<domain.Worker>
-        """
-        surviving_workers = []
-        for worker in online_workers:
-            uptime = self.node_uptime_dict[worker.name] / 100
-            remains_alive = np.random.choice([True, False], p=[uptime, 1 - uptime])
-            if remains_alive:
-                surviving_workers.append(worker)
-            else:
-                self.__remove_worker(worker, clean_kill=False, stage=stage)
-        return surviving_workers
-
-    def __rebuild_hive(self, worker):
+    def redistribute_transition_matrices(self, worker_name):
         # TODO:
         #  future-iterations (simulations don't use orderly leavings and probably never will, thus not urgent):
         #  1. calculate new ddv (uniform distribution of dead node density to other nodes)
@@ -226,14 +207,14 @@ class Hivemind:
         #  4. update any self.sf_* structure as required
         #  5. broadcast new transition.vectors to respective sharers
         #  6. upgrade to byzantine tolerante
-        pass
+        raise NotImplementedError
 
-    def __receive_complain(self, suspects_name):
+    def receive_complaint(self, suspects_name):
         # TODO:
         #  future-iterations (the goal of the thesis is not to be do a full fledged dependable network, just a demo)
         #  1. When byzantine complaints > threshold
         #       __rebuild_hive(suspect_name)
-        pass
+        raise NotImplementedError
 
     def __remove_worker(self, target, clean_kill=True, stage=None):
         """
@@ -242,39 +223,26 @@ class Hivemind:
         :param clean_kill: When True worker will ask for his files to be redistributed before leaving the network
         :type bool
         """
+        sf_parts = target.leave_hive()
         if clean_kill:
-            target.leave_hive(orderly=True)
             self.worker_status[target] = Status.OFFLINE
-            self.__rebuild_hive(target)
+            self.redistribute_transition_matrices(target.name)
+            self.redistribute_file_parts(sf_parts)
         else:
-            target.leave_hive(orderly=False)
-            self.worker_status[target] = Status.OFFLINE
-
-            out_file = open("outfile.txt", "a+")
-
-            file_parts = target.request_shared_file_dict()
-            for sf_name, sfp_id in file_parts.items():
-                data = self.sf_data[sf_name]
-                worker_parts_count = len(sfp_id)
-                failure_threshold = data.parts_count - math.ceil(data.parts_count * data.highest_density_node_density)
-
-                if worker_parts_count > failure_threshold:
-                    worker_names = [*self.sf_data[sf_name].desired_distribution.index]
-                    for worker_name in worker_names:
-                        worker = self.workers[worker_name]
-                        worker.drop_shared_file(shared_file_name=sf_name)
-                        self.__drop_shared_file(shared_file_name=sf_name)
-                    #   1.1 broadcast message to all workers asking to discard sf_name_parts and sf_transition_vectors
-                    out_file.write("Simulation failure at stage {}, for file {}, because of worker {} sudden death...\n"
-                                   "worker_parts_count {} > threshold {}, \n"
-                                   .format(stage, sf_name, target, worker_parts_count, failure_threshold))
+            self.worker_status[target] = Status.SUSPECT
+            for sf_name, sfp_id in sf_parts.items():
+                sf_data = self.sf_data[sf_name]
+                parts_count = len(sfp_id)
+                threshold = sf_data.get_failure_threshold()
+                if parts_count > threshold:
+                    # Can't recover from this situation
+                    self.__stop_tracking_shared_file(stage, sf_name, target, parts_count, threshold)
                 else:
                     # TODO this-iteration:
-                    #  1. assume perfect failure detector
-                    #  3. call __rebuild_hive for remaining nodes
-                    out_file.write("Simulation recovered from sudden death at stage {}, for file {}...\n"
-                                   .format(stage, sf_name, target))
-            out_file.close()
+                    #  1. assume perfect failure detector thus regardless
+                    #  2. call self.redistribute_transition_matrix(target)
+                    #  3. ask second best node to rebuild missing files
+                    raise NotImplementedError
 
     def route_file_part(self, dest_worker, part):
         """
@@ -298,10 +266,11 @@ class Hivemind:
 
     def redistribute_file_parts(self, parts):
         """
-        :param parts: The parts the caller owned, before announcing his retirement, which will be sent to other workers
+        :param parts: The file parts to be redistributed in the system
         :type dict<str, domain.SharedFilePart>
         """
-        self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
+        if parts:
+            self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
     # endregion
 
     # region helper methods
@@ -320,6 +289,25 @@ class Hivemind:
     # endregion
 
     # region stage processing
+    def __remove_some_workers(self, online_workers, stage=None):
+        """
+        For each online worker, if they are online, see if they remain alive for the next stage or if they die,
+        according to their uptime record.
+        :param online_workers: collection of workers that are known to be online
+        :type list<domain.Worker>
+        :returns surviving_workers: subset of online_workers, who weren't selected to be removed from the hive
+        :rtype list<domain.Worker>
+        """
+        surviving_workers = []
+        for worker in online_workers:
+            uptime = self.node_uptime_dict[worker.name] / 100
+            remains_alive = np.random.choice([True, False], p=[uptime, 1 - uptime])
+            if remains_alive:
+                surviving_workers.append(worker)
+            else:
+                self.__remove_worker(worker, clean_kill=False, stage=stage)
+        return surviving_workers
+
     def __process_stage_results(self, stage):
         """
         For each file being shared on this hivemind network, check if its desired distribution has been achieved.
@@ -362,11 +350,20 @@ class Hivemind:
     # endregion
 
     # region teardown
-    def __drop_shared_file(self, shared_file_name):
+
+    def __stop_tracking_shared_file(self, stage, sf_name, target, parts_count, threshold):
+        worker_names = [*self.sf_data[sf_name].desired_distribution.index]
+        self.__drop_shared_file(shared_file_name=sf_name, worker_names=worker_names)
+        with open("out_{}.txt".format(sf_name), "a+") as out_file:
+            out_file.write("Failure at stage {} due to worker '{}' death, parts: {} > threshold: {}\n"
+                           .format(stage, sf_name, target, parts_count, threshold))
+
+    def __drop_shared_file(self, shared_file_name, worker_names):
         """
         Hivemind instance stops trackign the named file by removing it from all dictionaries and similar structures
         :param shared_file_name: the name of the file to drop from shared file structures
         """
+        # First reset hivemind data strctureus
         try:
             # first try to delete the key while ensuring it exists
             del self.sf_data[shared_file_name]
@@ -376,6 +373,11 @@ class Hivemind:
             log.error("Key ({}) doesn't exist in at least one shared file tracking structure".format(shared_file_name))
             self.sf_data.pop(shared_file_name, None)
             self.shared_files.pop(shared_file_name, None)
+        # Now ask workers to reset theirs
+        for worker_name in worker_names:
+            worker = self.workers[worker_name]
+            worker.drop_shared_file(shared_file_name=shared_file_name)
+
     # endregion
 
     # region other helpers
