@@ -12,7 +12,7 @@ from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from domain.helpers.ConvergenceData import ConvergenceData
-from globals.globals import SHARED_ROOT, READ_SIZE
+from globals.globals import SHARED_ROOT, READ_SIZE, DEFAULT_COLUMN
 
 class Hivemind:
     # region docstrings
@@ -36,7 +36,6 @@ class Hivemind:
     # region class variables, instance variables and constructors
     __STAGES_WITH_CONVERGENCE = []
     __MAX_CONSECUTIVE_CONVERGENCE_STAGES = 0
-    __DEFAULT_COLUMN = 0
 
     def __init__(self, simfile_name):
         """
@@ -96,15 +95,14 @@ class Hivemind:
         :type dict<str, dict<int, domain.SharedFilePart>>
         :param enforce_online: makes sure receiving workers are online.
         """
-        workers_objs = self.__filter_and_map_online_workers() if enforce_online else [
-            *self.worker_status.keys()]
+        workers_objs = self.__filter_and_map_online_workers() if enforce_online else [*self.worker_status.keys()]
         for file_name, part_number in shared_files_dict.items():
             # Retrive state labels from the file distribution vector
-            peer_names = [*self.sf_desired_distribution[file_name].index]
+            worker_names = [*self.sf_data[file_name].desired_distribution.index]
             # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
             # Do not change positions of file_sharers_names with worker_objs...
             # Doing so changes would make us obtain list<str> containing their names instead of list<domain.Workers>
-            choices = [*filter(set(peer_names).__contains__, workers_objs)]
+            choices = [*filter(set(worker_names).__contains__, workers_objs)]
             for part in part_number.values():
                 # Randomly choose a destinatary worker from possible choices and give him the shared file part
                 np.random.choice(choices).receive_part(part)
@@ -253,7 +251,8 @@ class Hivemind:
                 failure_threshold = data.parts_count - math.ceil(data.parts_count * data.highest_density_node_density)
 
                 if worker_parts_count > failure_threshold:
-                    for worker_name in self.sf_desired_distribution[sf_name]:
+                    worker_names = [*self.sf_data[sf_name].desired_distribution.index]
+                    for worker_name in worker_names:
                         worker = self.workers[worker_name]
                         worker.drop_shared_file(shared_file_name=sf_name)
                         self.__drop_shared_file(shared_file_name=sf_name)
@@ -298,7 +297,24 @@ class Hivemind:
         :type dict<str, domain.SharedFilePart>
         """
         self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
+    # endregion
 
+    # region helper methods
+    # region setup
+    def __set_distribution_trackers(self, file_name, desired_distribution, labels):
+        """
+        :param file_name: the name of the file to be tracked by the hivemind
+        :type str
+        :param desired_distribution: the desired distribution vector of the given named file
+        :type list<float>
+        """
+        data = self.sf_data[file_name]
+        data.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
+        data.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
+        data.convergence_data = ConvergenceData()
+    # endregion
+
+    # region stage processing
     def __process_stage_results(self, stage):
         """
         For each file being shared on this hivemind network, check if its desired distribution has been achieved.
@@ -308,53 +324,39 @@ class Hivemind:
         if stage == self.max_stages:
             exit(0)
 
-        for file_name, desired_distribution in self.sf_desired_distribution.items():
-            peer_names = [*desired_distribution.index]
-            current_distribution = self.sf_current_distribution[file_name]
-            # query all workers sharing this file for survivability to tell hivemind how many parts they own from it
-            for name in peer_names:
-                # Update the stage distribution for this file by querying every worker in its hive
-                worker = self.workers[name]
-                if self.worker_status[name] != Status.ONLINE:
-                    current_distribution.at[name, Hivemind.__DEFAULT_COLUMN] = 0
-                else:
-                    current_distribution.at[name, Hivemind.__DEFAULT_COLUMN] = worker.request_file_count(file_name)
-            # when all queries for a file are done, verify convergence for current file
-            data = self.sf_convergence_data[file_name]
-            if ConvergenceData.equal_distributions(current_distribution, desired_distribution):
-                data.cswc_increment_and_get(1)
-                if data.sf_convergence_data[file_name].try_update_convergence_set(stage):
-                    print("File: {} converged at stage: {}...".format(file_name, stage))
-                    print("Desired Distribution:\n{}".format(desired_distribution.to_string()))
-                    print("Current Distribution:\n{}".format(current_distribution.to_string()))
+        for data in self.sf_data.values():
+            # retrieve from each worker how many parts they have for current data.file_name and update convergence data
+            self.__request_file_counts(data)
+            # when all queries for a file are done, verify convergence for data.file_name
+            self.__check_file_convergence(data, stage)
+
+    def __request_file_counts(self, data):
+        worker_names = [*data.desired_distribution.index]
+        for worker_name in worker_names:
+            worker = self.workers[worker_name]
+            if self.worker_status[worker_name] != Status.ONLINE:
+                data.current_distribution.at[worker_name, DEFAULT_COLUMN] = 0
             else:
-                data.save_sets_and_reset_data()
+                data.current_distribution.at[worker_name, DEFAULT_COLUMN] = worker.request_file_count(data.file_name)
+
+    def __check_file_convergence(self, data, stage):
+        if ConvergenceData.equal_distributions(data.current_distribution, data.desired_distribution):
+            data.convergence_data.cswc_increment_and_get(1)
+            if data.convergence_data.try_update_convergence_set(stage):
+                with open("outfile.txt", "a+") as out_file:
+                    out_file.write("File {} converged at stage {}...\n"
+                                   "Desired distribution: {},\n"
+                                   "Current distribution: {}\n".format(data.file_name,
+                                                                       stage,
+                                                                       data.desired_distribution.to_string(),
+                                                                       data.current_distribution.to_string()
+                                                                       )
+                                   )
+        else:
+            data.save_sets_and_reset_data()
     # endregion
 
-    # region helper methods
-    def __filter_and_map_online_workers(self):
-        """
-        :returns Workers objects whose status is online
-        :type list<domain.Worker>
-        """
-        return [*map(
-            lambda a_worker: a_worker[0],
-            [*filter(lambda item: item[1] == Status.ONLINE, self.worker_status.items())]
-        )]
-
-    def __set_distribution_trackers(self, file_name, desired_distribution, labels):
-        """
-        :param file_name: the name of the file to be tracked by the hivemind
-        :type str
-        :param desired_distribution: the desired distribution vector of the given named file
-        :type list<float>
-        """
-        self.sf_desired_distribution[file_name] = pd.DataFrame(desired_distribution, index=labels)
-        self.sf_current_distribution[file_name] = pd.DataFrame([0] * len(desired_distribution), index=labels)
-        self.sf_convergence_data[file_name] = ConvergenceData()
-    # endregion
-
-    # region helper methods
+    # region teardown
     def __drop_shared_file(self, shared_file_name):
         """
         Hivemind instance stops trackign the named file by removing it from all dictionaries and similar structures
@@ -362,17 +364,22 @@ class Hivemind:
         """
         try:
             # first try to delete the key while ensuring it exists
-            del self.sf_desired_distribution[shared_file_name]
             del self.sf_data[shared_file_name]
-            del self.sf_current_distribution[shared_file_name]
-            del self.sf_convergence_data[shared_file_name]
             del self.shared_files[shared_file_name]
         except KeyError:
             # If error occurs, make sure to clean the key in any dictionary in which it exists after logging the error
             log.error("Key ({}) doesn't exist in at least one shared file tracking structure".format(shared_file_name))
-            self.sf_desired_distribution.pop(shared_file_name, None)
             self.sf_data.pop(shared_file_name, None)
-            self.sf_current_distribution.pop(shared_file_name, None)
-            self.sf_convergence_data.pop(shared_file_name, None)
             self.shared_files.pop(shared_file_name, None)
+    # endregion
+
+    # region other helpers
+    def __filter_and_map_online_workers(self):
+        """
+        Selects workers (w[0] := worker_status.keys()) who are online (i[1] := worker_status.values())
+        :returns Workers objects whose status is online
+        :type list<domain.Worker>
+        """
+        return [*map(lambda w: w[0], [*filter(lambda i: i[1] == Status.ONLINE, self.worker_status.items())])]
+    # endregion
     # endregion
