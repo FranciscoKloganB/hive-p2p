@@ -198,7 +198,11 @@ class Hivemind:
                 worker.do_stage()
             self.__process_stage_results(stage)
 
-    def redistribute_transition_matrices(self, worker_name):
+    def __redistribute_transition_matrices(self, shared_file_names, dead_worker_name):
+        for shared_file_name in shared_file_names:
+            self.__redistribute_transition_matrix(self.sf_data[shared_file_name], dead_worker_name)
+
+    def __redistribute_transition_matrix(self, shared_file_data, dead_worker_name):
         # TODO:
         #  future-iterations (simulations don't use orderly leavings and probably never will, thus not urgent):
         #  1. calculate new ddv (uniform distribution of dead node density to other nodes)
@@ -209,6 +213,10 @@ class Hivemind:
         #  6. upgrade to byzantine tolerante
         raise NotImplementedError
 
+    def __init_recovery_protocol(self, shared_file_data):
+        # 3. ask second best node to rebuild missing files
+        raise NotImplementedError
+    
     def receive_complaint(self, suspects_name):
         # TODO:
         #  future-iterations (the goal of the thesis is not to be do a full fledged dependable network, just a demo)
@@ -226,7 +234,7 @@ class Hivemind:
         sf_parts = target.leave_hive()
         if clean_kill:
             self.worker_status[target] = Status.OFFLINE
-            self.redistribute_transition_matrices(target.name)
+            self.__redistribute_transition_matrices([*sf_parts.keys()], target.name)
             self.redistribute_file_parts(sf_parts)
         else:
             self.worker_status[target] = Status.SUSPECT
@@ -235,13 +243,12 @@ class Hivemind:
                 parts_count = len(sfp_id)
                 threshold = sf_data.get_failure_threshold()
                 if parts_count > threshold:
-                    # Can't recover from this situation
+                    # Can't recover from this situation, stop tracking file and ask other sharers to do the same
                     self.__stop_tracking_shared_file(stage, sf_name, target, parts_count, threshold)
                 else:
-                    # TODO this-iteration:
-                    #  1. assume perfect failure detector thus regardless
-                    #  2. call self.redistribute_transition_matrix(target)
-                    #  3. ask second best node to rebuild missing files
+                    # Invoke recovery protocols, assume perfect failure detector for now
+                    self.__redistribute_transition_matrix(sf_data, target)
+                    self.__init_recovery_protocol(sf_data)
                     raise NotImplementedError
 
     def route_file_part(self, dest_worker, part):
