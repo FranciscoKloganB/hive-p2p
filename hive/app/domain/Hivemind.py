@@ -216,40 +216,13 @@ class Hivemind:
     def __init_recovery_protocol(self, shared_file_data):
         # 3. ask second best node to rebuild missing files
         raise NotImplementedError
-    
+
     def receive_complaint(self, suspects_name):
         # TODO:
         #  future-iterations (the goal of the thesis is not to be do a full fledged dependable network, just a demo)
         #  1. When byzantine complaints > threshold
         #       __rebuild_hive(suspect_name)
         raise NotImplementedError
-
-    def __remove_worker(self, target, clean_kill=True, stage=None):
-        """
-        :param target: worker who is going to be removed from the simulation network
-        :type domain.Worker
-        :param clean_kill: When True worker will ask for his files to be redistributed before leaving the network
-        :type bool
-        """
-        sf_parts = target.leave_hive()
-        if clean_kill:
-            self.worker_status[target] = Status.OFFLINE
-            self.__redistribute_transition_matrices([*sf_parts.keys()], target.name)
-            self.redistribute_file_parts(sf_parts)
-        else:
-            self.worker_status[target] = Status.SUSPECT
-            for sf_name, sfp_id in sf_parts.items():
-                sf_data = self.sf_data[sf_name]
-                parts_count = len(sfp_id)
-                threshold = sf_data.get_failure_threshold()
-                if parts_count > threshold:
-                    # Can't recover from this situation, stop tracking file and ask other sharers to do the same
-                    self.__stop_tracking_shared_file(stage, sf_name, target, parts_count, threshold)
-                else:
-                    # Invoke recovery protocols, assume perfect failure detector for now
-                    self.__redistribute_transition_matrix(sf_data, target)
-                    self.__init_recovery_protocol(sf_data)
-                    raise NotImplementedError
 
     def route_file_part(self, dest_worker, part):
         """
@@ -314,6 +287,32 @@ class Hivemind:
             else:
                 self.__remove_worker(worker, clean_kill=False, stage=stage)
         return surviving_workers
+
+    def __remove_worker(self, target, clean_kill=True, stage=None):
+        """
+        :param target: worker who is going to be removed from the simulation network
+        :type domain.Worker
+        :param clean_kill: When True worker will ask for his files to be redistributed before leaving the network
+        :type bool
+        """
+        sf_parts = target.leave_hive()
+        if clean_kill:
+            self.worker_status[target] = Status.OFFLINE
+            self.__redistribute_transition_matrices([*sf_parts.keys()], target.name)
+            self.redistribute_file_parts(sf_parts)
+        else:
+            self.worker_status[target] = Status.SUSPECT
+            for sf_name, sfp_id in sf_parts.items():
+                sf_data = self.sf_data[sf_name]
+                parts_count = len(sfp_id)
+                threshold = sf_data.get_failure_threshold()
+                if parts_count > threshold:
+                    # Can't recover from this situation, stop tracking file and ask other sharers to do the same
+                    self.__stop_tracking_shared_file(stage, sf_name, target, parts_count, threshold)
+                else:
+                    # Invoke recovery protocols, assume perfect failure detector for now
+                    self.__redistribute_transition_matrix(sf_data, target)
+                    self.__init_recovery_protocol(sf_data)  # Best node still alive is responsible for redistribution
 
     def __process_stage_results(self, stage):
         """
