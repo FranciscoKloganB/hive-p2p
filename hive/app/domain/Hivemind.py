@@ -1,6 +1,7 @@
 import os
 import json
 import math
+import logging as log
 import numpy as np
 import pandas as pd
 import domain.metropolis_hastings as mh
@@ -11,15 +12,12 @@ from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from domain.helpers.ConvergenceData import ConvergenceData
-from globals.globals import SHARED_ROOT
-
+from globals.globals import SHARED_ROOT, READ_SIZE
 
 class Hivemind:
     # region docstrings
     """
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
-    :cvar READ_SIZE: defines the max amount of bytes are read at a time from file to be shared
-    :type int
     :ivar workers: keeps track workers objects in the simulation
     :type dict<str, domain.Worker>
     :ivar worker_status: keeps track workers objects in the simulation regarding their health
@@ -28,12 +26,6 @@ class Hivemind:
     :type dict<string, dict<int, SharedFilePart>>
     :ivar sf_data: part_name is a key to containing general information about the file
     :type tuple<str, domain.Helpers.FileData>
-    :ivar sf_desired_distribution: registers the desired distribution for a file, including state labels
-    :type dict<str, pandas.Dataframe>
-    :ivar sf_current_distribution: keeps track of each shared file distribution, at each discrete time stage
-    :type dict<str, list<float>>
-    :ivar sf_convergence_data: dictionary that tracks convergence of a given file
-    :type dict<str, domain.helpers.ConvergenceData]
     :ivar node_uptime_dict: contains each worker node uptime, used to calculate kill probability
     :type dict<str, float>
     :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
@@ -42,7 +34,6 @@ class Hivemind:
     # endregion
 
     # region class variables, instance variables and constructors
-    READ_SIZE = 2048
     __STAGES_WITH_CONVERGENCE = []
     __MAX_CONSECUTIVE_CONVERGENCE_STAGES = 0
     __DEFAULT_COLUMN = 0
@@ -52,16 +43,13 @@ class Hivemind:
         :param simfile_name: path to json file containing the parameters this simulation should execute with
         :type str
         """
-        with open(simfile_name) as json_obj:
-            json_obj = json.load(simfile_name)
+        with open(simfile_name) as input_file:
+            json_obj = json.load(input_file)
             # Init basic simulation variables
             self.workers = {}
             self.worker_status = {}
             self.shared_files = {}
             self.sf_data = {}
-            self.sf_desired_distribution = {}
-            self.sf_current_distribution = {}
-            self.sf_convergence_data = {}
             self.node_uptime_dict = json_obj['nodes_uptime']
             self.max_stages = json_obj['max_simulation_stages']
             # Create the P2P network nodes (domain.Workers) without any job
@@ -140,11 +128,12 @@ class Hivemind:
         """
         # file_extension = Path(file_path).resolve().suffix
         file_name = Path(file_path).resolve().stem
+
         with open(file_path, "rb") as shared_file:
             file_parts = {}
             part_number = 0
             while True:
-                read_buffer = shared_file.read(Hivemind.READ_SIZE)
+                read_buffer = shared_file.read(READ_SIZE)
                 if read_buffer:
                     part_number = part_number + 1
                     shared_file_part = SharedFilePart(
@@ -157,6 +146,7 @@ class Hivemind:
                     # Keeps track of how many parts the file was divided into
                     self.shared_files[file_name] = file_parts
                     break
+            self.sf_data[file_name] = FileData(file_name=file_name, parts_count=part_number)
     # endregion
 
     # region metropolis hastings and transition vector assignment methods
@@ -263,10 +253,11 @@ class Hivemind:
                 failure_threshold = data.parts_count - math.ceil(data.parts_count * data.highest_density_node_density)
 
                 if worker_parts_count > failure_threshold:
-                    # TODO this-iteration:
-                    #  1. remove sf_name from simulation
+                    for worker_name in self.sf_desired_distribution[sf_name]:
+                        worker = self.workers[worker_name]
+                        worker.drop_shared_file(shared_file_name=sf_name)
+                        self.__drop_shared_file(shared_file_name=sf_name)
                     #   1.1 broadcast message to all workers asking to discard sf_name_parts and sf_transition_vectors
-                    #   1.2 remove all data related with file_name from self structures
                     out_file.write("Simulation failure at stage {}, for file {}, because of worker {} sudden death...\n"
                                    "worker_parts_count {} > threshold {}, \n"
                                    .format(stage, sf_name, target, worker_parts_count, failure_threshold))
@@ -361,4 +352,27 @@ class Hivemind:
         self.sf_desired_distribution[file_name] = pd.DataFrame(desired_distribution, index=labels)
         self.sf_current_distribution[file_name] = pd.DataFrame([0] * len(desired_distribution), index=labels)
         self.sf_convergence_data[file_name] = ConvergenceData()
+    # endregion
+
+    # region helper methods
+    def __drop_shared_file(self, shared_file_name):
+        """
+        Hivemind instance stops trackign the named file by removing it from all dictionaries and similar structures
+        :param shared_file_name: the name of the file to drop from shared file structures
+        """
+        try:
+            # first try to delete the key while ensuring it exists
+            del self.sf_desired_distribution[shared_file_name]
+            del self.sf_data[shared_file_name]
+            del self.sf_current_distribution[shared_file_name]
+            del self.sf_convergence_data[shared_file_name]
+            del self.shared_files[shared_file_name]
+        except KeyError:
+            # If error occurs, make sure to clean the key in any dictionary in which it exists after logging the error
+            log.error("Key ({}) doesn't exist in at least one shared file tracking structure".format(shared_file_name))
+            self.sf_desired_distribution.pop(shared_file_name, None)
+            self.sf_data.pop(shared_file_name, None)
+            self.sf_current_distribution.pop(shared_file_name, None)
+            self.sf_convergence_data.pop(shared_file_name, None)
+            self.shared_files.pop(shared_file_name, None)
     # endregion
