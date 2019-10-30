@@ -110,7 +110,10 @@ class Worker:
         Worker instance stops sharing the named file
         :param shared_file_name: the name of the file to drop from shared file structures
         """
-        self.shared_files.pop(shared_file_name, None)
+        try:
+            self.shared_files.pop(shared_file_name)
+        except KeyError:
+            log.error("Key ({}) doesn't exist in worker {}'s sf_parts dict".format(shared_file_name, self.name))
 
     def send_shared_parts(self):
         """

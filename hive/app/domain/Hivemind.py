@@ -369,17 +369,13 @@ class Hivemind:
         Hivemind instance stops trackign the named file by removing it from all dictionaries and similar structures
         :param shared_file_name: the name of the file to drop from shared file structures
         """
-        # First reset hivemind data strctureus
+        # First reset hivemind data structures
         try:
-            # first try to delete the key while ensuring it exists
-            del self.sf_data[shared_file_name]
-            del self.shared_files[shared_file_name]
+            self.sf_data.pop(shared_file_name)
+            self.shared_files.pop(shared_file_name)
         except KeyError:
-            # If error occurs, make sure to clean the key in any dictionary in which it exists after logging the error
-            log.error("Key ({}) doesn't exist in at least one shared file tracking structure".format(shared_file_name))
-            self.sf_data.pop(shared_file_name, None)
-            self.shared_files.pop(shared_file_name, None)
-        # Now ask workers to reset theirs
+            log.error("Key ({}) doesn't exist in at least one Hivemind tracking structure".format(shared_file_name))
+        # Then, ask workers to reset theirs
         for worker_name in worker_names:
             worker = self.workers[worker_name]
             worker.drop_shared_file(shared_file_name=shared_file_name)
