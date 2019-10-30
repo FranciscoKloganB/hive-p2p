@@ -1,5 +1,5 @@
 import numpy as np
-
+import logging as log
 from utils import crypto
 from copy import deepcopy
 from utils.ResourceTracker import ResourceTracker as rT
@@ -12,7 +12,7 @@ class Worker:
     Defines a node on the P2P network. Workers are subject to constraints imposed by Hivemind, constraints they inflict
     on themselves based on available computing power (CPU, RAM, etc...) and can have [0, N] shared file parts. Workers
     have the ability to reconstruct lost file parts when needed.
-    :ivar file_parts: key part_name maps to a dict of part_id keys whose values are SharedFilePart
+    :ivar sf_parts: key part_name maps to a dict of part_id keys whose values are SharedFilePart
     :type dict<str, dict<str, SharedFilePart>
     :ivar name: id of this worker node that uniquely identifies him in the network
     :type str
@@ -25,7 +25,7 @@ class Worker:
 
     # region class variables, instance variables and constructors
     def __init__(self, hivemind, name):
-        self.file_parts = {}
+        self.sf_parts = {}
         self.__routing_table = {}
         self.name = name
         self.hivemind = hivemind
@@ -71,17 +71,17 @@ class Worker:
 
     def receive_part(self, part, no_check=False):
         if no_check or crypto.sha256(part.part_data) == part.sha256:
-            if part.name in self.file_parts:
-                self.file_parts[part.name][part.part_id] = part
+            if part.name in self.sf_parts:
+                self.sf_parts[part.name][part.part_id] = part
             else:
-                self.file_parts[part.name] = {}
-                self.file_parts[part.name][part.part_id] = part
+                self.sf_parts[part.name] = {}
+                self.sf_parts[part.name][part.part_id] = part
         else:
             print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
             self.__init_recovery_protocol(part)
 
     def send_part(self):
-        for part_name, part_id_sfp_dict in self.file_parts.items():
+        for part_name, part_id_sfp_dict in self.sf_parts.items():
             tmp = {}
             for part_id, sfp_obj in part_id_sfp_dict.items():
                 dest_worker = self.get_next_state(file_name=part_name)
@@ -93,7 +93,7 @@ class Worker:
                         # TODO:
                         #  make use of the HttpCode responses with more than a binary behaviour
                         tmp[part_id] = sfp_obj
-            self.file_parts[part_name] = tmp
+            self.sf_parts[part_name] = tmp
 
     def leave_hive(self):
         """
@@ -102,19 +102,22 @@ class Worker:
         """
         sf_parts = deepcopy(self.send_shared_parts())
         self.hivemind = None
-        self.file_parts = None
+        self.sf_parts = None
         return sf_parts
 
     def drop_shared_file(self, shared_file_name):
-        # TODO
-        raise NotImplementedError
+        """
+        Worker instance stops sharing the named file
+        :param shared_file_name: the name of the file to drop from shared file structures
+        """
+        self.shared_files.pop(shared_file_name, None)
 
     def send_shared_parts(self):
         """
         :returns a deep copy of self.file_parts
         :rtype dict<str, dict<int, domain.SharedFileParts>>
         """
-        return deepcopy(self.file_parts)
+        return deepcopy(self.sf_parts)
 
     def get_next_state(self, file_name):
         """
