@@ -94,6 +94,7 @@ class Hivemind:
         :param shared_files_dict: receives anyone's dictionary of <file_name, dict<file_number, SharedFilePart>>
         :type dict<str, dict<int, domain.SharedFilePart>>
         :param enforce_online: makes sure receiving workers are online.
+        :type bool
         """
         workers_objs = self.__filter_and_map_online_workers() if enforce_online else [*self.worker_status.keys()]
         for file_name, part_number in shared_files_dict.items():
@@ -155,8 +156,8 @@ class Hivemind:
         :param adj_matrix: adjacency matrix representing connections between various states
         :type list<list<float>>
         :param desired_distribution: column vector representing the distribution that must be achieved by the workers
-        :return: A matrix with named lines and columns with the computed transition matrix
-        :type pandas.DataFrame
+        :returns: A matrix with named lines and columns with the computed transition matrix
+        :rtype pandas.DataFrame
         """
         transition_matrix = mh.metropolis_algorithm(adj_matrix, desired_distribution, column_major_out=True)
         return pd.DataFrame(transition_matrix, index=states, columns=states)
@@ -192,22 +193,29 @@ class Hivemind:
         """
         online_workers_list = self.__filter_and_map_online_workers()
         for stage in range(self.max_stages):
-            self.__try_remove_some_workers(online_workers_list, stage)
-            self.__remaining_workers_execute()
+            surviving_workers = self.__remove_some_workers(online_workers_list, stage)
+            for worker in surviving_workers:
+                worker.do_stage()
             self.__process_stage_results(stage)
 
-    def __try_remove_some_workers(self, online_workers, stage=None):
+    def __remove_some_workers(self, online_workers, stage=None):
         """
         For each online worker, if they are online, see if they remain alive for the next stage or if they die,
         according to their uptime record.
         :param online_workers: collection of workers that are known to be online
         :type list<domain.Worker>
+        :returns surviving_workers: subset of online_workers, who weren't selected to be removed from the hive
+        :rtype list<domain.Worker>
         """
+        surviving_workers = []
         for worker in online_workers:
             uptime = self.node_uptime_dict[worker.name] / 100
             remains_alive = np.random.choice([True, False], p=[uptime, 1 - uptime])
-            if not remains_alive:
+            if remains_alive:
+                surviving_workers.append(worker)
+            else:
                 self.__remove_worker(worker, clean_kill=False, stage=stage)
+        return surviving_workers
 
     def __rebuild_hive(self, worker):
         # TODO:
@@ -268,17 +276,14 @@ class Hivemind:
                                    .format(stage, sf_name, target))
             out_file.close()
 
-    def __remaining_workers_execute(self):
-        online_workers_list = self.__filter_and_map_online_workers()
-        for worker in online_workers_list:
-            worker.do_stage()
-
     def route_file_part(self, dest_worker, part):
         """
         :param dest_worker: destinatary of the file part
         :type domain.Worker OR str (domain.Worker.name)
         :param part: the file part to send to specified worker
         :type domain.SharedFilePart
+        :returns: http codes based status of destination worker
+        :rtype int
         """
         dest_status = self.worker_status[dest_worker]
         if dest_status == Status.ONLINE:
@@ -378,7 +383,7 @@ class Hivemind:
         """
         Selects workers (w[0] := worker_status.keys()) who are online (i[1] := worker_status.values())
         :returns Workers objects whose status is online
-        :type list<domain.Worker>
+        :rtype list<domain.Worker>
         """
         return [*map(lambda w: w[0], [*filter(lambda i: i[1] == Status.ONLINE, self.worker_status.items())])]
     # endregion
