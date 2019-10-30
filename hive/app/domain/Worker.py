@@ -106,6 +106,10 @@ class Worker:
         self.name = None
         self.file_parts = None
 
+    def drop_shared_file(self, shared_file_name):
+        # TODO
+        raise NotImplementedError
+
     def request_shared_file_dict(self):
         """
         :return file_parts: dictionary mapping file name to dictionary of file part integers and respective raw content
