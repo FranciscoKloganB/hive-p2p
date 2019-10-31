@@ -204,7 +204,7 @@ class Hivemind:
 
     def __redistribute_transition_matrix(self, shared_file_data, dead_worker_name):
         # TODO:
-        #  future-iterations (simulations don't use orderly leavings and probably never will, thus not urgent):
+        #  this-iteration (simulations don't use orderly leavings and probably never will, thus not urgent):
         #  1. calculate new ddv (uniform distribution of dead node density to other nodes)
         #  2. calculate new transition matrix (feed a new adj matrix to mh algorithm along with new ddv)
         #  3. update FileData fields
@@ -214,15 +214,22 @@ class Hivemind:
         raise NotImplementedError
 
     def __init_recovery_protocol(self, shared_file_data):
-        # 3. ask second best node to rebuild missing files
+        # TODO this-iteration
+        #  1. simply offload all files the dead worker had to the the next highest density node still alive
+        #  2. in the future, upgrade to asking the next highest density node that is alive to rebuild dead nodes' files
         raise NotImplementedError
 
-    def receive_complaint(self, suspects_name):
+    def receive_complaint(self, suspects_name, sf_name=None):
         # TODO:
         #  future-iterations (the goal of the thesis is not to be do a full fledged dependable network, just a demo)
-        #  1. When byzantine complaints > threshold
-        #       __rebuild_hive(suspect_name)
-        raise NotImplementedError
+        #  1. register complaint
+        #  2. when byzantine complaints > threshold
+        #    2.1. find away of obtaining shared_file_names where user was
+        #    2.2. __redistribute_transition_matrices(self, shared_file_names, dead_worker_name)(suspect_name)
+        #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
+        if sf_name:
+            pass  # maybe sf_name can help when enough complaints are received, reanalyze this param at a later date.
+        log.warning("receive_complaint is only a mock. method needs to be implemented...")
 
     def route_file_part(self, dest_worker, part):
         """

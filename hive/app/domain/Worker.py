@@ -57,7 +57,7 @@ class Worker:
         # TODO:
         #  future-iterations:
         #  1. corrupted or missing file recovery algorithm
-        pass
+        log.warning("domain.Worker.__init_recovery_protocol is only a mock. method needs to be implemented...")
     # endregion
 
     # region instance methods
@@ -82,19 +82,18 @@ class Worker:
             self.__init_recovery_protocol(part)
 
     def send_part(self):
-        for part_name, part_id_sfp_dict in self.sf_parts.items():
+        for sf_name, sf_id in self.sf_parts.items():
             tmp = {}
-            for part_id, sfp_obj in part_id_sfp_dict.items():
-                dest_worker = self.get_next_state(file_name=part_name)
+            for sf_part in sf_id.values():
+                dest_worker = self.get_next_state(shared_file_name=sf_name)
                 if dest_worker == self.name:
-                    tmp[part_id] = sfp_obj
+                    tmp[sf_id] = sf_part  # store <sf_id, sf_part> pair in tmp dict, we don't need to send to ourselves
                 else:
-                    response_code = self.hivemind.route_file_part(dest_worker, sfp_obj)
+                    response_code = self.hivemind.route_file_part(dest_worker, sf_part)
                     if response_code != HttpCodes.OK:
-                        # TODO future-iterations (for simulation purposes as long as HttpCodes.OK there is no problem):
-                        #  1. make use of the HttpCode responses with more than a binary behaviour
-                        tmp[part_id] = sfp_obj
-            self.sf_parts[part_name] = tmp
+                        self.hivemind.receive_complaint(dest_worker, sf_name=sf_name)
+                        tmp[sf_id] = sf_part  # store <sf_id, sf_part>, original destination doesn't respond
+            self.sf_parts[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited
 
     def leave_hive(self):
         """
@@ -123,14 +122,14 @@ class Worker:
         """
         return deepcopy(self.sf_parts)
 
-    def get_next_state(self, file_name):
+    def get_next_state(self, shared_file_name):
         """
-        :param file_name: the name of the file the part to be routed belongs to
+        :param shared_file_name: the name of the file the part to be routed belongs to
         :type: str
         :return: the name of the worker to whom the file should be routed too
         :type: str
         """
-        routing_data = self.__routing_table[file_name]
+        routing_data = self.__routing_table[shared_file_name]
         row_labels = [*routing_data.index.values]  # gets the names of sharers as a list
         label_probabilities = [*routing_data[self.name]]  # gets the probabilities of sending to corresponding sharer
         return np.random.choice(a=row_labels, p=label_probabilities).item()  # converts numpy.str to python str
