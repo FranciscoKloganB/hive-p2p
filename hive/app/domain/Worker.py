@@ -91,7 +91,7 @@ class Worker:
                 else:
                     response_code = self.hivemind.route_file_part(dest_worker, sfp_obj)
                     if response_code != HttpCodes.OK:
-                        # TODO future-iterations (for simulation purposes as long as HTTP.OK there is no problem):
+                        # TODO future-iterations (for simulation purposes as long as HttpCodes.OK there is no problem):
                         #  1. make use of the HttpCode responses with more than a binary behaviour
                         tmp[part_id] = sfp_obj
             self.sf_parts[part_name] = tmp
