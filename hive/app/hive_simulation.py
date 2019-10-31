@@ -34,8 +34,6 @@ def main(simfile_name):
 
     simulation = Hivemind(simfile_name)
     simulation.execute_simulation()
-    # TODO:
-    #  Might need some improvement here, you will discover when you first run this file...
 
 
 if __name__ == "__main__":
