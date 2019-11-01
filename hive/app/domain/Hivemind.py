@@ -203,14 +203,11 @@ class Hivemind:
             self.__redistribute_transition_matrix(self.sf_data[shared_file_name], dead_worker_name)
 
     def __redistribute_transition_matrix(self, shared_file_data, dead_worker_name):
-        # TODO:
-        #  this-iteration (simulations don't use orderly leavings and probably never will, thus not urgent):
-        #  1. calculate new ddv (uniform distribution of dead node density to other nodes)
+        desired_distribution = self.__update_shared_file_data(shared_file_data, dead_worker_name)
         #  2. calculate new transition matrix (feed a new adj matrix to mh algorithm along with new ddv)
         #  3. update FileData fields
         #  4. update any self.sf_* structure as required
         #  5. broadcast new transition.vectors to respective sharers
-        #  6. upgrade to byzantine tolerante
         raise NotImplementedError
 
     def __init_recovery_protocol(self, shared_file_data):
@@ -390,6 +387,32 @@ class Hivemind:
     # endregion
 
     # region other helpers
+    def __update_shared_file_data(self, shared_file_data, dead_worker_name):
+        """
+        :param shared_file_data: reference to FileData instance object whose fields need to be updatedd
+        :type domain.helpers.FileData
+        :param dead_worker_name: name of the worker to be droppedd from desired distribution, etc...
+        :type str
+        :return: new desired distribution, w/o labels. each entry is incremented with dead worker's density/len(ddv-1)
+        :rtype list<float>
+        """
+        desired_distribution = shared_file_data.desired_distribution
+        # fetch probability from column vector where row key is the dead worker's name and then drop that row
+        increment = desired_distribution.loc[dead_worker_name].values[0] / (desired_distribution.shape[0] - 1)
+        desired_distribution = desired_distribution.drop(dead_worker_name, inplace=True)
+        # fetchh remaining labels and rows as found on the dataframe
+        new_labels = [*desired_distribution.index]
+        new_values = [*desired_distribution[dead_worker_name]]  # column with given key wasn't dropped!
+        incremented_values = [value + increment for value in new_values]
+        # update desired_distribution and reset FileData fields
+        desired_distribution = pd.DataFrame(incremented_values, index=new_labels)
+        shared_file_data.highest_density_node = desired_distribution.idxmax().values[0]
+        shared_file_data.highest_density_node_density = desired_distribution[shared_file_data.highest_density_node]
+        shared_file_data.desired_distribution = desired_distribution
+        # we aren't supposed to reassign the shared_file_data back to the dict, it works by reference as tested, but if bug, change.
+        shared_file_data.convergence_data.save_sets_and_reset_data()
+        return incremented_values
+
     def __filter_and_map_online_workers(self):
         """
         Selects workers (w[0] := worker_status.keys()) who are online (i[1] := worker_status.values())
