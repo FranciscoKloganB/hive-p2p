@@ -130,7 +130,7 @@ class Worker:
         :type: str
         """
         routing_data = self.__routing_table[shared_file_name]
-        row_labels = [*routing_data.index.values]  # gets the names of sharers as a list
+        row_labels = [*routing_data.index]  # gets the names of sharers as a list
         label_probabilities = [*routing_data[self.name]]  # gets the probabilities of sending to corresponding sharer
         return np.random.choice(a=row_labels, p=label_probabilities).item()  # converts numpy.str to python str
     # endregion
