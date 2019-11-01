@@ -4,23 +4,20 @@ class ConvergenceData:
     # region docstrings
     """
     Holds data that helps an domain.Hivemind keep track of converge in a simulation
-    :cvar __DEVIATION_TOLERANCE: percentage in which a value on a distribution vector can deviate from another in eq cmp
-    :type float
     :cvar MIN_CONVERGENCE_THRESHOLD: how many consecutive convergent stages must a file have to be considered converged
     :type int
     :ivar cswc: indicates how many consecutive steps a file has in convergence
     :type int
     :ivar largest_convergence_set: indicates the biggest set of consecutive steps throughout the simulaton for this file
     :type int
-    :ivar convergence_set: list registering stages in which a file has seen convergence. Registers only when above min conv. threshold
+    :ivar convergence_set: Stages a file has seen convergence for in current set. Appends only when cswc > threshold
     :type list<int>
-    :ivar convergence_sets: list with all convergence sets found for this file during a simulation
+    :ivar convergence_sets: Set of all convergence sets found for this file during simulation
     :type list<list<int>>
     """
     # endregion
 
     # region class variables, instance variables and constructors
-    __DEVIATION_TOLERANCE = 0.01
     MIN_CONVERGENCE_THRESHOLD = 3
 
     def __init__(self):
@@ -36,8 +33,9 @@ class ConvergenceData:
         return self.cswc
 
     def try_set_largest(self):
-        if len(self.convergence_set) > self.largest_convergence_set:
-            self.largest_convergence_set = self.cswc
+        set_len = len(self.convergence_set)
+        if set_len > self.largest_convergence_set:
+            self.largest_convergence_set = set_len
 
     def try_update_convergence_set(self, stage):
         if self.cswc >= ConvergenceData.MIN_CONVERGENCE_THRESHOLD:
@@ -50,7 +48,7 @@ class ConvergenceData:
         self.cswc = 0
         if self.convergence_set:
             self.try_set_largest()
-            self.convergence_sets.append(self.largest_convergence_set)
+            self.convergence_sets.append(self.convergence_set)
             self.convergence_set = []
     # endregion
 
@@ -60,5 +58,5 @@ class ConvergenceData:
         if len(one) != len(another):
             return False
         else:
-            return np.allclose(one, another, rtol=1e-03, atol=1e-05)  # TODO find best rtol and atol params
+            return np.allclose(one, another, rtol=1e-03, atol=1e-05)  # find better rtol and atol params with Daniel
     # endregion
