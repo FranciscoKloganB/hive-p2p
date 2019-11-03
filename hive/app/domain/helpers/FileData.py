@@ -49,10 +49,7 @@ class FileData:
         :param labels: name of the workers that belong to this file's hive
         :type list<str>
         """
-        ddv_len = len(self.desired_distribution)
-        if not labels or len(labels) != ddv_len:
-            raise ValueError("Can't reset FileData.current_distribution, incorrect labels length...")
-        self.current_distribution = pd.DataFrame([0] * ddv_len, index=labels)
+        self.current_distribution = pd.DataFrame([0] * len(labels), index=labels)
         self.convergence_data.save_sets_and_reset()
         self.reset_density_data()
 
