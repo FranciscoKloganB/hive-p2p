@@ -46,18 +46,15 @@ class Worker:
     # endregion
 
     # region file recovery methods
-    def __init_recovery_protocol(self, part):
+    def init_recovery_protocol(self, sf_name):
         """
-        When a corrupt file is received initiate recovery protocol, if this is the node with the most file parts
-        The recovery protocol consists of reconstructing the damaged file part from other parts on the system, it may be
-        necessary to obtain other files from other nodes to initiate reconstruction
-        # Note to self - This is not important right now! This is only important after MCMC with metropolis hastings works
-        # For now assume that when a node dies, if it had less than N-K parts, his parts are given to someone else
+        :param sf_name: name of the file that needs to be reconstructed and redistributed
+        :type str
         """
         # TODO:
         #  future-iterations:
         #  1. corrupted or missing file recovery algorithm
-        log.warning("domain.Worker.__init_recovery_protocol is only a mock. method needs to be implemented...")
+        raise NotImplementedError
     # endregion
 
     # region instance methods
@@ -101,18 +98,18 @@ class Worker:
                 self.sf_parts[part.name][part.part_id] = part
         else:
             print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
-            self.__init_recovery_protocol(part)
+            self.init_recovery_protocol(part)
 
-    def receive_parts(self, sf_name, sf_id_parts, no_check=True):
+    def receive_parts(self, sf_id_parts, sf_name=None, no_check=False):
         """
-        :param sf_name: name of the file the parts belong to
-        :type str
         :param sf_id_parts: mapping of shared file part id to SharedFileParts instances
         :type dict<int, domain.SharedFilePart>
+        :param sf_name: name of the file the parts belong to. sf_name must be set if method is called with no_check=True
+        :type str
         :param no_check: wether or not method verifies sha256 of each part.
         :type bool
         """
-        if no_check:
+        if no_check and sf_name is not None:
             # Use sf_name in param to leverage the pythonic way of merging dictionaries
             self.sf_parts[sf_name].update(sf_id_parts)
         else:
