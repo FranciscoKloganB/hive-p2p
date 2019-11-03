@@ -219,12 +219,11 @@ class Hivemind:
             worker.init_recovery_protocol(sf_data.file_name)
 
     def receive_complaint(self, suspects_name, sf_name=None):
-        # TODO:
-        #  future-iterations (the goal of the thesis is not to be do a full fledged dependable network, just a demo)
+        # TODO future-iterations:
         #  1. register complaint
         #  2. when byzantine complaints > threshold
-        #    2.1. find away of obtaining shared_file_names where user was
-        #    2.2. __redistribute_transition_matrices(self, shared_file_names, dead_worker_name)(suspect_name)
+        #    2.1. find away of obtaining shared_file_names user had
+        #    2.2. discover the files the node used to share, probably requires yet another sf_strucutre
         #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
         if sf_name and suspects_name:
             pass  # maybe sf_name can help when enough complaints are received, reanalyze this param at a later date.

@@ -51,9 +51,8 @@ class Worker:
         :param sf_name: name of the file that needs to be reconstructed and redistributed
         :type str
         """
-        # TODO:
-        #  future-iterations:
-        #  1. corrupted or missing file recovery algorithm
+        # TODO future-iterations:
+        #  1. Recovery algorithm
         raise NotImplementedError
     # endregion
 
