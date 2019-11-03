@@ -44,7 +44,7 @@ class ConvergenceData:
         else:
             return False
 
-    def save_sets_and_reset_data(self):
+    def save_sets_and_reset(self):
         self.cswc = 0
         if self.convergence_set:
             self.try_set_largest()

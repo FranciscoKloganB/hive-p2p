@@ -1,3 +1,6 @@
+import pandas as pd
+
+from domain.helpers.ConvergenceData import ConvergenceData as cD
 from math import ceil
 
 class FileData:
@@ -33,11 +36,34 @@ class FileData:
                  convergence_data=None):
         self.file_name = file_name
         self.parts_count = parts_count
-        self.highest_density_node = node_name
+        self.highest_density_node_label = node_name
         self.highest_density_node_density = density
         self.desired_distribution = ddv
         self.current_distritubiton = cdv
         self.convergence_data = convergence_data
+    # endregion
+
+    # region instance methods
+    def reset_file_data(self, labels):
+        """
+        :param labels: name of the workers that belong to this file's hive
+        :type list<str>
+        """
+        ddv_len = len(self.desired_distribution)
+
+        if not labels or len(labels) != ddv_len:
+            raise ValueError("Can't reset FileData.current_distribution, incorrect labels length...")
+
+        self.current_distritubiton = pd.DataFrame([0] * ddv_len, index=labels)
+        self.highest_density_node_label = self.desired_distribution.idxmax().values[0]  # index/label of highval
+        self.highest_density_node_density = self.desired_distribution.loc[self.highest_density_node_label][0]  # highval
+        self.convergence_data.save_sets_and_reset()
+
+    def reset_convergence_data(self):
+        self.convergence_data.save_sets_and_reset()
+
+    def equal_distributions(self):
+        cD.equal_distributions(self.desired_distribution, self.current_distritubiton)
     # endregion
 
     # region instance class methods
