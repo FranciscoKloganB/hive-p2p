@@ -53,11 +53,13 @@ class FileData:
 
         if not labels or len(labels) != ddv_len:
             raise ValueError("Can't reset FileData.current_distribution, incorrect labels length...")
-
         self.current_distritubiton = pd.DataFrame([0] * ddv_len, index=labels)
+        self.convergence_data.save_sets_and_reset()
+        self.reset_density_data()
+
+    def reset_density_data(self):
         self.highest_density_node_label = self.desired_distribution.idxmax().values[0]  # index/label of highval
         self.highest_density_node_density = self.desired_distribution.loc[self.highest_density_node_label][0]  # highval
-        self.convergence_data.save_sets_and_reset()
 
     def reset_convergence_data(self):
         self.convergence_data.save_sets_and_reset()
