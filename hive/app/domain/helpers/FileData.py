@@ -62,10 +62,9 @@ class FileData:
     def reset_convergence_data(self):
         self.convergence_data.save_sets_and_reset()
 
-    def replace_node(self, replacement_dict):
+    def replace_distribution_node(self, replacement_dict):
         self.desired_distribution.rename(index=replacement_dict, inplace=True)
         self.current_distribution.rename(index=replacement_dict, inplace=True)
-        self.reset_density_data()
 
     def equal_distributions(self):
         cD.equal_distributions(self.desired_distribution, self.current_distribution)
