@@ -61,14 +61,30 @@ class Worker:
     # endregion
 
     # region instance methods
-    def set_file_routing(self, file_name, labeled_transition_vector):
+    def set_file_routing(self, sf_name, transition_vector):
         """
-        :param file_name: a file name that is being shared on the hive
+        :param sf_name: a file name that is being shared on the hive
         :type str
-        :param labeled_transition_vector: probability vector indicating transitions to other states for the given file
+        :param transition_vector: probability vector indicating transitions to other states for the given file w/ labels
         :type 1-D numpy.Array in column format
         """
-        self.__routing_table[file_name] = labeled_transition_vector
+        self.__routing_table[sf_name] = transition_vector
+
+    def update_file_routing(self, sf_name, replacement_dict):
+        """
+        :param sf_name: a file name that is being shared on the hive
+        :type str
+        :param replacement_dict: key, value pair where key represents the name to be replaced with the new value
+        :type dict<str, str>
+        """
+        raise NotImplementedError
+
+    def remove_file_routing(self, sf_name):
+        """
+        :param sf_name: a file name that is being shared on the hive which this node should stop transimitting
+        :type str
+        """
+        raise NotImplementedError
 
     def receive_part(self, part, no_check=False):
         if no_check or crypto.sha256(part.part_data) == part.sha256:
