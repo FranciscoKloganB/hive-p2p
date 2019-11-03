@@ -20,14 +20,14 @@ class Hivemind:
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :ivar workers: keeps track workers objects in the simulation
     :type dict<str, domain.Worker>
+    :ivar workers_uptime: contains each worker node uptime, used to calculate kill probability
+    :type dict<str, float>
     :ivar worker_status: keeps track workers objects in the simulation regarding their health
     :type dict<domain.Worker, domain.Status(Enum)>
     :ivar shared_files: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
     :type dict<string, dict<int, SharedFilePart>>
     :ivar sf_data: part_name is a key to containing general information about the file
     :type tuple<str, domain.Helpers.FileData>
-    :ivar node_uptime_dict: contains each worker node uptime, used to calculate kill probability
-    :type dict<str, float>
     :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
     :type int
     """
@@ -45,14 +45,14 @@ class Hivemind:
         with open(simfile_name) as input_file:
             json_obj = json.load(input_file)
             # Init basic simulation variables
-            self.workers = {}
-            self.worker_status = {}
             self.shared_files = {}
             self.sf_data = {}
-            self.node_uptime_dict = json_obj['nodes_uptime']
+            self.workers = {}
+            self.worker_status = {}
+            self.workers_uptime = json_obj['nodes_uptime']
             self.max_stages = json_obj['max_simulation_stages']
             # Create the P2P network nodes (domain.Workers) without any job
-            self.__init_workers([*self.node_uptime_dict.keys()])
+            self.__init_workers([*self.workers_uptime.keys()])
             # Read and split all shareable files specified on the input
             self.__split_all_shared_files([*json_obj['shared'].keys()])
             # For all shareable files, set that shared file_routing table
@@ -72,21 +72,6 @@ class Hivemind:
             worker = Worker(self, name)
             self.workers[name] = worker
             self.worker_status[worker] = Status.ONLINE
-
-    def __set_worker_routing_tables(self, worker, file_name, transition_vector):
-        """
-        Allows given worker to decide to whom he should send a named file part when he receives it.
-        i.e.: Neither workers, nor file parts, have a transition matrix, instead, each worker knows for each named file
-        the column vector containing the transition probabilities for that file. For a given file, if all workers were
-        merged into one, the concatenation of their column vectors would result into the correct transition matrix.
-        :param worker: the worker whose routing table will be updated
-        :type domain.Worker
-        :param file_name: name of the shared file to which the transition_vector will be mapped to
-        :type str
-        :param transition_vector: state labeled transition probabilities for all sharers of the named file
-        :type list<float>
-        """
-        worker.set_file_routing(file_name, transition_vector)
 
     def __uniformely_assign_parts_to_workers(self, shared_files_dict, enforce_online=True):
         """
@@ -171,19 +156,17 @@ class Hivemind:
         are going to receive the file parts associated wih the named file, along with the transition vectors before
         being metropolis hastings processed as well as the desired distributions
         """
-        for extended_file_name, markov_chain_data in shared_dict.items():
-            file_name = Path(extended_file_name).resolve().stem
-            states = markov_chain_data['state_labels']
+        for ext_file_name, markov_chain_data in shared_dict.items():
+            sf_name = Path(ext_file_name).resolve().stem
+            labels = markov_chain_data['state_labels']
             adj_matrix = markov_chain_data['adj_matrix']
             desired_distribution = markov_chain_data['ddv']
             # Setting the trackers in this phase speeds up simulation
-            self.__set_distribution_trackers(file_name, desired_distribution, states)
+            self.__set_distribution_trackers(sf_name, desired_distribution, labels)
             # Compute transition matrix
-            transition_matrix = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, states)
+            transition_matrix = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, labels)
             # Split transition matrix into column vectors
-            for worker_name in states:
-                transition_vector = transition_matrix.loc[:, worker_name]  # <label, value> pairs in column[worker_name]
-                self.__set_worker_routing_tables(self.workers[worker_name], file_name, transition_vector)
+            self.__set_routing_tables(sf_name, labels, transition_matrix)
     # endregion
 
     # region simulation execution methods
@@ -203,11 +186,7 @@ class Hivemind:
             self.__redistribute_transition_matrix(self.sf_data[shared_file_name], dead_worker_name)
 
     def __redistribute_transition_matrix(self, shared_file_data, dead_worker_name):
-        desired_distribution = self.__update_shared_file_data(shared_file_data, dead_worker_name)
-        #  2. calculate new transition matrix (feed a new adj matrix to mh algorithm along with new ddv)
-        #  3. update FileData fields
-        #  4. update any self.sf_* structure as required
-        #  5. broadcast new transition.vectors to respective sharers
+        self.__heal_hive(shared_file_data, dead_worker_name)
         raise NotImplementedError
 
     def __init_recovery_protocol(self, shared_file_data):
@@ -284,7 +263,7 @@ class Hivemind:
         """
         surviving_workers = []
         for worker in online_workers:
-            uptime = self.node_uptime_dict[worker.name] / 100
+            uptime = self.workers_uptime[worker.name] / 100
             remains_alive = np.random.choice([True, False], p=[uptime, 1 - uptime])
             if remains_alive:
                 surviving_workers.append(worker)
@@ -326,37 +305,36 @@ class Hivemind:
         """
         if stage == self.max_stages:
             exit(0)
-
-        for data in self.sf_data.values():
+        for sf_data in self.sf_data.values():
             # retrieve from each worker how many parts they have for current data.file_name and update convergence data
-            self.__request_file_counts(data)
+            self.__request_file_counts(sf_data)
             # when all queries for a file are done, verify convergence for data.file_name
-            self.__check_file_convergence(data, stage)
+            self.__check_file_convergence(sf_data, stage)
 
-    def __request_file_counts(self, data):
-        worker_names = [*data.desired_distribution.index]
-        for worker_name in worker_names:
-            worker = self.workers[worker_name]
-            if self.worker_status[worker_name] != Status.ONLINE:
-                data.current_distribution.at[worker_name, DEFAULT_COLUMN] = 0
+    def __request_file_counts(self, sf_data):
+        worker_names = [*sf_data.desired_distribution.index]
+        for name in worker_names:
+            if self.worker_status[name] != Status.ONLINE:
+                sf_data.current_distribution.at[name, DEFAULT_COLUMN] = 0
             else:
-                data.current_distribution.at[worker_name, DEFAULT_COLUMN] = worker.request_file_count(data.file_name)
+                worker = self.workers[name]  # get worker instance corresponding to name
+                sf_data.current_distribution.at[name, DEFAULT_COLUMN] = worker.request_file_count(sf_data.file_name)
 
-    def __check_file_convergence(self, data, stage):
-        if ConvergenceData.equal_distributions(data.current_distribution, data.desired_distribution):
-            data.convergence_data.cswc_increment_and_get(1)
-            if data.convergence_data.try_update_convergence_set(stage):
+    def __check_file_convergence(self, sf_data, stage):
+        if sf_data.equal_distributions():
+            sf_data.convergence_data.cswc_increment_and_get(1)
+            if sf_data.convergence_data.try_update_convergence_set(stage):
                 with open("outfile.txt", "a+") as out_file:
                     out_file.write("File {} converged at stage {}...\n"
                                    "Desired distribution: {},\n"
-                                   "Current distribution: {}\n".format(data.file_name,
+                                   "Current distribution: {}\n".format(sf_data.file_name,
                                                                        stage,
-                                                                       data.desired_distribution.to_string(),
-                                                                       data.current_distribution.to_string()
+                                                                       sf_data.desired_distribution.to_string(),
+                                                                       sf_data.current_distribution.to_string()
                                                                        )
                                    )
         else:
-            data.save_sets_and_reset_data()
+            sf_data.convergence_data.save_sets_and_reset()
     # endregion
 
     # region teardown
@@ -387,31 +365,114 @@ class Hivemind:
     # endregion
 
     # region other helpers
-    def __update_shared_file_data(self, shared_file_data, dead_worker_name):
+    def __heal_hive(self, sf_data, dw_name):
         """
-        :param shared_file_data: reference to FileData instance object whose fields need to be updatedd
+        Selects a worker who is at least as good as dead worker and updates FileData associated with the file
+        :param sf_data: reference to FileData instance object whose fields need to be updatedd
         :type domain.helpers.FileData
-        :param dead_worker_name: name of the worker to be droppedd from desired distribution, etc...
+        :param dw_name: name of the worker to be droppedd from desired distribution, etc...
         :type str
-        :return: new desired distribution, w/o labels. each entry is incremented with dead worker's density/len(ddv-1)
-        :rtype list<float>
+        :returns: None if hive is unable to heal through replacement, or a replacement dict, if it was
+        :rtype dict<str, str>
         """
-        desired_distribution = shared_file_data.desired_distribution
-        # fetch probability from column vector where row key is the dead worker's name and then drop that row
-        increment = desired_distribution.loc[dead_worker_name].values[0] / (desired_distribution.shape[0] - 1)
-        desired_distribution = desired_distribution.drop(dead_worker_name, inplace=True)
-        # fetchh remaining labels and rows as found on the dataframe
-        new_labels = [*desired_distribution.index]
-        new_values = [*desired_distribution[dead_worker_name]]  # column with given key wasn't dropped!
+        labels, replacement_dict = self.__find_replacement_node(sf_data, dw_name)
+        if replacement_dict:
+            sf_data.replace_distribution_node(replacement_dict)
+            sf_data.reset_density_data()
+            sf_data.reset_convergence_data()
+            self.__update_routing_tables(sf_data.file_name, labels, replacement_dict)
+        return replacement_dict
+
+    def __find_replacement_node(self, sf_data, dw_name):
+        """
+        Selects a worker who is at least as good as dead worker and updates FileData associated with the file
+        :param sf_data: reference to FileData instance object whose fields need to be updatedd
+        :type domain.helpers.FileData
+        :param dw_name: name of the worker to be droppedd from desired distribution, etc...
+        :type str
+        :return: key pair of dead_worker_name : replacement_worker_name or None
+        :rtype dict<str, str>
+        """
+        labels = [*sf_data.desired_distribution.index]
+        dict_items = self.workers_uptime.items()
+
+        if len(labels) == len(dict_items):
+            return None
+
+        base_uptime = self.workers_uptime[dw_name] - 10.0
+        while base_uptime is not None:
+            for name, uptime in dict_items:
+                if self.worker_status[name] == Status.ONLINE and name not in labels and uptime > base_uptime:
+                    return labels, {dw_name: name}
+            base_uptime = self.__expand_uptime_range_search(base_uptime)
+        return None
+
+    def __contract_hive(self, sf_data, dw_name):
+        cropped_adj_matrix = self.__crop_adj_matrix(sf_data, dw_name)  # TODO here
+        cropped_labels, cropped_ddv = self.__crop_desired_distribution(sf_data, dw_name)
+        transition_matrix = mh.metropolis_algorithm(cropped_adj_matrix, cropped_ddv, column_major_out=True)
+        transition_matrix = pd.DataFrame(transition_matrix, index=cropped_labels, columns=cropped_labels)
+        sf_data.reset_distribution_data(cropped_labels, cropped_ddv)
+        sf_data.reset_density_data()
+        sf_data.reset_convergence_data()
+        self.__set_routing_tables(sf_data.file_name, cropped_labels, transition_matrix)
+
+    def __crop_adj_matrix(self, sf_data, dw_name):
+        raise NotImplementedError
+
+    def __crop_desired_distribution(self, sf_data, dw_name):
+        """
+        Generates a new desired distribution vector which is a subset of the original one.
+        :param sf_data: reference to FileData instance object whose fields need to be updatedd
+        :type domain.helpers.FileData
+        :param dw_name: name of the worker to be dropped from desired distribution, etc...
+        :type str
+        :return: surviving worker names and their new desired density
+        :rtype list<string>, list<float>
+        """
+        # get probability dead worker's density, 'share it' by remaining workers, then remove it from vector column
+        increment = sf_data.desired_distribution.loc[dw_name].values[0] / (sf_data.desired_distribution.shape[0] - 1)
+        sf_data.desired_distribution.drop(dw_name, inplace=True)
+        # fetch remaining labels and rows as found on the dataframe
+        new_labels = [*sf_data.desired_distribution.index]
+        new_values = [*sf_data.desired_distribution.iloc[:, 0]]
         incremented_values = [value + increment for value in new_values]
-        # update desired_distribution and reset FileData fields
-        desired_distribution = pd.DataFrame(incremented_values, index=new_labels)
-        shared_file_data.highest_density_node = desired_distribution.idxmax().values[0]
-        shared_file_data.highest_density_node_density = desired_distribution[shared_file_data.highest_density_node]
-        shared_file_data.desired_distribution = desired_distribution
-        # we aren't supposed to reassign the shared_file_data back to the dict, it works by reference as tested, but if bug, change.
-        shared_file_data.convergence_data.save_sets_and_reset_data()
-        return incremented_values
+        return new_labels, incremented_values
+
+    def __set_routing_tables(self, sf_name, worker_names, transition_matrix):
+        """
+        :param sf_name: name of the shared file
+        :type str
+        :param worker_names: name of the workers that share the file
+        :type list<str>
+        :param transition_matrix: labeled transition matrix to be splitted between named workers
+        :type N-D pandas.DataFrame
+        """
+        for name in worker_names:
+            transition_vector = transition_matrix.loc[:, name]  # <label, value> pairs in column[worker_name]
+            self.workers[name].set_file_routing(sf_name, transition_vector)
+
+    def __update_routing_tables(self, sf_name, worker_names, replacement_dict):
+        """
+        :param sf_name: name of the shared file
+        :type str
+        :param worker_names: name of the workers that share the file
+        :type list<str>
+        :param replacement_dict: key, value pair where key represents the name to be replaced with the new value
+        :type dict<str, str>
+        """
+        for name in worker_names:
+            self.workers[name].update_file_routing(sf_name, replacement_dict)
+
+    def __remove_routing_tables(self, sf_name, worker_names):
+        """
+        :param sf_name: name of the shared file to be removed from workers' routing tables
+        :type str
+        :param worker_names: name of the workers that share the file
+        :type list<str>
+        """
+        for name in worker_names:
+            self.workers[name].remove_file_routing(sf_name)
 
     def __filter_and_map_online_workers(self):
         """
@@ -420,5 +481,13 @@ class Hivemind:
         :rtype list<domain.Worker>
         """
         return [*map(lambda w: w[0], [*filter(lambda i: i[1] == Status.ONLINE, self.worker_status.items())])]
+
+    def __expand_uptime_range_search(self, current_uptime):
+        if current_uptime == 0.0:
+            return None
+        current_uptime -= 10.0
+        if current_uptime > 50.0:
+            return current_uptime
+        return 0.0
     # endregion
     # endregion
