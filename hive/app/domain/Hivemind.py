@@ -13,6 +13,7 @@ from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, READ_SIZE, DEFAULT_COLUMN
+from utils.convertions import str_copy
 
 class Hivemind:
     # region docstrings
@@ -182,12 +183,18 @@ class Hivemind:
             self.__process_stage_results(stage)
 
     def __redistribute_transition_matrices(self, shared_file_names, dead_worker_name):
-        for shared_file_name in shared_file_names:
-            self.__redistribute_transition_matrix(self.sf_data[shared_file_name], dead_worker_name)
+        for sf_name in shared_file_names:
+            self.__care_taking(self.sf_data[sf_name], dead_worker_name)
 
-    def __redistribute_transition_matrix(self, shared_file_data, dead_worker_name):
-        self.__heal_hive(shared_file_data, dead_worker_name)
-        raise NotImplementedError
+    def __care_taking(self, sf_data, dw_name):
+        """
+        :param sf_data: data class containing generalized information regarding the shared file
+        :type domain.helpers.FileData
+        :param dw_name: name of the worker that left the hive willingly or unexpectedly
+        :type str
+        """
+        if self.__heal_hive(sf_data, dw_name) is None:
+            self.__contract_hive(sf_data, dw_name)  # contraction only occurs if healing fails
 
     def __init_recovery_protocol(self, sf_data, mock=None):
         """
@@ -219,7 +226,7 @@ class Hivemind:
         #    2.1. find away of obtaining shared_file_names where user was
         #    2.2. __redistribute_transition_matrices(self, shared_file_names, dead_worker_name)(suspect_name)
         #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
-        if sf_name:
+        if sf_name and suspects_name:
             pass  # maybe sf_name can help when enough complaints are received, reanalyze this param at a later date.
         log.warning("receive_complaint is only a mock. method needs to be implemented...")
 
@@ -284,34 +291,31 @@ class Hivemind:
             if remains_alive:
                 surviving_workers.append(worker)
             else:
-                self.__remove_worker(worker, clean_kill=False, stage=stage)
+                self.__remove_worker(worker, stage=stage)
         return surviving_workers
 
-    def __remove_worker(self, target, clean_kill=True, stage=None):
+    def __remove_worker(self, target, stage=None):
         """
         :param target: worker who is going to be removed from the simulation network
         :type domain.Worker
-        :param clean_kill: When True worker will ask for his files to be redistributed before leaving the network
-        :type bool
         """
-        sf_parts = target.leave_hive()
-        if clean_kill:
-            self.worker_status[target] = Status.OFFLINE
-            self.__redistribute_transition_matrices([*sf_parts.keys()], target.name)
-            self.redistribute_file_parts(sf_parts)
-        else:
-            self.worker_status[target] = Status.SUSPECT
-            for sf_name, sfp_id in sf_parts.items():
-                sf_data = self.sf_data[sf_name]
-                parts_count = len(sfp_id)
-                threshold = sf_data.get_failure_threshold()
-                if parts_count > threshold:
-                    # Can't recover from this situation, stop tracking file and ask other sharers to do the same
-                    self.__stop_tracking_shared_file(stage, sf_name, target, parts_count, threshold)
-                else:
-                    # Ask best node still alive to do recovery protocols, assume perfect failure detector
-                    self.__redistribute_transition_matrix(sf_data, target)
-                    self.__init_recovery_protocol(sf_data, mock=sf_parts)
+        sf_parts = target.get_all_parts()
+        self.worker_status[str_copy(target.name)] = Status.OFFLINE
+
+        for sf_name, sfp_id in sf_parts.items():
+            sf_data = self.sf_data[sf_name]
+            parts_count = len(sfp_id)
+            threshold = sf_data.get_failure_threshold()
+            if parts_count > threshold:
+                # Can't recover from this situation, stop tracking file and ask other sharers to do the same
+                self.__register_failure(stage, sf_name, target, parts_count, threshold)
+                self.__stop_tracking_shared_file(sf_name)
+            else:
+                # Replace dead node with similar one, or, do hive contraction
+                self.__care_taking(sf_data, target)
+                # Ask best node still alive to do recovery protocols, assume perfect failure detector
+                self.__init_recovery_protocol(sf_data, mock=sf_parts)
+        del target  # mark as ready for garbage collection - no longer need the worker instance
 
     def __process_stage_results(self, stage):
         """
@@ -354,33 +358,16 @@ class Hivemind:
     # endregion
 
     # region teardown
-
-    def __stop_tracking_shared_file(self, stage, sf_name, target, parts_count, threshold):
-        worker_names = [*self.sf_data[sf_name].desired_distribution.index]
-        self.__drop_shared_file(shared_file_name=sf_name, worker_names=worker_names)
-        with open("out_{}.txt".format(sf_name), "a+") as out_file:
-            out_file.write("Failure at stage {} due to worker '{}' death, parts: {} > threshold: {}\n"
-                           .format(stage, sf_name, target, parts_count, threshold))
-
-    def __drop_shared_file(self, shared_file_name, worker_names):
-        """
-        Hivemind instance stops trackign the named file by removing it from all dictionaries and similar structures
-        :param shared_file_name: the name of the file to drop from shared file structures
-        """
+    def __stop_tracking_shared_file(self,  sf_name):
+        labels = [*self.sf_data[sf_name].desired_distribution.index]
         # First reset hivemind data structures
-        try:
-            self.sf_data.pop(shared_file_name)
-            self.shared_files.pop(shared_file_name)
-        except KeyError:
-            log.error("Key ({}) doesn't exist in at least one Hivemind tracking structure".format(shared_file_name))
-        # Then, ask workers to reset theirs
-        for worker_name in worker_names:
-            worker = self.workers[worker_name]
-            worker.drop_shared_file(shared_file_name=shared_file_name)
-
+        self.sf_data.pop(sf_name, None)
+        self.shared_files.pop(sf_name, None)
+        # Now ask workers to reset theirs
+        self.__remove_routing_tables(sf_name, labels)
     # endregion
 
-    # region other helpers
+    # region hive recovery methods
     def __heal_hive(self, sf_data, dw_name):
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
@@ -454,7 +441,9 @@ class Hivemind:
         new_values = [*sf_data.desired_distribution.iloc[:, 0]]
         incremented_values = [value + increment for value in new_values]
         return new_labels, incremented_values
+    # endregion
 
+    # region other helpers
     def __set_routing_tables(self, sf_name, worker_names, transition_matrix):
         """
         :param sf_name: name of the shared file
@@ -505,5 +494,11 @@ class Hivemind:
         if current_uptime > 50.0:
             return current_uptime
         return 0.0
+
+    def __register_failure(self, stage, sf_name, target, parts_count, threshold):
+        with open("out_{}.txt".format(sf_name), "a+") as out_file:
+            out_file.write("Failure at stage {} due to worker '{}' death, parts: {} > threshold: {}\n"
+                           .format(stage, target, parts_count, threshold)
+                           )
     # endregion
     # endregion
