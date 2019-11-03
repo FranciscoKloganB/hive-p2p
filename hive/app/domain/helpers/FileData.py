@@ -44,26 +44,28 @@ class FileData:
     # endregion
 
     # region instance methods
-    def reset_file_data(self, labels):
+    def reset_distribution_data(self, labels, desired_distribution):
         """
         :param labels: name of the workers that belong to this file's hive
         :type list<str>
+        :param desired_distribution: list of probabilities
+        :type list<float>
         """
-        self.current_distribution = pd.DataFrame([0] * len(labels), index=labels)
-        self.convergence_data.save_sets_and_reset()
-        self.reset_density_data()
+        # update desired_distribution and reset FileData fields
+        self.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
+        self.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
 
     def reset_density_data(self):
         self.highest_density_node_label = self.desired_distribution.idxmax().values[0]  # index/label of highval
         self.highest_density_node_density = self.desired_distribution.loc[self.highest_density_node_label][0]  # highval
 
+    def reset_convergence_data(self):
+        self.convergence_data.save_sets_and_reset()
+
     def replace_node(self, replacement_dict):
         self.desired_distribution.rename(index=replacement_dict, inplace=True)
         self.current_distribution.rename(index=replacement_dict, inplace=True)
         self.reset_density_data()
-
-    def reset_convergence_data(self):
-        self.convergence_data.save_sets_and_reset()
 
     def equal_distributions(self):
         cD.equal_distributions(self.desired_distribution, self.current_distribution)
