@@ -87,6 +87,12 @@ class Worker:
         raise NotImplementedError
 
     def receive_part(self, part, no_check=False):
+        """
+        :param part: an instance object that contains data regarding the shared file part and it's raw contents
+        :type domain.SharedFilePart
+        :param no_check: wether or not method verifies sha256 of each part.
+        :type bool
+        """
         if no_check or crypto.sha256(part.part_data) == part.sha256:
             if part.name in self.sf_parts:
                 self.sf_parts[part.name][part.part_id] = part
@@ -96,6 +102,23 @@ class Worker:
         else:
             print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
             self.__init_recovery_protocol(part)
+
+    def receive_parts(self, sf_name, sf_id_parts, no_check=True):
+        """
+        :param sf_name: name of the file the parts belong to
+        :type str
+        :param sf_id_parts: mapping of shared file part id to SharedFileParts instances
+        :type dict<int, domain.SharedFilePart>
+        :param no_check: wether or not method verifies sha256 of each part.
+        :type bool
+        """
+        if no_check:
+            # Use sf_name in param to leverage the pythonic way of merging dictionaries
+            self.sf_parts[sf_name].update(sf_id_parts)
+        else:
+            for sf_part in sf_id_parts.values():
+                # When adding one 1-by-1, no other param other than the SharedFilePart is needed... See receive_part
+                self.receive_part(sf_part, no_check=False)
 
     def send_part(self):
         for sf_name, sf_id in self.sf_parts.items():
