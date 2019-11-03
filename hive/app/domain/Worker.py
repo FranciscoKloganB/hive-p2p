@@ -57,7 +57,7 @@ class Worker:
         raise NotImplementedError
     # endregion
 
-    # region instance methods
+    # region routing table management methods
     def set_file_routing(self, sf_name, transition_vector):
         """
         :param sf_name: a file name that is being shared on the hive
@@ -74,17 +74,23 @@ class Worker:
         :param replacement_dict: key, value pair where key represents the name to be replaced with the new value
         :type dict<str, str>
         """
-        raise NotImplementedError
+        self.__routing_table[sf_name].rename(index=replacement_dict, inplace=True)
 
     def remove_file_routing(self, sf_name):
         """
         :param sf_name: a file name that is being shared on the hive which this node should stop transimitting
         :type str
         """
-        raise NotImplementedError
+        try:
+            self.sf_parts.pop(sf_name)
+        except KeyError:
+            log.error("Key ({}) doesn't exist in worker {}'s sf_parts dict".format(sf_name, self.name))
+    # endregion
 
+    # region file sending and receiving methods
     def receive_part(self, part, no_check=False):
         """
+        Keeps a new, single, shared file part, along the ones already stored by the Worker instance
         :param part: an instance object that contains data regarding the shared file part and it's raw contents
         :type domain.SharedFilePart
         :param no_check: wether or not method verifies sha256 of each part.
@@ -102,6 +108,7 @@ class Worker:
 
     def receive_parts(self, sf_id_parts, sf_name=None, no_check=False):
         """
+        Keeps incomming shared file parts along with the ones already owned by the Worker instance
         :param sf_id_parts: mapping of shared file part id to SharedFileParts instances
         :type dict<int, domain.SharedFilePart>
         :param sf_name: name of the file the parts belong to. sf_name must be set if method is called with no_check=True
@@ -117,7 +124,10 @@ class Worker:
                 # When adding one 1-by-1, no other param other than the SharedFilePart is needed... See receive_part
                 self.receive_part(sf_part, no_check=False)
 
-    def send_part(self):
+    def route_parts(self):
+        """
+        For each part kept by the Worker instance, get the destination and send the part to it
+        """
         for sf_name, sf_id in self.sf_parts.items():
             tmp = {}
             for sf_part in sf_id.values():
@@ -131,32 +141,13 @@ class Worker:
                         tmp[sf_id] = sf_part  # store <sf_id, sf_part>, original destination doesn't respond
             self.sf_parts[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited
 
+    # region helpers
     def leave_hive(self):
         """
-        Resets the field of the Worker instance, returns a deep copy of self.file_parts for hivemind convinience!
-        Actual method shouldn't return anything! I repeat, this is just a shortcut! Thus is not docstringed.
+        Worker instance disconnects from the Hivemind and discards all files it is currently keeping
         """
-        sf_parts = deepcopy(self.send_shared_parts())
         self.hivemind = None
         self.sf_parts = None
-        return sf_parts
-
-    def drop_shared_file(self, shared_file_name):
-        """
-        Worker instance stops sharing the named file
-        :param shared_file_name: the name of the file to drop from shared file structures
-        """
-        try:
-            self.shared_files.pop(shared_file_name)
-        except KeyError:
-            log.error("Key ({}) doesn't exist in worker {}'s sf_parts dict".format(shared_file_name, self.name))
-
-    def send_shared_parts(self):
-        """
-        :returns a deep copy of self.file_parts
-        :rtype dict<str, dict<int, domain.SharedFileParts>>
-        """
-        return deepcopy(self.sf_parts)
 
     def get_next_state(self, shared_file_name):
         """
@@ -171,7 +162,7 @@ class Worker:
         return np.random.choice(a=row_labels, p=label_probabilities).item()  # converts numpy.str to python str
     # endregion
 
-    # region static methods
+    # region resource utilization methods
     @staticmethod
     def get_resource_utilization(*args):
         """
@@ -188,4 +179,15 @@ class Worker:
         for arg in args:
             results[arg] = rT.get_value(arg)
         return results
+    # endregion
+
+    # region mock methods
+    def get_all_parts(self):
+        """
+        Sends a copy of all parts stored in this Worker instance to the requestor
+        Warning: Don't use this method in production
+        :returns a deep copy of self.file_parts
+        :rtype dict<str, dict<int, domain.SharedFileParts>>
+        """
+        return deepcopy(self.sf_parts)
     # endregion
