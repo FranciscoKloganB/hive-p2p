@@ -189,11 +189,27 @@ class Hivemind:
         self.__heal_hive(shared_file_data, dead_worker_name)
         raise NotImplementedError
 
-    def __init_recovery_protocol(self, shared_file_data):
-        # TODO this-iteration
-        #  1. simply offload all files the dead worker had to the the next highest density node still alive
-        #  2. in the future, upgrade to asking the next highest density node that is alive to rebuild dead nodes' files
-        raise NotImplementedError
+    def __init_recovery_protocol(self, sf_data, mock=None):
+        """
+        Starts file recovering by asking the best in the Hive still alive to run a file reconstruction algorithm
+        :param sf_data: instance object containing information about the file to be recovered
+        :type domain.helpers.FileData
+        :param mock: allows simulation to do a recovery by passing files from dead worker to a living worker
+        :type dict<int, domain.SharedFilePart>
+        """
+        best_worker_name = sf_data.highest_density_node_label
+
+        if self.worker_status[best_worker_name] != Status.ONLINE:
+            # TODO future-iterations:
+            #  get the next best node, until a node in the hive is found to be online or no other options remain
+            #  for current iteration, assume this situation doesn't happen, best node in the structure is always online
+            return
+
+        worker = self.workers[best_worker_name]
+        if mock:
+            worker.receive_parts(sf_id_parts=mock, sf_name=sf_data.file_name, no_check=True)
+        else:
+            worker.init_recovery_protocol(sf_data.file_name)
 
     def receive_complaint(self, suspects_name, sf_name=None):
         # TODO:
@@ -293,9 +309,9 @@ class Hivemind:
                     # Can't recover from this situation, stop tracking file and ask other sharers to do the same
                     self.__stop_tracking_shared_file(stage, sf_name, target, parts_count, threshold)
                 else:
-                    # Invoke recovery protocols, assume perfect failure detector for now
+                    # Ask best node still alive to do recovery protocols, assume perfect failure detector
                     self.__redistribute_transition_matrix(sf_data, target)
-                    self.__init_recovery_protocol(sf_data)  # Best node still alive is responsible for redistribution
+                    self.__init_recovery_protocol(sf_data, mock=sf_parts)
 
     def __process_stage_results(self, stage):
         """
