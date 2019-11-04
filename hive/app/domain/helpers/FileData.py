@@ -33,7 +33,8 @@ class FileData:
                  density=0.0,
                  ddv=None,
                  cdv=None,
-                 convergence_data=None):
+                 convergence_data=None,
+                 adj_matrix=None):
         self.file_name = file_name
         self.parts_count = parts_count
         self.highest_density_node_label = node_name
@@ -41,6 +42,7 @@ class FileData:
         self.desired_distribution = ddv
         self.current_distribution = cdv
         self.convergence_data = convergence_data
+        self.adjacency_matrix = adj_matrix
     # endregion
 
     # region instance methods
