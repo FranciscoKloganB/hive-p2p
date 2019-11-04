@@ -12,7 +12,7 @@ from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from domain.helpers.ConvergenceData import ConvergenceData
-from globals.globals import SHARED_ROOT, READ_SIZE, DEFAULT_COLUMN
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
 from utils.convertions import str_copy
 from utils.randoms import excluding_randrange
 
@@ -45,7 +45,8 @@ class Hivemind:
         :param simfile_name: path to json file containing the parameters this simulation should execute with
         :type str
         """
-        with open(simfile_name) as input_file:
+        simfile_path = os.path.join(SIMULATION_ROOT, simfile_name)
+        with open(simfile_path) as input_file:
             json_obj = json.load(input_file)
             # Init basic simulation variables
             self.shared_files = {}
@@ -53,7 +54,7 @@ class Hivemind:
             self.workers = {}
             self.worker_status = {}
             self.workers_uptime = json_obj['nodes_uptime']
-            self.max_stages = json_obj['max_simulation_stages']
+            self.max_stages = json_obj['max_stages']
             # Create the P2P network nodes (domain.Workers) without any job
             self.__init_workers([*self.workers_uptime.keys()])
             # Read and split all shareable files specified on the input
