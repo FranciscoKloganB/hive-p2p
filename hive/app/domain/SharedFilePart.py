@@ -59,7 +59,7 @@ class SharedFilePart:
 
     # region override
     def __str__(self):
-        return "{},\n{},\n{},\n{},\n{}\n".format(
+        return "part_name: {},\n part_number: {},\npart_id: {},\n part_data: {},\n sha256: {}\n".format(
             self.part_name, self.part_number, self.part_id, self.part_data, self.sha256
         )
     # endregion
