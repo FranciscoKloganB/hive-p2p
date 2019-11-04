@@ -27,6 +27,7 @@ def utf8string_to_bytes(string):
 def str_copy(string):
     return string.encode().decode()
 
+
 def obj_to_json_string(obj):
     return jsonpickle.encode(obj)
 
