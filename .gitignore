@@ -3,6 +3,8 @@
 
 */simfiles
 */outfiles
+*.json
+*.out
 
 ### Python template
 # Byte-compiled / optimized / DLL files
@@ -355,3 +357,4 @@ codegen/
 
 # Octave session info
 octave-workspace
+hive/app/static/outfiles/FTB_4376.out
