@@ -163,7 +163,7 @@ class Hivemind:
             adj_matrix = markov_chain_data['adj_matrix']
             desired_distribution = markov_chain_data['ddv']
             # Setting the trackers in this phase speeds up simulation
-            self.__set_distribution_trackers(sf_name, desired_distribution, labels)
+            self.__init_file_data(sf_name, adj_matrix, desired_distribution, labels)
             # Compute transition matrix
             transition_matrix = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, labels)
             # Split transition matrix into column vectors
@@ -260,17 +260,22 @@ class Hivemind:
 
     # region helper methods
     # region setup
-    def __set_distribution_trackers(self, file_name, desired_distribution, labels):
+    def __init_file_data(self, sf_name, adj_matrix, desired_distribution, labels):
         """
-        :param file_name: the name of the file to be tracked by the hivemind
+        :param sf_name: the name of the file to be tracked by the hivemind
         :type str
+        :param adj_matrix: matrix with connections between nodes, 1 if possible to go from node i to j, else 0
+        :type list<list<int>>
         :param desired_distribution: the desired distribution vector of the given named file
         :type list<float>
+        :param labels: name of the workers belonging to the hive, i.e.: keepers or sharers of the files
+        :type list<str>
         """
-        data = self.sf_data[file_name]
-        data.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
-        data.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
-        data.convergence_data = ConvergenceData()
+        sf_data = self.sf_data[sf_name]
+        sf_data.adjacency_matrix = pd.DataFrame(adj_matrix, index=labels, columns=labels)
+        sf_data.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
+        sf_data.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
+        sf_data.convergence_data = ConvergenceData()
     # endregion
 
     # region stage processing
@@ -420,7 +425,8 @@ class Hivemind:
         self.__set_routing_tables(sf_data.file_name, cropped_labels, transition_matrix)
 
     def __crop_adj_matrix(self, sf_data, dw_name):
-        raise NotImplementedError
+        # TODO this-iteration:
+        return None
 
     def __crop_desired_distribution(self, sf_data, dw_name):
         """
