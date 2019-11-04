@@ -19,7 +19,7 @@ class SharedFilePart:
     # endregion
 
     # region class variables, instance variables and constructors
-    def __init__(self, part_name, part_number, part_data, ddv=None, transition_matrix_definition=None):
+    def __init__(self, part_name, part_number, part_data):
         """
         :param part_name: original name of the file this part belongs to
         :type str
@@ -27,10 +27,6 @@ class SharedFilePart:
         :type int
         :param part_data: Up to 2KB blocks of raw data that can be either strings or bytes
         :type bytes or str
-        :param ddv: stochastic like list to define the desired distribution vector that this SharedFilePart is pursuing
-        :type list<float>
-        :param transition_matrix_definition: tuple containing state names and the respective transition vectors
-        :type tuple<list, list<lit<float>>
         """
         self.__part_name = part_name
         self.__part_number = part_number
@@ -59,4 +55,11 @@ class SharedFilePart:
     @property
     def sha256(self):
         return self.__sha256
+    # endregion
+
+    # region override
+    def __str__(self):
+        return "{},\n{},\n{},\n{},\n{}\n".format(
+            self.part_name, self.part_number, self.part_id, self.part_data, self.sha256
+        )
     # endregion
