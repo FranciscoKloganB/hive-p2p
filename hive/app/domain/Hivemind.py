@@ -348,7 +348,7 @@ class Hivemind:
                 sf_data.current_distribution.at[name, DEFAULT_COLUMN] = 0
             else:
                 worker = self.workers[name]  # get worker instance corresponding to name
-                sf_data.current_distribution.at[name, DEFAULT_COLUMN] = worker.request_file_count(sf_data.file_name)
+                sf_data.current_distribution.at[name, DEFAULT_COLUMN] = worker.get_parts_count(sf_data.file_name)
 
     def __check_file_convergence(self, stage, sf_data):
         if sf_data.equal_distributions():
