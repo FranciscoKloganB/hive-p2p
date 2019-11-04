@@ -236,7 +236,7 @@ class Hivemind:
     def route_file_part(self, dest_worker, part):
         """
         :param dest_worker: destinatary of the file part
-        :type domain.Worker OR str (domain.Worker.name)
+        :type str
         :param part: the file part to send to specified worker
         :type domain.SharedFilePart
         :returns: http codes based status of destination worker
@@ -244,7 +244,7 @@ class Hivemind:
         """
         dest_status = self.worker_status[dest_worker]
         if dest_status == Status.ONLINE:
-            dest_worker.receive_part(part)
+            self.workers[dest_worker].receive_part(part)
             return HttpCodes.OK
         elif dest_status == Status.OFFLINE:
             return HttpCodes.SERVER_DOWN
