@@ -1,7 +1,10 @@
+import os
 import pandas as pd
 
-from domain.helpers.ConvergenceData import ConvergenceData as cD
 from math import ceil
+from globals.globals import OUTFILE_ROOT
+from domain.helpers.ConvergenceData import ConvergenceData as cD
+
 
 class FileData:
     # region docstrings
@@ -43,6 +46,7 @@ class FileData:
         self.current_distribution = cdv
         self.convergence_data = convergence_data
         self.adjacency_matrix = adj_matrix
+        self.out_file = self.open()
     # endregion
 
     # region instance methods
@@ -86,4 +90,15 @@ class FileData:
         :type int
         """
         return self.parts_count - ceil(self.parts_count * self.highest_density_node_density)
+    # endregion
+
+    # region file I/O
+    def fopen(self):
+        self.out_file.open(os.path.join(OUTFILE_ROOT, self.file_name + ".out", "w+"))
+
+    def fwrite(self, string):
+        self.out_file.write(string + "\n")
+
+    def fclose(self):
+        self.out_file.close()
     # endregion

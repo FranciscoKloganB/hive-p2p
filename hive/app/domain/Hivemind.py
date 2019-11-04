@@ -16,6 +16,7 @@ from globals.globals import SHARED_ROOT, READ_SIZE, DEFAULT_COLUMN
 from utils.convertions import str_copy
 from utils.randoms import excluding_randrange
 
+
 class Hivemind:
     # region docstrings
     """
@@ -113,8 +114,7 @@ class Hivemind:
         :type str
         """
         # file_extension = Path(file_path).resolve().suffix
-        file_name = Path(file_path).resolve().stem
-
+        sf_name = Path(file_path).resolve().stem
         with open(file_path, "rb") as shared_file:
             file_parts = {}
             part_number = 0
@@ -123,16 +123,16 @@ class Hivemind:
                 if read_buffer:
                     part_number = part_number + 1
                     shared_file_part = SharedFilePart(
-                        file_name,
+                        sf_name,
                         part_number,
                         read_buffer
                     )
                     file_parts[part_number] = shared_file_part
                 else:
                     # Keeps track of how many parts the file was divided into
-                    self.shared_files[file_name] = file_parts
+                    self.shared_files[sf_name] = file_parts
                     break
-            self.sf_data[file_name] = FileData(file_name=file_name, parts_count=part_number)
+            self.sf_data[sf_name] = FileData(file_name=sf_name, parts_count=part_number)
     # endregion
 
     # region metropolis hastings and transition vector assignment methods

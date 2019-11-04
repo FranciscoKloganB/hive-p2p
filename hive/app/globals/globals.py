@@ -9,5 +9,6 @@ DEFAULT_COLUMN = 0
 
 # region path constants
 SHARED_ROOT = os.path.join(os.getcwd(), 'static', 'shared')
-SIMULATIONS_ROOT = os.path.join(os.getcwd(), 'static', 'simfiles')
+OUTFILE_ROOT = os.path.join(os.getcwd(), 'static', 'outfiles')
+SIMULATION_ROOT = os.path.join(os.getcwd(), 'static', 'simfiles')
 # endregion

@@ -13,7 +13,7 @@ from scripts.pyscripts import skewed_distribution_generator as sg, label_generat
 from pathlib import Path
 from decimal import Decimal
 from domain.Hivemind import Hivemind
-from globals.globals import SHARED_ROOT, SIMULATIONS_ROOT
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT
 
 
 # region usage
@@ -399,7 +399,7 @@ def main(simfile_name):
     if not simfile_name:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
-    file_path = os.path.join(SIMULATIONS_ROOT, simfile_name)
+    file_path = os.path.join(SIMULATION_ROOT, simfile_name)
 
     nodes_uptime_dict = __init_nodes_uptime_dict()
     simfile_json = {
