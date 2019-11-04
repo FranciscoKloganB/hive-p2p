@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class ConvergenceData:
     # region docstrings
     """
@@ -59,4 +60,11 @@ class ConvergenceData:
             return False
         else:
             return np.allclose(one, another, rtol=1e-03, atol=1e-05)  # find better rtol and atol params with Daniel
+    # endregion
+
+    # region overrides
+    def __str__(self):
+        return "convergence_sets: {}\n, largest_convergence_set: {}\n".format(
+            self.convergence_sets, self.largest_convergence_set
+        )
     # endregion
