@@ -93,9 +93,6 @@ class FileData:
     # endregion
 
     # region file I/O
-    def fopen(self):
-        return self.out_file.open(os.path.join(OUTFILE_ROOT, self.file_name + ".out", "w+"))
-
     def fwrite(self, string):
         self.out_file.write(string + "\n")
 
