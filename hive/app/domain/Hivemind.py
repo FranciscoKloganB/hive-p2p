@@ -181,7 +181,7 @@ class Hivemind:
         for stage in range(self.max_stages):
             surviving_workers = self.__remove_some_workers(online_workers_list, stage)
             for worker in surviving_workers:
-                worker.do_stage()
+                worker.route_parts()
             self.__process_stage_results(stage)
 
     def __care_taking(self, stage, sf_data, dw_name):
