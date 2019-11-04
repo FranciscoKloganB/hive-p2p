@@ -95,10 +95,7 @@ class Worker:
         :param no_check: wether or not method verifies sha256 of each part.
         :type bool
         """
-        if no_check:
-            return
-
-        if crypto.sha256(part.part_data) == part.sha256:
+        if no_check or crypto.sha256(part.part_data) == part.sha256:
             if part.part_name in self.sf_parts:
                 self.sf_parts[part.part_name][part.part_id] = part
             else:
@@ -134,7 +131,7 @@ class Worker:
         for sf_name, sf_id in self.sf_parts.items():
             tmp = {}
             for sf_part in sf_id.values():
-                dest_worker = self.get_next_state(shared_file_name=sf_name)
+                dest_worker = self.get_next_state(sf_name=sf_name)
                 if dest_worker == self.name:
                     tmp[sf_id] = sf_part  # store <sf_id, sf_part> pair in tmp dict, we don't need to send to ourselves
                 else:
@@ -152,14 +149,17 @@ class Worker:
         self.hivemind = None
         self.sf_parts = None
 
-    def get_next_state(self, shared_file_name):
+    def get_parts_count(self, sf_name):
+        return len(self.sf_parts[sf_name])
+
+    def get_next_state(self, sf_name):
         """
-        :param shared_file_name: the name of the file the part to be routed belongs to
+        :param sf_name: the name of the file the part to be routed belongs to
         :type: str
         :return: the name of the worker to whom the file should be routed too
         :type: str
         """
-        routing_data = self.__routing_table[shared_file_name]
+        routing_data = self.__routing_table[sf_name]
         row_labels = [*routing_data.index]  # gets the names of sharers as a list
         label_probabilities = [*routing_data[self.name]]  # gets the probabilities of sending to corresponding sharer
         return np.random.choice(a=row_labels, p=label_probabilities).item()  # converts numpy.str to python str
