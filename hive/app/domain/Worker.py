@@ -1,9 +1,11 @@
 import numpy as np
 import logging as log
+
 from utils import crypto
 from copy import deepcopy
-from utils.ResourceTracker import ResourceTracker as rT
 from domain.Enums import HttpCodes
+from globals.globals import DEFAULT_COLUMN
+from utils.ResourceTracker import ResourceTracker as rT
 
 
 class Worker:
@@ -64,7 +66,7 @@ class Worker:
         :param transition_vector: probability vector indicating transitions to other states for the given file w/ labels
         :type 1-D numpy.Array in column format
         """
-        self.__routing_table[sf_name] = transition_vector
+        self.__routing_table[sf_name] = transition_vector.to_frame()
 
     def update_file_routing(self, sf_name, replacement_dict):
         """
@@ -161,7 +163,8 @@ class Worker:
         """
         routing_data = self.__routing_table[sf_name]
         row_labels = [*routing_data.index]  # gets the names of sharers as a list
-        label_probabilities = [*routing_data[self.name]]  # gets the probabilities of sending to corresponding sharer
+        # label_probabilities = [*routing_data.iloc[:, DEFAULT_COLUMN]]  # probabilities corresponding to labeled sharer
+        label_probabilities = [*routing_data.iloc[:, DEFAULT_COLUMN]]  # probabilities corresponding to labeled sharer
         return np.random.choice(a=row_labels, p=label_probabilities).item()  # converts numpy.str to python str
     # endregion
 
