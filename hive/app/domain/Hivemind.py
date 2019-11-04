@@ -183,19 +183,21 @@ class Hivemind:
                 worker.do_stage()
             self.__process_stage_results(stage)
 
-    def __redistribute_transition_matrices(self, shared_file_names, dead_worker_name):
-        for sf_name in shared_file_names:
-            self.__care_taking(self.sf_data[sf_name], dead_worker_name)
-
-    def __care_taking(self, sf_data, dw_name):
+    def __care_taking(self, stage, sf_data, dw_name):
         """
+        :param stage: integer which marks the discrete time step the simulation is at
+        :type int
         :param sf_data: data class containing generalized information regarding the shared file
         :type domain.helpers.FileData
         :param dw_name: name of the worker that left the hive willingly or unexpectedly
         :type str
         """
-        if self.__heal_hive(sf_data, dw_name) is None:
+        replacement_dict = self.__heal_hive(sf_data, dw_name)
+        if replacement_dict is None:
             self.__contract_hive(sf_data, dw_name)  # contraction only occurs if healing fails
+            self.__register_contraction(stage, sf_data, dw_name)
+        else:
+            self.__register_heal(stage, sf_data, replacement_dict)
 
     def __init_recovery_protocol(self, sf_data, mock=None):
         """
@@ -299,28 +301,25 @@ class Hivemind:
                 self.__remove_worker(worker, stage=stage)
         return surviving_workers
 
-    def __remove_worker(self, target, stage=None):
+    def __remove_worker(self, dw_name, stage=None):
         """
-        :param target: worker who is going to be removed from the simulation network
+        :param dw_name: worker who is going to be removed from the simulation network
         :type domain.Worker
         """
-        sf_parts = target.get_all_parts()
-        self.worker_status[str_copy(target.name)] = Status.OFFLINE
+        sf_parts = dw_name.get_all_parts()
+        self.worker_status[str_copy(dw_name.name)] = Status.OFFLINE
 
         for sf_name, sfp_id in sf_parts.items():
             sf_data = self.sf_data[sf_name]
             parts_count = len(sfp_id)
             threshold = sf_data.get_failure_threshold()
             if parts_count > threshold:
-                # Can't recover from this situation, stop tracking file and ask other sharers to do the same
-                self.__register_failure(stage, sf_name, target, parts_count, threshold)
-                self.__stop_tracking_shared_file(sf_name)
+                self.__register_failure(stage, sf_data, dw_name, parts_count, threshold)
+                self.__stop_tracking_shared_file(sf_data)
             else:
-                # Replace dead node with similar one, or, do hive contraction
-                self.__care_taking(sf_data, target)
-                # Ask best node still alive to do recovery protocols, assume perfect failure detector
+                self.__care_taking(stage, sf_data, dw_name)
                 self.__init_recovery_protocol(sf_data, mock=sf_parts)
-        del target  # mark as ready for garbage collection - no longer need the worker instance
+        del dw_name  # mark as ready for garbage collection - no longer need the worker instance
 
     def __process_stage_results(self, stage):
         """
@@ -329,12 +328,17 @@ class Hivemind:
         :type int
         """
         if stage == self.max_stages:
+            for sf_data in self.sf_data.values():
+                sf_data.convergence_data.save_sets_and_reset()
+                sf_data.fwrite(str(sf_data.convergence_data))
+                sf_data.fclose()
             exit(0)
-        for sf_data in self.sf_data.values():
-            # retrieve from each worker how many parts they have for current data.file_name and update convergence data
-            self.__request_file_counts(sf_data)
-            # when all queries for a file are done, verify convergence for data.file_name
-            self.__check_file_convergence(sf_data, stage)
+        else:
+            for sf_data in self.sf_data.values():
+                # retrieve from each worker their part counts for current sf_name and update convergence data
+                self.__request_file_counts(sf_data)
+                # when all queries for a file are done, verify convergence for data.file_name
+                self.__check_file_convergence(stage, sf_data)
 
     def __request_file_counts(self, sf_data):
         worker_names = [*sf_data.desired_distribution.index]
@@ -345,31 +349,27 @@ class Hivemind:
                 worker = self.workers[name]  # get worker instance corresponding to name
                 sf_data.current_distribution.at[name, DEFAULT_COLUMN] = worker.request_file_count(sf_data.file_name)
 
-    def __check_file_convergence(self, sf_data, stage):
+    def __check_file_convergence(self, stage, sf_data):
         if sf_data.equal_distributions():
             sf_data.convergence_data.cswc_increment_and_get(1)
             if sf_data.convergence_data.try_update_convergence_set(stage):
-                with open("outfile.txt", "a+") as out_file:
-                    out_file.write("File {} converged at stage {}...\n"
-                                   "Desired distribution: {},\n"
-                                   "Current distribution: {}\n".format(sf_data.file_name,
-                                                                       stage,
-                                                                       sf_data.desired_distribution.to_string(),
-                                                                       sf_data.current_distribution.to_string()
-                                                                       )
-                                   )
+                sf_data.fwrite("Converged at stage {}...\nDesired and Current Distributions: \n{}\n{}".format(
+                    stage, sf_data.desired_distribution.to_string(), sf_data.current_distribution.to_string()
+                ))
         else:
             sf_data.convergence_data.save_sets_and_reset()
     # endregion
 
     # region teardown
-    def __stop_tracking_shared_file(self,  sf_name):
-        labels = [*self.sf_data[sf_name].desired_distribution.index]
-        # First reset hivemind data structures
-        self.sf_data.pop(sf_name, None)
-        self.shared_files.pop(sf_name, None)
-        # Now ask workers to reset theirs
+    def __stop_tracking_shared_file(self,  sf_data):
+        sf_data.fclose()
+        labels = [*sf_data.desired_distribution.index]
+        sf_name = sf_data.file_name.encode().decode()  # Creates an hard copy (str) of the shared file name
+        # First ask workers to reset theirs
         self.__remove_routing_tables(sf_name, labels)
+        # After that reset hivemind data structures
+        self.shared_files.pop(sf_name, None)
+        self.sf_data.pop(sf_name, None)
     # endregion
 
     # region hive recovery methods
@@ -526,11 +526,18 @@ class Hivemind:
             return current_uptime
         return 0.0
 
-    def __register_failure(self, stage, sf_name, target, parts_count, threshold):
-        with open("out_{}.txt".format(sf_name), "a+") as out_file:
-            out_file.write("Failure at stage {} due to worker '{}' death, parts: {} > threshold: {}\n"
-                           .format(stage, target, parts_count, threshold)
-                           )
+    def __register_failure(self, stage, sf_data, w_name, parts_count, threshold):
+        sf_data.fwrite(
+            "File sharing failed at stage {} due to worker '{}' death, (parts > threshold): {} > {}\n".format(
+                stage, w_name, parts_count, threshold
+            )
+        )
+
+    def __register_heal(self, stage, sf_data, replacement_dict):
+        sf_data.fwrite("Node replacement at stage {}, replaced (old : new) {}\n".format(stage, replacement_dict))
+
+    def __register_contraction(self, stage, sf_data, w_name):
+        sf_data.fwrite("Hive contraction at stage {} due to worker '{}' death".format(stage, w_name))
     # endregion
     # endregion
 

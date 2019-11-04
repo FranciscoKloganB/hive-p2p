@@ -46,7 +46,7 @@ class FileData:
         self.current_distribution = cdv
         self.convergence_data = convergence_data
         self.adjacency_matrix = adj_matrix
-        self.out_file = self.open()
+        self.out_file = self.fopen()
     # endregion
 
     # region instance methods
@@ -94,7 +94,7 @@ class FileData:
 
     # region file I/O
     def fopen(self):
-        self.out_file.open(os.path.join(OUTFILE_ROOT, self.file_name + ".out", "w+"))
+        return self.out_file.open(os.path.join(OUTFILE_ROOT, self.file_name + ".out", "w+"))
 
     def fwrite(self, string):
         self.out_file.write(string + "\n")
