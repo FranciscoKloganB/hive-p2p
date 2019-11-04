@@ -28,7 +28,7 @@ class Worker:
     # region class variables, instance variables and constructors
     def __init__(self, hivemind, name):
         self.sf_parts = {}
-        self.__routing_table = {}
+        self.routing_table = {}
         self.name = name
         self.hivemind = hivemind
     # endregion
@@ -66,7 +66,7 @@ class Worker:
         :param transition_vector: probability vector indicating transitions to other states for the given file w/ labels
         :type 1-D numpy.Array in column format
         """
-        self.__routing_table[sf_name] = transition_vector.to_frame()
+        self.routing_table[sf_name] = transition_vector.to_frame()
 
     def update_file_routing(self, sf_name, replacement_dict):
         """
@@ -75,7 +75,7 @@ class Worker:
         :param replacement_dict: key, value pair where key represents the name to be replaced with the new value
         :type dict<str, str>
         """
-        self.__routing_table[sf_name].rename(index=replacement_dict, inplace=True)
+        self.routing_table[sf_name].rename(index=replacement_dict, inplace=True)
 
     def remove_file_routing(self, sf_name):
         """
@@ -130,9 +130,9 @@ class Worker:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
         """
-        for sf_name, sf_id in self.sf_parts.items():
+        for sf_name, sf_id_part_dict in self.sf_parts.items():
             tmp = {}
-            for sf_part in sf_id.values():
+            for sf_id, sf_part in sf_id_part_dict.items():
                 dest_worker = self.get_next_state(sf_name=sf_name)
                 if dest_worker == self.name:
                     tmp[sf_id] = sf_part  # store <sf_id, sf_part> pair in tmp dict, we don't need to send to ourselves
@@ -161,7 +161,7 @@ class Worker:
         :return: the name of the worker to whom the file should be routed too
         :type: str
         """
-        routing_data = self.__routing_table[sf_name]
+        routing_data = self.routing_table[sf_name]
         row_labels = [*routing_data.index]  # gets the names of sharers as a list
         # label_probabilities = [*routing_data.iloc[:, DEFAULT_COLUMN]]  # probabilities corresponding to labeled sharer
         label_probabilities = [*routing_data.iloc[:, DEFAULT_COLUMN]]  # probabilities corresponding to labeled sharer
