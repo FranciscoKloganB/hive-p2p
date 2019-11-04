@@ -46,6 +46,15 @@ class FileData:
     # endregion
 
     # region instance methods
+    def reset_adjacency_matrix(self, labels, adjacency_matrix):
+        """
+        :param labels: name of the workers that belong to this file's hive
+        :type list<str>
+        :param adjacency_matrix: adjacency matrix representing connections between various states
+        :type list<list<int>>
+        """
+        self.adjacency_matrix = pd.DataFrame(adjacency_matrix, index=labels, columns=labels)
+
     def reset_distribution_data(self, labels, desired_distribution):
         """
         :param labels: name of the workers that belong to this file's hive
