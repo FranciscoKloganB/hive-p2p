@@ -463,7 +463,9 @@ class Hivemind:
         :rtype list<string>, list<float>
         """
         # get probability dead worker's density, 'share it' by remaining workers, then remove it from vector column
-        increment = sf_data.desired_distribution.loc[dw_name].values[0] / (sf_data.desired_distribution.shape[0] - 1)
+        increment = \
+            sf_data.desired_distribution.at[dw_name, DEFAULT_COLUMN] / (sf_data.desired_distribution.shape[0] - 1)
+
         sf_data.desired_distribution.drop(dw_name, inplace=True)
         # fetch remaining labels and rows as found on the dataframe
         new_labels = [*sf_data.desired_distribution.index]
