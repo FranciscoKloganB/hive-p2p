@@ -95,7 +95,7 @@ class Hivemind:
             choices = [*filter(set(worker_names).__contains__, workers_objs)]
             for part in part_number.values():
                 # Randomly choose a destinatary worker from possible choices and give him the shared file part
-                np.random.choice(choices).receive_part(part)
+                np.random.choice(choices).receive_part(part, no_check=True)
     # endregion
 
     # region file partitioning methods
