@@ -95,15 +95,19 @@ class Worker:
         :param no_check: wether or not method verifies sha256 of each part.
         :type bool
         """
-        if no_check or crypto.sha256(part.part_data) == part.sha256:
-            if part.name in self.sf_parts:
-                self.sf_parts[part.name][part.part_id] = part
+        if no_check:
+            return
+
+        if crypto.sha256(part.part_data) == part.sha256:
+            if part.part_name in self.sf_parts:
+                self.sf_parts[part.part_name][part.part_id] = part
             else:
-                self.sf_parts[part.name] = {}
-                self.sf_parts[part.name][part.part_id] = part
-        else:
-            print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
-            self.init_recovery_protocol(part)
+                self.sf_parts[part.part_name] = {}
+                self.sf_parts[part.part_name][part.part_id] = part
+            return
+
+        print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
+        self.init_recovery_protocol(part)
 
     def receive_parts(self, sf_id_parts, sf_name=None, no_check=False):
         """
