@@ -68,7 +68,7 @@ class FileData:
 
     def reset_density_data(self):
         self.highest_density_node_label = self.desired_distribution.idxmax().values[0]  # index/label of highval
-        self.highest_density_node_density = self.desired_distribution.loc[self.highest_density_node_label][0]  # highval
+        self.highest_density_node_density = self.desired_distribution.at[self.highest_density_node_label, 0]  # highval
 
     def reset_convergence_data(self):
         self.convergence_data.save_sets_and_reset()
