@@ -12,7 +12,7 @@ from scripts.pyscripts import skewed_distribution_generator as sg, label_generat
 
 from pathlib import Path
 from decimal import Decimal
-from utils.randoms import excluding_randrange
+from domain.Hivemind import Hivemind
 from globals.globals import SHARED_ROOT, SIMULATIONS_ROOT
 
 
@@ -319,15 +319,7 @@ def __init_adj_matrix(size):
                 is_absorbent_or_transient = False
                 break
         if is_absorbent_or_transient:
-            size_minus_one = size - 1
-            # make a bidirectional connection with a random state j, where i != j
-            j = None
-            if i == 0:
-                j = random.randrange(start=1, stop=size)  # any node j other than the first (0)
-            elif i == size_minus_one:
-                j = random.randrange(start=0, stop=size_minus_one)  # any node j except than the last (size-1)
-            elif 0 < i < size_minus_one:
-                j = excluding_randrange(start=0, stop=i, start_again=(i+1), stop_again=size)
+            j = Hivemind.random_j_index(i, size)
             adj_matrix[i][j] = adj_matrix[j][i] = 1
     return adj_matrix
 

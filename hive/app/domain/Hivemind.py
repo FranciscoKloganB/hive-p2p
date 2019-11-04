@@ -1,6 +1,6 @@
 import os
 import json
-import math
+import random
 import logging as log
 import numpy as np
 import pandas as pd
@@ -14,6 +14,7 @@ from domain.helpers.FileData import FileData
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, READ_SIZE, DEFAULT_COLUMN
 from utils.convertions import str_copy
+from utils.randoms import excluding_randrange
 
 class Hivemind:
     # region docstrings
@@ -415,18 +416,41 @@ class Hivemind:
         return None
 
     def __contract_hive(self, sf_data, dw_name):
-        cropped_adj_matrix = self.__crop_adj_matrix(sf_data, dw_name)  # TODO here
+        cropped_adj_matrix = self.__crop_adj_matrix(sf_data, dw_name)
         cropped_labels, cropped_ddv = self.__crop_desired_distribution(sf_data, dw_name)
         transition_matrix = mh.metropolis_algorithm(cropped_adj_matrix, cropped_ddv, column_major_out=True)
         transition_matrix = pd.DataFrame(transition_matrix, index=cropped_labels, columns=cropped_labels)
+        sf_data.reset_adjacency_matrix(cropped_adj_matrix)
         sf_data.reset_distribution_data(cropped_labels, cropped_ddv)
         sf_data.reset_density_data()
         sf_data.reset_convergence_data()
         self.__set_routing_tables(sf_data.file_name, cropped_labels, transition_matrix)
 
     def __crop_adj_matrix(self, sf_data, dw_name):
-        # TODO this-iteration:
-        return None
+        """
+        Generates a new desired distribution vector which is a subset of the original one.
+        :param sf_data: reference to FileData instance object whose fields need to be updatedd
+        :type domain.helpers.FileData
+        :param dw_name: name of the worker to be dropped from desired distribution, etc...
+        :type str
+        :return: surviving worker names and their new desired density
+        :rtype list<list<int>>
+        """
+        sf_data.desired_distribution.drop(dw_name, axis='index', inplace=True)
+        sf_data.desired_distribution.drop(dw_name, axis='columns', inplace=True)
+        size = sf_data.desired_distribution.shape[0]
+        for i in range(size):
+            is_absorbent_or_transient = True
+            for j in range(size):
+                # Ensure state i can reach and be reached by some other state j, where i != j
+                if sf_data.desired_distribution.iat[i, j] == 1 and i != j:
+                    is_absorbent_or_transient = False
+                    break
+            if is_absorbent_or_transient:
+                j = Hivemind.random_j_index(i, size)
+                sf_data.desired_distribution.iat[i, j] = 1
+                sf_data.desired_distribution.iat[j, i] = 1
+        return sf_data.desired_distribution.values.tolist()
 
     def __crop_desired_distribution(self, sf_data, dw_name):
         """
@@ -506,4 +530,16 @@ class Hivemind:
                            .format(stage, target, parts_count, threshold)
                            )
     # endregion
+    # endregion
+
+    # region static methods
+    @staticmethod
+    def random_j_index(i, size):
+        size_minus_one = size - 1
+        if i == 0:
+            return random.randrange(start=1, stop=size)  # any node j other than the first (0)
+        elif i == size_minus_one:
+            return random.randrange(start=0, stop=size_minus_one)  # any node j except than the last (size-1)
+        elif 0 < i < size_minus_one:
+            return excluding_randrange(start=0, stop=i, start_again=(i + 1), stop_again=size)
     # endregion
