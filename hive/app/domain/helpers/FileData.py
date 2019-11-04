@@ -46,7 +46,7 @@ class FileData:
         self.current_distribution = cdv
         self.convergence_data = convergence_data
         self.adjacency_matrix = adj_matrix
-        self.out_file = self.fopen()
+        self.out_file = open(os.path.join(OUTFILE_ROOT, self.file_name + ".out", "w+"))
     # endregion
 
     # region instance methods
