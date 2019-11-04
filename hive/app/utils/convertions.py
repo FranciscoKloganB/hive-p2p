@@ -4,8 +4,8 @@ import jsonpickle
 
 def bytes_to_base64_string(data):
     if isinstance(data, str):
-        data = data.encode()
-    return base64.b64encode(data).decode('ascii') if isinstance(data, bytes) else None
+        return base64.b64encode(data.encode()).decode('utf-8')
+    return base64.b64encode(data).decode('utf-8') if isinstance(data, bytes) else None
 
 
 def base64_string_to_bytes(string):

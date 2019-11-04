@@ -32,7 +32,7 @@ class SharedFilePart:
         self.__part_number = part_number
         self.__part_id = part_name + "_#_" + str(part_number)
         self.__part_data = convertions.bytes_to_base64_string(part_data)
-        self.__sha256 = crypto.sha256(part_data)
+        self.__sha256 = crypto.sha256(self.__part_data)
     # endregion
 
     # region properties
@@ -59,7 +59,7 @@ class SharedFilePart:
 
     # region override
     def __str__(self):
-        return "part_name: {},\n part_number: {},\npart_id: {},\n part_data: {},\n sha256: {}\n".format(
+        return "part_name: {},\npart_number: {},\npart_id: {},\npart_data: {},\nsha256: {}\n".format(
             self.part_name, self.part_number, self.part_id, self.part_data, self.sha256
         )
     # endregion
