@@ -328,16 +328,15 @@ class Hivemind:
         :param stage: stage number - the one that is being processed
         :type int
         """
-        print(stage)
         if stage == self.max_stages:
-            print("last stage! eureka")
+            print("Reached final stage... Executing tear down processes.")
             for sf_data in self.sf_data.values():
                 sf_data.convergence_data.save_sets_and_reset()
                 sf_data.fwrite(str(sf_data.convergence_data))
                 sf_data.fclose()
             exit(0)
         else:
-            print("__request_file_counts")
+            print("Stage {}".format(stage))
             for sf_data in self.sf_data.values():
                 # retrieve from each worker their part counts for current sf_name and update convergence data
                 self.__request_file_counts(sf_data)
@@ -355,14 +354,17 @@ class Hivemind:
 
     def __check_file_convergence(self, stage, sf_data):
         if sf_data.equal_distributions():
-            print("eq distr") # DELETE
+            print("Found an equal distrubtion... Executing cswc_increment_and_get(1)\nChecking threshold...")  # DELETE
             sf_data.convergence_data.cswc_increment_and_get(1)
             if sf_data.convergence_data.try_update_convergence_set(stage):
-                print("min threshold ultrapassado official convergence")  # DELETE
+                print("Threshold achieved, convergence is now being registred")  # DELETE
                 sf_data.fwrite("Converged at stage {}...\nDesired and Current Distributions: \n{}\n{}".format(
                     stage, sf_data.desired_distribution.to_string(), sf_data.current_distribution.to_string()
                 ))
+            else:
+                print("Threshold not achieved yet...")  # DELETE
         else:
+            print("Reseting threshold and cswc!")  # DELETE
             sf_data.convergence_data.save_sets_and_reset()
     # endregion
 

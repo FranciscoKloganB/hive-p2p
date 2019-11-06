@@ -55,11 +55,12 @@ class ConvergenceData:
 
     # region static methods
     @staticmethod
-    def equal_distributions(one, another):
+    def equal_distributions(one, another, parts_count):
         if len(one) != len(another):
             return False
         else:
-            return np.allclose(one, another, rtol=1e-03, atol=1e-05)  # find better rtol and atol params with Daniel
+            another /= parts_count
+            return np.allclose(one, another, rtol=0.05, atol=1/parts_count)
     # endregion
 
     # region overrides

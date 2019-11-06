@@ -82,7 +82,7 @@ class FileData:
         self.current_distribution.rename(index=replacement_dict, inplace=True)
 
     def equal_distributions(self):
-        cD.equal_distributions(self.desired_distribution, self.current_distribution)
+        cD.equal_distributions(self.desired_distribution, self.current_distribution, self.parts_count)
 
     def get_failure_threshold(self):
         """
