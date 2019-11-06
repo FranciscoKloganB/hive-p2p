@@ -60,6 +60,8 @@ class ConvergenceData:
             return False
         else:
             another /= parts_count
+            print("ddv:\n" + one)
+            print("cdv:\n" + another)
             return np.allclose(one, another, rtol=0.05, atol=1/parts_count)
     # endregion
 
