@@ -50,7 +50,7 @@ def arbitrary_matrix_converges_to_ddv_1():
     target = [0.2, 0.3, 0.5, 0]
     adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
     mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
-    mh_pow = np.linalg.matrix_power(mh, 1000)
+    mh_pow = np.linalg.matrix_power(mh, 50)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
         if not np.allclose(target, mh_pow[:, j]):

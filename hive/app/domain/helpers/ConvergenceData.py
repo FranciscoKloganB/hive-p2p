@@ -1,5 +1,5 @@
 import numpy as np
-
+from math import pow
 
 class ConvergenceData:
     # region docstrings
@@ -60,9 +60,11 @@ class ConvergenceData:
             return False
         else:
             another /= parts_count
-            print("ddv:\n" + one)
-            print("cdv:\n" + another)
-            return np.allclose(one, another, rtol=0.05, atol=1/parts_count)
+            print("ddv:")
+            print(one)
+            print("cdv:")
+            print(another)
+            return np.allclose(one, another, rtol=0.05, atol=pow(10, -parts_count))
     # endregion
 
     # region overrides
