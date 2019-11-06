@@ -1,12 +1,11 @@
 import numpy as np
-from math import pow
+
+from globals.globals import MIN_CONVERGENCE_THRESHOLD
 
 class ConvergenceData:
     # region docstrings
     """
     Holds data that helps an domain.Hivemind keep track of converge in a simulation
-    :cvar MIN_CONVERGENCE_THRESHOLD: how many consecutive convergent stages must a file have to be considered converged
-    :type int
     :ivar cswc: indicates how many consecutive steps a file has in convergence
     :type int
     :ivar largest_convergence_set: indicates the biggest set of consecutive steps throughout the simulaton for this file
@@ -19,7 +18,6 @@ class ConvergenceData:
     # endregion
 
     # region class variables, instance variables and constructors
-    MIN_CONVERGENCE_THRESHOLD = 3
 
     def __init__(self):
         self.cswc = 0
@@ -39,7 +37,7 @@ class ConvergenceData:
             self.largest_convergence_set = set_len
 
     def try_update_convergence_set(self, stage):
-        if self.cswc >= ConvergenceData.MIN_CONVERGENCE_THRESHOLD:
+        if self.cswc >= MIN_CONVERGENCE_THRESHOLD:
             self.convergence_set.append(stage)
             return True
         else:
@@ -60,16 +58,21 @@ class ConvergenceData:
             return False
         else:
             another /= parts_count
-            print("ddv:")
-            print(one)
-            print("cdv:")
-            print(another)
-            return np.allclose(one, another, rtol=0.05, atol=pow(10, -parts_count))
+            return np.allclose(one, another, rtol=0.3, atol=1e-2)
     # endregion
 
     # region overrides
     def __str__(self):
-        return "convergence_sets: {}\n, largest_convergence_set: {}\n".format(
-            self.convergence_sets, self.largest_convergence_set
+        return "total time in convergence: {}\nconvergence_sets:\n\t{}\nlargest_convergence_set:\n\t{}\n".format(
+            ConvergenceData.recursive_len(self.convergence_sets), self.convergence_sets, self.largest_convergence_set
         )
+    # endregion
+
+    # region helpers
+    @staticmethod
+    def recursive_len(item):
+        if type(item) == list:
+            return sum(ConvergenceData.recursive_len(subitem) for subitem in item)
+        else:
+            return 1
     # endregion

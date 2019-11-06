@@ -354,17 +354,11 @@ class Hivemind:
 
     def __check_file_convergence(self, stage, sf_data):
         if sf_data.equal_distributions():
-            print("Found an equal distrubtion... Executing cswc_increment_and_get(1)\nChecking threshold...")  # DELETE
+            print("Singular convergence at stage {}".format(stage))
             sf_data.convergence_data.cswc_increment_and_get(1)
-            if sf_data.convergence_data.try_update_convergence_set(stage):
-                print("Threshold achieved, convergence is now being registred")  # DELETE
-                sf_data.fwrite("Converged at stage {}...\nDesired and Current Distributions: \n{}\n{}".format(
-                    stage, sf_data.desired_distribution.to_string(), sf_data.current_distribution.to_string()
-                ))
-            else:
-                print("Threshold not achieved yet...")  # DELETE
+            sf_data.convergence_data.try_update_convergence_set(stage)
         else:
-            print("Reseting threshold and cswc!")  # DELETE
+            print("Cswc reset at stage {}".format(stage))
             sf_data.convergence_data.save_sets_and_reset()
     # endregion
 

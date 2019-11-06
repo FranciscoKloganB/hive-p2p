@@ -4,6 +4,7 @@ DEBUG = False
 
 # region integer constants
 READ_SIZE = 2048
+MIN_CONVERGENCE_THRESHOLD = 3
 DEFAULT_COLUMN = 0
 # endregion
 
