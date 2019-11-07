@@ -437,7 +437,7 @@ class Hivemind:
     def __crop_adj_matrix(self, sf_data, dw_name):
         """
         Generates a new desired distribution vector which is a subset of the original one.
-        :param sf_data: reference to FileData instance object whose fields need to be updatedd
+        :param sf_data: reference to FileData instance object whose fields need to be updated
         :type domain.helpers.FileData
         :param dw_name: name of the worker to be dropped from desired distribution, etc...
         :type str
@@ -446,6 +446,7 @@ class Hivemind:
         """
         sf_data.desired_distribution.drop(dw_name, axis='index', inplace=True)
         sf_data.desired_distribution.drop(dw_name, axis='columns', inplace=True)
+        # TODO After the first failure we must update the ADJ Matrix labels, that is causing an error
         size = sf_data.desired_distribution.shape[0]
         for i in range(size):
             is_absorbent_or_transient = True
