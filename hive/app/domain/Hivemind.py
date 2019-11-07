@@ -178,7 +178,7 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         online_workers_list = self.__filter_and_map_online_workers()
-        for stage in range(self.max_stages):
+        for stage in range(0, self.max_stages):
             surviving_workers = self.__remove_some_workers(online_workers_list, stage)
             for worker in surviving_workers:
                 worker.route_parts()
@@ -328,11 +328,12 @@ class Hivemind:
         :param stage: stage number - the one that is being processed
         :type int
         """
-        if stage == self.max_stages:
-            print("Reached final stage... Executing tear down processes.")
+        if stage == self.max_stages - 1:
+            print()
             for sf_data in self.sf_data.values():
+                sf_data.fwrite("Reached final stage... Executing tear down processes. Summary below:\n")
                 sf_data.convergence_data.save_sets_and_reset()
-                sf_data.fwrite(str(sf_data.convergence_data.to_string()))
+                sf_data.fwrite(str(sf_data.convergence_data))
                 sf_data.fclose()
             exit(0)
         else:
