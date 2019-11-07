@@ -58,7 +58,7 @@ class ConvergenceData:
             return False
         else:
             another /= parts_count
-            return np.allclose(one, another, rtol=0.3, atol=1e-2)
+            return np.allclose(one, another, rtol=0.25, atol=1e-2)
     # endregion
 
     # region overrides
