@@ -1,5 +1,6 @@
 import numpy as np
 import logging as log
+import pandas as pd
 
 from utils import crypto
 from copy import deepcopy
@@ -66,7 +67,12 @@ class Worker:
         :param transition_vector: probability vector indicating transitions to other states for the given file w/ labels
         :type 1-D numpy.Array in column format
         """
-        self.routing_table[sf_name] = transition_vector.to_frame()
+        if isinstance(transition_vector, pd.Series):
+            self.routing_table[sf_name] = transition_vector.to_frame()
+        elif isinstance(transition_vector, pd.DataFrame):
+            self.routing_table[sf_name] = transition_vector
+        else:
+            raise ValueError("Worker.set_file_routing expects a pandas.Series or pandas.DataFrame transition vector.")
 
     def update_file_routing(self, sf_name, replacement_dict):
         """
