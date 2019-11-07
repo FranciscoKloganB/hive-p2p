@@ -218,7 +218,8 @@ class Hivemind:
 
         worker = self.workers[best_worker_name]
         if mock:
-            worker.receive_parts(sf_id_parts=mock, sf_name=sf_data.file_name, no_check=True)
+            print("Asking best worker to init recovery with mock")
+            worker.receive_parts(sf_id_parts_dict=mock, sf_name=sf_data.file_name, no_check=True)
         else:
             worker.init_recovery_protocol(sf_data.file_name)
 
@@ -302,25 +303,26 @@ class Hivemind:
                 self.__remove_worker(worker, stage=stage)
         return surviving_workers
 
-    def __remove_worker(self, dw_name, stage=None):
+    def __remove_worker(self, dead_worker, stage=None):
         """
-        :param dw_name: worker who is going to be removed from the simulation network
+        :param dead_worker: worker who is going to be removed from the simulation network
         :type domain.Worker
         """
-        sf_parts = dw_name.get_all_parts()
-        self.worker_status[str_copy(dw_name.name)] = Status.OFFLINE
+        sf_parts = dead_worker.get_all_parts()
+        self.worker_status[str_copy(dead_worker.name)] = Status.OFFLINE
 
-        for sf_name, sfp_id in sf_parts.items():
+        for sf_name, sfp_id_part_dict in sf_parts.items():
             sf_data = self.sf_data[sf_name]
-            parts_count = len(sfp_id)
+
+            dead_worker_current_file_density = len(sfp_id_part_dict)
             threshold = sf_data.get_failure_threshold()
-            if parts_count > threshold:
-                self.__register_failure(stage, sf_data, dw_name, parts_count, threshold)
+
+            if dead_worker_current_file_density > threshold:
+                self.__register_failure(stage, sf_data, dead_worker.name, dead_worker_current_file_density, threshold)
                 self.__stop_tracking_shared_file(sf_data)
             else:
-                self.__care_taking(stage, sf_data, dw_name)
-                self.__init_recovery_protocol(sf_data, mock=sf_parts)
-        del dw_name  # mark as ready for garbage collection - no longer need the worker instance
+                self.__care_taking(stage, sf_data, dead_worker.name)
+                self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
 
     def __process_stage_results(self, stage):
         """
