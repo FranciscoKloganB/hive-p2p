@@ -5,6 +5,7 @@ import logging as log
 import numpy as np
 import pandas as pd
 import domain.metropolis_hastings as mh
+import logging as log
 
 from pathlib import Path
 from domain.SharedFilePart import SharedFilePart
@@ -184,19 +185,19 @@ class Hivemind:
                 worker.route_parts()
             self.__process_stage_results(stage)
 
-    def __care_taking(self, stage, sf_data, dw_name):
+    def __care_taking(self, stage, sf_data, dead_worker):
         """
         :param stage: integer which marks the discrete time step the simulation is at
         :type int
         :param sf_data: data class containing generalized information regarding the shared file
         :type domain.helpers.FileData
-        :param dw_name: name of the worker that left the hive willingly or unexpectedly
-        :type str
+        :param dead_worker: Worker that left the hive willingly or unexpectedly
+        :type domain.Worker
         """
-        replacement_dict = self.__heal_hive(sf_data, dw_name)
+        replacement_dict = self.__heal_hive(sf_data, dead_worker)
         if replacement_dict is None:
-            self.__contract_hive(sf_data, dw_name)  # contraction only occurs if healing fails
-            self.__register_contraction(stage, sf_data, dw_name)
+            self.__contract_hive(sf_data, dead_worker.name)  # contraction only occurs if healing fails
+            self.__register_contraction(stage, sf_data, dead_worker.name)
         else:
             self.__register_heal(stage, sf_data, replacement_dict)
 
@@ -321,7 +322,7 @@ class Hivemind:
                 self.__register_failure(stage, sf_data, dead_worker.name, dead_worker_current_file_density, threshold)
                 self.__stop_tracking_shared_file(sf_data)
             else:
-                self.__care_taking(stage, sf_data, dead_worker.name)
+                self.__care_taking(stage, sf_data, dead_worker)
                 self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
 
     def __process_stage_results(self, stage):
@@ -378,22 +379,24 @@ class Hivemind:
     # endregion
 
     # region hive recovery methods
-    def __heal_hive(self, sf_data, dw_name):
+    def __heal_hive(self, sf_data, dead_worker):
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
         :param sf_data: reference to FileData instance object whose fields need to be updatedd
         :type domain.helpers.FileData
-        :param dw_name: name of the worker to be droppedd from desired distribution, etc...
-        :type str
+        :param dead_worker: The worker to be droppedd from desired distribution, etc...
+        :type domain.Worker
         :returns: None if hive is unable to heal through replacement, or a replacement dict, if it was
         :rtype dict<str, str>
         """
-        labels, replacement_dict = self.__find_replacement_node(sf_data, dw_name)
+        labels, new_worker, replacement_dict = self.__find_replacement_node(sf_data, dead_worker.name)
         if replacement_dict:
             sf_data.replace_distribution_node(replacement_dict)
             sf_data.reset_density_data()
             sf_data.reset_convergence_data()
-            self.__update_routing_tables(sf_data.file_name, labels, replacement_dict)
+            sf_data.desired_distribution.rename(index=replacement_dict, inplace=True)
+            sf_data.current_distribution.rename(index=replacement_dict, inplace=True)
+            self.__update_routing_tables(sf_data.file_name, labels, dead_worker, new_worker, replacement_dict)
         return replacement_dict
 
     def __find_replacement_node(self, sf_data, dw_name):
@@ -410,15 +413,15 @@ class Hivemind:
         dict_items = self.workers_uptime.items()
 
         if len(labels) == len(dict_items):
-            return None
+            return None, None, None
 
         base_uptime = self.workers_uptime[dw_name] - 10.0
         while base_uptime is not None:
             for name, uptime in dict_items:
                 if self.worker_status[name] == Status.ONLINE and name not in labels and uptime > base_uptime:
-                    return labels, {dw_name: name}
+                    return labels, self.workers[name], {dw_name: name}
             base_uptime = self.__expand_uptime_range_search(base_uptime)
-        return None
+        return None, None, None
 
     def __contract_hive(self, sf_data, dw_name):
         cropped_adj_matrix = self.__crop_adj_matrix(sf_data, dw_name)
@@ -493,15 +496,23 @@ class Hivemind:
             transition_vector = transition_matrix.loc[:, name]  # <label, value> pairs in column[worker_name]
             self.workers[name].set_file_routing(sf_name, transition_vector)
 
-    def __update_routing_tables(self, sf_name, worker_names, replacement_dict):
+    def __update_routing_tables(self, sf_name, worker_names, dead_worker, new_worker, replacement_dict):
         """
         :param sf_name: name of the shared file
         :type str
         :param worker_names: name of the workers that share the file
         :type list<str>
+        :param new_worker: worker instance that joined the hive
+        :type domain.Worker
         :param replacement_dict: key, value pair where key represents the name to be replaced with the new value
         :type dict<str, str>
         """
+        new_worker.set_file_routing(sf_name, dead_worker.routing_table[sf_name].rename(index=replacement_dict))
+        try:
+            worker_names.remove(dead_worker.name)
+        except ValueError:
+            log.warning("Hivemind.__update_routing_tables: dead worker name isn't present in :param 'labels'...")
+
         for name in worker_names:
             self.workers[name].update_file_routing(sf_name, replacement_dict)
 
