@@ -332,7 +332,7 @@ class Hivemind:
             print("Reached final stage... Executing tear down processes.")
             for sf_data in self.sf_data.values():
                 sf_data.convergence_data.save_sets_and_reset()
-                sf_data.fwrite(str(sf_data.convergence_data))
+                sf_data.fwrite(str(sf_data.convergence_data.to_string()))
                 sf_data.fclose()
             exit(0)
         else:

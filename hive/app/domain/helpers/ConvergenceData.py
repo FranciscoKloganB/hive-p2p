@@ -63,9 +63,12 @@ class ConvergenceData:
 
     # region overrides
     def __str__(self):
-        return "total time in convergence: {}\nconvergence_sets:\n\t{}\nlargest_convergence_set:\n\t{}\n".format(
-            ConvergenceData.recursive_len(self.convergence_sets), self.convergence_sets, self.largest_convergence_set
-        )
+        return "time in convergence: " + str(ConvergenceData.recursive_len(self.convergence_sets)) + \
+               "\nlargest_convergence_set: " + str(self.largest_convergence_set) + \
+               "\nconvergence_sets:\n " + str(self.convergence_sets)
+
+    def __repr__(self):
+        return str(self.__dict__)
     # endregion
 
     # region helpers
