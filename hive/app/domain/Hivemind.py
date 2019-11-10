@@ -1,7 +1,6 @@
 import os
 import json
 import random
-import logging as log
 import numpy as np
 import pandas as pd
 import domain.metropolis_hastings as mh
@@ -16,6 +15,8 @@ from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
 from utils.convertions import str_copy
 from utils.randoms import excluding_randrange
+
+from typing import List, Set, Dict, Tuple, Optional
 
 
 class Hivemind:
@@ -179,13 +180,13 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         online_workers_list = self.__filter_and_map_online_workers()
-        for stage in range(0, self.max_stages):
-            surviving_workers = self.__remove_some_workers(online_workers_list, stage)
-            for worker in surviving_workers:
+        for stage in range(self.max_stages):
+            online_workers_list = self.__remove_some_workers(online_workers_list, stage)
+            for worker in online_workers_list:
                 worker.route_parts()
             self.__process_stage_results(stage)
 
-    def __care_taking(self, stage, sf_data, dead_worker):
+    def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker):
         """
         :param stage: integer which marks the discrete time step the simulation is at
         :type int
@@ -201,7 +202,7 @@ class Hivemind:
         else:
             self.__register_heal(stage, sf_data, replacement_dict)
 
-    def __init_recovery_protocol(self, sf_data, mock=None):
+    def __init_recovery_protocol(self, sf_data: FileData, mock: Dict[int, SharedFilePart] = None):
         """
         Starts file recovering by asking the best in the Hive still alive to run a file reconstruction algorithm
         :param sf_data: instance object containing information about the file to be recovered
@@ -224,7 +225,7 @@ class Hivemind:
         else:
             worker.init_recovery_protocol(sf_data.file_name)
 
-    def receive_complaint(self, suspects_name, sf_name=None):
+    def receive_complaint(self, suspects_name: str, sf_name: str = None):
         # TODO future-iterations:
         #  1. register complaint
         #  2. when byzantine complaints > threshold
@@ -235,18 +236,18 @@ class Hivemind:
             pass  # maybe sf_name can help when enough complaints are received, reanalyze this param at a later date.
         log.warning("receive_complaint is only a mock. method needs to be implemented...")
 
-    def route_file_part(self, dest_worker, part):
+    def route_file_part(self, dest_worker_name: str, part: SharedFilePart):
         """
-        :param dest_worker: destinatary of the file part
+        :param dest_worker_name: destinatary of the file part
         :type str
         :param part: the file part to send to specified worker
         :type domain.SharedFilePart
         :returns: http codes based status of destination worker
         :rtype int
         """
-        dest_status = self.worker_status[dest_worker]
+        dest_status = self.worker_status[dest_worker_name]
         if dest_status == Status.ONLINE:
-            self.workers[dest_worker].receive_part(part, no_check=True)
+            self.workers[dest_worker_name].receive_part(part, no_check=True)
             return HttpCodes.OK
         elif dest_status == Status.OFFLINE:
             return HttpCodes.SERVER_DOWN
@@ -266,7 +267,8 @@ class Hivemind:
 
     # region helper methods
     # region setup
-    def __init_file_data(self, sf_name, adj_matrix, desired_distribution, labels):
+    def __init_file_data(
+            self, sf_name: str, adj_matrix: List[List[int]], desired_distribution: List[float], labels: List[str]):
         """
         :param sf_name: the name of the file to be tracked by the hivemind
         :type str
@@ -285,7 +287,7 @@ class Hivemind:
     # endregion
 
     # region stage processing
-    def __remove_some_workers(self, online_workers, stage=None):
+    def __remove_some_workers(self, online_workers: List[Worker], stage: int = None):
         """
         For each online worker, if they are online, see if they remain alive for the next stage or if they die,
         according to their uptime record.
@@ -304,7 +306,7 @@ class Hivemind:
                 self.__remove_worker(worker, stage=stage)
         return surviving_workers
 
-    def __remove_worker(self, dead_worker, stage=None):
+    def __remove_worker(self, dead_worker: Worker, stage: int = None):
         """
         :param dead_worker: worker who is going to be removed from the simulation network
         :type domain.Worker
@@ -325,14 +327,13 @@ class Hivemind:
                 self.__care_taking(stage, sf_data, dead_worker)
                 self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
 
-    def __process_stage_results(self, stage):
+    def __process_stage_results(self, stage: int):
         """
         For each file being shared on this hivemind network, check if its desired distribution has been achieved.
         :param stage: stage number - the one that is being processed
         :type int
         """
         if stage == self.max_stages - 1:
-            print()
             for sf_data in self.sf_data.values():
                 sf_data.fwrite("Reached final stage... Executing tear down processes. Summary below:\n")
                 sf_data.convergence_data.save_sets_and_reset()
@@ -347,7 +348,7 @@ class Hivemind:
                 # when all queries for a file are done, verify convergence for data.file_name
                 self.__check_file_convergence(stage, sf_data)
 
-    def __request_file_counts(self, sf_data):
+    def __request_file_counts(self, sf_data: FileData):
         worker_names = [*sf_data.desired_distribution.index]
         for name in worker_names:
             if self.worker_status[name] != Status.ONLINE:
@@ -356,18 +357,18 @@ class Hivemind:
                 worker = self.workers[name]  # get worker instance corresponding to name
                 sf_data.current_distribution.at[name, DEFAULT_COLUMN] = worker.get_parts_count(sf_data.file_name)
 
-    def __check_file_convergence(self, stage, sf_data):
+    def __check_file_convergence(self, stage: int, sf_data: FileData):
         if sf_data.equal_distributions():
             print("Singular convergence at stage {}".format(stage))
-            sf_data.convergence_data.cswc_increment_and_get(1)
-            sf_data.convergence_data.try_update_convergence_set(stage)
+            sf_data.convergence_data.cswc_increment(1)
+            sf_data.convergence_data.try_append_to_convergence_set(stage)
         else:
             print("Cswc reset at stage {}".format(stage))
             sf_data.convergence_data.save_sets_and_reset()
     # endregion
 
     # region teardown
-    def __stop_tracking_shared_file(self,  sf_data):
+    def __stop_tracking_shared_file(self,  sf_data: FileData):
         sf_data.fclose()
         labels = [*sf_data.desired_distribution.index]
         sf_name = sf_data.file_name.encode().decode()  # Creates an hard copy (str) of the shared file name
@@ -379,7 +380,7 @@ class Hivemind:
     # endregion
 
     # region hive recovery methods
-    def __heal_hive(self, sf_data, dead_worker):
+    def __heal_hive(self, sf_data: FileData, dead_worker: Worker):
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
         :param sf_data: reference to FileData instance object whose fields need to be updatedd
@@ -399,12 +400,12 @@ class Hivemind:
             self.__update_routing_tables(sf_data.file_name, labels, dead_worker, new_worker, replacement_dict)
         return replacement_dict
 
-    def __find_replacement_node(self, sf_data, dw_name):
+    def __find_replacement_node(self, sf_data: FileData, w_name: str):
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
         :param sf_data: reference to FileData instance object whose fields need to be updatedd
         :type domain.helpers.FileData
-        :param dw_name: name of the worker to be droppedd from desired distribution, etc...
+        :param w_name: name of the worker to be droppedd from desired distribution, etc...
         :type str
         :return: key pair of dead_worker_name : replacement_worker_name or None
         :rtype dict<str, str>
@@ -415,37 +416,37 @@ class Hivemind:
         if len(labels) == len(dict_items):
             return None, None, None
 
-        base_uptime = self.workers_uptime[dw_name] - 10.0
+        base_uptime = self.workers_uptime[w_name] - 10.0
         while base_uptime is not None:
             for name, uptime in dict_items:
                 if self.worker_status[name] == Status.ONLINE and name not in labels and uptime > base_uptime:
-                    return labels, self.workers[name], {dw_name: name}
+                    return labels, self.workers[name], {w_name: name}
             base_uptime = self.__expand_uptime_range_search(base_uptime)
         return None, None, None
 
-    def __contract_hive(self, sf_data, dw_name):
-        cropped_adj_matrix = self.__crop_adj_matrix(sf_data, dw_name)
-        cropped_labels, cropped_ddv = self.__crop_desired_distribution(sf_data, dw_name)
+    def __contract_hive(self, sf_data: FileData, w_name: str):
+        cropped_adj_matrix = self.__crop_adj_matrix(sf_data, w_name)
+        cropped_labels, cropped_ddv = self.__crop_desired_distribution(sf_data, w_name)
         transition_matrix = mh.metropolis_algorithm(cropped_adj_matrix, cropped_ddv, column_major_out=True)
         transition_matrix = pd.DataFrame(transition_matrix, index=cropped_labels, columns=cropped_labels)
-        sf_data.reset_adjacency_matrix(cropped_adj_matrix)
+        sf_data.reset_adjacency_matrix(cropped_labels, cropped_adj_matrix)
         sf_data.reset_distribution_data(cropped_labels, cropped_ddv)
         sf_data.reset_density_data()
         sf_data.reset_convergence_data()
         self.__set_routing_tables(sf_data.file_name, cropped_labels, transition_matrix)
 
-    def __crop_adj_matrix(self, sf_data, dw_name):
+    def __crop_adj_matrix(self, sf_data: FileData, w_name: str):
         """
         Generates a new desired distribution vector which is a subset of the original one.
         :param sf_data: reference to FileData instance object whose fields need to be updated
         :type domain.helpers.FileData
-        :param dw_name: name of the worker to be dropped from desired distribution, etc...
+        :param w_name: name of the worker to be dropped from desired distribution, etc...
         :type str
         :return: surviving worker names and their new desired density
         :rtype list<list<int>>
         """
-        sf_data.desired_distribution.drop(dw_name, axis='index', inplace=True)
-        sf_data.desired_distribution.drop(dw_name, axis='columns', inplace=True)
+        sf_data.desired_distribution.drop(w_name, axis='index', inplace=True)
+        sf_data.desired_distribution.drop(w_name, axis='columns', inplace=True)
         # TODO After the first failure we must update the ADJ Matrix labels, that is causing an error
         size = sf_data.desired_distribution.shape[0]
         for i in range(size):
@@ -461,21 +462,21 @@ class Hivemind:
                 sf_data.desired_distribution.iat[j, i] = 1
         return sf_data.desired_distribution.values.tolist()
 
-    def __crop_desired_distribution(self, sf_data, dw_name):
+    def __crop_desired_distribution(self, sf_data: FileData, w_name: str):
         """
         Generates a new desired distribution vector which is a subset of the original one.
         :param sf_data: reference to FileData instance object whose fields need to be updatedd
         :type domain.helpers.FileData
-        :param dw_name: name of the worker to be dropped from desired distribution, etc...
+        :param w_name: name of the worker to be dropped from desired distribution, etc...
         :type str
         :return: surviving worker names and their new desired density
         :rtype list<string>, list<float>
         """
         # get probability dead worker's density, 'share it' by remaining workers, then remove it from vector column
         increment = \
-            sf_data.desired_distribution.at[dw_name, DEFAULT_COLUMN] / (sf_data.desired_distribution.shape[0] - 1)
+            sf_data.desired_distribution.at[w_name, DEFAULT_COLUMN] / (sf_data.desired_distribution.shape[0] - 1)
 
-        sf_data.desired_distribution.drop(dw_name, inplace=True)
+        sf_data.desired_distribution.drop(w_name, inplace=True)
         # fetch remaining labels and rows as found on the dataframe
         new_labels = [*sf_data.desired_distribution.index]
         new_values = [*sf_data.desired_distribution.iloc[:, 0]]
@@ -484,7 +485,7 @@ class Hivemind:
     # endregion
 
     # region other helpers
-    def __set_routing_tables(self, sf_name, worker_names, transition_matrix):
+    def __set_routing_tables(self, sf_name: str, worker_names: List[str], transition_matrix):
         """
         :param sf_name: name of the shared file
         :type str
@@ -497,7 +498,13 @@ class Hivemind:
             transition_vector = transition_matrix.loc[:, name]  # <label, value> pairs in column[worker_name]
             self.workers[name].set_file_routing(sf_name, transition_vector)
 
-    def __update_routing_tables(self, sf_name, worker_names, dead_worker, new_worker, replacement_dict):
+    def __update_routing_tables(
+            self, sf_name: str,
+            worker_names: List[str],
+            dead_worker: Worker,
+            new_worker: Worker,
+            replacement_dict: Dict[str, str]
+    ):
         """
         :param sf_name: name of the shared file
         :type str
@@ -509,15 +516,11 @@ class Hivemind:
         :type dict<str, str>
         """
         new_worker.set_file_routing(sf_name, dead_worker.routing_table[sf_name].rename(index=replacement_dict))
-        try:
-            worker_names.remove(dead_worker.name)
-        except ValueError:
-            log.warning("Hivemind.__update_routing_tables: dead worker name isn't present in :param 'labels'...")
-
-        for name in worker_names:
+        workers_names_needing_update = self.__try_remove_worker_from_list(worker_names, dead_worker.name)
+        for name in workers_names_needing_update:
             self.workers[name].update_file_routing(sf_name, replacement_dict)
 
-    def __remove_routing_tables(self, sf_name, worker_names):
+    def __remove_routing_tables(self, sf_name: str, worker_names: List[str]):
         """
         :param sf_name: name of the shared file to be removed from workers' routing tables
         :type str
@@ -535,7 +538,7 @@ class Hivemind:
         """
         return [*map(lambda w: w[0], [*filter(lambda i: i[1] == Status.ONLINE, self.worker_status.items())])]
 
-    def __expand_uptime_range_search(self, current_uptime):
+    def __expand_uptime_range_search(self, current_uptime: float):
         if current_uptime == 0.0:
             return None
         current_uptime -= 10.0
@@ -543,24 +546,39 @@ class Hivemind:
             return current_uptime
         return 0.0
 
-    def __register_failure(self, stage, sf_data, w_name, parts_count, threshold):
+    def __register_failure(self, stage: int, sf_data: FileData, dw_name: str, parts_count: int, threshold: int):
         sf_data.fwrite(
             "File sharing failed at stage {} due to worker '{}' death, (parts > threshold): {} > {}\n".format(
-                stage, w_name, parts_count, threshold
+                stage, dw_name, parts_count, threshold
             )
         )
 
-    def __register_heal(self, stage, sf_data, replacement_dict):
+    def __register_heal(self, stage: int, sf_data: FileData, replacement_dict: Dict[str, str]):
         sf_data.fwrite("Node replacement at stage {}, replaced (old : new) {}\n".format(stage, replacement_dict))
 
-    def __register_contraction(self, stage, sf_data, w_name):
+    def __register_contraction(self, stage: int, sf_data: FileData, w_name: str):
         sf_data.fwrite("Hive contraction at stage {} due to worker '{}' death".format(stage, w_name))
+
+    def __try_remove_worker_from_list(self, worker_name_list: List[str], w_name: str):
+        """
+        :param worker_name_list: list of workers' names
+        :type list<str>
+        :param w_name: name to possibly remove from worker_list
+        :type str
+        :returns: worker_name_list unmodified or without the specified worker_name
+        :type list<str>
+        """
+        try:
+            worker_name_list.remove(w_name)
+            return worker_name_list
+        except ValueError:
+            return worker_name_list
     # endregion
     # endregion
 
     # region static methods
     @staticmethod
-    def random_j_index(i, size):
+    def random_j_index(i: int, size: int):
         size_minus_one = size - 1
         if i == 0:
             return random.randrange(start=1, stop=size)  # any node j other than the first (0)

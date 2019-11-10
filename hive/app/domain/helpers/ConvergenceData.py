@@ -27,26 +27,22 @@ class ConvergenceData:
     # endregion
 
     # region instance methods
-    def cswc_increment_and_get(self, increment):
+    def cswc_increment(self, increment):
         self.cswc += increment
-        return self.cswc
 
-    def try_set_largest(self):
+    def try_set_largest_convergence_set(self):
         set_len = len(self.convergence_set)
         if set_len > self.largest_convergence_set:
             self.largest_convergence_set = set_len
 
-    def try_update_convergence_set(self, stage):
+    def try_append_to_convergence_set(self, stage):
         if self.cswc >= MIN_CONVERGENCE_THRESHOLD:
             self.convergence_set.append(stage)
-            return True
-        else:
-            return False
 
     def save_sets_and_reset(self):
         self.cswc = 0
-        if self.convergence_set:
-            self.try_set_largest()
+        if self.convergence_set:  # code below only executes if convergence_set isn't empty, i.e.: convergence_set != []
+            self.try_set_largest_convergence_set()
             self.convergence_sets.append(self.convergence_set)
             self.convergence_set = []
     # endregion

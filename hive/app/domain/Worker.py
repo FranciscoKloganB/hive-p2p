@@ -104,15 +104,12 @@ class Worker:
         :type bool
         """
         if no_check or crypto.sha256(part.part_data) == part.sha256:
-            if part.part_name in self.sf_parts:
-                self.sf_parts[part.part_name][part.part_id] = part
-            else:
-                self.sf_parts[part.part_name] = {}
-                self.sf_parts[part.part_name][part.part_id] = part
-            return
-
-        print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
-        self.init_recovery_protocol(part)
+            if part.part_name not in self.sf_parts:
+                self.sf_parts[part.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
+            self.sf_parts[part.part_name][part.part_id] = part
+        else:
+            print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
+            self.init_recovery_protocol(part)
 
     def receive_parts(self, sf_id_parts_dict, sf_name=None, no_check=False):
         """
@@ -136,9 +133,14 @@ class Worker:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
         """
-        for sf_name, sf_id_part_dict in self.sf_parts.items():
+        sf_parts_dict = self.sf_parts.items()
+
+        for sf_name, sf_id_sfp_dict in sf_parts_dict:
+
             tmp = {}
-            for sf_id, sf_part in sf_id_part_dict.items():
+            sf_id_sfp_dict = sf_id_sfp_dict.items()
+
+            for sf_id, sf_part in sf_id_sfp_dict:
                 dest_worker = self.get_next_state(sf_name=sf_name)
                 if dest_worker == self.name:
                     tmp[sf_id] = sf_part  # store <sf_id, sf_part> pair in tmp dict, we don't need to send to ourselves
@@ -147,6 +149,7 @@ class Worker:
                     if response_code != HttpCodes.OK:
                         self.hivemind.receive_complaint(dest_worker, sf_name=sf_name)
                         tmp[sf_id] = sf_part  # store <sf_id, sf_part>, original destination doesn't respond
+
             self.sf_parts[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited
 
     # region helpers
