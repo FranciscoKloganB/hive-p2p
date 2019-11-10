@@ -8,10 +8,11 @@ import logging as log
 
 from pathlib import Path
 from domain.Worker import Worker
-from typing import List, Dict, Tuple, Optional
+from utils.convertions import str_copy
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from utils.randoms import excluding_randrange
+from typing import List, Dict, Tuple, Optional
 from domain.SharedFilePart import SharedFilePart
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
@@ -380,7 +381,7 @@ class Hivemind:
         """
         sf_data.fclose()
         labels = [*sf_data.desired_distribution.index]
-        sf_name = sf_data.file_name.encode().decode()  # Creates an hard copy (str) of the shared file name
+        sf_name = str_copy(sf_data.file_name)  # Creates an hard copy (str) of the shared file name
         # First ask workers to reset theirs
         self.__remove_routing_tables(sf_name, labels)
         # After that reset hivemind data structures
@@ -406,7 +407,8 @@ class Hivemind:
             sf_data.reset_convergence_data()
             sf_data.desired_distribution.rename(index=replacement_dict, inplace=True)
             sf_data.current_distribution.rename(index=replacement_dict, inplace=True)
-            self.__update_routing_tables(sf_data.file_name, labels, dead_worker, new_worker, replacement_dict)
+            self.__inherit_routing_table(sf_data.file_name, dead_worker, new_worker, replacement_dict)
+            self.__update_routing_tables(sf_data.file_name, labels, dead_worker, replacement_dict)
         return replacement_dict
 
     def __find_replacement_node(self, sf_data: FileData, w_name: str):
@@ -494,29 +496,37 @@ class Hivemind:
     # endregion
 
     # region other helpers
-    def __set_routing_tables(self, sf_name: str, worker_names: List[str], transition_matrix):
+    def __set_routing_tables(self, sf_name: str, worker_names: List[str], transition_matrix: pd.DataFrame):
         """
-        :param sf_name: name of the shared file
-        :type str
-        :param worker_names: name of the workers that share the file
-        :type list<str>
-        :param transition_matrix: labeled transition matrix to be splitted between named workers
-        :type N-D pandas.DataFrame
+        Inits the routing tables w.r.t. the inputed shared file name for all listed workers' names by passing them their
+        respective vector column within the transition_matrix
+        :param str sf_name: name of the shared file
+        :param List[str] worker_names: name of the workers that share the file
+        :param pd.DataFrame transition_matrix: labeled transition matrix to be splitted between named workers
         """
         for name in worker_names:
             transition_vector = transition_matrix.loc[:, name]  # <label, value> pairs in column[worker_name]
             self.workers[name].set_file_routing(sf_name, transition_vector)
 
-    def __update_routing_tables(
-            self, sf_name: str, worker_names: List[str], dead_worker: Worker, new_worker: Worker, replacement_dict: Dict[str, str]
-    ) -> None:
+    def __inherit_routing_table(self, sf_name: str, dead_worker: Worker, new_worker: Worker, replacement_dict: Dict[str, str]) -> None:
         """
-        :param str sf_name: name of the shared file
-        :param List[str] worker_names: name of the workers that share the file
-        :param Worker new_worker: worker instance that joined the hive
-        :param Dict[str, str] replacement_dict: (old value, new value), key : value pair
+        The new Worker instance receives the transition vector, of a shared file, of the disconnected Worker instance.
+        The inheritance involves renaming a row within the column vector.
+        :param str sf_name: name of the file whose routing table is going to be passed between the workers
+        :param Worker dead_worker: Worker instance recently disconnected from the an hive
+        :param Worker new_worker: Worker instance that is replacing him in that hive
+        :param Dict[str, str] replacement_dict: old worker name, new worker name)
         """
         new_worker.set_file_routing(sf_name, dead_worker.routing_table[sf_name].rename(index=replacement_dict))
+
+    def __update_routing_tables(self, sf_name: str, worker_names: List[str], dead_worker: Worker, replacement_dict: Dict[str, str]) -> None:
+        """
+        Updates the routing tables w.r.t. the inputed shared file name for all listed workers' names without altering
+        their transition_vectors. After ensuring the
+        :param str sf_name: name of the shared file
+        :param List[str] worker_names: name of the workers that share the file
+        :param Dict[str, str] replacement_dict: old worker name, new worker name)
+        """
         workers_names_needing_update = self.__try_remove_worker_from_list(worker_names, dead_worker.name)
         for name in workers_names_needing_update:
             self.workers[name].update_file_routing(sf_name, replacement_dict)
