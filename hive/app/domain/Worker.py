@@ -5,7 +5,9 @@ import pandas as pd
 from utils import crypto
 from copy import deepcopy
 from domain.Enums import HttpCodes
+from typing import List, Dict, Tuple
 from globals.globals import DEFAULT_COLUMN
+from domain.SharedFilePart import SharedFilePart
 from utils.ResourceTracker import ResourceTracker as rT
 
 
@@ -186,7 +188,8 @@ class Worker:
         :arg 'cpu': system wide float detailing cpu usage as a percentage,
         :arg 'cpu_count': number of non-logical cpu on the machine as an int
         :arg 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
-        :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available), expressed in bytes as floats
+        :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available),
+                    expressed in bytes as floats
         :arg 'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
         :return dict<str, obj> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
         """
@@ -197,12 +200,10 @@ class Worker:
     # endregion
 
     # region mock methods
-    def get_all_parts(self):
+    def get_all_parts(self) -> Dict[str, Dict[int, SharedFilePart]]:
         """
-        Sends a copy of all parts stored in this Worker instance to the requestor
-        Warning: Don't use this method in production
-        :returns a deep copy of self.file_parts
-        :rtype dict<str, dict<int, domain.SharedFileParts>>
+        Sends all parts owned by the Worker instance to the requestor
+        :returns Dict[str, Dict[int, SharedFilePart]]: a deep copy of the Worker's instance shared file parts
         """
         return deepcopy(self.sf_parts)
     # endregion
