@@ -92,8 +92,9 @@ class Worker:
         """
         try:
             self.sf_parts.pop(sf_name)
-        except KeyError:
+        except KeyError as kE:
             log.error("Key ({}) doesn't exist in worker {}'s sf_parts dict".format(sf_name, self.name))
+            log.error("Key Error message: {}".format(str(kE)))
     # endregion
 
     # region file sending and receiving methods
