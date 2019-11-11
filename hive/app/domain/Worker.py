@@ -12,7 +12,6 @@ from utils.ResourceTracker import ResourceTracker as rT
 
 
 class Worker:
-    # region docstrings
     """
     Defines a worker node on the P2P network.
     :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts kept by the worker instance
@@ -20,7 +19,6 @@ class Worker:
     :ivar Hivemind hivemind: supernode managing the Worker instance
     :ivar Dict[str, pd.DataFrame] routing_table: maps file names with their state transition probabilities
     """
-    # endregion
 
     # region class variables, instance variables and constructors
     def __init__(self, hivemind: Any, name: str):
