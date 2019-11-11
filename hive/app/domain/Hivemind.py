@@ -197,27 +197,21 @@ class Hivemind:
         else:
             self.__register_heal(stage, sf_data, replacement_dict)
 
-    def __init_recovery_protocol(self, sf_data: FileData, mock: Dict[int, SharedFilePart] = None):
+    def __init_recovery_protocol(self, sf_data: FileData, mock: Dict[int, SharedFilePart] = None) -> None:
         """
         Starts file recovering by asking the best in the Hive still alive to run a file reconstruction algorithm
-        :param sf_data: instance object containing information about the file to be recovered
-        :type domain.helpers.FileData
-        :param mock: allows simulation to do a recovery by passing files from dead worker to a living worker
-        :type dict<int, domain.SharedFilePart>
+        :param FileData sf_data: instance object containing information about the file to be recovered
+        :param Dict[int, SharedFilePart] mock: recovery will be accomplished by passing files from dead to living worker
         """
+        # TODO future-iterations:
+        #  get the next best ONLINE node, for now assume best node is always online, which is likely to be true anyway!
         best_worker_name = sf_data.highest_density_node_label
-
-        if self.worker_status[best_worker_name] != Status.ONLINE:
-            # TODO future-iterations:
-            #  get the next best node, until a node in the hive is found to be online or no other options remain
-            #  for current iteration, assume this situation doesn't happen, best node in the structure is always online
-            return
-
         worker = self.workers[best_worker_name]
         if mock:
-            print("Asking best worker to init recovery with mock")
-            worker.receive_parts(sf_id_parts_dict=mock, sf_name=sf_data.file_name, no_check=True)
+            sf_data.fwrite("Asking best worker, {}, to initialize recovery protocol mock...".format(best_worker_name))
+            worker.receive_parts(mock, sf_data.file_name, no_check=True)
         else:
+            sf_data.fwrite("Asking best worker, {}, to initialize recovery protocols...".format(best_worker_name))
             worker.init_recovery_protocol(sf_data.file_name)
 
     def receive_complaint(self, suspects_name: str, sf_name: str = None):
