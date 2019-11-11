@@ -6,7 +6,6 @@ from utils import crypto
 from copy import deepcopy
 from domain.Enums import HttpCodes
 from typing import Dict, Union, Any
-from domain.Hivemind import Hivemind
 from globals.globals import DEFAULT_COLUMN
 from domain.SharedFilePart import SharedFilePart
 from utils.ResourceTracker import ResourceTracker as rT
@@ -24,8 +23,8 @@ class Worker:
     # endregion
 
     # region class variables, instance variables and constructors
-    def __init__(self, hivemind: Hivemind, name: str):
-        self.hivemind: Hivemind = hivemind
+    def __init__(self, hivemind: Any, name: str):
+        self.hivemind: Any = hivemind
         self.name: str = name
         self.shared_files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
@@ -138,7 +137,7 @@ class Worker:
                 else:
                     response_code = self.hivemind.route_file_part(dest_worker, sf_part)
                     if response_code != HttpCodes.OK:
-                        self.hivemind.receive_complaint(dest_worker, sf_name=sf_name)
+                        self.hivemind.receive_complaint(dest_worker)
                         tmp[sf_id] = sf_part  # store <sf_id, sf_part>, original destination doesn't respond
 
             self.shared_files[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited

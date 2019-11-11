@@ -172,6 +172,7 @@ class Hivemind:
 
     def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> None:
         """
+        Cleans up after a worker disconnection by healing up or contracting or failing!
         :param int stage: number representing the discrete time step the simulation is currently at
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         :param Worker dead_worker: instance object corresponding to the worker who left the network
@@ -180,8 +181,13 @@ class Hivemind:
         if replacement_dict:
             sf_data.fwrite("Node replacement at stage {}, replaced: {}\n".format(stage, replacement_dict))
         else:
-            self.__contract_hive(sf_data, dead_worker.name)  # contraction only occurs if healing fails
-            sf_data.fwrite("Hive contraction at stage {}, due to worker: ".format(stage, dead_worker.name))
+            result: bool = self.__contract_hive(sf_data, dead_worker.name)  # contraction only occurs if healing fails
+            if result:
+                sf_data.fwrite("Hive contraction at stage {}, due to worker: ".format(stage, dead_worker.name))
+            else:
+                # TODO future-iterations:
+                #  Return result for data structure cleanup or something
+                sf_data.fwrite("Failure at stage {}, can't contract the hive any further".format(stage))
 
     def __init_recovery_protocol(self, sf_data: FileData, mock: Dict[int, SharedFilePart] = None) -> None:
         """
@@ -200,29 +206,30 @@ class Hivemind:
             sf_data.fwrite("Asking best worker, {}, to initialize recovery protocols...".format(best_worker_name))
             worker.init_recovery_protocol(sf_data.file_name)
 
-    def receive_complaint(self, suspects_name: str, sf_name: str = None):
+    def receive_complaint(self, suspects_name: str) -> None:
+        """
+        Registers a complaint on the named worker, if enough complaints are received, forces the worker to be ignored by
+        other workers.
+        :param suspects_name: name of the worker which regards the complaint
+        """
         # TODO future-iterations:
         #  1. register complaint
         #  2. when byzantine complaints > threshold
         #    2.1. find away of obtaining shared_file_names user had
         #    2.2. discover the files the node used to share, probably requires yet another sf_strucutre
         #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
-        if sf_name and suspects_name:
-            pass  # maybe sf_name can help when enough complaints are received, reanalyze this param at a later date.
         log.warning("receive_complaint is only a mock. method needs to be implemented...")
 
-    def route_file_part(self, dest_worker_name: str, part: SharedFilePart):
+    def route_file_part(self, dest_worker_name: str, sf_part: SharedFilePart) -> Any:
         """
-        :param dest_worker_name: destinatary of the file part
-        :type str
-        :param part: the file part to send to specified worker
-        :type domain.SharedFilePart
-        :returns: http codes based status of destination worker
-        :rtype int
+        Receives a shared file part and sends it to the given destination
+        :param str dest_worker_name: destinatary of the file part
+        :param SharedFilePart sf_part: the file part to send to specified worker
+        :returns int: http codes based status of destination worker
         """
         dest_status = self.worker_status[dest_worker_name]
         if dest_status == Status.ONLINE:
-            self.workers[dest_worker_name].receive_part(part, no_check=True)
+            self.workers[dest_worker_name].receive_part(sf_part, no_check=True)
             return HttpCodes.OK
         elif dest_status == Status.OFFLINE:
             return HttpCodes.SERVER_DOWN
@@ -231,13 +238,12 @@ class Hivemind:
         else:
             return HttpCodes.NOT_FOUND
 
-    def redistribute_file_parts(self, parts):
+    def redistribute_file_parts(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
         """
-        :param parts: The file parts to be redistributed in the system
-        :type dict<str, domain.SharedFilePart>
+        Hivemind redistributes shared files passed by requestor, e.g.: by a Worker instance before leaving the hive
+        :param  Dict[str, SharedFilePart] shared_files: collection of file parts to be distributed by workers
         """
-        if parts:
-            self.__uniformely_assign_parts_to_workers(parts)
+        self.__uniformely_assign_parts_to_workers(shared_files)
     # endregion
 
     # region helper methods
@@ -297,9 +303,9 @@ class Hivemind:
             sf_data: FileData = self.sf_data[sf_name]
             threshold: int = sf_data.get_failure_threshold()
             if len(sf_id_sfp_dict) > threshold:
-                self.__workers_stop_tracking_shared_file(sf_data)
                 sf_to_drop.append(sf_name)
                 sf_data.fwrite("Failure stage {}. {} had more than {} parts\n".format(stage, dead_worker.name, threshold))
+                self.__workers_stop_tracking_shared_file(sf_data)
             else:
                 self.__care_taking(stage, sf_data, dead_worker)
                 self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
@@ -419,7 +425,7 @@ class Hivemind:
 
         return [], None, {}  # no replacement was found, all possible replacements seem to be offline or suspected
 
-    def __contract_hive(self, sf_data: FileData, dw_name: str):
+    def __contract_hive(self, sf_data: FileData, dw_name: str) -> bool:
         cropped_adj_matrix = self.__crop_adj_matrix(sf_data, dw_name)
         cropped_labels, cropped_ddv = self.__crop_desired_distribution(sf_data, dw_name)
         transition_matrix = mh.metropolis_algorithm(cropped_adj_matrix, cropped_ddv, column_major_out=True)
@@ -429,6 +435,9 @@ class Hivemind:
         sf_data.reset_density_data()
         sf_data.reset_convergence_data()
         self.__set_routing_tables(sf_data.file_name, cropped_labels, transition_matrix)
+        # TODO future-iterations:
+        #  Deal with case where contraction is impossible
+        return True
 
     def __crop_adj_matrix(self, sf_data: FileData, dw_name: str):
         """
