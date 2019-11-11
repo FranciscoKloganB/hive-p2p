@@ -13,49 +13,45 @@ from utils.collections import safe_remove
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from utils.randoms import excluding_randrange
-from typing import List, Dict, Tuple, Optional
 from domain.SharedFilePart import SharedFilePart
+from typing import List, Dict, Tuple, Optional, Union, Any
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
 
 
 class Hivemind:
+    TRUE_FALSE = [True, False]
+
     # region docstrings
     """
-    Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
-    :ivar workers: keeps track workers objects in the simulation
-    :type dict<str, domain.Worker>
-    :ivar workers_uptime: contains each worker node uptime, used to calculate kill probability
-    :type dict<str, float>
-    :ivar worker_status: keeps track workers objects in the simulation regarding their health
-    :type dict<domain.Worker, domain.Status(Enum)>
-    :ivar shared_files: part_name is a key to a dict of integer part_id keys leading to actual SharedFileParts
-    :type dict<string, dict<int, SharedFilePart>>
-    :ivar sf_data: part_name is a key to containing general information about the file
-    :type tuple<str, domain.Helpers.FileData>
-    :ivar max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
-    :type int
+    Represents a Supernode of the P2P Network managing one or more hives
+    :cvar List[bool] TRUE_FALSE = static list containing bools, True on index 0 and False on index 1.
+    :ivar Dict[str, Worker] workers: maps workers' names to their object instances
+    :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
+    :ivar Dict[Union[Worker, str], int] worker_status: maps workers or their names to their connectivity status
+    :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts created by the Hivemind instance
+    :ivar Dict[str, FileData] sf_data: collection of information about the shared files managed by the Hivemind instance
+    :ivar int max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
     """
     # endregion
 
-    # region class variables, instance variables and constructors
-    TRUE_FALSE = [True, False]
-
-    def __init__(self, simfile_name):
+    # region instance variables and constructors
+    def __init__(self, simfile_name: str) -> None:
         """
+        Instantiates an Hivemind object
         :param simfile_name: path to json file containing the parameters this simulation should execute with
         :type str
         """
-        simfile_path = os.path.join(SIMULATION_ROOT, simfile_name)
+        simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
-            json_obj = json.load(input_file)
+            json_obj: Any = json.load(input_file)
             # Init basic simulation variables
-            self.shared_files = {}
-            self.sf_data = {}
-            self.workers = {}
-            self.worker_status = {}
-            self.workers_uptime = json_obj['nodes_uptime']
-            self.max_stages = json_obj['max_stages']
+            self.shared_files: Dict[str, Dict[int, SharedFilePart]] = {}
+            self.sf_data: Dict[str, FileData] = {}
+            self.workers: Dict[str, Worker] = {}
+            self.worker_status: Dict[Union[Worker, str], Any] = {}
+            self.workers_uptime: Dict[str, float] = json_obj['nodes_uptime']
+            self.max_stages: int = json_obj['max_stages']
             # Create the P2P network nodes (domain.Workers) without any job
             self.__init_workers([*self.workers_uptime.keys()])
             # Read and split all shareable files specified on the input
@@ -63,72 +59,61 @@ class Hivemind:
             # For all shareable files, set that shared file_routing table
             self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
             # Distribute files before starting simulation
-            self.__uniformely_assign_parts_to_workers(self.shared_files, enforce_online=False)
+            self.__uniformely_assign_parts_to_workers(self.shared_files)
     # endregion
 
     # region domain.Worker related methods
-    def __init_workers(self, worker_names):
+    def __init_workers(self, worker_names: List[str]) -> None:
         """
-        Creates worker objects that knows this Hivemind and starts tracking their health
-        :param worker_names:
-        :type list<str>
+        Instantiates all worker objects within the inputed list
+        :param  List[str] worker_names: names of the workers to be instantiated
         """
         for name in worker_names:
             worker = Worker(self, name)
             self.workers[name] = worker
             self.worker_status[worker] = Status.ONLINE
 
-    def __uniformely_assign_parts_to_workers(self, shared_files_dict, enforce_online=True):
+    def __uniformely_assign_parts_to_workers(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
         """
         Distributes received file parts over the Hive network.
-        :param shared_files_dict: receives anyone's dictionary of <file_name, dict<file_number, SharedFilePart>>
-        :type dict<str, dict<int, domain.SharedFilePart>>
-        :param enforce_online: makes sure receiving workers are online.
-        :type bool
+        :param Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts
         """
-        workers_objs = self.__filter_and_map_online_workers() if enforce_online else [*self.worker_status.keys()]
-        for file_name, part_number in shared_files_dict.items():
+        workers_objs: List[Worker] = self.__filter_and_map_online_workers()
+        for file_name, part_number in shared_files.items():
             # Retrive state labels from the file distribution vector
-            worker_names = [*self.sf_data[file_name].desired_distribution.index]
+            worker_names: List[str] = [*self.sf_data[file_name].desired_distribution.index]
             # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
             # Do not change positions of file_sharers_names with worker_objs...
-            # Doing so changes would make us obtain list<str> containing their names instead of list<domain.Workers>
-            choices = [*filter(set(worker_names).__contains__, workers_objs)]
+            choices: List[Worker] = [*filter(set(worker_names).__contains__, workers_objs)]
             for part in part_number.values():
                 # Randomly choose a destinatary worker from possible choices and give him the shared file part
                 np.random.choice(choices).receive_part(part, no_check=True)
     # endregion
 
     # region file partitioning methods
-    def __split_all_shared_files(self, file_names):
+    def __split_all_shared_files(self, sf_names: List[str]) -> None:
         """
         Obtains the path of all files that are going to be divided for sharing simulation and splits them into parts
-        :param file_names: a list containing the name of the files to be shared with their extensions included
-        :type str
+        :param List[str] sf_names: a list containing the name of the files to be shared with their extensions included
         """
-        for file_name in file_names:
+        for file_name in sf_names:
             self.__split_shared_file(os.path.join(SHARED_ROOT, file_name))
 
-    def __split_shared_file(self, file_path):
+    def __split_shared_file(self, file_path: str) -> None:
         """
         Reads contents of the file in 2KB blocks and encapsulates them along with their ID and SHA256
-        :param file_path: path to an arbitrary file to persist on the hive network
-        :type str
+        :param str file_path: path to an arbitrary file to persist on the hive network
         """
         # file_extension = Path(file_path).resolve().suffix
-        sf_name = Path(file_path).resolve().stem
+        sf_name: str = Path(file_path).resolve().stem
         with open(file_path, "rb") as shared_file:
-            file_parts = {}
-            part_number = 0
+            file_parts: Dict[int, SharedFilePart] = {}
+            part_number: int = 0
             while True:
                 read_buffer = shared_file.read(READ_SIZE)
                 if read_buffer:
                     part_number = part_number + 1
-                    shared_file_part = SharedFilePart(
-                        sf_name,
-                        part_number,
-                        read_buffer
-                    )
+                    shared_file_part: SharedFilePart = SharedFilePart(sf_name, part_number, read_buffer)
                     file_parts[part_number] = shared_file_part
                 else:
                     # Keeps track of how many parts the file was divided into
@@ -252,7 +237,7 @@ class Hivemind:
         :type dict<str, domain.SharedFilePart>
         """
         if parts:
-            self.__uniformely_assign_parts_to_workers(parts, enforce_online=True)
+            self.__uniformely_assign_parts_to_workers(parts)
     # endregion
 
     # region helper methods
