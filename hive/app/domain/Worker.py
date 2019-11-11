@@ -6,6 +6,7 @@ from utils import crypto
 from copy import deepcopy
 from domain.Enums import HttpCodes
 from typing import Dict, Union, Any
+from domain.Hivemind import Hivemind
 from globals.globals import DEFAULT_COLUMN
 from domain.SharedFilePart import SharedFilePart
 from utils.ResourceTracker import ResourceTracker as rT
@@ -14,26 +15,20 @@ from utils.ResourceTracker import ResourceTracker as rT
 class Worker:
     # region docstrings
     """
-    Defines a node on the P2P network. Workers are subject to constraints imposed by Hivemind, constraints they inflict
-    on themselves based on available computing power (CPU, RAM, etc...) and can have [0, N] shared file parts. Workers
-    have the ability to reconstruct lost file parts when needed.
-    :ivar sf_parts: key part_name maps to a dict of part_id keys whose values are SharedFilePart
-    :type dict<str, dict<str, SharedFilePart>
-    :ivar name: id of this worker node that uniquely identifies him in the network
-    :type str
-    :ivar hivemind: coordinator of the unstructured Hybrid P2P network that enlisted this worker for a Hive
-    :type str
-    :ivar routing_table: maps file name with state transition probabilities, from this worker to other workers
-    :type dict<str, pandas.DataFrame>
+    Defines a worker node on the P2P network.
+    :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts kept by the worker instance
+    :ivar str name: unique identifier of the worker instance on the network
+    :ivar Hivemind hivemind: supernode managing the Worker instance
+    :ivar Dict[str, pd.DataFrame] routing_table: maps file names with their state transition probabilities
     """
     # endregion
 
     # region class variables, instance variables and constructors
-    def __init__(self, hivemind, name):
-        self.sf_parts = {}
-        self.routing_table = {}
-        self.name = name
-        self.hivemind = hivemind
+    def __init__(self, hivemind: Hivemind, name: str):
+        self.hivemind: Hivemind = hivemind
+        self.name: str = name
+        self.shared_files: Dict[str, Dict[int, SharedFilePart]] = {}
+        self.routing_table: Dict[str, pd.DataFrame] = {}
     # endregion
 
     # region overriden class methods
@@ -53,6 +48,7 @@ class Worker:
     # region file recovery methods
     def init_recovery_protocol(self, sf_name: str) -> None:
         """
+        Reconstructs a file and then splits it into globals.READ_SIZE before redistributing them to the rest of the hive
         :param str sf_name: name of the shared file that needs to be reconstructed by the Worker instance
         :type str
         """
@@ -64,6 +60,7 @@ class Worker:
     # region routing table management methods
     def set_file_routing(self, sf_name: str, transition_vector: Union[pd.Series, pd.DataFrame]) -> None:
         """
+        Maps file name with state transition probabilities
         :param str sf_name: a file name that is being shared on the hive
         :param Union[pd.Series, pd.DataFrame] transition_vector: probabilities of going from current worker to some
          worker on the hive
@@ -89,7 +86,7 @@ class Worker:
         :param str sf_name: name of the shared file whose routing information is being removed from routing_table
         """
         try:
-            self.sf_parts.pop(sf_name)
+            self.shared_files.pop(sf_name)
         except KeyError as kE:
             log.error("Key ({}) doesn't exist in worker {}'s sf_parts dict".format(sf_name, self.name))
             log.error("Key Error message: {}".format(str(kE)))
@@ -103,9 +100,9 @@ class Worker:
         :param bool no_check: wether or not method verifies sha256 of the received part
         """
         if no_check or crypto.sha256(part.part_data) == part.sha256:
-            if part.part_name not in self.sf_parts:
-                self.sf_parts[part.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
-            self.sf_parts[part.part_name][part.part_id] = part
+            if part.part_name not in self.shared_files:
+                self.shared_files[part.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
+            self.shared_files[part.part_name][part.part_id] = part
         else:
             print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
             self.init_recovery_protocol(part.part_name)
@@ -118,7 +115,7 @@ class Worker:
         :param bool no_check: wether or not method verifies sha256 of each part.
         """
         if no_check and sf_name is not None:
-            self.sf_parts[sf_name].update(sf_id_sfp_dict)  # Appends sf_id_sfp_dict values to existing values
+            self.shared_files[sf_name].update(sf_id_sfp_dict)  # Appends sf_id_sfp_dict values to existing values
         else:
             for sf_part in sf_id_sfp_dict.values():  # receive_part(...) automatically fetches the part_number for part
                 self.receive_part(sf_part, no_check=False)
@@ -127,7 +124,7 @@ class Worker:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
         """
-        sf_parts_dict = self.sf_parts.items()
+        sf_parts_dict = self.shared_files.items()
 
         for sf_name, sf_id_sfp_dict in sf_parts_dict:
 
@@ -144,7 +141,7 @@ class Worker:
                         self.hivemind.receive_complaint(dest_worker, sf_name=sf_name)
                         tmp[sf_id] = sf_part  # store <sf_id, sf_part>, original destination doesn't respond
 
-            self.sf_parts[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited
+            self.shared_files[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited
     # endregion
 
     # region helpers
@@ -153,7 +150,7 @@ class Worker:
         :param sf_name: name of the file kept by the Worker instance that must be counted
         :returns int: number of parts from the named shared file currently on the Worker instance
         """
-        return len(self.sf_parts[sf_name])
+        return len(self.shared_files[sf_name])
 
     def get_next_state(self, sf_name: str) -> str:
         """
@@ -171,6 +168,7 @@ class Worker:
     @staticmethod
     def get_resource_utilization(*args) -> Dict[str, Any]:
         """
+        Obtains one ore more performance attributes for the Worker's instance machine
         :param *args: Variable length argument list. See below
         :keyword arg:
         :arg 'cpu': system wide float detailing cpu usage as a percentage,
@@ -193,5 +191,5 @@ class Worker:
         Sends all shared file parts kept by the Worker instance to the requestor regardless of the file's hive
         :returns Dict[str, Dict[int, SharedFilePart]]: a deep copy of the Worker's instance shared file parts
         """
-        return deepcopy(self.sf_parts)
+        return deepcopy(self.shared_files)
     # endregion
