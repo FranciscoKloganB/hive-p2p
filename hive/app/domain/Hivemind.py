@@ -329,18 +329,6 @@ class Hivemind:
                 self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
         self.__hivemind_stops_tracking_shared_files(sf_names_to_pop)
 
-    def __hivemind_stops_tracking_shared_files(self, sf_names: List[str]) -> None:
-        """
-        :param List[str] sf_names: shared file names that won't ever again be recoverable due to a worker's disconnect
-        """
-        for sf_name in sf_names:
-            try:
-                self.shared_files.pop(sf_name)
-                self.sf_data.pop(sf_name)
-            except KeyError as kE:
-                log.error("Key ({}) doesn't exist in hivemind's shared_files or sf_data dictionaries".format(sf_name))
-                log.error("Key Error message: {}".format(str(kE)))
-
     def __process_stage_results(self, stage: int) -> None:
         """
         Obtains all workers' densities regarding each shared file and logs progress in the system accordingly
@@ -401,6 +389,18 @@ class Hivemind:
         sf_name: str = str_copy(sf_data.file_name)  # Creates an hard copy (str) of the shared file name
         # First ask workers to reset theirs, for safety, popping in hivemind structures is only done at a later point
         self.__remove_routing_tables(sf_name, hive_workers_names)
+
+    def __hivemind_stops_tracking_shared_files(self, sf_names: List[str]) -> None:
+        """
+        :param List[str] sf_names: shared file names that won't ever again be recoverable due to a worker's disconnect
+        """
+        for sf_name in sf_names:
+            try:
+                self.shared_files.pop(sf_name)
+                self.sf_data.pop(sf_name)
+            except KeyError as kE:
+                log.error("Key ({}) doesn't exist in hivemind's shared_files or sf_data dictionaries".format(sf_name))
+                log.error("Key Error message: {}".format(str(kE)))
     # endregion
 
     # region hive recovery methods
