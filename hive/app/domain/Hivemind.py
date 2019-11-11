@@ -9,6 +9,7 @@ import logging as log
 from pathlib import Path
 from domain.Worker import Worker
 from utils.convertions import str_copy
+from utils.collections import safe_remove
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from utils.randoms import excluding_randrange
@@ -405,11 +406,10 @@ class Hivemind:
         replacing_worker: Optional[Worker]
         replacement_dict: Dict[str, str]
         labels, replacing_worker, replacement_dict = self.__find_replacement_node(sf_data, dead_worker.name)
-
         if replacement_dict:
             sf_data.commit_heal(replacement_dict)
             self.__inherit_routing_table(sf_data.file_name, dead_worker, replacing_worker, replacement_dict)
-            self.__update_routing_tables(sf_data.file_name, labels, dead_worker, replacement_dict)
+            self.__update_routing_tables(sf_data.file_name, labels, replacement_dict)
         return replacement_dict
 
     def __find_replacement_node(self, sf_data: FileData, dw_name: str) -> Tuple[List[str], Optional[Worker], Dict[str, str]]:
@@ -429,7 +429,7 @@ class Hivemind:
         while base_uptime is not None:
             for rw_name, uptime in dict_items:
                 if self.worker_status[rw_name] == Status.ONLINE and rw_name not in labels and uptime > base_uptime:
-                    return labels, self.workers[rw_name], {dw_name: rw_name}
+                    return safe_remove(labels, dw_name), self.workers[rw_name], {dw_name: rw_name}
             base_uptime = self.__expand_uptime_range_search(base_uptime)
 
         return [], None, {}  # no replacement was found, all possible replacements seem to be offline or suspected
@@ -516,18 +516,20 @@ class Hivemind:
         :param Worker new_worker: Worker instance that is replacing him in that hive
         :param Dict[str, str] replacement_dict: old worker name, new worker name)
         """
-        new_worker.set_file_routing(sf_name, dead_worker.routing_table[sf_name].rename(index=replacement_dict))
+        # TODO future-iterations:
+        #  Obtain the transition vector w/o using dead_worker instance
+        dw_transition_vector = dead_worker.routing_table[sf_name]
+        new_worker.set_file_routing(sf_name, dw_transition_vector.rename(index=replacement_dict))
 
-    def __update_routing_tables(self, sf_name: str, worker_names: List[str], dead_worker: Worker, replacement_dict: Dict[str, str]) -> None:
+    def __update_routing_tables(self, sf_name: str, worker_names: List[str], replacement_dict: Dict[str, str]) -> None:
         """
         Updates the routing tables w.r.t. the inputed shared file name for all listed workers' names without altering
-        their transition_vectors. After ensuring the
+        their transition_vectors.
         :param str sf_name: name of the shared file
         :param List[str] worker_names: name of the workers that share the file
         :param Dict[str, str] replacement_dict: old worker name, new worker name)
         """
-        workers_names_needing_update = self.__try_remove_worker_from_list(worker_names, dead_worker.name)
-        for name in workers_names_needing_update:
+        for name in worker_names:
             self.workers[name].update_file_routing(sf_name, replacement_dict)
 
     def __remove_routing_tables(self, sf_name: str, worker_names: List[str]) -> None:
@@ -554,18 +556,6 @@ class Hivemind:
             return None
         current_uptime -= 10.0
         return current_uptime if current_uptime > 50.0 else 0.0
-
-    def __try_remove_worker_from_list(self, worker_name_list: List[str], w_name: str) -> List[str]:
-        """
-        :param List[str] worker_name_list: list of workers' names that belonged to an hive
-        :param str w_name: name of the worker to remove from the given list if possible
-        :returns List[str] worker_name_list: unmodified or without the specified worker_name
-        """
-        try:
-            worker_name_list.remove(w_name)
-            return worker_name_list
-        except ValueError:
-            return worker_name_list
     # endregion
     # endregion
 
