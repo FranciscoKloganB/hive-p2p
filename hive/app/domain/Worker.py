@@ -5,7 +5,7 @@ import pandas as pd
 from utils import crypto
 from copy import deepcopy
 from domain.Enums import HttpCodes
-from typing import List, Dict, Tuple
+from typing import Dict, Union, Any
 from globals.globals import DEFAULT_COLUMN
 from domain.SharedFilePart import SharedFilePart
 from utils.ResourceTracker import ResourceTracker as rT
@@ -51,9 +51,9 @@ class Worker:
     # endregion
 
     # region file recovery methods
-    def init_recovery_protocol(self, sf_name):
+    def init_recovery_protocol(self, sf_name: str) -> None:
         """
-        :param sf_name: name of the file that needs to be reconstructed and redistributed
+        :param str sf_name: name of the shared file that needs to be reconstructed by the Worker instance
         :type str
         """
         # TODO future-iterations:
@@ -62,12 +62,11 @@ class Worker:
     # endregion
 
     # region routing table management methods
-    def set_file_routing(self, sf_name, transition_vector):
+    def set_file_routing(self, sf_name: str, transition_vector: Union[pd.Series, pd.DataFrame]) -> None:
         """
-        :param sf_name: a file name that is being shared on the hive
-        :type str
-        :param transition_vector: probability vector indicating transitions to other states for the given file w/ labels
-        :type 1-D numpy.Array in column format
+        :param str sf_name: a file name that is being shared on the hive
+        :param Union[pd.Series, pd.DataFrame] transition_vector: probabilities of going from current worker to some
+         worker on the hive
         """
         if isinstance(transition_vector, pd.Series):
             self.routing_table[sf_name] = transition_vector.to_frame()
@@ -76,19 +75,18 @@ class Worker:
         else:
             raise ValueError("Worker.set_file_routing expects a pandas.Series or pandas.DataFrame transition vector.")
 
-    def update_file_routing(self, sf_name, replacement_dict):
+    def update_file_routing(self, sf_name: str, replacement_dict: Dict[str, str]) -> None:
         """
-        :param sf_name: a file name that is being shared on the hive
-        :type str
-        :param replacement_dict: key, value pair where key represents the name to be replaced with the new value
-        :type dict<str, str>
+        Updates a shared file's routing information within the routing table
+        :param str sf_name: name of the shared file whose routing information is being updated
+        :param Dict[str, str] replacement_dict: old worker name, new worker name)
         """
         self.routing_table[sf_name].rename(index=replacement_dict, inplace=True)
 
-    def remove_file_routing(self, sf_name):
+    def remove_file_routing(self, sf_name: str) -> None:
         """
-        :param sf_name: a file name that is being shared on the hive which this node should stop transimitting
-        :type str
+        Removes a shared file's routing information from within the routing table
+        :param str sf_name: name of the shared file whose routing information is being removed from routing_table
         """
         try:
             self.sf_parts.pop(sf_name)
@@ -98,13 +96,11 @@ class Worker:
     # endregion
 
     # region file sending and receiving methods
-    def receive_part(self, part, no_check=False):
+    def receive_part(self, part: SharedFilePart, no_check: bool = False) -> None:
         """
         Keeps a new, single, shared file part, along the ones already stored by the Worker instance
-        :param part: an instance object that contains data regarding the shared file part and it's raw contents
-        :type domain.SharedFilePart
-        :param no_check: wether or not method verifies sha256 of each part.
-        :type bool
+        :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        :param bool no_check: wether or not method verifies sha256 of the received part
         """
         if no_check or crypto.sha256(part.part_data) == part.sha256:
             if part.part_name not in self.sf_parts:
@@ -112,7 +108,7 @@ class Worker:
             self.sf_parts[part.part_name][part.part_id] = part
         else:
             print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
-            self.init_recovery_protocol(part)
+            self.init_recovery_protocol(part.part_name)
 
     def receive_parts(self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
         """
@@ -127,7 +123,7 @@ class Worker:
             for sf_part in sf_id_sfp_dict.values():  # receive_part(...) automatically fetches the part_number for part
                 self.receive_part(sf_part, no_check=False)
 
-    def route_parts(self):
+    def route_parts(self) -> None:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
         """
@@ -149,17 +145,20 @@ class Worker:
                         tmp[sf_id] = sf_part  # store <sf_id, sf_part>, original destination doesn't respond
 
             self.sf_parts[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited
+    # endregion
 
     # region helpers
-    def get_parts_count(self, sf_name):
+    def get_parts_count(self, sf_name: str) -> int:
+        """
+        :param sf_name: name of the file kept by the Worker instance that must be counted
+        :returns int: number of parts from the named shared file currently on the Worker instance
+        """
         return len(self.sf_parts[sf_name])
 
-    def get_next_state(self, sf_name):
+    def get_next_state(self, sf_name: str) -> str:
         """
-        :param sf_name: the name of the file the part to be routed belongs to
-        :type: str
-        :return: the name of the worker to whom the file should be routed too
-        :type: str
+        :param str sf_name: the name of the file the part to be routed belongs to
+        :returns str: the name of the worker to whom the file should be routed too
         """
         routing_data = self.routing_table[sf_name]
         row_labels = [*routing_data.index]  # gets the names of sharers as a list
@@ -170,7 +169,7 @@ class Worker:
 
     # region resource utilization methods
     @staticmethod
-    def get_resource_utilization(*args):
+    def get_resource_utilization(*args) -> Dict[str, Any]:
         """
         :param *args: Variable length argument list. See below
         :keyword arg:
@@ -178,9 +177,9 @@ class Worker:
         :arg 'cpu_count': number of non-logical cpu on the machine as an int
         :arg 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
         :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available),
-                    expressed in bytes as floats
+        expressed in bytes as floats
         :arg 'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
-        :return dict<str, obj> detailing the usage of the respective key arg. If arg is invalid the value will be -1.
+        :returns Dict[str, Any] detailing the usage of the respective key arg. If arg is invalid the value will be -1.
         """
         results = {}
         for arg in args:
@@ -191,7 +190,7 @@ class Worker:
     # region mock methods
     def get_all_parts(self) -> Dict[str, Dict[int, SharedFilePart]]:
         """
-        Sends all parts owned by the Worker instance to the requestor
+        Sends all shared file parts kept by the Worker instance to the requestor regardless of the file's hive
         :returns Dict[str, Dict[int, SharedFilePart]]: a deep copy of the Worker's instance shared file parts
         """
         return deepcopy(self.sf_parts)
