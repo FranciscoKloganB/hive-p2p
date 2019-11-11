@@ -92,32 +92,32 @@ class Worker:
     # endregion
 
     # region file sending and receiving methods
-    def receive_part(self, part: SharedFilePart, no_check: bool = False) -> None:
+    def receive_part(self, sfp: SharedFilePart, no_check: bool = False) -> None:
         """
         Keeps a new, single, shared file part, along the ones already stored by the Worker instance
-        :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        :param SharedFilePart sfp: data class instance with data w.r.t. the shared file part and it's raw contents
         :param bool no_check: wether or not method verifies sha256 of the received part
         """
-        if no_check or crypto.sha256(part.part_data) == part.sha256:
-            if part.part_name not in self.shared_files:
-                self.shared_files[part.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
-            self.shared_files[part.part_name][part.part_id] = part
+        if no_check or crypto.sha256(sfp.part_data) == sfp.sha256:
+            if sfp.part_name not in self.shared_files:
+                self.shared_files[sfp.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
+            self.shared_files[sfp.part_name][sfp.part_id] = sfp
         else:
-            print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
-            self.init_recovery_protocol(part.part_name)
+            print("part_name: {}, part_number: {} - corrupted".format(sfp.part_name, str(sfp.part_number)))
+            self.init_recovery_protocol(sfp.part_name)
 
     def receive_parts(self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
         """
         Keeps incomming shared file parts along with the ones already owned by the Worker instance
         :param Dict[int, SharedFilePart] sf_id_sfp_dict: mapping of shared file part id to SharedFileParts instances
-        :param str sf_name: name of the file the parts belong to. If no_check is True, than, sf_name must be set!
+        :param str sf_name: name of the file the parts belong to.
         :param bool no_check: wether or not method verifies sha256 of each part.
         """
-        if no_check and sf_name is not None:
-            self.shared_files[sf_name].update(sf_id_sfp_dict)  # Appends sf_id_sfp_dict values to existing values
+        if sf_name:
+            self.__update_shared_files_dict(sf_id_sfp_dict, sf_name, no_check)
         else:
             for sf_part in sf_id_sfp_dict.values():  # receive_part(...) automatically fetches the part_number for part
-                self.receive_part(sf_part, no_check=False)
+                self.receive_part(sf_part, no_check)
 
     def route_parts(self) -> None:
         """
@@ -191,4 +191,26 @@ class Worker:
         :returns Dict[str, Dict[int, SharedFilePart]]: a deep copy of the Worker's instance shared file parts
         """
         return deepcopy(self.shared_files)
+    # endregion
+
+    # region helpers
+    def __update_shared_files_dict(
+            self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
+
+        if (not no_check) and (self.__sf_id_sfp_dict_needs_fix(sf_id_sfp_dict)):
+            # if check == True and if any part as an incorrect sha256, then, fix file and return
+            self.init_recovery_protocol(sf_name)
+        else:
+            # if (check == False) OR (check == True and all parts have correct sha256), then, update dict accordingly
+            if sf_name in self.shared_files:
+                self.shared_files[sf_name].update(sf_id_sfp_dict)  # Appends sf_id_sfp_dict values to existing values
+            else:
+                self.shared_files[sf_name] = sf_id_sfp_dict
+
+    def __sf_id_sfp_dict_needs_fix(self, sf_id_sfp_dict: Dict[int, SharedFilePart]):
+        for sfp in sf_id_sfp_dict.values():
+            if crypto.sha256(sfp.part_data) != sfp.sha256:
+                return True
+        return False
+
     # endregion
