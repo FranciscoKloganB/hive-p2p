@@ -12,7 +12,7 @@ from utils.convertions import str_copy
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from utils.randoms import excluding_randrange
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Union
 from domain.SharedFilePart import SharedFilePart
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
@@ -312,17 +312,34 @@ class Hivemind:
 
         self.worker_status[dead_worker.name] = Status.OFFLINE
 
+        sf_names_to_pop = []
         for sf_name, sf_id_sfp_dict in sf_parts_dict:
             sf_data: FileData = self.sf_data[sf_name]
             threshold: int = sf_data.get_failure_threshold()
             dead_worker_current_file_density: int = len(sf_id_sfp_dict)
 
             if dead_worker_current_file_density > threshold:
+                # simulation fails, can't recover file, too many parts lost
                 self.__register_failure(stage, dead_worker.name, sf_data, dead_worker_current_file_density, threshold)
-                self.__stop_tracking_shared_file(sf_data)
+                self.__workers_stop_tracking_shared_file(sf_data)
+                sf_names_to_pop.append(sf_name)
             else:
-                self.__care_taking(stage, dead_worker, sf_data)  # Healing method registration delegated to care_taking
+                # parts are recoverable, do replacement or contraction healing, then register accordingly in care_taking
+                self.__care_taking(stage, dead_worker, sf_data)
                 self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
+        self.__hivemind_stops_tracking_shared_files(sf_names_to_pop)
+
+    def __hivemind_stops_tracking_shared_files(self, sf_names: List[str]) -> None:
+        """
+        :param List[str] sf_names: shared file names that won't ever again be recoverable due to a worker's disconnect
+        """
+        for sf_name in sf_names:
+            try:
+                self.shared_files.pop(sf_name)
+                self.sf_data.pop(sf_name)
+            except KeyError as kE:
+                log.error("Key ({}) doesn't exist in hivemind's shared_files or sf_data dictionaries".format(sf_name))
+                log.error("Key Error message: {}".format(str(kE)))
 
     def __process_stage_results(self, stage: int) -> None:
         """
@@ -373,20 +390,17 @@ class Hivemind:
     # endregion
 
     # region teardown
-    def __stop_tracking_shared_file(self,  sf_data: FileData) -> None:
+    def __workers_stop_tracking_shared_file(self, sf_data: FileData) -> None:
         """
         Tears down the hive responsible of persisting the inputed shared file by removing all* references to it in both
         the Hivemind aswell as the workers who were sharing its parts.
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
         sf_data.fclose()
-        labels = [*sf_data.desired_distribution.index]
-        sf_name = str_copy(sf_data.file_name)  # Creates an hard copy (str) of the shared file name
-        # First ask workers to reset theirs
-        self.__remove_routing_tables(sf_name, labels)
-        # After that reset hivemind data structures
-        self.shared_files.pop(sf_name, None)
-        self.sf_data.pop(sf_name, None)
+        hive_workers_names: List[str] = [*sf_data.desired_distribution.index]
+        sf_name: str = str_copy(sf_data.file_name)  # Creates an hard copy (str) of the shared file name
+        # First ask workers to reset theirs, for safety, popping in hivemind structures is only done at a later point
+        self.__remove_routing_tables(sf_name, hive_workers_names)
     # endregion
 
     # region hive recovery methods
