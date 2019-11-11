@@ -179,7 +179,7 @@ class Hivemind:
         """
         replacement_dict: Dict[str, str] = self.__heal_hive(sf_data, dead_worker)
         if replacement_dict:
-            sf_data.fwrite("Node replacement at stage {}, replaced: {}\n".format(stage, replacement_dict))
+            sf_data.fwrite("Node replacement at stage {}, replaced: {}".format(stage, replacement_dict))
         else:
             result: bool = self.__contract_hive(sf_data, dead_worker.name)  # contraction only occurs if healing fails
             if result:
