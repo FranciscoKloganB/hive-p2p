@@ -155,13 +155,6 @@ class Worker:
             self.sf_parts[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited
 
     # region helpers
-    def leave_hive(self):
-        """
-        Worker instance disconnects from the Hivemind and discards all files it is currently keeping
-        """
-        self.hivemind = None
-        self.sf_parts = None
-
     def get_parts_count(self, sf_name):
         return len(self.sf_parts[sf_name])
 
