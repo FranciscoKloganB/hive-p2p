@@ -125,7 +125,7 @@ class Worker:
             self.sf_parts[sf_name].update(sf_id_sfp_dict)  # Appends sf_id_sfp_dict values to existing values
         else:
             for sf_part in sf_id_sfp_dict.values():  # receive_part(...) automatically fetches the part_number for part
-                self.receive_part(sf_part, no_check=False)  
+                self.receive_part(sf_part, no_check=False)
 
     def route_parts(self):
         """

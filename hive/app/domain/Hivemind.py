@@ -12,7 +12,7 @@ from utils.convertions import str_copy
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from utils.randoms import excluding_randrange
-from typing import List, Dict, Tuple, Optional, Union
+from typing import List, Dict, Tuple, Optional
 from domain.SharedFilePart import SharedFilePart
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
@@ -184,11 +184,11 @@ class Hivemind:
                 worker.route_parts()
             self.__process_stage_results(stage)
 
-    def __care_taking(self, stage: int, dead_worker: Worker, sf_data: FileData) -> None:
+    def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> None:
         """
         :param int stage: number representing the discrete time step the simulation is currently at
-        :param Worker dead_worker: instance object corresponding to the worker who left the network
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
+        :param Worker dead_worker: instance object corresponding to the worker who left the network
         """
         replacement_dict = self.__heal_hive(sf_data, dead_worker)
         if replacement_dict is None:
@@ -319,7 +319,7 @@ class Hivemind:
                 sf_names_to_pop.append(sf_name)
             else:
                 # parts are recoverable, do replacement or contraction healing, then register accordingly in care_taking
-                self.__care_taking(stage, dead_worker, sf_data)
+                self.__care_taking(stage, sf_data, dead_worker)
                 self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
         self.__hivemind_stops_tracking_shared_files(sf_names_to_pop)
 
