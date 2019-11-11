@@ -20,9 +20,6 @@ from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COL
 
 
 class Hivemind:
-    TRUE_FALSE = [True, False]
-
-    # region docstrings
     """
     Represents a Supernode of the P2P Network managing one or more hives
     :cvar List[bool] TRUE_FALSE = static list containing bools, True on index 0 and False on index 1.
@@ -33,7 +30,8 @@ class Hivemind:
     :ivar Dict[str, FileData] sf_data: collection of information about the shared files managed by the Hivemind instance
     :ivar int max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
     """
-    # endregion
+
+    TRUE_FALSE = [True, False]
 
     # region instance variables and constructors
     def __init__(self, simfile_name: str) -> None:
@@ -66,10 +64,10 @@ class Hivemind:
     def __init_workers(self, worker_names: List[str]) -> None:
         """
         Instantiates all worker objects within the inputed list
-        :param  List[str] worker_names: names of the workers to be instantiated
+        :param List[str] worker_names: names of the workers to be instantiated
         """
         for name in worker_names:
-            worker = Worker(self, name)
+            worker: Worker = Worker(self, name)
             self.workers[name] = worker
             self.worker_status[worker] = Status.ONLINE
 
@@ -123,43 +121,39 @@ class Hivemind:
     # endregion
 
     # region metropolis hastings and transition vector assignment methods
-    def __synthesize_transition_matrix(self, adj_matrix, desired_distribution, states):
+    def __synthesize_transition_matrix(
+            self, adj_matrix: List[List[int]], desired_distribution: List[float], states: List[str]) -> pd.DataFrame:
         """
+        Calculates a transition matrix using the metropolis-hastings algorithm
         :param states: list of worker names who form an hive
-        :type list<str>
-        :param adj_matrix: adjacency matrix representing connections between various states
-        :type list<list<float>>
-        :param desired_distribution: column vector representing the distribution that must be achieved by the workers
-        :returns: A matrix with named lines and columns with the computed transition matrix
-        :rtype pandas.DataFrame
+        :param adj_matrix: adjacency matrix representing possible connections between all pairs of states i, j
+        :param desired_distribution: steady state file distribution that must be achieved by the hive's workers
+        :returns pd.DataFrame: labeled matrix with transition probabilities between all pairs of states i, j
         """
-        transition_matrix = mh.metropolis_algorithm(adj_matrix, desired_distribution, column_major_out=True)
+        transition_matrix: np.ndarray = mh.metropolis_algorithm(adj_matrix, desired_distribution, column_major_out=True)
         return pd.DataFrame(transition_matrix, index=states, columns=states)
 
-    def __synthesize_shared_files_transition_matrices(self, shared_dict):
+    def __synthesize_shared_files_transition_matrices(self, shared_dict: Dict[str, Any]) -> None:
         """
-        For all keys in the dictionary, obtain file names, the respective adjacency matrix and the desired distribution
-        then calculate the transition matrix using metropolis hastings algorithm and feed the result to each worker who
-        is a contributor for the survivability of that file
-        :param shared_dict: maps file name with extensions to a dictinonary with three keys containing worker_labels who
-        are going to receive the file parts associated wih the named file, along with the transition vectors before
-        being metropolis hastings processed as well as the desired distributions
+        Fetces all the vectors and matrices required to build an hive for each of the named shared files in shared_dict
+        :param Dict[str, Any] shared_dict: collection of (shared_file_name, markov chain data) pairs
         """
-        for ext_file_name, markov_chain_data in shared_dict.items():
-            sf_name = Path(ext_file_name).resolve().stem
-            labels = markov_chain_data['state_labels']
-            adj_matrix = markov_chain_data['adj_matrix']
-            desired_distribution = markov_chain_data['ddv']
+        for ext_sf_name, markov_chain_data in shared_dict.items():
+            sf_name: str = Path(ext_sf_name).resolve().stem
+            labels: List[str] = markov_chain_data['state_labels']
+            adj_matrix: List[List[int]] = markov_chain_data['adj_matrix']
+            desired_distribution: List[float] = markov_chain_data['ddv']
             # Setting the trackers in this phase speeds up simulation
             self.__init_file_data(sf_name, adj_matrix, desired_distribution, labels)
             # Compute transition matrix
-            transition_matrix = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, labels)
+            transition_matrix: pd.DataFrame =\
+                self.__synthesize_transition_matrix(adj_matrix, desired_distribution, labels)
             # Split transition matrix into column vectors
             self.__set_routing_tables(sf_name, labels, transition_matrix)
     # endregion
 
     # region simulation execution methods
-    def execute_simulation(self):
+    def execute_simulation(self) -> None:
         """
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
