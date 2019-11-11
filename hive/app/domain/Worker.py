@@ -114,23 +114,18 @@ class Worker:
             print("part_name: {}, part_number: {} - corrupted".format(part.part_name, str(part.part_number)))
             self.init_recovery_protocol(part)
 
-    def receive_parts(self, sf_id_parts_dict, sf_name=None, no_check=False):
+    def receive_parts(self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
         """
         Keeps incomming shared file parts along with the ones already owned by the Worker instance
-        :param sf_id_parts_dict: mapping of shared file part id to SharedFileParts instances
-        :type dict<int, domain.SharedFilePart>
-        :param sf_name: name of the file the parts belong to. sf_name must be set if method is called with no_check=True
-        :type str
-        :param no_check: wether or not method verifies sha256 of each part.
-        :type bool
+        :param Dict[int, SharedFilePart] sf_id_sfp_dict: mapping of shared file part id to SharedFileParts instances
+        :param str sf_name: name of the file the parts belong to. If no_check is True, than, sf_name must be set!
+        :param bool no_check: wether or not method verifies sha256 of each part.
         """
         if no_check and sf_name is not None:
-            # Use sf_name in param to leverage the pythonic way of merging dictionaries
-            self.sf_parts[sf_name].update(sf_id_parts_dict)
+            self.sf_parts[sf_name].update(sf_id_sfp_dict)  # Appends sf_id_sfp_dict values to existing values
         else:
-            for sf_part in sf_id_parts_dict.values():
-                # When adding one 1-by-1, no other param other than the SharedFilePart is needed... See receive_part
-                self.receive_part(sf_part, no_check=False)
+            for sf_part in sf_id_sfp_dict.values():  # receive_part(...) automatically fetches the part_number for part
+                self.receive_part(sf_part, no_check=False)  
 
     def route_parts(self):
         """
