@@ -170,24 +170,25 @@ class Hivemind:
                 worker.route_parts()
             self.__process_stage_results(stage)
 
-    def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> None:
+    def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> bool:
         """
-        Cleans up after a worker disconnection by healing up or contracting or failing!
+        Cleans up after a worker disconnection by healing up or shrinking or failing!
         :param int stage: number representing the discrete time step the simulation is currently at
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         :param Worker dead_worker: instance object corresponding to the worker who left the network
         """
-        replacement_dict: Dict[str, str] = self.__heal_hive(sf_data, dead_worker)
-        if replacement_dict:
-            sf_data.fwrite("Node replacement at stage {}, replaced: {}".format(stage, replacement_dict))
-        else:
-            result: bool = self.__contract_hive(sf_data, dead_worker.name)  # contraction only occurs if healing fails
-            if result:
-                sf_data.fwrite("Hive contraction at stage {}, due to worker: ".format(stage, dead_worker.name))
-            else:
-                # TODO future-iterations:
-                #  Return result for data structure cleanup or something
-                sf_data.fwrite("Failure at stage {}, can't contract the hive any further".format(stage))
+        sf_data.fwrite("Initializing care taking process at stage {} due to worker '{}' death...")
+        if self.__heal_hive(sf_data, dead_worker):
+            sf_data.fwrite("Heal complete!")
+            return True
+
+        sf_data.fwrite("Hive healing was not possible...")
+        if self.__shrink_hive(sf_data, dead_worker.name):
+            sf_data.fwrite("Shrinking complete!")
+            return True  # successful hive shrinking
+
+        sf_data.fwrite("Care taking couldn't recover from worker failure...".format(stage))
+        return False
 
     def __init_recovery_protocol(self, sf_data: FileData, mock: Dict[int, SharedFilePart] = None) -> None:
         """
@@ -293,23 +294,29 @@ class Hivemind:
         :param Worker dead_worker: Worker instance to be removed to be forcefully disconnected
         :param int stage: number representing the discrete time step the simulation is currently at
         """
+        self.worker_status[dead_worker.name] = Status.OFFLINE
+
+        sf_failures: List[str] = []
         sf_parts: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
         sf_parts_dict = sf_parts.items()
 
-        self.worker_status[dead_worker.name] = Status.OFFLINE
-
-        sf_to_drop: List[str] = []
         for sf_name, sf_id_sfp_dict in sf_parts_dict:
             sf_data: FileData = self.sf_data[sf_name]
-            threshold: int = sf_data.get_failure_threshold()
-            if len(sf_id_sfp_dict) > threshold:
-                sf_to_drop.append(sf_name)
-                sf_data.fwrite("Failure stage {}. {} had more than {} parts\n".format(stage, dead_worker.name, threshold))
+            sf_data.fwrite("Worker: '{}' was removed at stage {}.".format(dead_worker.name, stage))
+
+            if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
+                sf_failures.append(sf_name)
+                sf_data.fwrite("Worker had too many parts... file lost!")
                 self.__workers_stop_tracking_shared_file(sf_data)
-            else:
-                self.__care_taking(stage, sf_data, dead_worker)
+                continue  # Verify remaining shared files kept by the dead worker
+
+            if self.__care_taking(stage, sf_data, dead_worker):
                 self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
-        self.__hivemind_stops_tracking_shared_files(sf_to_drop)
+            else:
+                sf_failures.append(sf_name)
+                self.__workers_stop_tracking_shared_file(sf_data)
+
+        self.__hivemind_stops_tracking_shared_files(sf_failures)
 
     def __process_stage_results(self, stage: int) -> None:
         """
@@ -396,23 +403,29 @@ class Hivemind:
         labels: List[str]
         replacing_worker: Optional[Worker]
         replacement_dict: Dict[str, str]
+
+        sf_data.fwrite("Attempting to find a node replacement...")
         labels, replacing_worker, replacement_dict = self.__find_replacement_node(sf_data, dead_worker.name)
+
         if replacement_dict:
-            sf_data.commit_heal(replacement_dict)
+            sf_data.fwrite("Committing the replacement of nodes: {}".format(str(replacement_dict)))
+            sf_data.commit_replacement(replacement_dict)
             self.__inherit_routing_table(sf_data.file_name, dead_worker, replacing_worker, replacement_dict)
             self.__update_routing_tables(sf_data.file_name, labels, replacement_dict)
+        else:
+            sf_data.fwrite("No replacement found...")
+
         return replacement_dict
 
     def __find_replacement_node(self, sf_data: FileData, dw_name: str) -> Tuple[List[str], Optional[Worker], Dict[str, str]]:
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
-        :param FileData sf_data: reference to FileData instance object whose fields need to be updatedd
+        :param FileData sf_data: reference to FileData instance object whose fields need to be updated
         :param str dw_name: name of the worker to be dropped from desired distribution, etc...
         :returns Tuple[List[str], Optional[Worker], Dict[str, str]]: key pair of dead_worker_name : replacement_worker_name or None
         """
         labels = [*sf_data.desired_distribution.index]
         dict_items = self.workers_uptime.items()
-
         if len(labels) == len(dict_items):
             return [], None, {}  # before a worker's disconnection the hive already had all existing network workers
 
@@ -425,7 +438,18 @@ class Hivemind:
 
         return [], None, {}  # no replacement was found, all possible replacements seem to be offline or suspected
 
-    def __contract_hive(self, sf_data: FileData, dw_name: str) -> bool:
+    def __shrink_hive(self, sf_data: FileData, dw_name: str) -> bool:
+        """
+        :param FileData sf_data: reference to FileData instance object whose fields need to be updated
+        :param str dw_name: name of the worker to be dropped from desired distribution, etc...
+        :returns bool: False if shrinking is not possible, True if shrinking was successful
+        """
+        sf_data.fwrite("Attempting to shrink the hive...")
+
+        if len(sf_data.desired_distribution) == 1:
+            sf_data.fwrite("Hive only had one working node, further shrinking is impossible... File lost!")
+            return False
+
         cropped_adj_matrix = self.__crop_adj_matrix(sf_data, dw_name)
         cropped_labels, cropped_ddv = self.__crop_desired_distribution(sf_data, dw_name)
         transition_matrix = mh.metropolis_algorithm(cropped_adj_matrix, cropped_ddv, column_major_out=True)
@@ -434,9 +458,9 @@ class Hivemind:
         sf_data.reset_distribution_data(cropped_labels, cropped_ddv)
         sf_data.reset_density_data()
         sf_data.reset_convergence_data()
+        sf_data.fwrite("Hive shrinking complete.")
         self.__set_routing_tables(sf_data.file_name, cropped_labels, transition_matrix)
-        # TODO future-iterations:
-        #  Deal with case where contraction is impossible
+
         return True
 
     def __crop_adj_matrix(self, sf_data: FileData, dw_name: str):

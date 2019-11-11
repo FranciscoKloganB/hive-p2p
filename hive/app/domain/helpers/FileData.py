@@ -50,7 +50,7 @@ class FileData:
     # endregion
 
     # region instance methods
-    def commit_heal(self, replacement_dict):
+    def commit_replacement(self, replacement_dict):
         self.replace_distribution_node(replacement_dict)
         self.reset_density_data()
         self.reset_convergence_data()
