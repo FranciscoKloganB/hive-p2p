@@ -50,6 +50,11 @@ class FileData:
     # endregion
 
     # region instance methods
+    def commit_heal(self, replacement_dict):
+        self.replace_distribution_node(replacement_dict)
+        self.reset_density_data()
+        self.reset_convergence_data()
+
     def reset_adjacency_matrix(self, labels, adjacency_matrix):
         """
         :param labels: name of the workers that belong to this file's hive
