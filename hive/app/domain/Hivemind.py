@@ -157,7 +157,7 @@ class Hivemind:
         """
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
-        online_workers_list = self.__filter_and_map_online_workers()
+        online_workers_list: List[Worker] = self.__filter_and_map_online_workers()
         for stage in range(self.max_stages):
             online_workers_list = self.__remove_some_workers(online_workers_list, stage)
             for worker in online_workers_list:
@@ -203,8 +203,8 @@ class Hivemind:
 
     def receive_complaint(self, suspects_name: str) -> None:
         """
-        Registers a complaint on the named worker, if enough complaints are received, forces the worker to be ignored by
-        other workers.
+        Registers a complaint on the named worker, if enough complaints are received, broadcasts proper action to all
+        hives' workers to which the suspect belonged to.
         :param suspects_name: name of the worker which regards the complaint
         """
         # TODO future-iterations:
@@ -213,7 +213,7 @@ class Hivemind:
         #    2.1. find away of obtaining shared_file_names user had
         #    2.2. discover the files the node used to share, probably requires yet another sf_strucutre
         #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
-        log.warning("receive_complaint is only a mock. method needs to be implemented...")
+        log.warning("receive_complaint for {} is only a mock. method needs to be implemented...".format(suspects_name))
 
     def route_file_part(self, dest_worker_name: str, sf_part: SharedFilePart) -> Any:
         """
@@ -244,16 +244,13 @@ class Hivemind:
     # region helper methods
     # region setup
     def __init_file_data(
-            self, sf_name: str, adj_matrix: List[List[int]], desired_distribution: List[float], labels: List[str]):
+            self, sf_name: str, adj_matrix: List[List[int]], desired_distribution: List[float], labels: List[str]) -> None:
         """
-        :param sf_name: the name of the file to be tracked by the hivemind
-        :type str
-        :param adj_matrix: matrix with connections between nodes, 1 if possible to go from node i to j, else 0
-        :type list<list<int>>
-        :param desired_distribution: the desired distribution vector of the given named file
-        :type list<float>
-        :param labels: name of the workers belonging to the hive, i.e.: keepers or sharers of the files
-        :type list<str>
+        Creates a FileData instance and maps it to file name in the Hivemind's instance sf_data field dictionary
+        :param str sf_name: the name of the file to be tracked by the hivemind
+        :param List[List[int]] adj_matrix: matrix with connections between worker nodes
+        :param List[float] desired_distribution: the desired distribution vector of the given named file
+        :param List[str] labels: name of the workers belonging to the hive, i.e.: keepers or sharers of the files
         """
         sf_data = self.sf_data[sf_name]
         sf_data.adjacency_matrix = pd.DataFrame(adj_matrix, index=labels, columns=labels)
@@ -375,6 +372,7 @@ class Hivemind:
 
     def __hivemind_stops_tracking_shared_files(self, sf_names: List[str]) -> None:
         """
+        Removes all references to the named shared file from the Hivemind instance structures and fields.
         :param List[str] sf_names: shared file names that won't ever again be recoverable due to a worker's disconnect
         """
         for sf_name in sf_names:
@@ -418,12 +416,12 @@ class Hivemind:
         :param str dw_name: name of the worker to be dropped from desired distribution, etc...
         :returns Tuple[List[str], Optional[Worker], Dict[str, str]]: key pair of dead_worker_name : replacement_worker_name or None
         """
-        labels = [*sf_data.desired_distribution.index]
+        labels: List[str] = [*sf_data.desired_distribution.index]
         dict_items = self.workers_uptime.items()
         if len(labels) == len(dict_items):
             return [], None, {}  # before a worker's disconnection the hive already had all existing network workers
 
-        base_uptime = self.workers_uptime[dw_name] - 1.0
+        base_uptime: Optional[float] = self.workers_uptime[dw_name] - 1.0
         while base_uptime is not None:
             for rw_name, uptime in dict_items:
                 if self.worker_status[rw_name] == Status.ONLINE and rw_name not in labels and uptime > base_uptime:
@@ -434,6 +432,7 @@ class Hivemind:
 
     def __shrink_hive(self, sf_data: FileData, dw_name: str) -> bool:
         """
+        Reduces the size of the hive by one, by removing all references to the dead worker in the hive FileData instance
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
         :param str dw_name: name of the worker to be dropped from desired distribution, etc...
         :returns bool: False if shrinking is not possible, True if shrinking was successful
@@ -457,15 +456,12 @@ class Hivemind:
 
         return True
 
-    def __crop_adj_matrix(self, sf_data: FileData, dw_name: str):
+    def __crop_adj_matrix(self, sf_data: FileData, dw_name: str) -> List[List[int]]:
         """
         Generates a new desired distribution vector which is a subset of the original one.
-        :param sf_data: reference to FileData instance object whose fields need to be updated
-        :type domain.helpers.FileData
-        :param dw_name: name of the worker to be dropped from desired distribution, etc...
-        :type str
-        :return: surviving worker names and their new desired density
-        :rtype list<list<int>>
+        :param FileData sf_data: reference to FileData instance object whose fields need to be updated
+        :param str dw_name: name of the worker to be dropped from desired distribution, etc...
+        :returns List[List[float]] sf_data.desired_distribution: surviving worker names and their new desired density
         """
         sf_data.desired_distribution.drop(dw_name, axis='index', inplace=True)
         sf_data.desired_distribution.drop(dw_name, axis='columns', inplace=True)
@@ -487,22 +483,19 @@ class Hivemind:
     def __crop_desired_distribution(self, sf_data: FileData, w_name: str):
         """
         Generates a new desired distribution vector which is a subset of the original one.
-        :param sf_data: reference to FileData instance object whose fields need to be updatedd
-        :type domain.helpers.FileData
-        :param w_name: name of the worker to be dropped from desired distribution, etc...
-        :type str
-        :return: surviving worker names and their new desired density
-        :rtype list<string>, list<float>
+        :param FileData sf_data: reference to FileData instance object whose fields need to be updatedd
+        :param str w_name: name of the worker to be dropped from desired distribution, etc...
+        :return Tuple[List[str], List[float]]: surviving worker names and their new desired density
         """
         # get probability dead worker's density, 'share it' by remaining workers, then remove it from vector column
-        increment = \
+        increment: float = \
             sf_data.desired_distribution.at[w_name, DEFAULT_COLUMN] / (sf_data.desired_distribution.shape[0] - 1)
 
         sf_data.desired_distribution.drop(w_name, inplace=True)
         # fetch remaining labels and rows as found on the dataframe
-        new_labels = [*sf_data.desired_distribution.index]
-        new_values = [*sf_data.desired_distribution.iloc[:, 0]]
-        incremented_values = [value + increment for value in new_values]
+        new_labels: List[str] = [*sf_data.desired_distribution.index]
+        new_values: List[float] = [*sf_data.desired_distribution.iloc[:, 0]]
+        incremented_values: List[float] = [value + increment for value in new_values]
         return new_labels, incremented_values
     # endregion
 
@@ -516,10 +509,11 @@ class Hivemind:
         :param pd.DataFrame transition_matrix: labeled transition matrix to be splitted between named workers
         """
         for name in worker_names:
-            transition_vector = transition_matrix.loc[:, name]  # <label, value> pairs in column[worker_name]
+            transition_vector: pd.Series = transition_matrix.loc[:, name]  # <label, value> pairs in column[worker_name]
             self.workers[name].set_file_routing(sf_name, transition_vector)
 
-    def __inherit_routing_table(self, sf_name: str, dead_worker: Worker, new_worker: Worker, replacement_dict: Dict[str, str]) -> None:
+    def __inherit_routing_table(
+            self, sf_name: str, dead_worker: Worker, new_worker: Worker, replacement_dict: Dict[str, str]) -> None:
         """
         The new Worker instance receives the transition vector, of a shared file, of the disconnected Worker instance.
         The inheritance involves renaming a row within the column vector.
@@ -530,7 +524,7 @@ class Hivemind:
         """
         # TODO future-iterations:
         #  Obtain the transition vector w/o using dead_worker instance
-        dw_transition_vector = dead_worker.routing_table[sf_name]
+        dw_transition_vector: pd.DataFrame = dead_worker.routing_table[sf_name]
         new_worker.set_file_routing(sf_name, dw_transition_vector.rename(index=replacement_dict))
 
     def __update_routing_tables(self, sf_name: str, worker_names: List[str], replacement_dict: Dict[str, str]) -> None:
@@ -546,6 +540,7 @@ class Hivemind:
 
     def __remove_routing_tables(self, sf_name: str, worker_names: List[str]) -> None:
         """
+        Removes the routing tables w.r.t. the inputed shared file name for all listed workers' names
         :param str sf_name: name of the shared file to be removed from workers' routing tables
         :param List[str] worker_names: name of the workers that share the file
         """
@@ -561,8 +556,9 @@ class Hivemind:
 
     def __expand_uptime_range_search(self, current_uptime: float) -> Optional[float]:
         """
+        Decreases the minimum uptime required to accept a worker as replacement of some other disconnected worker
         :param float current_uptime: current acceptance criteria for a replacement node
-        :returns float: current_uptime - 10.0f, 0.0f or None
+        :returns Optional[float]: current_uptime - 10.0f, 0.0f or None
         """
         if current_uptime == 0.0:
             return None
@@ -573,7 +569,7 @@ class Hivemind:
 
     # region static methods
     @staticmethod
-    def random_j_index(i: int, size: int):
+    def random_j_index(i: int, size: int) -> int:
         """
         Returns a random index j, that is between [0, size) and is different than i
         :param int i: an index
