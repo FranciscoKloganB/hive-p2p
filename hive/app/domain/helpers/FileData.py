@@ -53,6 +53,7 @@ class FileData:
         accordingly
         :param Dict[str, str]replacement_dict: dictionary containing a mapping of key names to replace with value names
         """
+        self.replace_adjacency_node(replacement_dict)
         self.replace_distribution_node(replacement_dict)
         self.reset_density_data()
         self.reset_convergence_data()
@@ -90,7 +91,18 @@ class FileData:
         """
         self.convergence_data.save_sets_and_reset()
 
-    def replace_distribution_node(self, replacement_dict):
+    def replace_adjacency_node(self, replacement_dict: Dict[str, str]) -> None:
+        """
+        Replaces a row and a column label name with a new label on the FileData instance adjacency_matrix field
+        :param Dict[str, str] replacement_dict: old worker name, new worker name)
+        """
+        self.adjacency_matrix.rename(index=replacement_dict, columns=replacement_dict, inplace=True)
+
+    def replace_distribution_node(self, replacement_dict: Dict[str, str]) -> None:
+        """
+        Replaces a row label with a new label, on the FileData instance desired and current distribution fields
+        :param Dict[str, str] replacement_dict: old worker name, new worker name)
+        """
         self.desired_distribution.rename(index=replacement_dict, inplace=True)
         self.current_distribution.rename(index=replacement_dict, inplace=True)
 

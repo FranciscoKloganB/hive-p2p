@@ -14,7 +14,7 @@ from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from utils.randoms import excluding_randrange
 from domain.SharedFilePart import SharedFilePart
-from typing import List, Dict, Tuple, Optional, Union, Any
+from typing import cast, List, Dict, Tuple, Optional, Union, Any
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
 
@@ -437,16 +437,20 @@ class Hivemind:
         :param str dw_name: name of the worker to be dropped from desired distribution, etc...
         :returns bool: False if shrinking is not possible, True if shrinking was successful
         """
-        sf_data.fwrite("Attempting to shrink the hive...")
+        cropped_adj_matrix: List[List[int]]
+        cropped_labels: List[str]
+        cropped_ddv: List[float]
 
+        sf_data.fwrite("Attempting to shrink the hive...")
         if len(sf_data.desired_distribution) == 1:
             sf_data.fwrite("Hive only had one working node, further shrinking is impossible... File lost!")
             return False
 
         cropped_adj_matrix = self.__crop_adj_matrix(sf_data, dw_name)
         cropped_labels, cropped_ddv = self.__crop_desired_distribution(sf_data, dw_name)
-        transition_matrix = mh.metropolis_algorithm(cropped_adj_matrix, cropped_ddv, column_major_out=True)
-        transition_matrix = pd.DataFrame(transition_matrix, index=cropped_labels, columns=cropped_labels)
+        transition_matrix: np.ndarray = mh.metropolis_algorithm(cropped_adj_matrix, cropped_ddv, column_major_out=True)
+        transition_matrix: pd.DataFrame = pd.DataFrame(transition_matrix, index=cropped_labels, columns=cropped_labels)
+
         sf_data.reset_adjacency_matrix(cropped_labels, cropped_adj_matrix)
         sf_data.reset_distribution_data(cropped_labels, cropped_ddv)
         sf_data.reset_density_data()
@@ -463,22 +467,23 @@ class Hivemind:
         :param str dw_name: name of the worker to be dropped from desired distribution, etc...
         :returns List[List[float]] sf_data.desired_distribution: surviving worker names and their new desired density
         """
-        sf_data.desired_distribution.drop(dw_name, axis='index', inplace=True)
-        sf_data.desired_distribution.drop(dw_name, axis='columns', inplace=True)
+        sf_data.adjacency_matrix.drop(dw_name, axis='index', inplace=True)
+        sf_data.adjacency_matrix.drop(dw_name, axis='columns', inplace=True)
         # TODO After the first failure we must update the ADJ Matrix labels, that is causing an error
-        size = sf_data.desired_distribution.shape[0]
+        size = sf_data.adjacency_matrix.shape[0]
         for i in range(size):
             is_absorbent_or_transient = True
             for j in range(size):
                 # Ensure state i can reach and be reached by some other state j, where i != j
-                if sf_data.desired_distribution.iat[i, j] == 1 and i != j:
+                if sf_data.adjacency_matrix.iat[i, j] == 1 and i != j:
                     is_absorbent_or_transient = False
                     break
             if is_absorbent_or_transient:
                 j = Hivemind.random_j_index(i, size)
-                sf_data.desired_distribution.iat[i, j] = 1
-                sf_data.desired_distribution.iat[j, i] = 1
-        return sf_data.desired_distribution.values.tolist()
+                sf_data.adjacency_matrix.iat[i, j] = 1
+                sf_data.adjacency_matrix.iat[j, i] = 1
+        cropped_adj_matrix: List[List[int]] = cast(List[List[int]], sf_data.adjacency_matrix.values.tolist())
+        return cropped_adj_matrix
 
     def __crop_desired_distribution(self, sf_data: FileData, w_name: str):
         """
