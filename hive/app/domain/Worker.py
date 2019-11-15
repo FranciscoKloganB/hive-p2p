@@ -125,7 +125,7 @@ class Worker:
 
         for sf_name, sf_id_sfp_dict in sf_parts_dict:
 
-            tmp = {}
+            tmp: Dict[int, SharedFilePart] = {}
             sf_id_sfp_dict = sf_id_sfp_dict.items()
 
             for sf_id, sf_part in sf_id_sfp_dict:
@@ -144,6 +144,7 @@ class Worker:
     # region helpers
     def get_parts_count(self, sf_name: str) -> int:
         """
+        Counts how many parts the Worker instance has of the named shared file
         :param sf_name: name of the file kept by the Worker instance that must be counted
         :returns int: number of parts from the named shared file currently on the Worker instance
         """
@@ -151,13 +152,13 @@ class Worker:
 
     def get_next_state(self, sf_name: str) -> str:
         """
+        Selects the next destination for a shared file part
         :param str sf_name: the name of the file the part to be routed belongs to
         :returns str: the name of the worker to whom the file should be routed too
         """
-        routing_data = self.routing_table[sf_name]
-        row_labels = [*routing_data.index]  # gets the names of sharers as a list
-        # label_probabilities = [*routing_data.iloc[:, DEFAULT_COLUMN]]  # probabilities corresponding to labeled sharer
-        label_probabilities = [*routing_data.iloc[:, DEFAULT_COLUMN]]  # probabilities corresponding to labeled sharer
+        routing_data: pd.DataFrame = self.routing_table[sf_name]
+        row_labels: List[str] = [*routing_data.index]
+        label_probabilities: List[float] = [*routing_data.iloc[:, DEFAULT_COLUMN]]
         return np.random.choice(a=row_labels, p=label_probabilities).item()  # converts numpy.str to python str
     # endregion
 
@@ -168,15 +169,15 @@ class Worker:
         Obtains one ore more performance attributes for the Worker's instance machine
         :param *args: Variable length argument list. See below
         :keyword arg:
-        :arg 'cpu': system wide float detailing cpu usage as a percentage,
-        :arg 'cpu_count': number of non-logical cpu on the machine as an int
-        :arg 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
-        :arg 'mem': statistics about memory usage as a named tuple including the following fields (total, available),
+        :arg str 'cpu': system wide float detailing cpu usage as a percentage,
+        :arg str 'cpu_count': number of non-logical cpu on the machine as an int
+        :arg str 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
+        :arg str 'mem': statistics about memory usage as a named tuple including the following fields (total, available),
         expressed in bytes as floats
-        :arg 'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
+        :arg str'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
         :returns Dict[str, Any] detailing the usage of the respective key arg. If arg is invalid the value will be -1.
         """
-        results = {}
+        results: Dict[str, Any] = {}
         for arg in args:
             results[arg] = rT.get_value(arg)
         return results
@@ -194,7 +195,12 @@ class Worker:
     # region helpers
     def __update_shared_files_dict(
             self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
-
+        """
+        Creates a key value pair in the Worker instance shared_files field or updates the existing one with more parts
+        :param sf_id_sfp_dict: collection mapping part.id to SharedFilePart instances
+        :param sf_name: the named of the shared file
+        :param no_check: if integrity of the shared file parts in the dictionary need to be checked or not
+        """
         if (not no_check) and (self.__sf_id_sfp_dict_needs_fix(sf_id_sfp_dict)):
             # if check == True and if any part as an incorrect sha256, then, fix file and return
             self.init_recovery_protocol(sf_name)
@@ -205,7 +211,12 @@ class Worker:
             else:
                 self.shared_files[sf_name] = sf_id_sfp_dict
 
-    def __sf_id_sfp_dict_needs_fix(self, sf_id_sfp_dict: Dict[int, SharedFilePart]):
+    def __sf_id_sfp_dict_needs_fix(self, sf_id_sfp_dict: Dict[int, SharedFilePart]) -> bool:
+        """
+        Verifies the integrity of all shared file parts in the inputed dictionary
+        :param sf_id_sfp_dict: collection mapping part.id to SharedFilePart instances
+        :returns bool: True if any of the parts in the dictionary fails the integrity test, False if all are deemed OK
+        """
         for sfp in sf_id_sfp_dict.values():
             if crypto.sha256(sfp.part_data) != sfp.sha256:
                 return True
