@@ -2,9 +2,12 @@ import os
 import pandas as pd
 
 from math import ceil
-from typing import Dict
+from typing import Dict, Any, List
+
+from pandas import DataFrame
+
 from globals.globals import OUTFILE_ROOT
-from domain.helpers.ConvergenceData import ConvergenceData as cD
+from domain.helpers.ConvergenceData import ConvergenceData
 
 
 class FileData:
@@ -20,6 +23,7 @@ class FileData:
     :ivar ConvergenceData convergence_data: instance object with general information perteining the simulation
     :ivar pd.DataFrame adjacency_matrix: current hive members' connections
     """
+    current_distribution: DataFrame
 
     # region class variables, instance variables and constructors
     def __init__(self,
@@ -29,17 +33,17 @@ class FileData:
                  density: float = 0.0,
                  ddv: pd.DataFrame = None,
                  cdv: pd.DataFrame = None,
-                 convergence_data: cD = None,
+                 convergence_data: ConvergenceData = None,
                  adj_matrix: pd.DataFrame = None):
-        self.file_name = file_name
-        self.parts_count = parts_count
-        self.highest_density_node_label = node_name
-        self.highest_density_node_density = density
-        self.desired_distribution = ddv
-        self.current_distribution = cdv
-        self.convergence_data = convergence_data
-        self.adjacency_matrix = adj_matrix
-        self.out_file = open(os.path.join(OUTFILE_ROOT, self.file_name + ".out"), "w+")
+        self.file_name: str = file_name
+        self.parts_count: int = parts_count
+        self.highest_density_node_label: str = node_name
+        self.highest_density_node_density: float = density
+        self.desired_distribution: pd.DataFrame = ddv
+        self.current_distribution: pd.DataFrame = cdv
+        self.convergence_data: ConvergenceData = convergence_data
+        self.adjacency_matrix: pd.DataFrame = adj_matrix
+        self.out_file: Any = open(os.path.join(OUTFILE_ROOT, self.file_name + ".out"), "w+")
     # endregion
 
     # region instance methods
@@ -94,7 +98,7 @@ class FileData:
         """
         Delegates distribution comparison to ConvergenceData.equal_distributions static method
         """
-        return cD.equal_distributions(self.desired_distribution, self.current_distribution, self.parts_count)
+        return ConvergenceData.equal_distributions(self.desired_distribution, self.current_distribution.divide(self.parts_count))
 
     def get_failure_threshold(self) -> int:
         """
