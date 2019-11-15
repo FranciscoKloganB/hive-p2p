@@ -107,7 +107,7 @@ class Worker:
     def receive_parts(self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
         """
         Keeps incomming shared file parts along with the ones already owned by the Worker instance
-        :param Dict[int, SharedFilePart] sf_id_sfp_dict: mapping of shared file part id to SharedFileParts instances
+        :param dict sf_id_sfp_dict: mapping of shared file part id to SharedFileParts instances
         :param str sf_name: name of the file the parts belong to.
         :param bool no_check: wether or not method verifies sha256 of each part.
         """

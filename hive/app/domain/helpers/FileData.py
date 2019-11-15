@@ -126,6 +126,7 @@ class FileData:
         Writes to the out_file referenced by the FileData's instance out_file field in append mode
         :param str string
         """
+        print(string)
         self.out_file.write(string + "\n")
 
     def fclose(self) -> None:

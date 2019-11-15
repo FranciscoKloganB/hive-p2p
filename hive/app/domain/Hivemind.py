@@ -159,10 +159,13 @@ class Hivemind:
         """
         online_workers_list: List[Worker] = self.__filter_and_map_online_workers()
         for stage in range(self.max_stages):
+            print("------------------------\n{}".format(stage))
             online_workers_list = self.__remove_some_workers(online_workers_list, stage)
             for worker in online_workers_list:
                 worker.route_parts()
+            print("processing stage results:")
             self.__process_stage_results(stage)
+            print("------------------------")
 
     def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> bool:
         """
@@ -171,7 +174,8 @@ class Hivemind:
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         :param Worker dead_worker: instance object corresponding to the worker who left the network
         """
-        sf_data.fwrite("Initializing care taking process at stage {} due to worker '{}' death...")
+        sf_data.fwrite(
+            "Initializing care taking process at stage {} due to worker '{}' death...".format(stage, dead_worker.name))
         if self.__heal_hive(sf_data, dead_worker):
             sf_data.fwrite("Heal complete!")
             return True
@@ -200,6 +204,7 @@ class Hivemind:
         else:
             sf_data.fwrite("Asking best worker, {}, to initialize recovery protocols...".format(best_worker_name))
             worker.init_recovery_protocol(sf_data.file_name)
+            print("   Recovery complete...")
 
     def receive_complaint(self, suspects_name: str) -> None:
         """
@@ -291,23 +296,26 @@ class Hivemind:
         sf_parts: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
         sf_parts_dict = sf_parts.items()
 
-        for sf_name, sf_id_sfp_dict in sf_parts_dict:
-            sf_data: FileData = self.sf_data[sf_name]
-            sf_data.fwrite("Worker: '{}' was removed at stage {}.".format(dead_worker.name, stage))
+        if not sf_parts:
+            self.__care_taking(stage, sf_data, dead_worker)
+        else:
+            for sf_name, sf_id_sfp_dict in sf_parts_dict:
+                sf_data: FileData = self.sf_data[sf_name]
+                sf_data.fwrite("Worker: '{}' was removed at stage {}.".format(dead_worker.name, stage))
 
-            if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
-                sf_failures.append(sf_name)
-                sf_data.fwrite("Worker had too many parts... file lost!")
-                self.__workers_stop_tracking_shared_file(sf_data)
-                continue  # Verify remaining shared files kept by the dead worker
+                if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
+                    sf_failures.append(sf_name)
+                    sf_data.fwrite("Worker had too many parts... file lost!")
+                    self.__workers_stop_tracking_shared_file(sf_data)
+                    continue  # Verify remaining shared files kept by the dead worker
 
-            if self.__care_taking(stage, sf_data, dead_worker):
-                self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
-            else:
-                sf_failures.append(sf_name)
-                self.__workers_stop_tracking_shared_file(sf_data)
+                if self.__care_taking(stage, sf_data, dead_worker):
+                    self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
+                else:
+                    sf_failures.append(sf_name)
+                    self.__workers_stop_tracking_shared_file(sf_data)
 
-        self.__hivemind_stops_tracking_shared_files(sf_failures)
+            self.__hivemind_stops_tracking_shared_files(sf_failures)
 
     def __process_stage_results(self, stage: int) -> None:
         """
