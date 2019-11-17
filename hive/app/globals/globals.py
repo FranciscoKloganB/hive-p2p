@@ -1,15 +1,15 @@
 import os
 
-DEBUG = False
+DEBUG: bool = False
 
 # region integer constants
-READ_SIZE = 2048
-MIN_CONVERGENCE_THRESHOLD = 5
-DEFAULT_COLUMN = 0
+READ_SIZE: int = 2048
+MIN_CONVERGENCE_THRESHOLD: int = 5
+DEFAULT_COLUMN: int = 0
 # endregion
 
 # region path constants
-SHARED_ROOT = os.path.join(os.getcwd(), 'static', 'shared')
-OUTFILE_ROOT = os.path.join(os.getcwd(), 'static', 'outfiles')
-SIMULATION_ROOT = os.path.join(os.getcwd(), 'static', 'simfiles')
+SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
+OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
+SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 # endregion
