@@ -61,6 +61,7 @@ class Hivemind:
             # Distribute files before starting simulation
             self.__uniformly_assign_parts_to_workers(self.shared_files)
             # Remove references to shared file parts in self.shared_files, helping Garbage Collector memory management
+            log.warning(str(len(self.shared_files['powerglove'])))
             self.shared_files.clear()
     # endregion
 
@@ -166,11 +167,9 @@ class Hivemind:
         """
         online_workers_list: List[Worker] = self.__filter_and_map_online_workers()
         for stage in range(self.max_stages):
-            print("----------------------------\n{}".format(stage))
             online_workers_list = self.__remove_some_workers(online_workers_list, stage)
             for worker in online_workers_list:
                 worker.route_parts()
-            print("...processing stage results:")
             self.__process_stage_results(stage)
 
     def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> bool:
