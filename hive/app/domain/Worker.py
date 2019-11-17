@@ -16,7 +16,7 @@ class Worker:
     Defines a worker node on the P2P network.
     :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts kept by the worker instance
     :ivar str name: unique identifier of the worker instance on the network
-    :ivar Hivemind hivemind: supernode managing the Worker instance
+    :ivar Hivemind hivemind: super node managing the Worker instance
     :ivar Dict[str, pd.DataFrame] routing_table: maps file names with their state transition probabilities
     """
 
@@ -28,7 +28,7 @@ class Worker:
         self.routing_table: Dict[str, pd.DataFrame] = {}
     # endregion
 
-    # region overriden class methods
+    # region override class methods
     def __hash__(self):
         # allows a worker object to be used as a dictionary key
         return hash(str(self.name))
@@ -47,7 +47,6 @@ class Worker:
         """
         Reconstructs a file and then splits it into globals.READ_SIZE before redistributing them to the rest of the hive
         :param str sf_name: name of the shared file that needs to be reconstructed by the Worker instance
-        :type str
         """
         # TODO future-iterations:
         #  1. Recovery algorithm
@@ -94,7 +93,7 @@ class Worker:
         """
         Keeps a new, single, shared file part, along the ones already stored by the Worker instance
         :param SharedFilePart sfp: data class instance with data w.r.t. the shared file part and it's raw contents
-        :param bool no_check: wether or not method verifies sha256 of the received part
+        :param bool no_check: whether or not method verifies sha256 of the received part
         """
         if no_check or crypto.sha256(sfp.part_data) == sfp.sha256:
             if sfp.part_name not in self.shared_files:
@@ -106,10 +105,10 @@ class Worker:
 
     def receive_parts(self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
         """
-        Keeps incomming shared file parts along with the ones already owned by the Worker instance
+        Keeps incoming shared file parts along with the ones already owned by the Worker instance
         :param dict sf_id_sfp_dict: mapping of shared file part id to SharedFileParts instances
         :param str sf_name: name of the file the parts belong to.
-        :param bool no_check: wether or not method verifies sha256 of each part.
+        :param bool no_check: whether or not method verifies sha256 of each part.
         """
         if sf_name:
             self.__update_shared_files_dict(sf_id_sfp_dict, sf_name, no_check)
@@ -169,12 +168,12 @@ class Worker:
         Obtains one ore more performance attributes for the Worker's instance machine
         :param *args: Variable length argument list. See below
         :keyword arg:
-        :arg str 'cpu': system wide float detailing cpu usage as a percentage,
-        :arg str 'cpu_count': number of non-logical cpu on the machine as an int
-        :arg str 'cpu_avg': average system load over the last 1, 5 and 15 minutes as a tuple
-        :arg str 'mem': statistics about memory usage as a named tuple including the following fields (total, available),
+        :arg cpu: system wide float detailing cpu usage as a percentage,
+        :arg cpu_count: number of non-logical cpu on the machine as an int
+        :arg cpu_avg: average system load over the last 1, 5 and 15 minutes as a tuple
+        :arg mem: statistics about memory usage as a named tuple including the following fields (total, available),
         expressed in bytes as floats
-        :arg str'disk': get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
+        :arg disk: get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
         :returns Dict[str, Any] detailing the usage of the respective key arg. If arg is invalid the value will be -1.
         """
         results: Dict[str, Any] = {}

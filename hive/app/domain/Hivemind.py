@@ -21,9 +21,10 @@ from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COL
 
 class Hivemind:
     """
-    Represents a Supernode of the P2P Network managing one or more hives
-    :cvar List[bool] TRUE_FALSE = static list containing bools, True on index 0 and False on index 1.
+    Representation of the P2P Network super node managing one or more hives
+    :cvar List[bool] TRUE_FALSE: static list containing bool, True on index 0 and False on index 1.
     :ivar Dict[str, Worker] workers: maps workers' names to their object instances
+    :ivar Dict[str, List[FileData]] workers_hives: maps workers' names to hives they are known to belong to
     :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
     :ivar Dict[Union[Worker, str], int] worker_status: maps workers or their names to their connectivity status
     :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts created by the Hivemind instance
@@ -57,13 +58,13 @@ class Hivemind:
             # For all shareable files, set that shared file_routing table
             self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
             # Distribute files before starting simulation
-            self.__uniformely_assign_parts_to_workers(self.shared_files)
+            self.__uniformly_assign_parts_to_workers(self.shared_files)
     # endregion
 
     # region domain.Worker related methods
     def __init_workers(self, worker_names: List[str]) -> None:
         """
-        Instantiates all worker objects within the inputed list
+        Instantiates all worker objects within the inputted list
         :param List[str] worker_names: names of the workers to be instantiated
         """
         for name in worker_names:
@@ -71,20 +72,20 @@ class Hivemind:
             self.workers[name] = worker
             self.worker_status[worker] = Status.ONLINE
 
-    def __uniformely_assign_parts_to_workers(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
+    def __uniformly_assign_parts_to_workers(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
         """
         Distributes received file parts over the Hive network.
         :param Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts
         """
         workers_objs: List[Worker] = self.__filter_and_map_online_workers()
         for file_name, part_number in shared_files.items():
-            # Retrive state labels from the file distribution vector
+            # Retrieve state labels from the file distribution vector
             worker_names: List[str] = [*self.sf_data[file_name].desired_distribution.index]
             # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
             # Do not change positions of file_sharers_names with worker_objs...
             choices: List[Worker] = [*filter(set(worker_names).__contains__, workers_objs)]
             for part in part_number.values():
-                # Randomly choose a destinatary worker from possible choices and give him the shared file part
+                # Randomly choose a worker from possible choices and give him the shared file part
                 np.random.choice(choices).receive_part(part, no_check=True)
     # endregion
 
@@ -243,7 +244,7 @@ class Hivemind:
         Hivemind redistributes shared files passed by requestor, e.g.: by a Worker instance before leaving the hive
         :param  Dict[str, SharedFilePart] shared_files: collection of file parts to be distributed by workers
         """
-        self.__uniformely_assign_parts_to_workers(shared_files)
+        self.__uniformly_assign_parts_to_workers(shared_files)
     # endregion
 
     # region helper methods
@@ -293,16 +294,21 @@ class Hivemind:
         self.worker_status[dead_worker.name] = Status.OFFLINE
 
         sf_failures: List[str] = []
+        sf_data: FileData
         sf_parts: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
         sf_parts_dict = sf_parts.items()
 
         if not sf_parts:
-            self.__care_taking(stage, sf_data, dead_worker)
+            for sf_name in worker_hives[dead_worker.name]:
+                sf_data = self.sf_data[sf_name]
+                if self.__care_taking(stage, sf_data, dead_worker):
+                    self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
+                else:
+                    sf_failures.append(sf_name)
+                    self.__workers_stop_tracking_shared_file(sf_data)
         else:
             for sf_name, sf_id_sfp_dict in sf_parts_dict:
-                sf_data: FileData = self.sf_data[sf_name]
-                sf_data.fwrite("Worker: '{}' was removed at stage {}.".format(dead_worker.name, stage))
-
+                sf_data = self.sf_data[sf_name]
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     sf_failures.append(sf_name)
                     sf_data.fwrite("Worker had too many parts... file lost!")
