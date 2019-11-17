@@ -422,7 +422,7 @@ class Hivemind:
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
         :param str dw_name: name of the worker to be dropped from desired distribution, etc...
-        :returns Tuple[List[str], Optional[Worker], Dict[str, str]]: key pair of dead_worker_name : replacement_worker_name or None
+        :returns Tuple[List[str], Optional[Worker], Dict[str, str]]: labels, new_worker, old_worker_name:new_worker_name
         """
         labels: List[str] = [*sf_data.desired_distribution.index]
         dict_items = self.workers_uptime.items()
