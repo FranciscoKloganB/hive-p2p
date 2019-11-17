@@ -311,7 +311,8 @@ class Hivemind:
                     sf_data.fclose("Worker had too many parts... file lost!")
                     sf_failures.add(sf_name)
                 else:
-                    sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures)
+                    sf_failures = \
+                        self.__try_care_taking(stage, dead_worker, sf_data, sf_failures, recover=sf_id_sfp_dict)
         self.__stop_tracking_failed_hives(sf_failures)
         self.__stop_tracking_worker(dead_worker.name)
         self.workers_status[dead_worker.name] = Status.OFFLINE
@@ -536,7 +537,7 @@ class Hivemind:
 
     def __update_routing_tables(self, sf_name: str, worker_names: List[str], replacement_dict: Dict[str, str]) -> None:
         """
-        Updates the routing tables w.r.t. the inputed shared file name for all listed workers' names without altering
+        Updates the routing tables w.r.t. the inputted shared file name for all listed workers' names without altering
         their transition_vectors.
         :param str sf_name: name of the shared file
         :param List[str] worker_names: name of the workers that share the file
@@ -547,7 +548,7 @@ class Hivemind:
 
     def __remove_routing_tables(self, sf_name: str, worker_names: List[str]) -> None:
         """
-        Removes the routing tables w.r.t. the inputed shared file name for all listed workers' names
+        Removes the routing tables w.r.t. the inputted shared file name for all listed workers' names
         :param str sf_name: name of the shared file to be removed from workers' routing tables
         :param List[str] worker_names: name of the workers that share the file
         """
@@ -572,15 +573,21 @@ class Hivemind:
         current_uptime -= 10.0
         return current_uptime if current_uptime > 50.0 else 0.0
 
-    def __try_care_taking(self, stage: int, dead_worker: Worker, sf_data: FileData, sf_failures: Set[str]) -> Set[str]:
+    def __try_care_taking(
+            self, stage: int, dead_worker: Worker, sf_data: FileData, sf_failures: Set[str], recover: Dict[int, SharedFilePart] = None) -> Set[str]:
         """
         :param int stage: number representing the discrete time step the simulation is currently at
         :param Worker dead_worker: Worker instance that was removed from an hive
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
         :param Set[str] sf_failures: set of names that keep track of all failed hives
+        :param Dict[int, SharedFilePart] mock: recovery will be accomplished by passing files from dead to living worker
         :returns Set[str] sf_failures: unmodified or with new failed hive names
         """
-        if not self.__care_taking(stage, sf_data, dead_worker):
+        if self.__care_taking(stage, sf_data, dead_worker):
+            # TODO future-iterations:
+            #  call actual recovery protocol by not using mock and removing mock from __try_care_taking method signature
+            self.__init_recovery_protocol(sf_data, mock=recover) if recover else None
+        else:
             sf_data.fclose()
             sf_failures.add(sf_name)
         return sf_failures
