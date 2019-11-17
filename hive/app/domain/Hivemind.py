@@ -324,7 +324,7 @@ class Hivemind:
         """
         if stage == self.max_stages - 1:
             for sf_data in self.sf_datas.values():
-                sf_data.fwrite("Reached final stage... Executing tear down processes. Summary below:\n")
+                sf_data.fwrite("\nReached final stage... Executing tear down processes. Summary below:")
                 sf_data.convergence_data.save_sets_and_reset()
                 sf_data.fwrite(str(sf_data.convergence_data))
                 sf_data.fclose()
