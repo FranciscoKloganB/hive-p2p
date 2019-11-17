@@ -457,14 +457,11 @@ class Hivemind:
         cropped_labels, cropped_ddv = self.__crop_desired_distribution(sf_data, dw_name)
         transition_matrix: np.ndarray = mh.metropolis_algorithm(cropped_adj_matrix, cropped_ddv, column_major_out=True)
         transition_matrix: pd.DataFrame = pd.DataFrame(transition_matrix, index=cropped_labels, columns=cropped_labels)
-
         sf_data.reset_adjacency_matrix(cropped_labels, cropped_adj_matrix)
         sf_data.reset_distribution_data(cropped_labels, cropped_ddv)
         sf_data.reset_density_data()
         sf_data.reset_convergence_data()
-        sf_data.fwrite("Hive shrinking complete.")
         self.__set_routing_tables(sf_data.file_name, cropped_labels, transition_matrix)
-
         return True
 
     def __crop_adj_matrix(self, sf_data: FileData, dw_name: str) -> List[List[int]]:
