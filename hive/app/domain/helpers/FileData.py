@@ -135,3 +135,17 @@ class FileData:
         """
         self.out_file.close()
     # endregion
+
+    # region override class methods
+    def __hash__(self):
+        # allows a worker object to be used as a dictionary key
+        return hash(str(self.file_name))
+
+    def __eq__(self, other):
+        if not isinstance(other, FileData):
+            return False
+        return self.file_name == other.file_name
+
+    def __ne__(self, other):
+        return not(self == other)
+    # endregion
