@@ -302,9 +302,7 @@ class Hivemind:
         if not shared_files:  # if dead worker had no shared files on him just try to replace node or shrink the hive
             for sf_data in worker_hives[dead_worker.name]:
                 sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.name, stage))
-                if not self.__care_taking(stage, sf_data, dead_worker):
-                    sf_data.fclose()
-                    sf_failures.append(sf_data.file_name)
+                sf_failures = __try_care_taking(stage, dead_worker, sf_data, sf_failures)
         else:  # otherwise see if a failure has happened before doing anything else
             for sf_name, sf_id_sfp_dict in shared_files.items():
                 sf_data = self.sf_datas[sf_name]
@@ -312,11 +310,9 @@ class Hivemind:
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     self.__workers_stop_tracking_shared_file(sf_data)
                     sf_data.fclose("Worker had too many parts... file lost!")
-                    sf_failures.append(sf_name)
-                    continue
-                if not self.__care_taking(stage, sf_data, dead_worker):
-                    sf_data.fclose()
-                    sf_failures.append(sf_name)
+                    sf_failures.add(sf_name)
+                else:
+                    sf_failures = __try_care_taking(stage, dead_worker, sf_data, sf_failures)
         self.__stop_tracking_failed_hives(sf_failures)
         self.__stop_tracking_worker(dead_worker.name)
         self.worker_status[dead_worker.name] = Status.OFFLINE
@@ -399,7 +395,7 @@ class Hivemind:
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
-        :param Worker dead_worker: The worker to be droppedd from desired distribution, etc...
+        :param Worker dead_worker: The worker to be dropped from desired distribution, etc...
         :returns Dict[str, str] replacement_dict: if no viable replacement was found, the dict will be empty
         """
         labels: List[str]
@@ -498,7 +494,7 @@ class Hivemind:
     def __crop_desired_distribution(self, sf_data: FileData, w_name: str):
         """
         Generates a new desired distribution vector which is a subset of the original one.
-        :param FileData sf_data: reference to FileData instance object whose fields need to be updatedd
+        :param FileData sf_data: reference to FileData instance object whose fields need to be updated
         :param str w_name: name of the worker to be dropped from desired distribution, etc...
         :return Tuple[List[str], List[float]]: surviving worker names and their new desired density
         """
@@ -507,7 +503,7 @@ class Hivemind:
             sf_data.desired_distribution.at[w_name, DEFAULT_COLUMN] / (sf_data.desired_distribution.shape[0] - 1)
 
         sf_data.desired_distribution.drop(w_name, inplace=True)
-        # fetch remaining labels and rows as found on the dataframe
+        # fetch remaining labels and rows as found on the data frame
         new_labels: List[str] = [*sf_data.desired_distribution.index]
         new_values: List[float] = [*sf_data.desired_distribution.iloc[:, 0]]
         incremented_values: List[float] = [value + increment for value in new_values]
@@ -579,6 +575,19 @@ class Hivemind:
             return None
         current_uptime -= 10.0
         return current_uptime if current_uptime > 50.0 else 0.0
+
+    def __try_care_taking(self, stage: int, dead_worker: Worker, sf_data: FileData, sf_failures: Set[str]) -> Set[str]:
+        """
+        :param int stage: number representing the discrete time step the simulation is currently at
+        :param Worker dead_worker: Worker instance that was removed from an hive
+        :param FileData sf_data: reference to FileData instance object whose fields need to be updated
+        :param Set[str] sf_failures: set of names that keep track of all failed hives
+        :returns Set[str] sf_failures: unmodified or with new failed hive names
+        """
+        if not self.__care_taking(stage, sf_data, dead_worker):
+            sf_data.fclose()
+            sf_failures.add(sf_name)
+        return sf_failures
 
     def __stop_tracking_worker(self, worker_name: str) -> None:
         """
