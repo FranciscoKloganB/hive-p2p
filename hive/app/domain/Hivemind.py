@@ -317,7 +317,6 @@ class Hivemind:
                 if not self.__care_taking(stage, sf_data, dead_worker):
                     sf_data.fclose()
                     sf_failures.append(sf_name)
-
         self.__stop_tracking_failed_hives(sf_failures)
         self.__stop_tracking_worker(dead_worker.name)
         self.worker_status[dead_worker.name] = Status.OFFLINE
