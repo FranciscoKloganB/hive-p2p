@@ -305,7 +305,11 @@ class Hivemind:
         else:  # otherwise see if a failure has happened before doing anything else
             for sf_name, sf_id_sfp_dict in shared_files.items():
                 sf_data = self.sf_datas[sf_name]
-                sf_data.fwrite("Worker: '{}' was removed at stage {}".format(dead_worker.name, stage))
+                sf_data.fwrite(
+                    "Worker: '{}' was removed at stage {}, he had {} parts of file {}".format(
+                        dead_worker.name, stage, len(sf_id_sfp_dict), sf_name
+                    )
+                )
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     self.__workers_stop_tracking_shared_file(sf_data)
                     sf_data.fclose("Worker had too many parts... file lost!")
