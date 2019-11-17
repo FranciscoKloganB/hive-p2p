@@ -84,7 +84,7 @@ class Worker:
         if no_check or crypto.sha256(sfp.part_data) == sfp.sha256:
             if sfp.part_name not in self.shared_files:
                 self.shared_files[sfp.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
-            self.shared_files[sfp.part_name][sfp.part_id] = sfp
+            self.shared_files[sfp.part_name][sfp.part_number] = sfp
         else:
             print("part_name: {}, part_number: {} - corrupted".format(sfp.part_name, str(sfp.part_number)))
             self.init_recovery_protocol(sfp.part_name)
@@ -106,14 +106,9 @@ class Worker:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
         """
-        sf_parts_dict = self.shared_files.items()
-
-        for sf_name, sf_id_sfp_dict in sf_parts_dict:
-
+        for sf_name, sf_id_sfp_dict in self.shared_files.items():
             tmp: Dict[int, SharedFilePart] = {}
-            sf_id_sfp_dict = sf_id_sfp_dict.items()
-
-            for sf_id, sf_part in sf_id_sfp_dict:
+            for sf_id, sf_part in sf_id_sfp_dict.items():
                 dest_worker = self.get_next_state(sf_name=sf_name)
                 if dest_worker == self.name:
                     tmp[sf_id] = sf_part  # store <sf_id, sf_part> pair in tmp dict, we don't need to send to ourselves
@@ -122,8 +117,7 @@ class Worker:
                     if response_code != HttpCodes.OK:
                         self.hivemind.receive_complaint(dest_worker)
                         tmp[sf_id] = sf_part  # store <sf_id, sf_part>, original destination doesn't respond
-
-            self.shared_files[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmited
+            self.shared_files[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmitted
     # endregion
 
     # region helpers
