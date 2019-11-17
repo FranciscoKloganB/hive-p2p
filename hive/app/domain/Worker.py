@@ -28,20 +28,6 @@ class Worker:
         self.routing_table: Dict[str, pd.DataFrame] = {}
     # endregion
 
-    # region override class methods
-    def __hash__(self):
-        # allows a worker object to be used as a dictionary key
-        return hash(str(self.name))
-
-    def __eq__(self, other):
-        if isinstance(other, str):
-            return self.name == other
-        return (self.hivemind, self.name) == (other.hivemind, other.name)
-
-    def __ne__(self, other):
-        return not(self == other)
-    # endregion
-
     # region file recovery methods
     def init_recovery_protocol(self, sf_name: str) -> None:
         """
@@ -212,7 +198,7 @@ class Worker:
 
     def __sf_id_sfp_dict_needs_fix(self, sf_id_sfp_dict: Dict[int, SharedFilePart]) -> bool:
         """
-        Verifies the integrity of all shared file parts in the inputed dictionary
+        Verifies the integrity of all shared file parts in the inputted dictionary
         :param sf_id_sfp_dict: collection mapping part.id to SharedFilePart instances
         :returns bool: True if any of the parts in the dictionary fails the integrity test, False if all are deemed OK
         """
@@ -221,4 +207,18 @@ class Worker:
                 return True
         return False
 
+    # endregion
+
+    # region override class methods
+    def __hash__(self):
+        # allows a worker object to be used as a dictionary key
+        return hash(str(self.name))
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.name == other
+        return (self.hivemind, self.name) == (other.hivemind, other.name)
+
+    def __ne__(self, other):
+        return not(self == other)
     # endregion
