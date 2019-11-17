@@ -46,7 +46,7 @@ class Hivemind:
             json_obj: Any = json.load(input_file)
             # Init basic simulation variables
             self.shared_files: Dict[str, Dict[int, SharedFilePart]] = {}
-            self.sf_data: Dict[str, FileData] = {}
+            self.sf_datas: Dict[str, FileData] = {}
             self.workers: Dict[str, Worker] = {}
             self.worker_status: Dict[Union[Worker, str], Any] = {}
             self.workers_hives: Dict[str, Set[FileData]] = {}
@@ -84,14 +84,14 @@ class Hivemind:
         workers_objs: List[Worker] = self.__filter_and_map_online_workers()
         for file_name, part_number in shared_files.items():
             # Retrieve state labels from the file distribution vector
-            worker_names: List[str] = [*self.sf_data[file_name].desired_distribution.index]
+            worker_names: List[str] = [*self.sf_datas[file_name].desired_distribution.index]
             # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
             # Do not change positions of file_sharers_names with worker_objs...
             choices: List[Worker] = [*filter(set(worker_names).__contains__, workers_objs)]
             for part in part_number.values():
                 # Randomly choose a worker from possible choices and give him the shared file part
                 worker = np.random.choice(choices)
-                self.workers_hives[worker.name].add(self.sf_data[part.part_name])
+                self.workers_hives[worker.name].add(self.sf_datas[part.part_name])
                 worker.receive_part(part, no_check=True)
     # endregion
 
@@ -124,7 +124,7 @@ class Hivemind:
                     # Keeps track of how many parts the file was divided into
                     self.shared_files[sf_name] = file_parts
                     break
-            self.sf_data[sf_name] = FileData(file_name=sf_name, parts_count=part_number)
+            self.sf_datas[sf_name] = FileData(file_name=sf_name, parts_count=part_number)
     # endregion
 
     # region metropolis hastings and transition vector assignment methods
@@ -166,13 +166,12 @@ class Hivemind:
         """
         online_workers_list: List[Worker] = self.__filter_and_map_online_workers()
         for stage in range(self.max_stages):
-            print("------------------------\n{}".format(stage))
+            print("----------------------------\n{}".format(stage))
             online_workers_list = self.__remove_some_workers(online_workers_list, stage)
             for worker in online_workers_list:
                 worker.route_parts()
-            print("processing stage results:")
+            print("...processing stage results:")
             self.__process_stage_results(stage)
-            print("------------------------")
 
     def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> bool:
         """
@@ -264,7 +263,7 @@ class Hivemind:
         :param List[float] desired_distribution: the desired distribution vector of the given named file
         :param List[str] labels: name of the workers belonging to the hive, i.e.: keepers or sharers of the files
         """
-        sf_data = self.sf_data[sf_name]
+        sf_data = self.sf_datas[sf_name]
         sf_data.adjacency_matrix = pd.DataFrame(adj_matrix, index=labels, columns=labels)
         sf_data.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
         sf_data.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
@@ -298,7 +297,7 @@ class Hivemind:
         :param int stage: number representing the discrete time step the simulation is currently at
         """
         sf_data: FileData
-        sf_failures: List[str] = []
+        sf_failures: Set[str] = set()
         shared_files: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
         if not shared_files:  # if dead worker had no shared files on him
             for sf_data in worker_hives[dead_worker.name]:
@@ -307,7 +306,7 @@ class Hivemind:
                     sf_failures.append(sf_data.file_name)
         else:
             for sf_name, sf_id_sfp_dict in shared_files.items():
-                sf_data = self.sf_data[sf_name]
+                sf_data = self.sf_datas[sf_name]
                 sf_data.fwrite("Worker: '{}' was removed at stage {}".format(dead_worker.name, stage))
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     sf_failures.append(sf_name)
@@ -326,7 +325,7 @@ class Hivemind:
         :param int stage: number representing the discrete time step the simulation is currently at
         """
         if stage == self.max_stages - 1:
-            for sf_data in self.sf_data.values():
+            for sf_data in self.sf_datas.values():
                 sf_data.fwrite("Reached final stage... Executing tear down processes. Summary below:\n")
                 sf_data.convergence_data.save_sets_and_reset()
                 sf_data.fwrite(str(sf_data.convergence_data))
@@ -334,7 +333,7 @@ class Hivemind:
             exit(0)
         else:
             print("Stage {}".format(stage))
-            for sf_data in self.sf_data.values():
+            for sf_data in self.sf_datas.values():
                 # retrieve from each worker their part counts for current sf_name and update convergence data
                 self.__request_file_counts(sf_data)
                 # when all queries for a file are done, verify convergence for data.file_name
@@ -381,17 +380,16 @@ class Hivemind:
         # First ask workers to reset theirs, for safety, popping in hivemind structures is only done at a later point
         self.__remove_routing_tables(sf_name, hive_workers_names)
 
-    def __stop_tracking_failed_hives(self, sf_names: List[str]) -> None:
+    def __stop_tracking_failed_hives(self, sf_names: Set[str]) -> None:
         """
         Removes all references to the named shared file from the Hivemind instance structures and fields.
         :param List[str] sf_names: shared file names that won't ever again be recoverable due to a worker's disconnect
         """
         for sf_name in sf_names:
             try:
-                self.shared_files.pop(sf_name)
-                self.sf_data.pop(sf_name)
+                self.sf_datas.pop(sf_name)
             except KeyError as kE:
-                log.error("Key ({}) doesn't exist in hivemind's shared_files or sf_data dictionaries".format(sf_name))
+                log.error("Key ({}) doesn't exist in hivemind's or sf_data dictionaries".format(sf_name))
                 log.error("Key Error message: {}".format(str(kE)))
     # endregion
 
