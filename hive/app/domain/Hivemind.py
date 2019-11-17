@@ -299,12 +299,12 @@ class Hivemind:
         sf_data: FileData
         sf_failures: Set[str] = set()
         shared_files: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
-        if not shared_files:  # if dead worker had no shared files on him
+        if not shared_files:  # if dead worker had no shared files on him just try to replace node or shrink the hive
             for sf_data in worker_hives[dead_worker.name]:
                 sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.name, stage))
                 if not self.__care_taking(stage, sf_data, dead_worker):
                     sf_failures.append(sf_data.file_name)
-        else:
+        else:  # otherwise see if a failure has happened before doing anything else
             for sf_name, sf_id_sfp_dict in shared_files.items():
                 sf_data = self.sf_datas[sf_name]
                 sf_data.fwrite("Worker: '{}' was removed at stage {}".format(dead_worker.name, stage))
