@@ -297,16 +297,15 @@ class Hivemind:
         :param Worker dead_worker: Worker instance to be removed to be forcefully disconnected
         :param int stage: number representing the discrete time step the simulation is currently at
         """
-        sf_failures: List[str] = []
         sf_data: FileData
+        sf_failures: List[str] = []
         shared_files: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
 
-        if not shared_files:  # if dead worker had no shared files
+        if not shared_files:  # if dead worker had no shared files on him
             for sf_data in worker_hives[dead_worker.name]:
                 if not self.__care_taking(stage, sf_data, dead_worker):
-                    # If dead worker can't be replaced and hive can't be shrunk any further, stop tracking hive
-                    sf_failures.append(sf_data.file_name)
                     self.__workers_stop_tracking_shared_file(sf_data)
+                    sf_failures.append(sf_data.file_name)
         else:
             for sf_name, sf_id_sfp_dict in shared_files.items():
                 sf_data = self.sf_data[sf_name]
@@ -319,10 +318,10 @@ class Hivemind:
                 if self.__care_taking(stage, sf_data, dead_worker):
                     self.__init_recovery_protocol(sf_data, mock=shared_files[sf_name])
                 else:
-                    sf_failures.append(sf_name)
                     self.__workers_stop_tracking_shared_file(sf_data)
-            self.__hivemind_stops_tracking_shared_files(sf_failures)
-        self.__clear_worker_from_shared_file_structures(dead_worker.name)
+                    sf_failures.append(sf_name)
+        self.__stop_tracking_failed_hives(sf_failures)
+        self.__stop_tracking_worker(dead_worker.name)
         self.worker_status[dead_worker.name] = Status.OFFLINE
 
     def __process_stage_results(self, stage: int) -> None:
@@ -386,7 +385,7 @@ class Hivemind:
         # First ask workers to reset theirs, for safety, popping in hivemind structures is only done at a later point
         self.__remove_routing_tables(sf_name, hive_workers_names)
 
-    def __hivemind_stops_tracking_shared_files(self, sf_names: List[str]) -> None:
+    def __stop_tracking_failed_hives(self, sf_names: List[str]) -> None:
         """
         Removes all references to the named shared file from the Hivemind instance structures and fields.
         :param List[str] sf_names: shared file names that won't ever again be recoverable due to a worker's disconnect
@@ -586,7 +585,7 @@ class Hivemind:
         current_uptime -= 10.0
         return current_uptime if current_uptime > 50.0 else 0.0
 
-    def __clear_worker_from_shared_file_structures(self, worker_name: str) -> None:
+    def __stop_tracking_worker(self, worker_name: str) -> None:
         """
         Removes a worker name or instance key from workers_hives, workers_uptime and workers dictionaries. Hivemind will
         only keep a reference to the worker in workers_status, to simulate HttpCode responses. Calling this method will
