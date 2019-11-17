@@ -241,7 +241,7 @@ class Hivemind:
 
     def redistribute_file_parts(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
         """
-        Hivemind redistributes shared files passed by requestor, e.g.: by a Worker instance before leaving the hive
+        Hivemind redistributes shared files passed by requester, e.g.: by a Worker instance before leaving the hive
         :param  Dict[str, SharedFilePart] shared_files: collection of file parts to be distributed by workers
         """
         self.__uniformly_assign_parts_to_workers(shared_files)

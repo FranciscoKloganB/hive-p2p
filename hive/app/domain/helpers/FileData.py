@@ -18,7 +18,7 @@ class FileData:
     :ivar int parts_count: how many parts exist for the
     :ivar str highest_density_node_label: label of the highest density node
     :ivar float highest_density_node_density: file density for the highest density node
-    :ivar pd.Dataframe desired_distribution: file distribution hive members must achieve with independant realizations
+    :ivar pd.DataFrame desired_distribution: file distribution hive members must achieve with independent realizations
     :ivar pd.DataFrame current_distribution: tracks current of file distribution, updated at each discrete time step
     :ivar ConvergenceData convergence_data: instance object with general information perteining the simulation
     :ivar pd.DataFrame adjacency_matrix: current hive members' connections
@@ -49,9 +49,9 @@ class FileData:
     # region instance methods
     def commit_replacement(self, replacement_dict: Dict[str, str]) -> None:
         """
-        Replaces names of dead nodes in desired and current distribution dataframes and updates remaining structures
+        Replaces names of dead nodes in desired and current distribution data frames and updates remaining structures
         accordingly
-        :param Dict[str, str]replacement_dict: dictionary containing a mapping of key names to replace with value names
+        :param Dict[str, str] replacement_dict: dictionary containing a mapping of key names to replace with value names
         """
         self.replace_adjacency_node(replacement_dict)
         self.replace_distribution_node(replacement_dict)
@@ -124,7 +124,7 @@ class FileData:
     def fwrite(self, string: str) -> None:
         """
         Writes to the out_file referenced by the FileData's instance out_file field in append mode
-        :param str string
+        :param str string: a message to write to file
         """
         print(string)
         self.out_file.write(string + "\n")
