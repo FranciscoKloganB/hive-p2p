@@ -10,10 +10,10 @@ def metropolis_algorithm(
         a: List[List[int]], ddv: List[float], column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
     """
     Constructs a transition matrix with desired distribution as steady state
-    :param List[List[int]] a: any adjacency matrix (list of lits)
-    :param List[float]: a stochastic desired distribution vector
-    :param bool column_major_in: indicates wether adj_matrix given in input is in row or column major form
-    :param bool column_major_out: indicates wether to return transition_matrix output is in row or column major form
+    :param List[List[int]] a: any adjacency matrix
+    :param List[float] ddv: a stochastic desired distribution vector
+    :param bool column_major_in: indicates whether adj_matrix given in input is in row or column major form
+    :param bool column_major_out: indicates whether to return transition_matrix output is in row or column major form
     :returns np.ndarray transition_matrix: unlabeled transition matrix
     """
 
