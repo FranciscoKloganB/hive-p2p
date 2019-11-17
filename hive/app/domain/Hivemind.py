@@ -297,23 +297,18 @@ class Hivemind:
         :param Worker dead_worker: Worker instance to be removed to be forcefully disconnected
         :param int stage: number representing the discrete time step the simulation is currently at
         """
-        self.worker_status[dead_worker.name] = Status.OFFLINE
-
         sf_failures: List[str] = []
         sf_data: FileData
-        sf_parts: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
-        sf_parts_dict = sf_parts.items()
+        shared_files: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
 
-        if not sf_parts:
-            for sf_name in worker_hives[dead_worker.name]:
-                sf_data = self.sf_data[sf_name]
-                if self.__care_taking(stage, sf_data, dead_worker):
-                    self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
-                else:
-                    sf_failures.append(sf_name)
+        if not shared_files:  # if dead worker had no shared files
+            for sf_data in worker_hives[dead_worker.name]:
+                if not self.__care_taking(stage, sf_data, dead_worker):
+                    # If dead worker can't be replaced and hive can't be shrunk any further, stop tracking hive
+                    sf_failures.append(sf_data.file_name)
                     self.__workers_stop_tracking_shared_file(sf_data)
         else:
-            for sf_name, sf_id_sfp_dict in sf_parts_dict:
+            for sf_name, sf_id_sfp_dict in shared_files.items():
                 sf_data = self.sf_data[sf_name]
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     sf_failures.append(sf_name)
@@ -322,20 +317,13 @@ class Hivemind:
                     continue  # Verify remaining shared files kept by the dead worker
 
                 if self.__care_taking(stage, sf_data, dead_worker):
-                    self.__init_recovery_protocol(sf_data, mock=sf_parts[sf_name])
+                    self.__init_recovery_protocol(sf_data, mock=shared_files[sf_name])
                 else:
                     sf_failures.append(sf_name)
                     self.__workers_stop_tracking_shared_file(sf_data)
-
             self.__hivemind_stops_tracking_shared_files(sf_failures)
-
-    def __try_care_taking(self, sf_data: FileData) -> None:
-        """
-        Tries to fix the hive a worker belonged to by doing a node replacement or a network shrink. If both fail, asks
-        all workers on those hives to stop sharing the file
-        :param FileData sf_data: data class instance containing generalized information regarding a shared file
-        """
-        raise NotImplementedError
+        self.__clear_worker_from_shared_file_structures(dead_worker.name)
+        self.worker_status[dead_worker.name] = Status.OFFLINE
 
     def __process_stage_results(self, stage: int) -> None:
         """
@@ -597,6 +585,18 @@ class Hivemind:
             return None
         current_uptime -= 10.0
         return current_uptime if current_uptime > 50.0 else 0.0
+
+    def __clear_worker_from_shared_file_structures(self, worker_name: str) -> None:
+        """
+        Removes a worker name or instance key from workers_hives, workers_uptime and workers dictionaries. Hivemind will
+        only keep a reference to the worker in workers_status, to simulate HttpCode responses. Calling this method will
+        steadily increase performance of simulation as more and more nodes start to disconnect.
+        :param str worker_name: name of the worker to remove from Hivemind instance structures
+        """
+        self.workers.remove(worker_name)
+        self.workers_hives.remove(worker_name)
+        self.workers_uptime.remove(worker_name)
+
     # endregion
     # endregion
 
