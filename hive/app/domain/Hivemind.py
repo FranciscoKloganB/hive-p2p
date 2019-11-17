@@ -14,7 +14,7 @@ from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from utils.randoms import excluding_randrange
 from domain.SharedFilePart import SharedFilePart
-from typing import cast, List, Dict, Tuple, Optional, Union, Any
+from typing import cast, List, Set, Dict, Tuple, Optional, Union, Any
 from domain.helpers.ConvergenceData import ConvergenceData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
 
@@ -24,9 +24,9 @@ class Hivemind:
     Representation of the P2P Network super node managing one or more hives
     :cvar List[bool] TRUE_FALSE: static list containing bool, True on index 0 and False on index 1.
     :ivar Dict[str, Worker] workers: maps workers' names to their object instances
+    :ivar Dict[Union[Worker, str], int] worker_status: maps workers or their names to their connectivity status
     :ivar Dict[str, List[FileData]] workers_hives: maps workers' names to hives they are known to belong to
     :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
-    :ivar Dict[Union[Worker, str], int] worker_status: maps workers or their names to their connectivity status
     :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts created by the Hivemind instance
     :ivar Dict[str, FileData] sf_data: collection of information about the shared files managed by the Hivemind instance
     :ivar int max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
@@ -49,6 +49,7 @@ class Hivemind:
             self.sf_data: Dict[str, FileData] = {}
             self.workers: Dict[str, Worker] = {}
             self.worker_status: Dict[Union[Worker, str], Any] = {}
+            self.workers_hives: Dict[str, Set[FileData]] = {}
             self.workers_uptime: Dict[str, float] = json_obj['nodes_uptime']
             self.max_stages: int = json_obj['max_stages']
             # Create the P2P network nodes (domain.Workers) without any job
@@ -64,13 +65,14 @@ class Hivemind:
     # region domain.Worker related methods
     def __init_workers(self, worker_names: List[str]) -> None:
         """
-        Instantiates all worker objects within the inputted list
+        Instantiates all worker objects within the inputted list and updates some Hivemind instance fields
         :param List[str] worker_names: names of the workers to be instantiated
         """
         for name in worker_names:
             worker: Worker = Worker(self, name)
             self.workers[name] = worker
             self.worker_status[worker] = Status.ONLINE
+            self.workers_hives[name] = set()
 
     def __uniformly_assign_parts_to_workers(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
         """
@@ -86,7 +88,9 @@ class Hivemind:
             choices: List[Worker] = [*filter(set(worker_names).__contains__, workers_objs)]
             for part in part_number.values():
                 # Randomly choose a worker from possible choices and give him the shared file part
-                np.random.choice(choices).receive_part(part, no_check=True)
+                worker = np.random.choice(choices)
+                self.workers_hives[worker.name].add(self.sf_data[part.part_name])
+                worker.receive_part(part, no_check=True)
     # endregion
 
     # region file partitioning methods
@@ -322,6 +326,14 @@ class Hivemind:
                     self.__workers_stop_tracking_shared_file(sf_data)
 
             self.__hivemind_stops_tracking_shared_files(sf_failures)
+
+    def __try_care_taking(self, sf_data: FileData) -> None:
+        """
+        Tries to fix the hive a worker belonged to by doing a node replacement or a network shrink. If both fail, asks
+        all workers on those hives to stop sharing the file
+        :param FileData sf_data: data class instance containing generalized information regarding a shared file
+        """
+        raise NotImplementedError
 
     def __process_stage_results(self, stage: int) -> None:
         """
