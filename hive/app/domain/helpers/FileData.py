@@ -129,10 +129,13 @@ class FileData:
         print(string)
         self.out_file.write(string + "\n")
 
-    def fclose(self) -> None:
+    def fclose(self, string: str = None) -> None:
         """
         Closes the out_file referenced by the FileData's instance out_file field
+        :param str string: if filled, a message is written in append mode before closing the out_file
         """
+        if string:
+            self.fwrite(string)
         self.out_file.close()
     # endregion
 

@@ -303,6 +303,7 @@ class Hivemind:
             for sf_data in worker_hives[dead_worker.name]:
                 sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.name, stage))
                 if not self.__care_taking(stage, sf_data, dead_worker):
+                    sf_data.fclose()
                     sf_failures.append(sf_data.file_name)
         else:  # otherwise see if a failure has happened before doing anything else
             for sf_name, sf_id_sfp_dict in shared_files.items():
@@ -310,11 +311,13 @@ class Hivemind:
                 sf_data.fwrite("Worker: '{}' was removed at stage {}".format(dead_worker.name, stage))
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     self.__workers_stop_tracking_shared_file(sf_data)
+                    sf_data.fclose("Worker had too many parts... file lost!")
                     sf_failures.append(sf_name)
-                    sf_data.fwrite("Worker had too many parts... file lost!")
                     continue
                 if not self.__care_taking(stage, sf_data, dead_worker):
+                    sf_data.fclose()
                     sf_failures.append(sf_name)
+
         self.__stop_tracking_failed_hives(sf_failures)
         self.__stop_tracking_worker(dead_worker.name)
         self.worker_status[dead_worker.name] = Status.OFFLINE
@@ -374,7 +377,6 @@ class Hivemind:
         the Hivemind as well as the workers who were sharing its parts.
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
-        sf_data.fclose()
         hive_workers_names: List[str] = [*sf_data.desired_distribution.index]
         sf_name: str = str_copy(sf_data.file_name)  # Creates an hard copy (str) of the shared file name
         # First ask workers to reset theirs, for safety, popping in hivemind structures is only done at a later point
