@@ -312,7 +312,7 @@ class Hivemind:
                     self.__workers_stop_tracking_shared_file(sf_data)
                     sf_failures.append(sf_name)
                     sf_data.fwrite("Worker had too many parts... file lost!")
-                    continue  # Verify remaining shared files kept by the dead worker
+                    continue
                 if not self.__care_taking(stage, sf_data, dead_worker):
                     sf_failures.append(sf_name)
         self.__stop_tracking_failed_hives(sf_failures)
