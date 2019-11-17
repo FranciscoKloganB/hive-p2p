@@ -300,25 +300,21 @@ class Hivemind:
         sf_data: FileData
         sf_failures: List[str] = []
         shared_files: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
-
         if not shared_files:  # if dead worker had no shared files on him
             for sf_data in worker_hives[dead_worker.name]:
+                sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.name, stage))
                 if not self.__care_taking(stage, sf_data, dead_worker):
-                    self.__workers_stop_tracking_shared_file(sf_data)
                     sf_failures.append(sf_data.file_name)
         else:
             for sf_name, sf_id_sfp_dict in shared_files.items():
                 sf_data = self.sf_data[sf_name]
+                sf_data.fwrite("Worker: '{}' was removed at stage {}".format(dead_worker.name, stage))
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     sf_failures.append(sf_name)
                     sf_data.fwrite("Worker had too many parts... file lost!")
                     self.__workers_stop_tracking_shared_file(sf_data)
                     continue  # Verify remaining shared files kept by the dead worker
-
-                if self.__care_taking(stage, sf_data, dead_worker):
-                    self.__init_recovery_protocol(sf_data, mock=shared_files[sf_name])
-                else:
-                    self.__workers_stop_tracking_shared_file(sf_data)
+                if not self.__care_taking(stage, sf_data, dead_worker):
                     sf_failures.append(sf_name)
         self.__stop_tracking_failed_hives(sf_failures)
         self.__stop_tracking_worker(dead_worker.name)
