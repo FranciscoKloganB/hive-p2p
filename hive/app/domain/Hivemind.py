@@ -24,7 +24,7 @@ class Hivemind:
     Representation of the P2P Network super node managing one or more hives
     :cvar List[bool] TRUE_FALSE: static list containing bool, True on index 0 and False on index 1.
     :ivar Dict[str, Worker] workers: maps workers' names to their object instances
-    :ivar Dict[Union[Worker, str], int] worker_status: maps workers or their names to their connectivity status
+    :ivar Dict[Union[Worker, str], int] workers_status: maps workers or their names to their connectivity status
     :ivar Dict[str, List[FileData]] workers_hives: maps workers' names to hives they are known to belong to
     :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
     :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts created by the Hivemind instance
@@ -48,7 +48,7 @@ class Hivemind:
             self.shared_files: Dict[str, Dict[int, SharedFilePart]] = {}
             self.sf_datas: Dict[str, FileData] = {}
             self.workers: Dict[str, Worker] = {}
-            self.worker_status: Dict[Union[Worker, str], Any] = {}
+            self.workers_status: Dict[Union[Worker, str], Any] = {}
             self.workers_hives: Dict[str, Set[FileData]] = {}
             self.workers_uptime: Dict[str, float] = json_obj['nodes_uptime']
             self.max_stages: int = json_obj['max_stages']
@@ -73,7 +73,7 @@ class Hivemind:
         for name in worker_names:
             worker: Worker = Worker(self, name)
             self.workers[name] = worker
-            self.worker_status[worker] = Status.ONLINE
+            self.workers_status[worker] = Status.ONLINE
             self.workers_hives[name] = set()
 
     def __uniformly_assign_parts_to_workers(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
@@ -233,7 +233,7 @@ class Hivemind:
         :param SharedFilePart sf_part: the file part to send to specified worker
         :returns int: http codes based status of destination worker
         """
-        dest_status = self.worker_status[dest_worker_name]
+        dest_status = self.workers_status[dest_worker_name]
         if dest_status == Status.ONLINE:
             self.workers[dest_worker_name].receive_part(sf_part, no_check=True)
             return HttpCodes.OK
@@ -300,7 +300,7 @@ class Hivemind:
         sf_failures: Set[str] = set()
         shared_files: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
         if not shared_files:  # if dead worker had no shared files on him just try to replace node or shrink the hive
-            for sf_data in self.worker_hives[dead_worker.name]:
+            for sf_data in self.workers_hives[dead_worker.name]:
                 sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.name, stage))
                 sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures)
         else:  # otherwise see if a failure has happened before doing anything else
@@ -315,7 +315,7 @@ class Hivemind:
                     sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures)
         self.__stop_tracking_failed_hives(sf_failures)
         self.__stop_tracking_worker(dead_worker.name)
-        self.worker_status[dead_worker.name] = Status.OFFLINE
+        self.workers_status[dead_worker.name] = Status.OFFLINE
 
     def __process_stage_results(self, stage: int) -> None:
         """
@@ -344,7 +344,7 @@ class Hivemind:
         """
         worker_names = [*sf_data.desired_distribution.index]
         for name in worker_names:
-            if self.worker_status[name] != Status.ONLINE:
+            if self.workers_status[name] != Status.ONLINE:
                 sf_data.current_distribution.at[name, DEFAULT_COLUMN] = 0
             else:
                 worker = self.workers[name]  # get worker instance corresponding to name
@@ -431,7 +431,7 @@ class Hivemind:
         base_uptime: Optional[float] = self.workers_uptime[dw_name] - 1.0
         while base_uptime is not None:
             for rw_name, uptime in dict_items:
-                if self.worker_status[rw_name] == Status.ONLINE and rw_name not in labels and uptime > base_uptime:
+                if self.workers_status[rw_name] == Status.ONLINE and rw_name not in labels and uptime > base_uptime:
                     return safe_remove(labels, dw_name), self.workers[rw_name], {dw_name: rw_name}
             base_uptime = self.__expand_uptime_range_search(base_uptime)
 
@@ -564,7 +564,7 @@ class Hivemind:
         Filters and maps the workers' being managed by the Hivemind instance according to their Online statuses.
         :returns List[Worker]: objects whose status is online
         """
-        return [*map(lambda w: w[0], [*filter(lambda i: i[1] == Status.ONLINE, self.worker_status.items())])]
+        return [*map(lambda w: w[0], [*filter(lambda i: i[1] == Status.ONLINE, self.workers_status.items())])]
 
     def __expand_uptime_range_search(self, current_uptime: float) -> Optional[float]:
         """
