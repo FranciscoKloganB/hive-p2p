@@ -60,6 +60,8 @@ class Hivemind:
             self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
             # Distribute files before starting simulation
             self.__uniformly_assign_parts_to_workers(self.shared_files)
+            # Remove references to shared file parts in self.shared_files, helping Garbage Collector memory management
+            self.shared_files.clear()
     # endregion
 
     # region domain.Worker related methods
