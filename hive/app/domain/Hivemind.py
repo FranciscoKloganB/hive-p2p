@@ -136,7 +136,7 @@ class Hivemind:
 
     def __synthesize_shared_files_transition_matrices(self, shared_dict: Dict[str, Any]) -> None:
         """
-        Fetces all the vectors and matrices required to build an hive for each of the named shared files in shared_dict
+        Fetches all the vectors and matrices required to build an hive for each of the named shared files in shared_dict
         :param Dict[str, Any] shared_dict: collection of (shared_file_name, markov chain data) pairs
         """
         for ext_sf_name, markov_chain_data in shared_dict.items():
@@ -224,7 +224,7 @@ class Hivemind:
     def route_file_part(self, dest_worker_name: str, sf_part: SharedFilePart) -> Any:
         """
         Receives a shared file part and sends it to the given destination
-        :param str dest_worker_name: destinatary of the file part
+        :param str dest_worker_name: destination worker's name
         :param SharedFilePart sf_part: the file part to send to specified worker
         :returns int: http codes based status of destination worker
         """
@@ -287,7 +287,7 @@ class Hivemind:
 
     def __remove_worker(self, dead_worker: Worker, stage: int = None) -> None:
         """
-        Changes a Worker's status to Status.OFFLINE, it then register a file persistency failure or recovers accordingly
+        Changes a Worker's status to Status.OFFLINE, it then register a file persistence failure or recovers accordingly
         :param Worker dead_worker: Worker instance to be removed to be forcefully disconnected
         :param int stage: number representing the discrete time step the simulation is currently at
         """
@@ -345,7 +345,7 @@ class Hivemind:
 
     def __request_file_counts(self, sf_data: FileData) -> None:
         """
-        Updates inputed FileData.current_distribution with current density values for each worker sharing the file
+        Updates inputted FileData.current_distribution with current density values for each worker sharing the file
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
         worker_names = [*sf_data.desired_distribution.index]
@@ -374,8 +374,8 @@ class Hivemind:
     # region teardown
     def __workers_stop_tracking_shared_file(self, sf_data: FileData) -> None:
         """
-        Tears down the hive responsible of persisting the inputed shared file by removing all* references to it in both
-        the Hivemind aswell as the workers who were sharing its parts.
+        Tears down the hive responsible of persisting the inputted shared file by removing all* references to it in both
+        the Hivemind as well as the workers who were sharing its parts.
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
         sf_data.fclose()
