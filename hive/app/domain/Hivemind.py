@@ -352,7 +352,7 @@ class Hivemind:
 
     def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
         """
-        Delegates verification of equality w.r.t. current and desired_distributions to the inputed FileData instance
+        Delegates verification of equality w.r.t. current and desired_distributions to the inputted FileData instance
         :param int stage: number representing the discrete time step the simulation is currently at
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
@@ -361,7 +361,6 @@ class Hivemind:
             sf_data.convergence_data.cswc_increment(1)
             sf_data.convergence_data.try_append_to_convergence_set(stage)
         else:
-            print("Cswc reset at stage {}".format(stage))
             sf_data.convergence_data.save_sets_and_reset()
     # endregion
 
