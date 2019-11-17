@@ -302,7 +302,7 @@ class Hivemind:
         if not shared_files:  # if dead worker had no shared files on him just try to replace node or shrink the hive
             for sf_data in worker_hives[dead_worker.name]:
                 sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.name, stage))
-                sf_failures = __try_care_taking(stage, dead_worker, sf_data, sf_failures)
+                sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures)
         else:  # otherwise see if a failure has happened before doing anything else
             for sf_name, sf_id_sfp_dict in shared_files.items():
                 sf_data = self.sf_datas[sf_name]
@@ -312,7 +312,7 @@ class Hivemind:
                     sf_data.fclose("Worker had too many parts... file lost!")
                     sf_failures.add(sf_name)
                 else:
-                    sf_failures = __try_care_taking(stage, dead_worker, sf_data, sf_failures)
+                    sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures)
         self.__stop_tracking_failed_hives(sf_failures)
         self.__stop_tracking_worker(dead_worker.name)
         self.worker_status[dead_worker.name] = Status.OFFLINE
@@ -408,6 +408,7 @@ class Hivemind:
         if replacement_dict:
             sf_data.fwrite("Committing the replacement of nodes: {}".format(str(replacement_dict)))
             sf_data.commit_replacement(replacement_dict)
+            self.workers_hives[replacing_worker.name].add(sf_data)
             self.__inherit_routing_table(sf_data.file_name, dead_worker, replacing_worker, replacement_dict)
             self.__update_routing_tables(sf_data.file_name, labels, replacement_dict)
         else:
@@ -596,9 +597,9 @@ class Hivemind:
         steadily increase performance of simulation as more and more nodes start to disconnect.
         :param str worker_name: name of the worker to remove from Hivemind instance structures
         """
-        self.workers.remove(worker_name)
-        self.workers_hives.remove(worker_name)
-        self.workers_uptime.remove(worker_name)
+        self.workers.pop(worker_name)
+        self.workers_hives.pop(worker_name)
+        self.workers_uptime.pop(worker_name)
 
     # endregion
     # endregion
