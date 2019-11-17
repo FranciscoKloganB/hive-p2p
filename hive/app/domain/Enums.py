@@ -3,7 +3,7 @@ from enum import Enum
 
 class Status(Enum):
     """
-    Enumerator class used to represent if a given Worker or Supernode is online, offline among other possible status
+    Enumerator class used to represent if a given Worker or super node is online, offline among other possible status
     """
     SUSPECT: int = 1
     OFFLINE: int = 2
