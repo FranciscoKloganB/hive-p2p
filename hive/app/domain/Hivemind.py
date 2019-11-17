@@ -309,9 +309,9 @@ class Hivemind:
                 sf_data = self.sf_datas[sf_name]
                 sf_data.fwrite("Worker: '{}' was removed at stage {}".format(dead_worker.name, stage))
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
+                    self.__workers_stop_tracking_shared_file(sf_data)
                     sf_failures.append(sf_name)
                     sf_data.fwrite("Worker had too many parts... file lost!")
-                    self.__workers_stop_tracking_shared_file(sf_data)
                     continue  # Verify remaining shared files kept by the dead worker
                 if not self.__care_taking(stage, sf_data, dead_worker):
                     sf_failures.append(sf_name)
