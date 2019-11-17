@@ -20,7 +20,7 @@ class FileData:
     :ivar float highest_density_node_density: file density for the highest density node
     :ivar pd.DataFrame desired_distribution: file distribution hive members must achieve with independent realizations
     :ivar pd.DataFrame current_distribution: tracks current of file distribution, updated at each discrete time step
-    :ivar ConvergenceData convergence_data: instance object with general information perteining the simulation
+    :ivar ConvergenceData convergence_data: instance object with general information w.r.t. the simulation
     :ivar pd.DataFrame adjacency_matrix: current hive members' connections
     """
     current_distribution: DataFrame
