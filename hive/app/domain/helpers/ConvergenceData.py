@@ -10,7 +10,7 @@ class ConvergenceData:
     """
     Holds data that helps an domain.Hivemind keep track of converge in a simulation
     :ivar int cswc: indicates how many consecutive steps a file has in convergence
-    :ivar int largest_convergence_set: indicates the biggest set of consecutive steps throughout the simulaton for a file
+    :ivar int largest_convergence_set: indicates the biggest set of consecutive steps throughout the simulation for a file
     :ivar List[int] convergence_set: current consecutive set of stages in which a file has seen convergence
     :ivar List[List[int]] convergence_sets: Set of all convergence sets found for this file during simulation
     """
@@ -35,7 +35,7 @@ class ConvergenceData:
     def try_set_largest_convergence_set(self) -> None:
         """
         Verifies if the current convergence set is the largest of all seen so far, if it is, updates the ConvergenceData
-        instance field largest_convergence_set to be the lengh of the convergence_set
+        instance field largest_convergence_set to be the length of the convergence_set
         """
         set_len = len(self.convergence_set)
         if set_len > self.largest_convergence_set:
