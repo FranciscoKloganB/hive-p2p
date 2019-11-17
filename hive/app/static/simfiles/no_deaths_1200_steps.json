@@ -1,1 +1,0 @@
-{"max_stages": 1200, "nodes_uptime": {"a": 100.0, "b": 100.0, "c": 100.0, "d": 100.0}, "shared": {"powerglove.exe": {"state_labels": ["a", "b", "c", "d"], "adj_matrix": [[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]], "ddv": [0.2, 0.3, 0.5, 0]}}}
