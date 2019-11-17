@@ -166,12 +166,9 @@ if __name__ == "__main__":
     ]
 
     passed = 0
-    test_count = len(tests)
-
     for test in tests:
         if test():
             passed += 1
-
-    print("-------------\nPassed {} out of {} specified tests...\n-------------".format(passed, test_count))
+    print("-------------\nPassed {} out of {} specified tests...\n-------------".format(passed, len(tests)))
 
 # endregion lame unit testing
