@@ -300,7 +300,7 @@ class Hivemind:
         sf_failures: Set[str] = set()
         shared_files: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
         if not shared_files:  # if dead worker had no shared files on him just try to replace node or shrink the hive
-            for sf_data in worker_hives[dead_worker.name]:
+            for sf_data in self.worker_hives[dead_worker.name]:
                 sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.name, stage))
                 sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures)
         else:  # otherwise see if a failure has happened before doing anything else
