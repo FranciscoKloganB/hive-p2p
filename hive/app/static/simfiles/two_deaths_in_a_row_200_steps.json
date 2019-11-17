@@ -1,1 +1,1 @@
-{"max_stages": 400, "nodes_uptime": {"a": 0.0, "b": 99.999, "c": 99.999, "d": 99.999, "e":  0.0 }, "shared": {"powerglove.exe": {"state_labels": ["a", "b", "c", "d"], "adj_matrix": [[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]], "ddv": [0.2, 0.3, 0.35, 0.15]}}}
+{"max_stages": 100, "nodes_uptime": {"a": 0.0, "b": 99.999, "c": 99.999, "d": 99.999, "e":  0.0 }, "shared": {"powerglove.exe": {"state_labels": ["a", "b", "c", "d"], "adj_matrix": [[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]], "ddv": [0.2, 0.3, 0.35, 0.15]}}}
