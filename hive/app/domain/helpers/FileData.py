@@ -1,12 +1,10 @@
 import os
 import pandas as pd
+import numpy as np
 
 from math import ceil
 from typing import Dict, Any, List
-
-from pandas import DataFrame
-
-from globals.globals import OUTFILE_ROOT, DEBUG
+from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL
 from domain.helpers.ConvergenceData import ConvergenceData
 from tabulate import tabulate
 
@@ -110,13 +108,14 @@ class FileData:
         """
         Delegates distribution comparison to ConvergenceData.equal_distributions static method
         """
-        current_distribution_normalized = self.current_distribution.divide(self.parts_count)
+        normalized_cdv = self.current_distribution.divide(self.parts_count)
         if DEBUG:
             self.fwrite("Desired Distribution:\n{}\nCurrent Distribution:\n{}\n".format(
                 tabulate(self.desired_distribution, headers='keys', tablefmt='psql'),
-                tabulate(current_distribution_normalized, headers='keys', tablefmt='psql')
+                tabulate(normalized_cdv, headers='keys', tablefmt='psql')
             ))
-        return ConvergenceData.equal_distributions(self.desired_distribution, current_distribution_normalized)
+        return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1/self.parts_count))
+        # return ConvergenceData.equal_distributions(self.desired_distribution, normalized_cdv)
 
     def get_failure_threshold(self) -> int:
         """

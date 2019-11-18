@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Union, List
-from globals.globals import MIN_CONVERGENCE_THRESHOLD
+from globals.globals import MIN_CONVERGENCE_THRESHOLD, R_TOL, A_TOL
 
 
 class ConvergenceData:
@@ -44,7 +44,7 @@ class ConvergenceData:
     def try_append_to_convergence_set(self, stage: int) -> None:
         """
         Checks if the counter for consecutive stage convergence is bigger than the minimum threshold for verified
-        convergence and if it is, appends the inputed stage to the current convergence set
+        convergence and if it is, appends the inputted stage to the current convergence set
         :param stage:
         """
         if self.cswc >= MIN_CONVERGENCE_THRESHOLD:
@@ -74,7 +74,7 @@ class ConvergenceData:
         if len(one) != len(another):
             return False
         else:
-            return np.allclose(one, another, rtol=0.25, atol=1e-2)
+            return np.allclose(one, another, rtol=R_TOL, atol=A_TOL)
     # endregion
 
     # region overrides
@@ -91,7 +91,7 @@ class ConvergenceData:
     @staticmethod
     def recursive_len(item):
         if type(item) == list:
-            return sum(ConvergenceData.recursive_len(subitem) for subitem in item)
+            return sum(ConvergenceData.recursive_len(sub_item) for sub_item in item)
         else:
             return 1
     # endregion
