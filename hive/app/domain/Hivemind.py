@@ -334,8 +334,8 @@ class Hivemind:
                 sf_data.fclose()
             exit(0)
         else:
-            print("Stage {}".format(stage))
             for sf_data in self.sf_datas.values():
+                sf_data.fwrite("\nStage {}".format(stage))
                 # retrieve from each worker their part counts for current sf_name and update convergence data
                 self.__request_file_counts(sf_data)
                 # when all queries for a file are done, verify convergence for data.file_name
