@@ -24,7 +24,7 @@ class FileData:
     :ivar ConvergenceData convergence_data: instance object with general information w.r.t. the simulation
     :ivar pd.DataFrame adjacency_matrix: current hive members' connections
     """
-    
+
     # region class variables, instance variables and constructors
     def __init__(self,
                  file_name: str = "",
@@ -111,8 +111,11 @@ class FileData:
         Delegates distribution comparison to ConvergenceData.equal_distributions static method
         """
         current_distribution_normalized = self.current_distribution.divide(self.parts_count)
-        self.fwrite(tabulate(self.desired_distribution, headers='keys', tablefmt='psql'))
-        self.fwrite(tabulate(current_distribution_normalized, headers='keys', tablefmt='psql'))
+        if DEBUG:
+            self.fwrite("Desired Distribution:\n{}\nCurrent Distribution:\n{}\n".format(
+                tabulate(self.desired_distribution, headers='keys', tablefmt='psql'),
+                tabulate(current_distribution_normalized, headers='keys', tablefmt='psql')
+            ))
         return ConvergenceData.equal_distributions(self.desired_distribution, current_distribution_normalized)
 
     def get_failure_threshold(self) -> int:
