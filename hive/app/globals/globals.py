@@ -1,6 +1,6 @@
 import os
 
-DEBUG: bool = TRUE
+DEBUG: bool = True
 
 # region integer constants
 READ_SIZE: int = 2048
