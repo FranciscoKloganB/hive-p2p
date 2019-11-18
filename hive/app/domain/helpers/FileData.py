@@ -6,8 +6,9 @@ from typing import Dict, Any, List
 
 from pandas import DataFrame
 
-from globals.globals import OUTFILE_ROOT
+from globals.globals import OUTFILE_ROOT, DEBUG
 from domain.helpers.ConvergenceData import ConvergenceData
+from tabulate import tabulate
 
 
 class FileData:
@@ -23,8 +24,7 @@ class FileData:
     :ivar ConvergenceData convergence_data: instance object with general information w.r.t. the simulation
     :ivar pd.DataFrame adjacency_matrix: current hive members' connections
     """
-    current_distribution: DataFrame
-
+    
     # region class variables, instance variables and constructors
     def __init__(self,
                  file_name: str = "",
@@ -110,7 +110,10 @@ class FileData:
         """
         Delegates distribution comparison to ConvergenceData.equal_distributions static method
         """
-        return ConvergenceData.equal_distributions(self.desired_distribution, self.current_distribution.divide(self.parts_count))
+        current_distribution_normalized = self.current_distribution.divide(self.parts_count)
+        self.fwrite(tabulate(self.desired_distribution, headers='keys', tablefmt='psql'))
+        self.fwrite(tabulate(current_distribution_normalized, headers='keys', tablefmt='psql'))
+        return ConvergenceData.equal_distributions(self.desired_distribution, current_distribution_normalized)
 
     def get_failure_threshold(self) -> int:
         """
