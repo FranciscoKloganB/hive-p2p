@@ -1,0 +1,148 @@
+%% fsip2pnupsg.tex
+%% V0.1
+%% 2019/11/27
+%% by Francisco Barros
+
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}
+
+\usepackage{cite}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{optidef}
+\usepackage{subfigure}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{remark}[theorem]{Remark}
+
+\IEEEoverridecommandlockouts
+% This command is only needed if you want to use the \thanks command
+\overrideIEEEmargins
+% paper
+
+\title {File Survivability in P2P Networks using Probabilistic Swarm Guidance}
+\author {Francisco Barros, Daniel Silvestre and Carlos Silvestre
+\thanks {F. Barros is with the Instituto Superior Técnico, Universidade de  Lisboa, Lisbon, Portugal, {\tt\small fbarros@isr.ist.utl.pt}}
+\thanks {D. Silvestre is with the Department of Electrical and Computer Engineering of the Faculty of Science and Technology of the University of Macau, Macau, China, and with the Institute for Systems and Robotics, Instituto Superior T\'ecnico, Universidade de Lisboa, Lisbon, Portugal., {\tt\small dsilvestre@isr.ist.utl.pt}}
+\thanks {C. Silvestre is with the Department of Electrical and Computer Engineering of the Faculty of Science and Technology of the University of Macau, Macau, China, on leave from Instituto Superior T\'ecnico, Universidade de Lisboa, Lisboa, Portugal, {\tt\small csilvestre@umac.mo}}
+\thanks {This work was partially supported by the project MYRG2016-00097-FST of the University of Macau; by the Portuguese Fundação para a Ciência e a Tecnologia (FCT) through Institute for Systems and Robotics (ISR), under Laboratory for Robotics and Engineering Systems (LARSyS) project UID/EEA/50009/2019.}}
+
+
+\begin{document}
+\renewcommand{\baselinestretch}{1}
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+\begin{abstract}
+	\textbf{Qual o problema que vamos considerar}
+
+	\textbf{Principais desafios que o problema coloca}
+
+	\textbf{Abordagem utilizada}
+
+	\textbf{Resultados teóricos e em simulação}
+\end{abstract}
+
+\begin{keywords}
+	Agents-based Systems; Cooperative Control; Distributed control.
+\end{keywords}
+
+\section{Introduction}
+Peer-to-Peer (P2P) networking is a distributed systems architecture that can be broadly defined as a set of equally privileged peers that contribute with a portion of their resources in order to achieve common goals. Since the beginning of the century, these networks have gained popularity \cite{ssaroiu:msp2pfss} among file sharing and streaming applications, due to their adaptability, scalability, self-organized behavior, lack of centralization, among others. P2P networks can also be leveraged by communities for availability and storage purposes as peers can replicate each others' files decreasing the odds of file loss due to the failure of a small number of machines. On the other hand, the open and volatile nature of such networks makes security, efficiency and performance guarantee harder to accomplish.\newline
+
+\textbf{Qual a abordagem frequente e o porquê de estarmos a introduzir esta técnica:} todo\newline
+
+\textbf{literature survey de redes P2P principais:} procura por: survaviability, digital preservation, cloud computing\newline
+
+\textbf{The main contributions of this paper can be summarized as follows:}
+\begin{itemize}
+	\item colocar contribuicao
+	\item colocar contribuicao
+	\item colocar contribuicao
+\end{itemize}
+
+The remainder of this paper is organized as follows. In Section \ref{sec:problemstatement}, it is presented background material and defined the problem being addressed. The rendezvous algorithm for the multi-agent system with limited communication capabilities and uncertain agent position is given in Section \ref{sec:proposedsolution}. Section \ref{sec:convergence} presents results regarding the convergence and guarantees of the method while simulations are provided in Section \ref{sec:simulations}. Conclusions and directions of future work are offered in Section \ref{sec:conclusions}.
+
+\section{Problem statement} \label{sec:problemstatement}
+\textbf{definição objectiva do problema com as variáveis, limitações, etc}
+
+\textbf{aqui podes recorrer a figuras para ilustrar o problema}
+
+\section{Proposed Solution} \label{sec:proposedsolution}
+\textbf{definir a solução, algortimo, etc. também podes usar figuras}
+
+
+\textbf{podes usar pseudo code como o exemplo}
+
+\algsetup{indent=2em}
+
+\begin{algorithm}
+	\caption{Rendezvous algorithm for a non-connected network topology.}\label{alg:rendezvous}
+	\begin{algorithmic}[1]
+		\REQUIRE Size of strip $h$, mission plane limits and movement tolerance $\epsilon$.
+		\ENSURE Rendezvous of nodes to clusters.
+
+		\medskip
+		\STATE /* \textit{Initialize phase variable} */
+		\STATE $\textrm{phase} = 0$
+
+		\FOR{{\bf each} $k>0$}
+			\FOR{{\bf each} $i$}
+				\STATE /* \textit{Tower finds neighbor set $\mathcal{N}_{i}(k)$} */
+%				\STATE Compute $\mathcal{N}_{i}(k)$ using \eqref{eq:neighbors}
+				\STATE /* \textit{Send measurements to node $i$} */
+				\STATE Send $\{X_{j}(k): j \in \mathcal{N}_{i}(k)\}$ to node $i$
+				\STATE /* \textit{Node computes direction of movement} */
+%				\STATE Compute $v_{i}(k)$ using \eqref{eq:directionVector}
+				\IF{$\textrm{phase} == 1$}
+					\STATE /* \textit{Reverse $v_{i}(k)$ in Convergence Phase} */
+					\STATE $v_{i}(k) = -v_{i}(k)$
+				\ENDIF
+				\STATE /* \textit{Node finds step size} */
+%				\STATE Find $a_{i}(k)$ using \eqref{eq:stepsize}
+				\STATE /* \textit{Move action} */
+%				\STATE Update position using \eqref{eq:update}
+			\ENDFOR
+			\STATE /* \textit{Tower checks movements} */
+			\IF{$\textrm{totalMovement} \leq \epsilon$}
+				\STATE $\textrm{phase} = 1$
+			\ENDIF
+		\ENDFOR
+	\end{algorithmic}
+\end{algorithm}
+
+\section{Convergence Analysis} \label{sec:convergence}
+\textbf{esta para já não é para mexer}
+
+\section{Simulation Results} \label{sec:simulations}
+\textbf{descrever o setup das simulações}
+
+\textbf{descrever o que se pode observar dos gráficos apresentados e que é relevante}
+
+\textbf{devemos mostrar casos que consideremos utéis. Por exemplo v>= 0 e v>0 têm de aparecer, com o sem matriz de markov óptima, etc}
+
+\textbf{codigo exemplo para adicionar figuras}
+\begin{figure}
+	\centering
+%	\includegraphics[scale=0.65, trim=100 265 115 255, clip=true]{images/simulation200.pdf}
+	\caption{Statistics of the final number of clusters in 200 simulations using the number of nodes ranging from 3 to 40.}
+	\label{fig:sim200}
+\end{figure}
+
+
+\section{Conclusions and Future Work} \label{sec:conclusions}
+\textbf{descrever sumario do que se falou no paper}
+
+\textbf{principais resultados e conclusões das simulações}
+
+\textbf{direcções de trabalho futuro.}
+
+\bibliographystyle{unsrt}
+\bibliography{p2p}
+
+\end{document}
