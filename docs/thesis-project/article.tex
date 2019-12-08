@@ -31,7 +31,7 @@
 %%%%%%%%%%%%%%%%
 % BEGIN HEADER %
 %%%%%%%%%%%%%%%%
-\title {Hives: File Survivability in P2P Networks using Probabilistic Swarm Guidance
+\title {Hives: File Survivability in P2P using Probabilistic Swarm Guidance
 \thanks{This work has the support of the project MYRG2016-00097-FST of the University of Macau; by the Portuguese Fundação para a Ciência e a Tecnologia (FCT) through Institute for Systems and Robotics (ISR), under Laboratory for Robotics and Engineering Systems (LARSyS) project UID/EEA/50009/2019.}
 }
 \titlerunning{Hives}
@@ -56,18 +56,19 @@ The abstract should briefly summarize the contents of the paper in 150--250 word
 % END ABSTRACT %
 %%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%
-% BEGIN INDEX %
-%%%%%%%%%%%%%%%
-\section{Index}\label{sec:index}\newpage
-%%%%%%%%%%%%%
-% END INDEX %
-%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BEGIN TABLE OF CONTENTS %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setcounter{tocdepth}{3}
+\tableofcontents
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% END TABLE OF CONTENTS %
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%
 % BEGIN INTRODUCTION %
 %%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction}\label{sec:intro}
+\newpage\section{Introduction}\label{sec:intro}
 
 \subsection{Problem Description}
 With the growth of the internet and the emergence of distributed systems, two large-scale computing paradigms have gained popularity due to their promise of virtually unlimited scalability. On the one hand, we have Peer-to-Peer (P2P) networking, which can be defined as a group of equally privileged peers, who contribute with a portion of their resources, to achieve common goals. These networks are popular among file sharing and streaming applications \cite{ssaroiu:msp2pfss}, due to their self-organized behavior, lack of centralization and, low-cost. On the other hand, Cloud platforms offer unmatched, on-demand, self-service, availability, and reliability, at a higher cost, and are currently trendy, with companies such as Amazon, Google, and Microsoft offering various ITaaS products to individuals and organizations alike. Cloud-based systems are centralized architectures, in which a large number of computers are clustered and managed by master entities, which possibly, become bottlenecks. Both paradigms can be used to deploy distributed file-storage or file-backup applications; despite the fact that P2P implementations are cheaper for both companies and their clients, these have a hard-time achieving 99.9\% availability seen Cloud-based implementations, furthermore, depending on the P2P application there may also exist the risk of permanent file loss, making them somewhat unappealing for clients who want to store or backup their files remotely.
@@ -96,7 +97,7 @@ The focus of this thesis is to create a structured P2P overlay to be used on a d
     \item Balance the in-degree and out-degree of each peer such that:
         \SubItem{Message exchange overhead is minimal;}
         \SubItem{Any changes to the probability of file loss are negligible;}
-        \SubItem{Hive availability, reliability, and confidentiality are not compromised;}
+        \SubItem{Hive availability, reliability, and, confidentiality are not compromised;}
         \SubItem{Hive is resilient to massive node failures and resistant to churn;}
     \item Extra miles may include:
         \SubItem{Peers can reconstruct Hives without Tracker intervention;}
@@ -110,7 +111,25 @@ The focus of this thesis is to create a structured P2P overlay to be used on a d
 %%%%%%%%%%%%%%%%%%%%%%
 % BEGIN RELATED WORK %
 %%%%%%%%%%%%%%%%%%%%%%
-\section{Related Work}\label{sec:relatedwork}
+\newpage\section{Related Work}\label{sec:relatedwork}
+This section as the following structure: In the first subsection, we will study two distributed file systems used in cloud architectures, in the following two subsections we will study some of the previously mentioned peer-to-peer, unstructured and structured, overlays. We will follow with considerations to have when choosing erasure code algorithms for file-block replication, two popular works on trust in peer-to-peer networks, and finally, we will mention one cloud-assisted P2P protocol that we consider relevant for being similar to the use-case that led us to study this thesis topic.
+\subsection{Distributed File Systems}
+\textbf{Google File System} (GFS) is designed to provide efficient and reliable access to data using clusters of commodity machines located in geographically spread data-centers. In particular, GFS aims to provide high data throughput, low latency, and reliability in the face of individual server failures. Because GFS runs over commodity hardware, the proposed model considers machine and network faults as being the norm rather than the exception \cite{gfs}.  This assumption is typical in modern distributed systems of any kind. GFS is the basis for an open-source project, which has seen continuous improvements over the years, called Hadoop Distributed File System (HDFS) \cite{hadoop}; we will not discuss it here because it holds many similarities to GFS with key differences being the approach to security management. One advantage of GFS over other architectures is that it leverages a distributed file system that tailors to the designers observation that, once written, files on google provided services, are only read, often sequentially, with random writes being practically non-existent, shifting optimization focus from latency to throughput, from random writes to appends when it comes to atomicity and no caching of data blocks \cite{gfs}. In the GFS architecture cluster consists of a single master and multiple chunk-servers. The Master maintains a mapping from files to chunks, the current location of chunks, and is responsible for failure detection over the chunk-servers as well as chunk-migration between them. Clients communicate, for reads and writes, with the Master for metadata operations and directly with the chunk-servers for data-bearing operations. Neither the client nor the chunk-servers cache file data because most of google's client applications stream through huge files. A read operation involves obtaining chunk handles and locations from the Master and then retrieving the chunks from one of the many available chunk-severs. For writes, the client splits the file into 64MB chunks and asks the Master to assign them an identifier, and then the client uploads his chunks to the chunk-servers indicated by the Master.
+
+GFS has proven its qualities in supporting large-scale data processing. However, small files have shown \cite{gfs} to lead to overloads on chunk-servers holding them because chunks have a fixed large value size of 64MB. The reasoning for GFS to use such substantial value is to reduce network overload, reduce the number of accesses to the Master, and reduce memory used at the Master due to mappings. Concerning our proposal, Hives, since convergence to a desired steady-state using Markov Chains theory requires a large number of chunks to exist in a P2P Hive, we might have to do file-level replication rather than the desired block-level when client files are too small.\newline
+
+\textbf{Ceph} is an open-source, storage system that, like GFS, runs over commodity hardware. Ceph aims to deliver reliable, autonomous, distributed object, block, and file storage that is self-healing, self-managing, and has no single point of failure. The base architectural component of Ceph is the RADOS object store, and all content a client reads and writes to the system are represented as objects, irrespective of the objects' original data type. RADOS is for all purposes a Ceph cluster, and its storage space originates from the disks of multiple machines. Ceph architecture is slightly more complicated than that of GFS, so we will summarize the components that are of interest to us. Inside a cluster, we find three types of machines, storage devices, abstracted with a layer called Object Software Daemon (OSD), Monitors, and Metadata Servers. A small count of Monitors maintain cluster membership and state using PAXOS to make consensual decisions. Metadata Servers only required sharing the distributed file system, are used for POSIX semantics, e.g., directory hierarchy and file metadata such as owner and last accessed timestamps. Monitors can detect if metadata servers are down and launch new ones as required. Finally, OSDs store clients' data, and there are anywhere between dozens to thousands of these in a Ceph cluster.
+
+The innovation Ceph brings is that the OSDs within a cluster are organized in a P2P fashion and are capable of autonomously carrying out replication and recovery tasks. When one OSD suspects a peer as died or joined the cluster, it consults the Monitors to obtain an updated cluster map and possibly offloads some of his data to some other living OSD. The way an OSD knows based on the cluster map if he needs to send data to another OSD is the same process a client goes through to discover to which OSD he should write or read his data. In all cases, a client or OSD process runs the Ceph.CRUSH(placement groups, cluster state, rule set) to obtain the Target OSDs of the named object. The last two parameters are obtained directly from the monitors. The first parameter is the result of the operation: hash(object name) mod (size of object pool). CRUSH \cite{crush} is a light-weight pseudo-random placement algorithm, that provides deterministic object quantization without look-ups to central directories. Because it runs independently on clients and peers, it avoids the need to have the monitor constantly updating cluster to object mappings.
+
+Ceph is proof that cloud systems can leverage P2P behavior in order to dynamically adjust replication in a decentralized fashion while meeting high dependability standards. \cite{ceph, ceph_benchmarks}
+
+\subsection{Unstructured Overlays}
+\textbf{Kademlia} Kademlia is the first P2P system to combine provable consistency, performance, latency-minimizing routing, and a symmetric topology. \cite{kademlia}
+\subsection{Structured Overlays}
+\subsection{File Block Replication}
+\subsection{Trust in Peer-to-Peer Networks}
+\subsection{Cloud-Assisted P2P Protocol - CLOUDCAST}
 %%%%%%%%%%%%%%%%%%%%
 % END RELATED WORK %
 %%%%%%%%%%%%%%%%%%%%
@@ -118,17 +137,17 @@ The focus of this thesis is to create a structured P2P overlay to be used on a d
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BEGIN SOLUTION PROPOSAL %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Solution Proposal}\label{sec:proposal}
+\newpage\section{Solution Proposal}\label{sec:proposal}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % END SOLUTION PROPOSAL %
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% BEGIN TESTING METHODOLOGY %
+% BEGIN EVALUATION METHODOLOGY %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Testing Methodology}\label{sec:methodology}
+\section{Evaluation Methodology}\label{sec:methodology}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-% END TESTING METHODOLOGY %
+% END EVALUATION METHODOLOGY %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%
