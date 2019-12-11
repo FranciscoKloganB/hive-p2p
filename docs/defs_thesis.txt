@@ -1,0 +1,12 @@
+Node Degree:
+First, the degree distribution is highly related to the robustness of the overlay in the presence of failures as it shows the existence of weakly
+connected nodes and massively connected hubs. Second, it is an indication of the way epidemics are spread. Third, it provides an indication of how fairly links are
+distributed among nodes, and, as a consequence, an indication of the distribution of resource usage (processing, bandwidth) across nodes.
+
+Small-World Topologies have low-diameter and high peer clustering.
+
+Random Graph Topologies have low-diameter and low clustering. Possible have symmetric peer degrees.
+
+Clustering Coefficient can be viewed as the percentage of neighbors of a peer P who are also neighbors among themselves. High clustering coefficients
+may indicate existence of week connectivity of clusters with the rest of the overlay network and also indicate an higher chance of overlay partitioning
+in the case of massive node failures or high degrees of churn. It also indicates the existence of more redundant messages within the cluster. 
