@@ -6,9 +6,9 @@
 %%%%%%%%%%%%%%%%%
 % BEGIN IMPORTS %
 %%%%%%%%%%%%%%%%%
+\RequirePackage{amsmath}
 \documentclass[runningheads]{llncs}
 \usepackage{indentfirst}
-\usepackage{graphicx}
 \usepackage{cite}
 \usepackage{mathtools}
 \usepackage{enumerate}
@@ -126,6 +126,28 @@ The innovation Ceph brings is that the OSDs within a cluster are organized in a 
 Ceph is proof that cloud systems can leverage P2P behavior in order to dynamically adjust replication in a decentralized fashion while meeting high dependability standards. \cite{ceph, ceph_benchmarks}
 
 \newpage\section{P2P Overlays}
+
+\begin{figure}[t]
+    \centering
+    \subfigure{\label{fig:iplayer}\includegraphics[width=0.35\textwidth, clip=true]{images/ip-layer.png}}
+    \hspace{0.2\textwidth}
+    \subfigure{\label{fig:overlay}\includegraphics[width=0.35\textwidth, clip=true]{images/overlay-layer.png}}
+    \caption{P2P Network Diagrams: IP layer \textit{vs.} One possible overlay abstraction}
+    \label{fig:network_diagrams}
+\end{figure}
+
+In large-scale P2P systems, it is unfeasible and even undesirable for each peer in the network to know and explicitly interact with every other node connecting it to other peers. In this regard, a P2P overlay is a logical network that abstracts the physical network underneath it, typically IP-based, and where, single-hop edges represent links between pairs of peers, as depicted in Fig. \ref{fig:network_diagrams}. Before we survey related work in the field of P2P overlays, we first list some essential properties and technical jargon related to overlays and graph modeling, that helps us understand better the pros and cons of the research we are presenting in the next subsections of this thesis proposal.
+
+An overlay is said to be \textbf{\textit{connected}} if there is a path that allows any pair of peers \textit{i, j} to communicate with each other, i.e., there is no partitioning and no peer is isolated in the system.
+
+The \textbf{\textit{degree}} of a peer is the total number of connections established between some peer \textit{i} and other peers. It is possible to divide the degree into \textit{in-degree} and \textit{out-degree}, i.e., the number of channels a peer \textit{i} has, through which it can only receive data or send data, respectively. When all peers in an overlay have the same degree, the overlay is said to be \textbf{\textit{regular}} or \textbf{\textit{symmetric}}, but this is not usual. We can use the \textbf{\textit{degree distribution}} to evaluate the robustness of an overlay since through it; it is possible to detect \textit{weakly connected peers} and \textit{massively connected hubs}, i.e., peers with very high degree. In general, we want to minimize the existence of hubs. In P2P networks, hubs may provide the overlay with resistance against random damage and possibly speed-up lookup operations in unstructured overlays, using biased searching; however, targeted-attacks to hubs, or natural hub failures will have more significant impacts on the connectivity of the overlay, possibly leading to partitioning or halting of the system \cite{webdragons, controlling_the_hubs}. Peer degrees can also allow evaluation of fair work distribution among peers of the system, e.g., in terms of processing or bandwidth.
+
+\textbf{\textit{Network diameter}} is the number of links that compose the longest of all the shortest paths between any two peers \textit{i}, \textit{j}. Knowing the length of all shortest paths between all possible pairs of peers \textit{i}, \textit{j} one can extract the \textbf{\textit{average path length}} and hence derive how messages, on average, will be relayed on the overlay to contact a stranger. Still regarding distances, the path stretch is the ratio between the number of links a message has to traverse, between any two peers, in the underlying network and the overlay network.
+
+\textbf{\textit{Clustering}} directly affects connectivity and network diameter; we can measure it using the \textbf{\textit{clustering coefficient}}. This coefficient represents the percentage of neighbors a peer \textit{i} has, who are also neighbors among themselves. Like peers with high degrees, high clustering coefficients indicate the increased chance of partitioning in the system in the event of massive peer failures or high degrees of \textit{churn}. Furthermore, high clustering coefficients may indicate, in gossip-based protocols, bandwidth overhead due to redundant communications in the cluster, but has the advantage of making lookups faster even when the network is experiencing heavy load, e.g., flash crowd scenarios.
+
+Another two terms that often appear in P2P literature are the small-world and the power-law properties. The small-world property is an umbrella term for a system with a high clustering coefficient and low average path length, yet most peers are not direct neighbors of each other. The power-law property means that there is non-uniform distribution influence in the overlay, e.g., some peers have more responsibilities or perks because they have higher capacities than the rest.
+
 \subsection{Structured Overlays}
 \subsubsection{Kademlia} \cite{kademlia} is structured overlay, yet it is fully decentralized, designed for key-value storage systems, which, according to the authors, combines provable consistency, performance, latency-minimizing routing, and symmetric topology \cite{kademlia}. Kademlia peer-identifiers and data-keys are built as in Chord\cite{chord}, using consistent hashing. Inserts and lookups on the overlay are unidirectional, according to the distance between two identifiers, calculated using XOR. The unidirectionality allows caching to be done along lookup paths, alleviating hot spots. Each peer in the overlay maintains a binary tree, routing table, whose leaves are lists of peers, called k-buckets, at distances $2^{x}$ to $2^{x+1}$, $x \in\hspace{1mm}\mathclose[0,160\mathclose]$ from itself, sorted according to a least recently seen policy. As a peer receives messages if the sender is a new acquaintance, that sender is placed on the proper k-bucket if there is enough space in it; otherwise, it will replace the least seen peer only if that peer fails to respond to a ping. By preferring old acquaintances, Kademlia seeks to enhance the stability of the overlay based on the observation that the longer a peer remains connected to the network, the higher the probability that it will remain connected at least another hour\cite{ssaroiu:msp2pfss}. This policy also prevents some denial of service attacks, where an enemy floods the network with new peers. The XOR metric gives Kademlia an advantage over other DHT-based implementations by making routing tables less rigid and by allowing peers in the network to learn useful routing information from discovery and lookup messages. Because of the existence of k-buckets, routing can also be done around failed nodes, providing some resistance to churn and partitioning.
 
@@ -181,7 +203,7 @@ The passive cloud storage service is a key-value store that can be accessed via 
 
 The second problem is solved using two different implementations of gossip algorithms explained in depth in \cite{epidemic_algorithms}. They are a \textit{rumor-mongering, coin and blind} approach which favors fast news spreading and consists in having a peer \textit{i} periodically forwarding updates he learns about to some other peer \textit{j}, then deciding with probability $p\textsubscript{rumor}$ if he should, permanently, stop gossiping the update; And a \textit{anti-entropy, push-pull} approach which guarantees that news are eventually known by all participants of the system and consists in having each peer \textit{i} periodically contacting a random neighbor \textit{j} to exchange update they know about. All updates to the data are recorded in the cloud server through a PUT operation before becoming hot-topics, thus triggering rumor-mongering. Peers never contact the cloud server for rumor-mongering purposes. The anti-entropy approach can be piggybacked to the CYCLON peer-sampling step, thus decreasing message overhead; the authors, however, do not mention this optimization.
 
-\subsection{INSERT ANOTHER}
+\subsection{CYCLON-CLOUDCAST: Adaptive Replica Management}
 \section{Block-Level Data Replication}
 \section{Trust Models}
 \section{Probabilistic Swarm Guidance}
