@@ -14,8 +14,8 @@
 \usepackage{enumerate}
 \usepackage{optidef}
 \usepackage{subfigure}
-\usepackage{algorithmic}
 \usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{todonotes}
 
 \newcommand{\SubItem}[1]{{\setlength\itemindent{15pt} \item[-] #1}}
@@ -221,7 +221,35 @@ The passive cloud storage service is a key-value store that can be accessed via 
 The second problem is solved using two different implementations of gossip algorithms explained in depth in \cite{epidemic_algorithms}. They are a \textit{rumor-mongering, coin and blind} approach which favors fast news spreading and consists in having a peer \textit{i} periodically forwarding updates he learns about to some other peer \textit{j}, then deciding with probability $p\textsubscript{rumor}$ if he should, permanently, stop gossiping the update; And a \textit{anti-entropy, push-pull} approach which guarantees that news are eventually known by all participants of the system and consists in having each peer \textit{i} periodically contacting a random neighbor \textit{j} to exchange update they know about. All updates to the data are recorded in the cloud server through a PUT operation before becoming hot-topics, thus triggering rumor-mongering. Peers never contact the cloud server for rumor-mongering purposes. The anti-entropy approach can be piggybacked to the CYCLON peer-sampling step, thus decreasing message overhead; the authors, however, do not mention this optimization.
 
 \subsection{CYCLON-CLOUDCAST: Adaptive Replica Management}
-Following the suggestions of CLOUDCAST authors, H. Kavalionak developed a decentralized algorithm \cite{marriage_of_convinience} that aims to do replica management in cloud-based, peer-assisted applications. Because the proposed work has no running title, we shall refer to it as ARM. The goal of the ARM is to maintain an appropriate replication level, despite churn, such that, at all times, at least one replica is available and ensuring that replicas survive failures. Furthermore, the proposal acknowledges that replicas should be synchronized, i.e., the system provides at least some consistency guarantees. In simple terms, this is perhaps the main difference between the proposed work and CLOUDCAST, which stores all updates in an always-on passive cloud server, helping with information diffusion and overlay connectivity and overall reliability of the system in extreme conditions. CLOUDCAST monetary cost reductions are primarily associated with limiting access to the cloud server. ARM effectively reduces those costs even further by performing timely switches between CLOUDCAST and regular CYCLON protocols, depending on the size of the network. To estimate the network size without centralization or broadcasting algorithms that would ultimately lead to either bottlenecks or overhead, ARM leverages a gossip-based aggregation method \cite{gossip-based_aggregation} that allows each peer to infer the approximate size of the network autonomously, at the end of each epoch. Estimation accuracy is dependent only on the size of the epoch. Likewise, the execution cost depends on the length of the epochs and the network churn rate, but not on the number of peers in the system, which means that ARM keeps the scale-free properties of the unstructured overlays that used in CLOUDCAST. The peers randomly organize themselves according to the CYCLON peer-sampling protocol, but depending on the results of the aggregation, the passive cloud-server used in CLOUDCAST is removed or kept in the overlay. In ARM, each data object to be replicated as its overlay, which facilitates synchronization and cloud-usage decisions.
+
+\begin{algorithm}[ht]
+\caption{MakeDecision(N\textsubscript{e}), replicaOverlay}
+\label{alg:makedecision}
+\begin{algorithmic}
+    \If {$N\textsubscript{e}\geq S$}
+        \State $replicaOverlay.Neighbors.Remove(CloudReference)$\
+        \If {$N\textsubscript{e} > R$}
+            \State $p\textsubscript{yes} \gets \dfrac{N\textsubscript{e} - R}{N\textsubscript{e}}$
+            \State $this.LeaveOverlay(replicaOverlay, p\textsubscript{yes})$
+        \State $replicaOverlay.Protocol \gets CYCLON$
+        \EndIf
+    \ElsIf {$C < N\textsubscript{e} < S$}
+        \State $N\textsubscript{a} \gets [\dfrac{S(1 + k)}{N\textsubscript{e}} - 1]$
+        \State $newNeighbors \gets GetNewNeighbors(this.UnderlyingOverlay, N\textsubscript{a})$
+        \State $newNeighbors.Send(this.RandomView(replicaOverlay))$
+        \State $replicaOverlay.Neighbors.Add(newNeighbors)$
+        \State $replicaOverlay.Protocol \gets CLOUDCAST$
+    \ElsIf{$Ne \leq C$}
+        \State $N\textsubscript{a} \gets [\dfrac{S(1 + k)}{N\textsubscript{e}} - 1]$
+        \State $newNeighbors \gets GetNewNeighbors(this.UnderlyingOverlay, N\textsubscript{a})$
+        \State $newNeighbors.Send(this.RandomView(replicaOverlay) \cup CloudReference)$
+        \State $replicaOverlay.Neighbors.Add(newNeighbors \cup CloudReference)$
+        \State $replicaOverlay.Protocol \gets CLOUDCAST$
+    \EndIf
+\end{algorithmic}
+\end{algorithm}
+
+Following the suggestions of CLOUDCAST authors, H. Kavalionak developed a decentralized algorithm \cite{marriage_of_convinience} that aims to do replica management in cloud-based, peer-assisted applications. Because the proposed work has no running title, we shall refer to it as ARM. The goal of the ARM is to maintain an appropriate replication level, despite churn, such that, at all times, at least one replica is available and ensuring that replicas survive failures. Furthermore, the proposal acknowledges that replicas should be synchronized, i.e., the system provides at least some consistency guarantees. In simple terms, this is perhaps the main difference between the proposed work and CLOUDCAST, which stores all updates in an always-on passive cloud server, helping with information diffusion and overlay connectivity and overall reliability of the system in extreme conditions. CLOUDCAST monetary cost reductions are primarily associated with limiting access to the cloud server. ARM effectively reduces those costs even further by performing timely switches between CLOUDCAST and regular CYCLON protocols, depending on the size of the network. To estimate the network size without centralization or broadcasting algorithms that would ultimately lead to either bottlenecks or overhead, ARM leverages a gossip-based aggregation method \cite{gossip-based_aggregation} that allows each peer to infer the approximate size of the network autonomously, at the end of each epoch. Estimation accuracy is dependent only on the size of the epoch. Likewise, the execution cost depends on the length of the epochs and the network churn rate, but not on the number of peers in the system, which means that ARM keeps the scale-free properties of the unstructured overlays that used in CLOUDCAST. The peers randomly organize themselves according to the CYCLON peer-sampling protocol, but depending on the results of the aggregation, the passive cloud-server used in CLOUDCAST is removed or kept in the overlay. In ARM, each data object to be replicated as its own \textit{replica-overlay} on top of the regular unstructured overlay, which facilitates synchronization and cloud-usage decisions. The ARM algorithm is designed to consider four replica-overlay states, separated by three size thresholds: \textit{Critical (C)}, \textit{Sufficient (S)} and \textit{Redundant (S)}. \textit{C} depends on the chosen redundancy method, i.e., file-level \textit{vs.} block-level replication and is the sum of the minimum number of replicas required for data recovery plus the number of peers that will leave during the cloud backup replication phase. \textit{S} depends on the churn-rate and is the sum of \textit{C} plus the number of peers expected between two successive recovery phases. Finally, \textit{R} is a system parameter dependent also on the chosen redundancy method and is application requirements specific.  The aggregation method mentioned earlier is the foundation \textit{monitoring phase}, which consists of a fixed number of gossip and idle rounds, allowing a peer to infer the \textit{expected size (N\textsubscript{e})} of the replica-overlay and decide if he should add or remove the cloud or peers to the replica-overlay as well as the protocol he uses, based on Algorithm \ref{alg:makedecision}. After each monitoring phase, each peer calculates how long it should wait before executing the \textit{monotoring phase} again. That time depends mostly on \textit{N\textsubscript{e}}, e.g., if the state is below the critical threshold the monitoring phase will initiate earlier than if it is above the redundant threshold, allowing the system to respond to overlay changes promptly and to keep the overlay size in a range that minimizes overhead but ensures that data does not become unavailable.
 
 \section{Block-Level Data Replication}
 \section{Probabilistic Swarm Guidance}
