@@ -214,7 +214,7 @@ In Newscast, there is a separation of responsibilities. Within each peer, there 
 
 It is debatable if Newscast has an advantage over CYCLON since news exchange messages already include peer addresses, leading to a transparent resolution of the membership problem. CYCLON, however, has several advantages over Newscast. These include: the resulting overlays of CYCLON have better randomness due to its shuffling-based algorithm, whereas Newscast and other gossip-based management frameworks, seem to have small-world properties according to previous research \cite{eval-gossip-based}. Like in CYCLON, disconnected peers are eventually forgotten due to the timestamp property of the newscasting process. Newly joined peers' cache initialization is based on a regular news exchange with one or more peers who are already members of the overlay. In contrast, CYCLON uses \textit{c} random-walks exchanging exactly one cache entry with possibly different peers, which in turn helps to maintain the randomness properties; finally, while Newscast managed to achieve their goals of providing a robust, scalable, adaptive and lightweight solution for simultaneous membership management and aggregation CYCLON exhibits less network overhead\cite{cyclon}.
 
-\section{Cloud-Assisted P2P Networks}
+\section{Cloud-Assisted P2P Networks}\label{sec:ca-networks}
 
 Many academic and commercial projects have been developed over the years where cloud, grid, and other centralized architectures are partly assisted by P2P networks. In these systems, peers are usually machines belonging to the clients of the service, and they help to decrease the load on the system, hence reducing its cost. This approach is especially prevalent in streaming and online gaming services, for example, Blizzard Activision uses their player base to help distribute installers and patches in a P2P fashion, and Digital Extremes uses, in their free-to-play game Warframe, P2P networks in particular, but not all, group missions where individuals are in instances of the game inaccessible by players outside the group. However, only recently, was the alternative explored, where P2P networks serve the vast majority of the service and are assisted by stable cloud services only to help guarantee some quality of service property of the system under critical situations. We present two of them.
 
@@ -282,7 +282,26 @@ Markov chains describe a sequence of possible events in which the probability of
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BEGIN SOLUTION PROPOSAL %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Solution Proposal}\label{sec:proposal}
+\newpage\section{Solution Proposal}\label{sec:proposal}
+In this section, we introduce a prototype architecture that targets the use case that inspired to explore the theme of this thesis. We explain it by decomposition.
+
+\subsection{Use Case}
+Fundamentally, the idea is that a company, Hives, with dedicated web servers called Hiveminds, provides a platform for registered users to sell storage belonging to their personal computers directly to other registered users. Clients pay a monthly fee directly to Hives based on how much storage space they need. Hiveminds then put together a set of sellers, which constitute a Hive, that serves adequate storage space to the clients. Sellers are selected according to the reputation they earn over time based on their reliability, with a bias towards more reputable sellers. The collected fee is distributed proportionately among Hive members according to their overall space contribution and up time, calculated weekly, for example. The company's revenue comes from keeping a small percentage of the monthly fees. If the client requires continuous availability, rather than durability, he may pay a premium, in which case, inspired on the related work mentioned in section \ref{sec:ca-networks}, cloud storage may be used to help the Hive in meeting the required service guarantees. Hive revenue shares are reduced if their reliability degrades too much.
+
+\subsection{Key notes and Assumptions}
+\begin{itemize}
+    \item Session handling and payment models are out of the scope of this proposal.
+    \item Reputation is static, i.e., they are simulation parameters.\footnote{See goals in Section \ref{sec:intro}}
+    \item Message integrity and confidentiality are not at risk.
+    \item Sellers are not malicious, e.g., do not perform DoS on other sellers.
+    \item Sellers may fail without warning, and some absences may be transient.
+    \item Cloud service is abstract, i.e., ranges from local to a cloud storage server.
+    \item The storage space purpose is backups, thus write operations are rare.\footnote{Write operations possibly cause old versions to be overwritten}
+    \item The storage space is not shared, i.e., there are no concurrent writes.
+\end{itemize}
+
+\subsection{Hiveminds - Master Servers}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % END SOLUTION PROPOSAL %
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -290,7 +309,7 @@ Markov chains describe a sequence of possible events in which the probability of
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BEGIN EVALUATION METHODOLOGY %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Evaluation Methodology}\label{sec:methodology}
+\newpage\section{Evaluation Methodology}\label{sec:methodology}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END EVALUATION METHODOLOGY %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
