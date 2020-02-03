@@ -14,6 +14,7 @@ class HttpCodes(Enum):
     """
     Enumerator class used to represent HTTP response codes
     """
+    DUMMY: int = -1
     OK: int = 200
     NOT_FOUND: int = 404
     TIME_OUT: int = 408

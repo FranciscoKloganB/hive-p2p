@@ -5,7 +5,7 @@ import pandas as pd
 from utils import crypto
 from copy import deepcopy
 from domain.Enums import HttpCodes
-from typing import Dict, Union, Any
+from typing import Dict, Union, Any, List
 from globals.globals import DEFAULT_COLUMN
 from domain.SharedFilePart import SharedFilePart
 from utils.ResourceTracker import ResourceTracker as rT
@@ -81,10 +81,14 @@ class Worker:
         :param SharedFilePart sfp: data class instance with data w.r.t. the shared file part and it's raw contents
         :param bool no_check: whether or not method verifies sha256 of the received part
         """
+        if sfp.part_name not in self.shared_files:
+            self.shared_files[sfp.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
+
         if no_check or crypto.sha256(sfp.part_data) == sfp.sha256:
-            if sfp.part_name not in self.shared_files:
-                self.shared_files[sfp.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
-            self.shared_files[sfp.part_name][sfp.part_number] = sfp
+            if sfp.part_number not in self.shared_files[sfp.part_name]:  # only keeps this part's replica if it does not have one yet
+                self.shared_files[sfp.part_name][sfp.part_number] = sfp
+            else:
+                self.route_repeated_part(sfp)  # pass part's replica to someone else, who might or might not have it.
         else:
             print("part_name: {}, part_number: {} - corrupted".format(sfp.part_name, str(sfp.part_number)))
             self.init_recovery_protocol(sfp.part_name)
@@ -101,6 +105,17 @@ class Worker:
         else:
             for sf_part in sf_id_sfp_dict.values():  # receive_part(...) automatically fetches the part_number for part
                 self.receive_part(sf_part, no_check)
+
+    def route_repeated_part(self, sf_part: SharedFilePart) -> None:
+        dest_worker = self.name
+        while dest_worker == self.name:
+            dest_worker = self.get_next_state(sf_name=sf_part.part_name)
+
+        response_code = HttpCodes.DUMMY
+        while response_code != HttpCodes.OK:
+            response_code = self.hivemind.route_file_part(dest_worker, sf_part)
+            if response_code != HttpCodes.OK:
+                self.hivemind.receive_complaint(dest_worker)
 
     def route_parts(self) -> None:
         """
@@ -142,6 +157,7 @@ class Worker:
     # endregion
 
     # region resource utilization methods
+    # noinspection PyIncorrectDocstring
     @staticmethod
     def get_resource_utilization(*args) -> Dict[str, Any]:
         """
@@ -172,8 +188,7 @@ class Worker:
     # endregion
 
     # region helpers
-    def __update_shared_files_dict(
-            self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
+    def __update_shared_files_dict(self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
         """
         Creates a key value pair in the Worker instance shared_files field or updates the existing one with more parts
         :param sf_id_sfp_dict: collection mapping part.id to SharedFilePart instances
@@ -185,6 +200,8 @@ class Worker:
             self.init_recovery_protocol(sf_name)
         else:
             # if (check == False) OR (check == True and all parts have correct sha256), then, update dict accordingly
+            # TODO future-iterations:
+            #  call route_repeated_part here too.
             if sf_name in self.shared_files:
                 self.shared_files[sf_name].update(sf_id_sfp_dict)  # Appends sf_id_sfp_dict values to existing values
             else:
