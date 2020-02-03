@@ -247,26 +247,26 @@ def __init_hive_members(desired_node_count: int, peers_uptime_dict: Dict[str, fl
     :param int desired_node_count: the number of peers that will be responsible for sharing a file
     :param Dict[str, float] peers_uptime_dict: names of all peers in the system and their uptimes;
     :param List[str] peer_names: names of all peers in the system; the length of labels must be >= desired_node_count
-    :return List[str] chosen_labels: a subset of :param labels; the peers from the system that were selected for sharing
+    :return List[str] chosen_peers: a subset of :param labels; the peers from the system that were selected for sharing
     """
 
     if len(peer_names) < desired_node_count:
         raise RuntimeError("User requested that file is shared by more peers than the number of peers in the system")
 
-    chosen_labels = []
+    chosen_peers = []
     peer_names_copy = copy.deepcopy(peer_names)
 
     if __in_yes_no("\nDo you wish to manually insert some labels for this file?"):
-        chosen_labels = __in_file_labels(peers_uptime_dict, peer_names)
-        peer_names_copy = [label for label in peer_names_copy if label not in chosen_labels]
+        chosen_peers = __in_file_labels(peers_uptime_dict, peer_names)
+        peer_names_copy = [label for label in peer_names_copy if label not in chosen_peers]
 
-    chosen_count = len(chosen_labels)
+    chosen_count = len(chosen_peers)
     while chosen_count < desired_node_count:
         chosen_count += 1
         choice = np.random.choice(a=peer_names_copy)
         peer_names_copy.remove(choice)
-        chosen_labels.append(choice)
-    return chosen_labels
+        chosen_peers.append(choice)
+    return chosen_peers
 
 
 def __init_adj_matrix(size: int):
