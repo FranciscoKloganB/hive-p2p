@@ -197,7 +197,7 @@ def __in_adj_matrix(msg: str, size: int) -> List[List[int]]:
         return adj_matrix
 
 
-def __in_stochastic_vector(msg: str, size: int) -> List[float]:
+def __in_desired_distribution(msg: str, size: int) -> List[float]:
     """
     This method guarantees the vector is stochastic
     :param str msg: message to be printed to the user upon first input request
@@ -299,7 +299,7 @@ def __init_adj_matrix(size: int):
     return adj_matrix
 
 
-def __init_stochastic_vector(size: int) -> List[float]:
+def __init_desired_distribution(size: int) -> List[float]:
     """
     Generates a row vector whose entries summation is one.
     :param int size: the length of the vector
@@ -321,7 +321,7 @@ def __init_stochastic_vector(size: int) -> List[float]:
             summation_pool -= probability
 
 
-def __init_stochastic_vector_with_uptimes(labels_list: List[str], uptime_dict: Dict[str, float]) -> List[float]:
+def __init_desired_distribution_using_uptimes(labels_list: List[str], uptime_dict: Dict[str, float]) -> List[float]:
     """
     Generates a row vector whose entries summation is one.
     :param List[str] labels_list: contains the name of all peers, this param is required to ensure order is kept
@@ -366,9 +366,9 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[Dict[Any]]:
             shared_dict[file_name]["adj_matrix"] = __init_adj_matrix(size=n)
 
         if __in_yes_no("Would you like to manually insert a desired distribution vector?"):
-            shared_dict[file_name]["ddv"] = __in_stochastic_vector("Insert a stochastic vector: ".format(n), n)
+            shared_dict[file_name]["ddv"] = __in_desired_distribution("Insert a stochastic vector: ".format(n), n)
         else:
-            shared_dict[file_name]["ddv"] = __init_stochastic_vector_with_uptimes(chosen_peers, peer_uptime_dict)
+            shared_dict[file_name]["ddv"] = __init_desired_distribution_using_uptimes(chosen_peers, peer_uptime_dict)
             pass
 
         add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
