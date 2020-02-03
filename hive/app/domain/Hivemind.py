@@ -16,7 +16,7 @@ from utils.randoms import excluding_randrange
 from domain.SharedFilePart import SharedFilePart
 from typing import cast, List, Set, Dict, Tuple, Optional, Union, Any
 from domain.helpers.ConvergenceData import ConvergenceData
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, REPLICATION_LEVEL
 
 
 class Hivemind:
@@ -89,10 +89,8 @@ class Hivemind:
             # Do not change positions of file_sharers_names with worker_objs...
             choices: List[Worker] = [*filter(set(worker_names).__contains__, workers_objs)]
             for part in part_number.values():
-                # Randomly choose a worker from possible choices and give him the shared file part
-                worker = np.random.choice(choices)
-                self.workers_hives[worker.name].add(self.sf_datas[part.part_name])
-                worker.receive_part(part, no_check=True)
+                choices_copy = choices.copy()
+                self.choose_and_assign_part_to_workers(choices_copy, part)
     # endregion
 
     # region file partitioning methods
@@ -266,6 +264,18 @@ class Hivemind:
         sf_data.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
         sf_data.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
         sf_data.convergence_data = ConvergenceData()
+
+    def choose_and_assign_part_to_workers(self, choices: List[Worker], part: SharedFilePart) -> None:
+        """
+        Gives one copy of a file part to N different peers, chosen at random
+        :param List[Worker] choices: List of workers to choose from
+        :param SharedFilePart part: File part to assign to worker
+        """
+        workers = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+        for worker in workers:
+            self.workers_hives[worker.name].add(self.sf_datas[part.part_name])
+            worker.receive_part(part, no_check=True)
+
     # endregion
 
     # region stage processing
