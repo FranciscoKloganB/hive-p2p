@@ -3,9 +3,10 @@ import os
 DEBUG: bool = True
 
 # region integer constants
-READ_SIZE: int = 2048
-MIN_CONVERGENCE_THRESHOLD: int = 5
+READ_SIZE: int = 8192
 DEFAULT_COLUMN: int = 0
+REPLICATION_LEVEL: int = 3
+MIN_CONVERGENCE_THRESHOLD: int = 5
 # endregion
 
 # region float constants
