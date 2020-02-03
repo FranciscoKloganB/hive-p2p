@@ -38,8 +38,7 @@ class Hivemind:
     def __init__(self, simfile_name: str) -> None:
         """
         Instantiates an Hivemind object
-        :param simfile_name: path to json file containing the parameters this simulation should execute with
-        :type str
+        :param str simfile_name: path to json file containing the parameters this simulation should execute with
         """
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
@@ -274,10 +273,8 @@ class Hivemind:
         """
         For each online worker, if they are online, see if they remain alive for the next stage or if they die,
         according to their uptime record.
-        :param online_workers: collection of workers that are known to be online
-        :type list<domain.Worker>
-        :returns surviving_workers: subset of online_workers, who weren't selected to be removed from the hive
-        :rtype list<domain.Worker>
+        :param List[Worker] online_workers: collection of workers that are known to be online
+        :returns List[Worker] surviving_workers: subset of online_workers, who weren't selected to be removed from the hive
         """
         surviving_workers: List[Worker] = []
         for worker in online_workers:
@@ -584,7 +581,7 @@ class Hivemind:
         :param Worker dead_worker: Worker instance that was removed from an hive
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
         :param Set[str] sf_failures: set of names that keep track of all failed hives
-        :param Dict[int, SharedFilePart] mock: recovery will be accomplished by passing files from dead to living worker
+        :param Dict[int, SharedFilePart] recover: recovery will be accomplished by passing files from dead to living worker
         :returns Set[str] sf_failures: unmodified or with new failed hive names
         """
         if self.__care_taking(stage, sf_data, dead_worker):
@@ -593,7 +590,7 @@ class Hivemind:
             self.__init_recovery_protocol(sf_data, mock=recover) if recover else None
         else:
             sf_data.fclose()
-            sf_failures.add(sf_name)
+            sf_failures.add(sf_data.file_name)
         return sf_failures
 
     def __stop_tracking_worker(self, worker_name: str) -> None:
