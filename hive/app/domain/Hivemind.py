@@ -1,9 +1,8 @@
 import os
 import json
-import random
 import numpy as np
 import pandas as pd
-import domain.metropolis_hastings as mh
+import utils.metropolis_hastings as mh
 import logging as log
 
 from pathlib import Path
@@ -12,7 +11,7 @@ from utils.convertions import str_copy
 from utils.collections import safe_remove
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
-from utils.randoms import excluding_randrange, random_index
+from utils.randoms import random_index
 from domain.SharedFilePart import SharedFilePart
 from typing import cast, List, Set, Dict, Tuple, Optional, Union, Any
 from domain.helpers.ConvergenceData import ConvergenceData
@@ -176,8 +175,7 @@ class Hivemind:
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         :param Worker dead_worker: instance object corresponding to the worker who left the network
         """
-        sf_data.fwrite(
-            "Initializing care taking process at stage {} due to worker '{}' death...".format(stage, dead_worker.name))
+        sf_data.fwrite("Initializing care taking process at stage {} due to worker '{}' death...".format(stage, dead_worker.name))
         if self.__heal_hive(sf_data, dead_worker):
             sf_data.fwrite("Heal complete!")
             return True
