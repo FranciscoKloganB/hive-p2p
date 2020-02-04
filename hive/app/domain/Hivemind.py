@@ -48,7 +48,7 @@ class Hivemind:
             self.workers: Dict[str, Worker] = {}
             self.workers_hives: Dict[str, Set[FileData]] = {}
             self.workers_uptime: Dict[str, float] = json_obj['nodes_uptime']
-            self.max_stages: int = json_obj['max_stages']
+            self.max_epochs: int = json_obj['max_epochs']
             # Create the P2P network nodes (domain.Workers) without any job
             self.__init_workers([*self.workers_uptime.keys()])
             # Read and split all shareable files specified on the input
@@ -158,7 +158,7 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         online_workers_list: List[Worker] = self.__filter_and_map_online_workers()
-        for stage in range(self.max_stages):
+        for stage in range(self.max_epochs):
             online_workers_list = self.__remove_some_workers(online_workers_list, stage)
             for worker in online_workers_list:
                 worker.execute_epoch()
@@ -304,7 +304,7 @@ class Hivemind:
         Obtains all workers' densities regarding each shared file and logs progress in the system accordingly
         :param int stage: number representing the discrete time step the simulation is currently at
         """
-        if stage == self.max_stages - 1:
+        if stage == self.max_epochs - 1:
             for sf_data in self.sf_datas.values():
                 sf_data.fwrite("\nReached final stage... Executing tear down processes. Summary below:")
                 sf_data.convergence_data.save_sets_and_reset()
