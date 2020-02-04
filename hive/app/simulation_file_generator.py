@@ -29,7 +29,7 @@ def usage():
 # region input consumption and checking functions
 def __in_max_stages() -> int:
     """
-    :return int max_stages: the number of stages this simulation should run at most
+    :returns int max_stages: the number of stages this simulation should run at most
     """
     max_stages = input("\nEnter the maximum amount of stages [100, inf) the simulation should run: ")
     while True:
@@ -42,6 +42,18 @@ def __in_max_stages() -> int:
         except ValueError:
             max_stages = input("Input should be an integer.. Try again: ")
             continue
+
+
+def __in_initial_spread() -> str:
+    """
+    :returns str spread_mode: how files are distributed across the hive
+    """
+    spread_mode = input("\nSelect how files are spread across the Hives in the beggining of the simulation: "
+                        "\nPress 'u' for uniform distribution, 'i' to beging closely to desired distribution, and, 'a' to give all files to one peer...\n")
+    while True:
+        if spread_mode in ['u', 'U', 'i', 'I', 'a', 'A']:
+            return spread_mode.lower()
+        spread_mode = input("Available choices are 'u', 'i', 'a'... Try again: ")
 
 
 def __in_number_of_nodes(msg: str, lower_bound: int = 1, upper_bound: int = 10000) -> int:
@@ -214,12 +226,12 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
     add_file: bool = True
     while add_file:
         n = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: ")
-        file_name = __in_file_name("Insert id of the file you wish to persist (include extension if it has one): ")
-
+        file_name = __in_file_name("Insert name of the file you wish to persist (include extension if it has one): ")
         chosen_peers: List[str] = __init_hive_members(n, peer_uptime_dict, peer_names)
 
         shared_dict[file_name] = {}
         shared_dict[file_name]["state_labels"] = chosen_peers
+        shared_dict[file_name]["initial_spread"] = __in_initial_spread()
 
         add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
 
@@ -235,8 +247,8 @@ def main(simfile_name: str):
     """
     peers_uptime_dict: Dict[str, float] = __init_peer_uptime_dict()
     simfile_json: Dict[str, Any] = {
-        "max_stages": __in_max_stages(),
-        "nodes_uptime": peers_uptime_dict,
+        "max_epochs": __in_max_stages(),
+        "peers_uptime": peers_uptime_dict,
         "shared": __init_shared_dict(peers_uptime_dict)
     }
 
