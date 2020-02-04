@@ -12,11 +12,11 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 import numpy as np
+import utils.vectors as vectors
+import utils.matrices as matrices
 
-from domain.Hivemind import Hivemind
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT
 from scripts.pyscripts import skewed_distribution_generator as sg, label_generator as cg
-
 
 # region usage
 def usage():
@@ -269,36 +269,6 @@ def __init_hive_members(desired_node_count: int, peers_uptime_dict: Dict[str, fl
     return chosen_peers
 
 
-def __init_adj_matrix(size: int):
-    """
-    Generates a random symmetric matrix without transient state sets or absorbeent nodes
-    :param int size: the size of the square matrix (size * size)
-    :return List[List[int]] adj_matrix: the adjency matrix representing the connections between a group of peers
-    """
-    secure_random = random.SystemRandom()
-    adj_matrix: List[List[int]] = [[0] * size for _ in range(size)]
-    choices: List[int] = [0, 1]
-
-    for i in range(size):
-        for j in range(i, size):
-            probability = secure_random.uniform(0.0, 1.0)
-            edge_val = np.random.choice(a=choices, p=[probability, 1-probability]).item()  # converts numpy.int32 to int
-            adj_matrix[i][j] = adj_matrix[j][i] = edge_val
-
-    # Use guilty until proven innocent approach for both checks
-    for i in range(size):
-        is_absorbent_or_transient: bool = True
-        for j in range(size):
-            # Ensure state i can reach and be reached by some other state j, where i != j
-            if adj_matrix[i][j] == 1 and i != j:
-                is_absorbent_or_transient = False
-                break
-        if is_absorbent_or_transient:
-            j = Hivemind.random_j_index(i, size)
-            adj_matrix[i][j] = adj_matrix[j][i] = 1
-    return adj_matrix
-
-
 def __init_desired_distribution(size: int) -> List[float]:
     """
     Generates a row vector whose entries summation is one.
@@ -319,21 +289,6 @@ def __init_desired_distribution(size: int) -> List[float]:
             probability = float(str(secure_random.uniform(0, summation_pool))[:8])  # Force all entries to 6 decimals
             stochastic_vector[i] = probability
             summation_pool -= probability
-
-
-def __init_desired_distribution_using_uptimes(labels_list: List[str], uptime_dict: Dict[str, float]) -> List[float]:
-    """
-    Generates a row vector whose entries summation is one.
-    :param List[str] labels_list: contains the name of all peers, this param is required to ensure order is kept
-    :param Dict[str, float] uptime_dict: names of all peers in the system and their uptimes
-    :returns List[float]: desired distribution vector
-    """
-    stochastic_vector: List[float] = list()
-    for i in range(len(labels_list)):
-        stochastic_vector.append(uptime_dict[labels_list[i]])
-
-    uptimes_sum = sum(stochastic_vector)
-    return [uptime/uptimes_sum for uptime in stochastic_vector]
 
 
 def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[Dict[Any]]:
@@ -363,13 +318,12 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[Dict[Any]]:
         if __in_yes_no("Would you like to manually construct an adjency matrix?"):
             shared_dict[file_name]["adj_matrix"] = __in_adj_matrix("Insert a row major {}x{} matrix: ".format(n, n), n)
         else:
-            shared_dict[file_name]["adj_matrix"] = __init_adj_matrix(size=n)
+            shared_dict[file_name]["adj_matrix"] = matrices.new_symmetric_adjency_matrix(size=n)
 
         if __in_yes_no("Would you like to manually insert a desired distribution vector?"):
             shared_dict[file_name]["ddv"] = __in_desired_distribution("Insert a stochastic vector: ".format(n), n)
         else:
-            shared_dict[file_name]["ddv"] = __init_desired_distribution_using_uptimes(chosen_peers, peer_uptime_dict)
-            pass
+            shared_dict[file_name]["ddv"] = vectors.new_steady_state_vector(chosen_peers, peer_uptime_dict)
 
         add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
 
