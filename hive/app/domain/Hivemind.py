@@ -9,7 +9,7 @@ from pathlib import Path
 from domain.Worker import Worker
 from utils.convertions import str_copy
 from utils.collections import safe_remove
-from domain.Enums import Status, HttpCodes
+from domain.Enums import Status
 from domain.helpers.FileData import FileData
 from utils.randoms import random_index
 from domain.SharedFilePart import SharedFilePart
@@ -46,7 +46,6 @@ class Hivemind:
             self.shared_files: Dict[str, Dict[int, SharedFilePart]] = {}
             self.sf_datas: Dict[str, FileData] = {}
             self.workers: Dict[str, Worker] = {}
-            self.workers_status: Dict[Union[Worker, str], Any] = {}
             self.workers_hives: Dict[str, Set[FileData]] = {}
             self.workers_uptime: Dict[str, float] = json_obj['nodes_uptime']
             self.max_stages: int = json_obj['max_stages']
@@ -118,15 +117,13 @@ class Hivemind:
                     shared_file_part: SharedFilePart = SharedFilePart(sf_name, part_number, read_buffer)
                     file_parts[part_number] = shared_file_part
                 else:
-                    # Keeps track of how many parts the file was divided into
                     self.shared_files[sf_name] = file_parts
                     break
-            self.sf_datas[sf_name] = FileData(file_name=sf_name, parts_count=part_number)
+            self.sf_datas[sf_name] = FileData(name=sf_name, parts_count=part_number)
     # endregion
 
     # region metropolis hastings and transition vector assignment methods
-    def __synthesize_transition_matrix(
-            self, adj_matrix: List[List[int]], desired_distribution: List[float], states: List[str]) -> pd.DataFrame:
+    def __synthesize_transition_matrix(self, adj_matrix: List[List[int]], desired_distribution: List[float], states: List[str]) -> pd.DataFrame:
         """
         Calculates a transition matrix using the metropolis-hastings algorithm
         :param states: list of worker names who form an hive
@@ -150,8 +147,7 @@ class Hivemind:
             # Setting the trackers in this phase speeds up simulation
             self.__init_file_data(sf_name, adj_matrix, desired_distribution, labels)
             # Compute transition matrix
-            transition_matrix: pd.DataFrame =\
-                self.__synthesize_transition_matrix(adj_matrix, desired_distribution, labels)
+            transition_matrix: pd.DataFrame = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, labels)
             # Split transition matrix into column vectors
             self.__set_routing_tables(sf_name, labels, transition_matrix)
     # endregion
@@ -165,7 +161,7 @@ class Hivemind:
         for stage in range(self.max_stages):
             online_workers_list = self.__remove_some_workers(online_workers_list, stage)
             for worker in online_workers_list:
-                worker.route_parts()
+                worker.execute_epoch()
             self.__process_stage_results(stage)
 
     def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> bool:
@@ -175,13 +171,13 @@ class Hivemind:
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         :param Worker dead_worker: instance object corresponding to the worker who left the network
         """
-        sf_data.fwrite("Initializing care taking process at stage {} due to worker '{}' death...".format(stage, dead_worker.name))
+        sf_data.fwrite("Initializing care taking process at stage {} due to worker '{}' death...".format(stage, dead_worker.id))
         if self.__heal_hive(sf_data, dead_worker):
             sf_data.fwrite("Heal complete!")
             return True
 
         sf_data.fwrite("Hive healing was not possible...")
-        if self.__shrink_hive(sf_data, dead_worker.name):
+        if self.__shrink_hive(sf_data, dead_worker.id):
             sf_data.fwrite("Shrinking complete!")
             return True  # successful hive shrinking
 
@@ -200,10 +196,10 @@ class Hivemind:
         worker = self.workers[best_worker_name]
         if mock:
             sf_data.fwrite("Asking best worker, {}, to initialize recovery protocol mock...".format(best_worker_name))
-            worker.receive_parts(mock, sf_data.file_name, no_check=True)
+            worker.receive_parts(mock, sf_data.name, no_check=True)
         else:
             sf_data.fwrite("Asking best worker, {}, to initialize recovery protocols...".format(best_worker_name))
-            worker.init_recovery_protocol(sf_data.file_name)
+            worker.init_recovery_protocol(sf_data.name)
             print("   Recovery complete...")
 
     def receive_complaint(self, suspects_name: str) -> None:
@@ -219,24 +215,6 @@ class Hivemind:
         #    2.2. discover the files the node used to share, probably requires yet another sf_strucutre
         #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
         log.warning("receive_complaint for {} is only a mock. method needs to be implemented...".format(suspects_name))
-
-    def route_file_part(self, dest_worker_name: str, sf_part: SharedFilePart) -> Any:
-        """
-        Receives a shared file part and sends it to the given destination
-        :param str dest_worker_name: destination worker's name
-        :param SharedFilePart sf_part: the file part to send to specified worker
-        :returns int: http codes based status of destination worker
-        """
-        dest_status = self.workers_status[dest_worker_name]
-        if dest_status == Status.ONLINE:
-            self.workers[dest_worker_name].receive_part(sf_part, no_check=True)
-            return HttpCodes.OK
-        elif dest_status == Status.OFFLINE:
-            return HttpCodes.SERVER_DOWN
-        elif dest_status == Status.SUSPECT:
-            return HttpCodes.TIME_OUT
-        else:
-            return HttpCodes.NOT_FOUND
 
     def redistribute_file_parts(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
         """
@@ -271,7 +249,7 @@ class Hivemind:
         """
         workers = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
         for worker in workers:
-            self.workers_hives[worker.name].add(self.sf_datas[part.part_name])
+            self.workers_hives[worker.name].add(self.sf_datas[part.name])
             worker.receive_part(part, no_check=True)
 
     # endregion
@@ -286,7 +264,7 @@ class Hivemind:
         """
         surviving_workers: List[Worker] = []
         for worker in online_workers:
-            uptime: float = self.workers_uptime[worker.name] / 100
+            uptime: float = self.workers_uptime[worker.id] / 100
             remains_alive: bool = np.random.choice(Hivemind.TRUE_FALSE, p=[uptime, 1 - uptime])
             if remains_alive:
                 surviving_workers.append(worker)
@@ -304,13 +282,13 @@ class Hivemind:
         sf_failures: Set[str] = set()
         shared_files: Dict[str, Dict[int, SharedFilePart]] = dead_worker.get_all_parts()
         if not shared_files:  # if dead worker had no shared files on him just try to replace node or shrink the hive
-            for sf_data in self.workers_hives[dead_worker.name]:
-                sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.name, stage))
+            for sf_data in self.workers_hives[dead_worker.id]:
+                sf_data.fwrite("Worker: '{}' was removed at stage {}, he had no files.".format(dead_worker.id, stage))
                 sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures)
         else:  # otherwise see if a failure has happened before doing anything else
             for sf_name, sf_id_sfp_dict in shared_files.items():
                 sf_data = self.sf_datas[sf_name]
-                sf_data.fwrite("Worker: '{}' was removed at stage {}, he had {} parts of file {}".format(dead_worker.name, stage, len(sf_id_sfp_dict), sf_name))
+                sf_data.fwrite("Worker: '{}' was removed at stage {}, he had {} parts of file {}".format(dead_worker.id, stage, len(sf_id_sfp_dict), sf_name))
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     self.__workers_stop_tracking_shared_file(sf_data)
                     sf_data.fclose("Worker had too many parts... file lost!")
@@ -318,8 +296,8 @@ class Hivemind:
                 else:
                     sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures, recover=sf_id_sfp_dict)
         self.__stop_tracking_failed_hives(sf_failures)
-        self.__stop_tracking_worker(dead_worker.name)
-        self.workers_status[dead_worker.name] = Status.OFFLINE
+        self.__stop_tracking_worker(dead_worker.id)
+        self.workers_status[dead_worker.id] = Status.OFFLINE
 
     def __process_stage_results(self, stage: int) -> None:
         """
@@ -352,7 +330,7 @@ class Hivemind:
                 sf_data.current_distribution.at[name, DEFAULT_COLUMN] = 0
             else:
                 worker = self.workers[name]  # get worker instance corresponding to name
-                sf_data.current_distribution.at[name, DEFAULT_COLUMN] = worker.get_parts_count(sf_data.file_name)
+                sf_data.current_distribution.at[name, DEFAULT_COLUMN] = worker.get_parts_count(sf_data.name)
 
     def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
         """
@@ -376,7 +354,7 @@ class Hivemind:
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
         hive_workers_names: List[str] = [*sf_data.desired_distribution.index]
-        sf_name: str = str_copy(sf_data.file_name)  # Creates an hard copy (str) of the shared file name
+        sf_name: str = str_copy(sf_data.name)  # Creates an hard copy (str) of the shared file name
         # First ask workers to reset theirs, for safety, popping in hivemind structures is only done at a later point
         self.__remove_routing_tables(sf_name, hive_workers_names)
 
@@ -406,14 +384,14 @@ class Hivemind:
         replacement_dict: Dict[str, str]
 
         sf_data.fwrite("Attempting to find a node replacement...")
-        labels, replacing_worker, replacement_dict = self.__find_replacement_node(sf_data, dead_worker.name)
+        labels, replacing_worker, replacement_dict = self.__find_replacement_node(sf_data, dead_worker.id)
 
         if replacement_dict:
             sf_data.fwrite("Committing the replacement of nodes: {}".format(str(replacement_dict)))
             sf_data.commit_replacement(replacement_dict)
-            self.workers_hives[replacing_worker.name].add(sf_data)
-            self.__inherit_routing_table(sf_data.file_name, dead_worker, replacing_worker, replacement_dict)
-            self.__update_routing_tables(sf_data.file_name, labels, replacement_dict)
+            self.workers_hives[replacing_worker.id].add(sf_data)
+            self.__inherit_routing_table(sf_data.name, dead_worker, replacing_worker, replacement_dict)
+            self.__update_routing_tables(sf_data.name, labels, replacement_dict)
         else:
             sf_data.fwrite("No replacement found...")
 
@@ -464,7 +442,7 @@ class Hivemind:
         sf_data.reset_distribution_data(cropped_labels, cropped_ddv)
         sf_data.reset_density_data()
         sf_data.reset_convergence_data()
-        self.__set_routing_tables(sf_data.file_name, cropped_labels, transition_matrix)
+        self.__set_routing_tables(sf_data.name, cropped_labels, transition_matrix)
         return True
 
     def __crop_adj_matrix(self, sf_data: FileData, dw_name: str) -> List[List[int]]:
@@ -592,7 +570,7 @@ class Hivemind:
             self.__init_recovery_protocol(sf_data, mock=recover) if recover else None
         else:
             sf_data.fclose()
-            sf_failures.add(sf_data.file_name)
+            sf_failures.add(sf_data.name)
         return sf_failures
 
     def __stop_tracking_worker(self, worker_name: str) -> None:
