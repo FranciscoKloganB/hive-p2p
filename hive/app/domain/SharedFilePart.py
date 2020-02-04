@@ -12,7 +12,7 @@ class SharedFilePart:
     :ivar str sha256: hash value resultant of applying sha256 hash function over part_data param
     """
 
-    # region class variables, instance variables and constructors
+    # region Class Variables, Instance Variables and Constructors
     def __init__(self, hive_id: str, name: str, number: int, data: bytes):
         """
         Instantiates a SharedFilePart object
@@ -28,7 +28,7 @@ class SharedFilePart:
         self.sha256: str = crypto.sha256(self.data)
     # endregion
 
-    # region override
+    # region Override
     def __str__(self):
         return "part_name: {},\npart_number: {},\npart_id: {},\npart_data: {},\nsha256: {}\n".format(self.name, self.number, self.id, self.data, self.sha256)
     # endregion
