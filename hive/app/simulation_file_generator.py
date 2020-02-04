@@ -51,7 +51,7 @@ def __in_initial_spread() -> str:
     spread_mode = input("\nSelect how files are spread across the Hives in the beggining of the simulation: "
                         "\nPress 'u' for uniform distribution, 'i' to beging closely to desired distribution, and, 'a' to give all files to one peer...\n")
     while True:
-        if spread_mode in ['u', 'U', 'i', 'I', 'a', 'A']:
+        if spread_mode in ["u", "U", "i", "I", "a", "A"]:
             return spread_mode.lower()
         spread_mode = input("Available choices are 'u', 'i', 'a'... Try again: ")
 
@@ -230,8 +230,8 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
         chosen_peers: List[str] = __init_hive_members(n, peer_uptime_dict, peer_names)
 
         shared_dict[file_name] = {}
-        shared_dict[file_name]["state_labels"] = chosen_peers
-        shared_dict[file_name]["initial_spread"] = __in_initial_spread()
+        shared_dict[file_name]["members"] = chosen_peers
+        shared_dict[file_name]["spread"] = __in_initial_spread()
 
         add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
 

@@ -9,6 +9,8 @@ from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from domain.SharedFilePart import SharedFilePart
 
+from globals.globals import REPLICATION_LEVEL, DEFAULT_COLUMN
+
 from typing import Dict, List, Union, Any
 
 
@@ -21,9 +23,10 @@ class Hive:
     :deprecated_ivar Dict[str, FileData] files: maps the name of the files persisted by the members of this Hive, to instances of FileData used by the Simulator class
     """
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self) -> None:
+    def __init__(self, members: Dict[str, Worker]) -> None:
         """
         Instantiates an Hive abstraction
+        :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
         """
         self.id: str = str(uuid.uuid4())
         self.members: Dict[str, Worker] = {}
@@ -120,4 +123,36 @@ class Hive:
         self.members[new_member.id] = new_member
     # endregion
 
+    # region Simulation Interface
+    def spread_files(self, spread_mode: str, file_parts: Dict[int, SharedFilePart]):
+        """
+        Spreads files over the initial members of the Hive
+        :param str spread_mode: 'u' for uniform distribution, 'a' one peer receives all or 'i' to distribute according to the desired steady state distribution
+        :param Dict[int, SharedFilePart] file_parts: file parts to distribute over the members
+        """
+        if spread_mode == "a":
+            choices: List[Worker] = [*self.members.values()]
+            workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+            for worker in workers:
+                for part in file_parts.values():
+                    worker.receive_part(part)
 
+        elif spread_mode == "u":
+            for part in file_parts.values():
+                choices: List[Worker] = [*self.members.values()]
+                workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+                for worker in workers:
+                    worker.receive_part(part)
+
+        elif spread_mode == 'i':
+            choices = [*self.members.values()]
+            desired_distribution: List[float] = []
+            for member_id in choices:
+                desired_distribution.append(self.desired_distribution.loc[member_id, DEFAULT_COLUMN].item())
+
+            for part in file_parts.values():
+                choices: List[Worker] = choices.copy()
+                workers: List[Worker] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
+                for worker in workers:
+                    worker.receive_part(part)
+    # endregion

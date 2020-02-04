@@ -18,7 +18,7 @@ from utils.randoms import random_index
 from utils.convertions import str_copy
 from utils.collections import safe_remove
 
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, REPLICATION_LEVEL
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
 
 from typing import cast, List, Set, Union, Dict, Tuple, Optional, Any
 
@@ -55,61 +55,47 @@ class Hivemind:
                 worker: Worker = Worker(worker_id, worker_uptime)
                 self.workers[worker.id] = worker
 
-            # Read and split all shareable files specified on the input
-            file_parts, file_spreads = self.split_files(json_obj['shared'])
+            # Read and split all shareable files specified on the input, also assign Hive initial attributes
+            hive: Hive
+            hive_members: Dict[str, Worker]
+            files_spreads: Dict[str, str] = {}
+            files_dict: Dict[str, Dict[int, SharedFilePart]] = {}
+            file_parts: Dict[int, SharedFilePart]
+
+            shared: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['shared'].keys()
+            for file_name in shared.keys():
+                with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
+                    part_number: int = 0
+                    file_parts = {}
+                    files_spreads[file_name] = shared[file_name]['spread']
+                    hive = self.__new_hive(shared, file_name)
+                    while True:
+                        read_buffer = file.read(READ_SIZE)
+                        if read_buffer:
+                            part_number = part_number + 1
+                            file_parts[part_number] = SharedFilePart(hive.id, file_name, part_number, read_buffer)
+                        else:
+                            files_dict[file_name] = file_parts
+                            break
+                    hive.file = FileData(name=file_name, parts_count=part_number)
 
             # For all shareable files, set that shared file_routing table
             self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
 
             # Distribute files before starting simulation
-            self.distribute_file_parts(self.files)
+            self.distribute_file_parts(files_spreads, files_dict)
     # endregion
 
     # region domain.Worker related methods
-    def distribute_file_parts(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
+    def distribute_file_parts(self, spreads: Dict[str, str], shared: Dict[str, Dict[int, SharedFilePart]]) -> None:
         """
-        Distributes received file parts over the Hive network.
-        :param Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts
+        Distributes file parts over the Hives.
+        :param Dict[str, str] spreads: collection mapping file names to their initial distribution in the hive
+        :param Dict[str, Dict[int, SharedFilePart]] shared: collection of file parts
         """
-        workers_objs: List[Worker] = self.__filter_and_map_online_workers()
-        for file_name, part_number in shared_files.items():
-            # Retrieve state labels from the file distribution vector
-            worker_names: List[str] = [*self.files_data[file_name].desired_distribution.index]
-            # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
-            # Do not change positions of file_sharers_names with worker_objs...
-            choices: List[Worker] = [*filter(set(worker_names).__contains__, workers_objs)]
-            for part in part_number.values():
-                choices_copy = choices.copy()
-                self.choose_and_assign_part_to_workers(choices_copy, part)
-    # endregion
+        for hive in self.hives.values():
+            hive.spread_files(spreads[hive.file.name], shared[hive.file.name])
 
-    # region file partitioning methods
-    def split_files(self, shared: Dict[str, Dict[str, Union[List[str], str]]]) -> Tuple[Dict[str, Dict[int, SharedFilePart]], Dict[str, str]]:
-        """
-        For all files in the shared, reads their bytes from disk and splits them into globas.READ_SIZE
-        :returns Tuple[Dict[str, Dict[int, SharedFilePart]], Dict[str, str]] files, spreads: collections used to initialize simulation w.r.t. file distribution
-        """
-        hive: Hive
-        file_parts: Dict[int, SharedFilePart]
-        files: Dict[str, Dict[int, SharedFilePart]] = {}
-        spreads: Dict[str, str] = {}
-        for file_name in shared.keys():
-            with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
-                file_parts = {}
-                part_number: int = 0
-                hive = Hive()
-                self.hives[hive.id] = hive
-                spreads[file_name] = shared[file_name]['initial_spread']
-                while True:
-                    read_buffer = file.read(READ_SIZE)
-                    if read_buffer:
-                        part_number = part_number + 1
-                        file_parts[part_number] = SharedFilePart(hive.id, file_name, part_number, read_buffer)
-                    else:
-                        files[file_name] = file_parts
-                        break
-                hive.file = FileData(name=file_name, parts_count=part_number)
-            return files, spreads
     # endregion
 
     # region metropolis hastings and transition vector assignment methods
@@ -223,18 +209,6 @@ class Hivemind:
         sf_data.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
         sf_data.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
         sf_data.convergence_data = ConvergenceData()
-
-    def choose_and_assign_part_to_workers(self, choices: List[Worker], part: SharedFilePart) -> None:
-        """
-        Gives one copy of a file part to N different peers, chosen at random
-        :param List[Worker] choices: List of workers to choose from
-        :param SharedFilePart part: File part to assign to worker
-        """
-        workers = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
-        for worker in workers:
-            self.workers_hives[worker.name].add(self.files_data[part.name])
-            worker.receive_part(part, no_check=True)
-
     # endregion
 
     # region stage processing
@@ -472,6 +446,17 @@ class Hivemind:
     # endregion
 
     # region other helpers
+    def __new_hive(self, shared: Dict[str, Dict[str, Union[List[str], str]]], file_name: str) -> Hive:
+        """
+        Creates a new hive
+        """
+        hive_members = {}
+        for worker_id in shared[file_name]['members']:
+            hive_members[worker_id] = self.workers[worker_id]
+        hive = Hive(hive_members)
+        self.hives[hive.id] = hive
+        return hive
+
     def __set_routing_tables(self, sf_name: str, worker_names: List[str], transition_matrix: pd.DataFrame):
         """
         Inits the routing tables w.r.t. the inputed shared file id for all listed workers' names by passing them their

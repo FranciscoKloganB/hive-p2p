@@ -21,10 +21,9 @@ class FileData:
     """
 
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, name: str = "", parts_count: int = 0, ddv: pd.DataFrame = None, cdv: pd.DataFrame = None, convergence_data: ConvergenceData = None):
+    def __init__(self, name: str = "", parts_count: int = 0, cdv: pd.DataFrame = None, convergence_data: ConvergenceData = None):
         self.name: str = name
         self.parts_count: int = parts_count
-        self.desired_distribution: pd.DataFrame = ddv
         self.current_distribution: pd.DataFrame = cdv
         self.convergence_data: ConvergenceData = convergence_data
         self.out_file: Any = open(os.path.join(OUTFILE_ROOT, self.name + ".out"), "w+")
