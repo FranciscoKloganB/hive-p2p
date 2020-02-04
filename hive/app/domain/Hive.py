@@ -76,7 +76,7 @@ class Hive:
             member_ids.append(worker.id)
 
         adjancency_matrix = matrices.new_symmetric_adjency_matrix(len(member_ids))
-        desired_distribution = self.new_desired_distribution(member_uptimes)
+        desired_distribution = self.new_desired_distribution(member_ids, member_uptimes)
 
         transition_matrix: np.ndarray = mh.metropolis_algorithm(adjancency_matrix, desired_distribution, column_major_out=True)
         return pd.DataFrame(transition_matrix, index=member_ids, columns=member_ids)
