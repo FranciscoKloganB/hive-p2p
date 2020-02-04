@@ -1,51 +1,119 @@
 import uuid
+import numpy as np
+import pandas as pd
+import utils.matrices as matrices
+import utils.metropolis_hastings as mh
 
-from typing import Set, Union
 from domain.Worker import Worker
+from domain.Enums import Status, HttpCodes
+from domain.helpers.FileData import FileData
+from domain.SharedFilePart import SharedFilePart
+
+from typing import Dict, List, Union, Any
 
 
 class Hive:
     """
-    :ivar Set[Worker] members: Workers that belong to this P2P Hive
     :ivar str hive_id: unique identifier in str format
-    :ivar str file_name:
+    :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.name, value is the actual object
+    :ivar Dict[str, FileData] files: maps the name of the files persisted by the members of this Hive, to instances of FileData used by the Simulator class
+    :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
     """
-    def __init__(self, file_name: str) -> None:
+
+    # region Class Variables, Instance Variables and Constructors
+    def __init__(self) -> None:
         """
         Instantiates an Hive abstraction
-        :param str file_name: name of the file that is managed under this hive
         """
-        self.members: Set[Worker] = set()
         self.hive_id: str = str(uuid.uuid4())
-        self.file_name = file_name
+        self.members: Dict[str, Worker] = {}
+        self.files: Dict[str, FileData] = {}
+        self.desired_distribution: pd.DataFrame = pd.DataFrame()
+    # endregion
 
-    def set_transition_matrix(self, transition_matrix) -> None:
+    # region Routing
+    def route_part(self, destination_name: str, part: SharedFilePart) -> Any:
         """
-        Gives each member his respective vector column belonging to the transition matrix the Hive is now executing.
+        Receives a shared file part and sends it to the given destination
+        :param str destination_name: destination worker's name
+        :param SharedFilePart part: the file part to send to specified worker
+        :returns int: http codes based status of destination worker
         """
-        # TODO: transition matrix should be a vector
-        for worker in self.members:
-            worker.set_file_routing(self.file_name, transition_matrix)
+        member = self.members[destination_name]
+        if member.status == Status.ONLINE:
+            member.receive_part(part)
+            return HttpCodes.OK
+        else:
+            return HttpCodes.NOT_FOUND
+    # endregion
 
+    # region Swarm Guidance
+    def new_desired_distribution(self, member_uptimes: List[float]) -> List[float]:
+        """
+        :param List[float] member_uptimes: list of member uptimes to be normalized
+        :returns List[float]: normalized vector which represents the desired distribution of the files based on the 'reliability' of the Hive members
+        """
+        uptime_sum = sum(member_uptimes)
+        return [member_uptime/uptime_sum for member_uptime in member_uptimes]
+
+    def new_transition_matrix(self) -> pd.DataFrame:
+        """
+        returns DataFrame: Creates a new transition matrix for the members of the Hive, to be followed independently by each of them
+        """
+        desired_distribution: List[float]
+        adjancency_matrix: List[List[int]]
+        member_uptimes: List[float] = []
+        member_ids: List[str] = []
+
+        for worker in self.members.values():
+            member_uptimes.append(worker.uptime)
+            member_ids.append(worker.id)
+
+        adjancency_matrix = matrices.new_symmetric_adjency_matrix(len(member_ids))
+        desired_distribution = self.new_desired_distribution(member_uptimes)
+
+        transition_matrix: np.ndarray = mh.metropolis_algorithm(adjancency_matrix, desired_distribution, column_major_out=True)
+        return pd.DataFrame(transition_matrix, index=member_ids, columns=member_ids)
+
+    def set_transition_matrix(self) -> None:
+        """
+        Gives each member his respective slice (vector column) of the transition matrix the Hive is currently executing.
+        post-scriptum: we could make an optimization that sets a transition matrix for the hive, ignoring the file names, instead of mapping different file
+        names to an equal transition matrix within each hive member, thus reducing space overhead arbitrarly, however, this would make Simulation harder. This
+        note is kept for future reference.
+        """
+        transition_vector: pd.DataFrame
+        transition_matrix: pd.DataFrame = self.new_transition_matrix()
+
+        for worker in self.members.values():
+            transition_vector = transition_matrix.loc[:, worker.id]
+            for file in self.files.values():
+                worker.set_file_routing(file.name, transition_vector)
+    # endregion
+
+    # region Membership
     def remove_member(self, worker: Union[str, Worker]) -> None:
         """
         Removes a worker from the Hive's membership set.
         :param Union[str, Worker] worker: name of the worker or instance object of class Worker to be removed from the set.
         """
-        self.members.discard(worker)
+        self.members.pop(worker, None)
 
     def add_member(self, worker: Worker) -> None:
         """
         Adds a worker to the Hive's membership set.
         :param Worker worker: instance object of class Worker to be added to the set.
         """
-        self.members.add(worker)
+        self.members[worker.id] = worker
 
-    def replace_member(self, old: Union[str, Worker], new: Worker) -> None:
+    def replace_member(self, old_member: Union[str, Worker], new_member: Worker) -> None:
         """
         Replaces a worker from the Hive's membership set with some other worker.
-        :param Union[str, Worker] old: name of the worker or instance object of class Worker to be replaced in the set.
-        :param Worker new: instance object of class Worker to be added to the set.
+        :param Union[str, Worker] old_member: name of the worker or instance object of class Worker to be replaced in the set.
+        :param Worker new_member: instance object of class Worker to be added to the set.
         """
-        self.members.discard(old)
-        self.members.add(new)
+        self.members.pop(old_member)
+        self.members[new_member.id] = new_member
+    # endregion
+
+
