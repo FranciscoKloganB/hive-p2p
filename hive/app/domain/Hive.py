@@ -48,13 +48,17 @@ class Hive:
     # endregion
 
     # region Swarm Guidance
-    def new_desired_distribution(self, member_uptimes: List[float]) -> List[float]:
+    def new_desired_distribution(self, member_ids: List[str], member_uptimes: List[float]) -> List[float]:
         """
+        Normalizes inputted member uptimes and saves it on Hive.desired_distribution attribute
+        :param List[str] member_ids: list of member ids representing the current hive membership
         :param List[float] member_uptimes: list of member uptimes to be normalized
-        :returns List[float]: normalized vector which represents the desired distribution of the files based on the 'reliability' of the Hive members
+        :returns List[float] desired_distribution: uptimes represent 'reliability', thus, desired distribution is the normalization of the members' uptimes
         """
         uptime_sum = sum(member_uptimes)
-        return [member_uptime/uptime_sum for member_uptime in member_uptimes]
+        uptimes_normalized = [member_uptime/uptime_sum for member_uptime in member_uptimes]
+        self.desired_distribution = pd.DataFrame(data=uptimes_normalized, index=member_ids)
+        return uptimes_normalized
 
     def new_transition_matrix(self) -> pd.DataFrame:
         """
@@ -75,7 +79,7 @@ class Hive:
         transition_matrix: np.ndarray = mh.metropolis_algorithm(adjancency_matrix, desired_distribution, column_major_out=True)
         return pd.DataFrame(transition_matrix, index=member_ids, columns=member_ids)
 
-    def set_transition_matrix(self) -> None:
+    def broadcast_transition_matrix(self) -> None:
         """
         Gives each member his respective slice (vector column) of the transition matrix the Hive is currently executing.
         post-scriptum: we could make an optimization that sets a transition matrix for the hive, ignoring the file names, instead of mapping different file
