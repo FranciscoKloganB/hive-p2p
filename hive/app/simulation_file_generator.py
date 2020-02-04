@@ -147,23 +147,23 @@ def __in_file_labels(peer_uptime_dict: Dict[str, float], peer_names: List[str]) 
 
 
 # region init and generation functions
-def __init_nodes_uptime_dict() -> Dict[str, float]:
+def __init_peer_uptime_dict() -> Dict[str, float]:
     """
     :return Dict[str, float] peers_uptime_dict: a dictionary the maps peers (state labels) to their machine uptimes.
     """
     number_of_nodes = __in_number_of_nodes("\nEnter the number of nodes you wish to have in the network [2, 9999]: ")
-    min_uptime = __in_min_node_uptime("\nEnter the mininum node uptime of nodes in the network [0.0, 100.0]: ")
+    min_uptime = float(str(__in_min_node_uptime("\nEnter the mininum node uptime of nodes in the network [0.0, 100.0]: "))[:9]) / 100.0
 
     skewness = __in_samples_skewness()
     samples = sg.generate_skewed_samples(skewness=skewness).tolist()
 
     peers_uptime_dict = {}
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
-        uptime = abs(samples.pop())  # gets and removes last element in samples to assign it to label
-        if uptime > 100.0:
-            peers_uptime_dict[label] = 100.0
+        uptime = abs(samples.pop()) / 100.0  # gets and removes last element in samples to assign it to label
+        if uptime > 1.0:
+            peers_uptime_dict[label] = 1.0
         elif uptime > min_uptime:
-            peers_uptime_dict[label] = float(str(uptime)[:9])
+            peers_uptime_dict[label] = uptime
         else:
             peers_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
     samples.clear()
@@ -233,7 +233,7 @@ def main(simfile_name: str):
     Creates a structured json file within the user's file system that can be used as input for an HIVE system simulation
     :param str simfile_name: id to be assigned to the simulation file (json file) in the user's file system
     """
-    peers_uptime_dict: Dict[str, float] = __init_nodes_uptime_dict()
+    peers_uptime_dict: Dict[str, float] = __init_peer_uptime_dict()
     simfile_json: Dict[str, Any] = {
         "max_stages": __in_max_stages(),
         "nodes_uptime": peers_uptime_dict,
