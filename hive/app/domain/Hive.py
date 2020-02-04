@@ -15,7 +15,7 @@ from typing import Dict, List, Union, Any
 class Hive:
     """
     :ivar str hive_id: unique identifier in str format
-    :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.name, value is the actual object
+    :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
     :ivar Dict[str, FileData] files: maps the name of the files persisted by the members of this Hive, to instances of FileData used by the Simulator class
     :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
     """
@@ -35,7 +35,7 @@ class Hive:
     def route_part(self, destination_name: str, part: SharedFilePart) -> Any:
         """
         Receives a shared file part and sends it to the given destination
-        :param str destination_name: destination worker's name
+        :param str destination_name: destination worker's id
         :param SharedFilePart part: the file part to send to specified worker
         :returns int: http codes based status of destination worker
         """
@@ -99,7 +99,7 @@ class Hive:
     def remove_member(self, worker: Union[str, Worker]) -> None:
         """
         Removes a worker from the Hive's membership set.
-        :param Union[str, Worker] worker: name of the worker or instance object of class Worker to be removed from the set.
+        :param Union[str, Worker] worker: id of the worker or instance object of class Worker to be removed from the set.
         """
         self.members.pop(worker, None)
 
@@ -113,7 +113,7 @@ class Hive:
     def replace_member(self, old_member: Union[str, Worker], new_member: Worker) -> None:
         """
         Replaces a worker from the Hive's membership set with some other worker.
-        :param Union[str, Worker] old_member: name of the worker or instance object of class Worker to be replaced in the set.
+        :param Union[str, Worker] old_member: id of the worker or instance object of class Worker to be replaced in the set.
         :param Worker new_member: instance object of class Worker to be added to the set.
         """
         self.members.pop(old_member)
