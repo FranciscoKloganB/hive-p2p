@@ -12,7 +12,7 @@ from utils.convertions import str_copy
 from utils.collections import safe_remove
 from domain.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
-from utils.randoms import excluding_randrange
+from utils.randoms import excluding_randrange, random_index
 from domain.SharedFilePart import SharedFilePart
 from typing import cast, List, Set, Dict, Tuple, Optional, Union, Any
 from domain.helpers.ConvergenceData import ConvergenceData
@@ -493,7 +493,7 @@ class Hivemind:
                     is_absorbent_or_transient = False
                     break
             if is_absorbent_or_transient:
-                j = Hivemind.random_j_index(i, size)
+                j = random_index(i, size)
                 sf_data.adjacency_matrix.iat[i, j] = 1
                 sf_data.adjacency_matrix.iat[j, i] = 1
         cropped_adj_matrix: List[List[int]] = cast(List[List[int]], sf_data.adjacency_matrix.values.tolist())
@@ -615,22 +615,5 @@ class Hivemind:
         self.workers_uptime.pop(worker_name)
 
     # endregion
-    # endregion
 
-    # region static methods
-    @staticmethod
-    def random_j_index(i: int, size: int) -> int:
-        """
-        Returns a random index j, that is between [0, size) and is different than i
-        :param int i: an index
-        :param int size: the size of the matrix
-        :returns int j
-        """
-        size_minus_one = size - 1
-        if i == 0:
-            return random.randrange(start=1, stop=size)  # any node j other than the first (0)
-        elif i == size_minus_one:
-            return random.randrange(start=0, stop=size_minus_one)  # any node j except than the last (size-1)
-        elif 0 < i < size_minus_one:
-            return excluding_randrange(start=0, stop=i, start_again=(i + 1), stop_again=size)
     # endregion
