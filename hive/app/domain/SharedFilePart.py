@@ -5,7 +5,7 @@ class SharedFilePart:
     """
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :ivar str id: concatenation of part_name | part_number
-    :ivar str hive_id: uniquely identifies the hive that manages the shared file part instance
+    :ivar str id: uniquely identifies the hive that manages the shared file part instance
     :ivar str name: original name of the file this part belongs to
     :ivar int number: unique identifier for this file on the P2P network
     :ivar str data: base64 string corresponding to the actual contents of this file part

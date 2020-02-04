@@ -14,21 +14,23 @@ from typing import Dict, List, Union, Any
 
 class Hive:
     """
-    :ivar str hive_id: unique identifier in str format
+    :ivar str id: unique identifier in str format
     :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
-    :ivar Dict[str, FileData] files: maps the name of the files persisted by the members of this Hive, to instances of FileData used by the Simulator class
+    :ivar FileData Union[None, FileData]: instance of class FileData which contains information regarding the file persisted by this hive
     :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
+    :deprecated_ivar Dict[str, FileData] files: maps the name of the files persisted by the members of this Hive, to instances of FileData used by the Simulator class
     """
-
     # region Class Variables, Instance Variables and Constructors
     def __init__(self) -> None:
         """
         Instantiates an Hive abstraction
         """
-        self.hive_id: str = str(uuid.uuid4())
+        self.id: str = str(uuid.uuid4())
         self.members: Dict[str, Worker] = {}
-        self.files: Dict[str, FileData] = {}
+        self.file: Union[None, FileData] = None
         self.desired_distribution: pd.DataFrame = pd.DataFrame()
+        # self.files: Dict[str, FileData] = {}
+
     # endregion
 
     # region Routing
@@ -84,15 +86,13 @@ class Hive:
         Gives each member his respective slice (vector column) of the transition matrix the Hive is currently executing.
         post-scriptum: we could make an optimization that sets a transition matrix for the hive, ignoring the file names, instead of mapping different file
         names to an equal transition matrix within each hive member, thus reducing space overhead arbitrarly, however, this would make Simulation harder. This
-        note is kept for future reference.
+        note is kept for future reference. This also assumes an hive can store multiple files. For simplicity each Hive only manages one file for now.
         """
         transition_vector: pd.DataFrame
         transition_matrix: pd.DataFrame = self.new_transition_matrix()
-
         for worker in self.members.values():
             transition_vector = transition_matrix.loc[:, worker.id]
-            for file in self.files.values():
-                worker.set_file_routing(file.name, transition_vector)
+            worker.set_file_routing(self.file.name, transition_vector)
     # endregion
 
     # region Membership

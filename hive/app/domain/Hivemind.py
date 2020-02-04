@@ -6,32 +6,36 @@ import utils.metropolis_hastings as mh
 import logging as log
 
 from pathlib import Path
+
+from domain.Hive import Hive
+from domain.Enums import Status
 from domain.Worker import Worker
+from domain.helpers.FileData import FileData
+from domain.SharedFilePart import SharedFilePart
+from domain.helpers.ConvergenceData import ConvergenceData
+
+from utils.randoms import random_index
 from utils.convertions import str_copy
 from utils.collections import safe_remove
-from domain.Enums import Status
-from domain.helpers.FileData import FileData
-from utils.randoms import random_index
-from domain.SharedFilePart import SharedFilePart
-from typing import cast, List, Set, Dict, Tuple, Optional, Union, Any
-from domain.helpers.ConvergenceData import ConvergenceData
+
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, REPLICATION_LEVEL
+
+from typing import cast, List, Set, Dict, Tuple, Optional, Any
 
 
 class Hivemind:
     """
-    Representation of the P2P Network super node managing one or more hives
-    :cvar List[bool] TRUE_FALSE: static list containing bool, True on index 0 and False on index 1.
-    :ivar Dict[str, Worker] workers: maps workers' names to their object instances
+    Representation of the P2P Network super node managing one or more hives ---- Simulator is piggybacked
+    :ivar int max_epochs: number of stages the hive has to converge to the ddv before simulation is considered failed
+
+    :ivar Dict[str, Hive] hives: collection mapping hives' uuid (attribute Hive.id) to the Hive instances
+    :ivar Dict[str, Worker] workers: collection mapping workers' names to their Worker instances
+    :ivar Dict[str, Dict[int, SharedFilePart]] files: collection of file parts created by the Hivemind instance
+    :ivar Dict[str, FileData] files_data: collection mapping file names on the system and their FileData instance
     :ivar Dict[Union[Worker, str], int] workers_status: maps workers or their names to their connectivity status
     :ivar Dict[str, List[FileData]] workers_hives: maps workers' names to hives they are known to belong to
     :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
-    :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts created by the Hivemind instance
-    :ivar Dict[str, FileData] sf_data: collection of information about the shared files managed by the Hivemind instance
-    :ivar int max_stages: number of stages the hive has to converge to the ddv before simulation is considered failed
     """
-
-    TRUE_FALSE = [True, False]
 
     # region instance variables and constructors
     def __init__(self, simfile_name: str) -> None:
@@ -42,39 +46,31 @@ class Hivemind:
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
             json_obj: Any = json.load(input_file)
+
             # Init basic simulation variables
-            self.shared_files: Dict[str, Dict[int, SharedFilePart]] = {}
-            self.sf_datas: Dict[str, FileData] = {}
-            self.workers: Dict[str, Worker] = {}
-            self.workers_hives: Dict[str, Set[FileData]] = {}
-            self.workers_uptime: Dict[str, float] = json_obj['nodes_uptime']
             self.max_epochs: int = json_obj['max_epochs']
+            self.hives: Dict[str, Hive] = {}
+            self.workers: Dict[str, Worker] = {}
+            self.files: Dict[str, Dict[int, SharedFilePart]] = {}
+
             # Create the P2P network nodes (domain.Workers) without any job
-            self.__init_workers([*self.workers_uptime.keys()])
+            for worker_id, worker_uptime in json_obj['peers_uptime'].items():
+                worker: Worker = Worker(worker_id, worker_uptime)
+                self.workers[worker.id] = worker
+
             # Read and split all shareable files specified on the input
-            self.__split_all_shared_files([*json_obj['shared'].keys()])
+            file_specifications: Dict[str, Any] = json_obj['shared']
+            self.split_files()
+
             # For all shareable files, set that shared file_routing table
             self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
+
             # Distribute files before starting simulation
-            self.__uniformly_assign_parts_to_workers(self.shared_files)
-            # Remove references to shared file parts in self.shared_files, helping Garbage Collector memory management
-            log.warning(str(len(self.shared_files['powerglove'])))
-            self.shared_files.clear()
+            self.distribute_file_parts(self.files)
     # endregion
 
     # region domain.Worker related methods
-    def __init_workers(self, worker_names: List[str]) -> None:
-        """
-        Instantiates all worker objects within the inputted list and updates some Hivemind instance fields
-        :param List[str] worker_names: names of the workers to be instantiated
-        """
-        for name in worker_names:
-            worker: Worker = Worker(self, name)
-            self.workers[name] = worker
-            self.workers_status[worker] = Status.ONLINE
-            self.workers_hives[name] = set()
-
-    def __uniformly_assign_parts_to_workers(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
+    def distribute_file_parts(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
         """
         Distributes received file parts over the Hive network.
         :param Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts
@@ -82,7 +78,7 @@ class Hivemind:
         workers_objs: List[Worker] = self.__filter_and_map_online_workers()
         for file_name, part_number in shared_files.items():
             # Retrieve state labels from the file distribution vector
-            worker_names: List[str] = [*self.sf_datas[file_name].desired_distribution.index]
+            worker_names: List[str] = [*self.files_data[file_name].desired_distribution.index]
             # Quickly filter from the workers which ones are online, fast version of set(a).intersection(b),
             # Do not change positions of file_sharers_names with worker_objs...
             choices: List[Worker] = [*filter(set(worker_names).__contains__, workers_objs)]
@@ -92,34 +88,28 @@ class Hivemind:
     # endregion
 
     # region file partitioning methods
-    def __split_all_shared_files(self, sf_names: List[str]) -> None:
+    def split_files(self, specified_file_names: List[str]) -> None:
         """
-        Obtains the path of all files that are going to be divided for sharing simulation and splits them into parts
-        :param List[str] sf_names: a list containing the name of the files to be shared with their extensions included
+        For all specified files in the simulation specifications, reads their bytes from disk and splits them into globas.READ_SIZE, then instantiates a
+        domain.SharedFilePart instance
         """
-        for file_name in sf_names:
-            self.__split_shared_file(os.path.join(SHARED_ROOT, file_name))
-
-    def __split_shared_file(self, file_path: str) -> None:
-        """
-        Reads contents of the file in 2KB blocks and encapsulates them along with their ID and SHA256
-        :param str file_path: path to an arbitrary file to persist on the hive network
-        """
-        # file_extension = Path(file_path).resolve().suffix
-        sf_name: str = Path(file_path).resolve().stem
-        with open(file_path, "rb") as shared_file:
-            file_parts: Dict[int, SharedFilePart] = {}
-            part_number: int = 0
-            while True:
-                read_buffer = shared_file.read(READ_SIZE)
-                if read_buffer:
-                    part_number = part_number + 1
-                    shared_file_part: SharedFilePart = SharedFilePart(sf_name, part_number, read_buffer)
-                    file_parts[part_number] = shared_file_part
-                else:
-                    self.shared_files[sf_name] = file_parts
-                    break
-            self.sf_datas[sf_name] = FileData(name=sf_name, parts_count=part_number)
+        for name in specified_file_names:
+            file_path: str = os.path.join(SHARED_ROOT, name)
+            file_name: str = Path(file_path).resolve().stem  # extracts the file name from the full path and also discards the file's extension
+            with open(file_path, "rb") as file:
+                part_number: int = 0
+                file_parts: Dict[int, SharedFilePart] = {}
+                hive: Hive = Hive()
+                self.hives[hive.id] = hive
+                while True:
+                    read_buffer = file.read(READ_SIZE)
+                    if read_buffer:
+                        part_number = part_number + 1
+                        file_parts[part_number] = SharedFilePart(hive.id, file_name, part_number, read_buffer)
+                    else:
+                        self.files[file_name] = file_parts
+                        break
+                hive.file = FileData(name=file_name, parts_count=part_number)
     # endregion
 
     # region metropolis hastings and transition vector assignment methods
@@ -206,7 +196,7 @@ class Hivemind:
         """
         Registers a complaint on the named worker, if enough complaints are received, broadcasts proper action to all
         hives' workers to which the suspect belonged to.
-        :param suspects_name: name of the worker which regards the complaint
+        :param suspects_name: id of the worker which regards the complaint
         """
         # TODO future-iterations:
         #  1. register complaint
@@ -215,13 +205,6 @@ class Hivemind:
         #    2.2. discover the files the node used to share, probably requires yet another sf_strucutre
         #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
         log.warning("receive_complaint for {} is only a mock. method needs to be implemented...".format(suspects_name))
-
-    def redistribute_file_parts(self, shared_files: Dict[str, Dict[int, SharedFilePart]]) -> None:
-        """
-        Hivemind redistributes shared files passed by requester, e.g.: by a Worker instance before leaving the hive
-        :param  Dict[str, SharedFilePart] shared_files: collection of file parts to be distributed by workers
-        """
-        self.__uniformly_assign_parts_to_workers(shared_files)
     # endregion
 
     # region helper methods
@@ -233,9 +216,9 @@ class Hivemind:
         :param str sf_name: the name of the file to be tracked by the hivemind
         :param List[List[int]] adj_matrix: matrix with connections between worker nodes
         :param List[float] desired_distribution: the desired distribution vector of the given named file
-        :param List[str] labels: name of the workers belonging to the hive, i.e.: keepers or sharers of the files
+        :param List[str] labels: id of the workers belonging to the hive, i.e.: keepers or sharers of the files
         """
-        sf_data = self.sf_datas[sf_name]
+        sf_data = self.files_data[sf_name]
         sf_data.adjacency_matrix = pd.DataFrame(adj_matrix, index=labels, columns=labels)
         sf_data.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
         sf_data.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
@@ -249,7 +232,7 @@ class Hivemind:
         """
         workers = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
         for worker in workers:
-            self.workers_hives[worker.name].add(self.sf_datas[part.name])
+            self.workers_hives[worker.name].add(self.files_data[part.name])
             worker.receive_part(part, no_check=True)
 
     # endregion
@@ -287,7 +270,7 @@ class Hivemind:
                 sf_failures = self.__try_care_taking(stage, dead_worker, sf_data, sf_failures)
         else:  # otherwise see if a failure has happened before doing anything else
             for sf_name, sf_id_sfp_dict in shared_files.items():
-                sf_data = self.sf_datas[sf_name]
+                sf_data = self.files_data[sf_name]
                 sf_data.fwrite("Worker: '{}' was removed at stage {}, he had {} parts of file {}".format(dead_worker.id, stage, len(sf_id_sfp_dict), sf_name))
                 if len(sf_id_sfp_dict) > sf_data.get_failure_threshold():
                     self.__workers_stop_tracking_shared_file(sf_data)
@@ -305,14 +288,14 @@ class Hivemind:
         :param int stage: number representing the discrete time step the simulation is currently at
         """
         if stage == self.max_epochs - 1:
-            for sf_data in self.sf_datas.values():
+            for sf_data in self.files_data.values():
                 sf_data.fwrite("\nReached final stage... Executing tear down processes. Summary below:")
                 sf_data.convergence_data.save_sets_and_reset()
                 sf_data.fwrite(str(sf_data.convergence_data))
                 sf_data.fclose()
             exit(0)
         else:
-            for sf_data in self.sf_datas.values():
+            for sf_data in self.files_data.values():
                 sf_data.fwrite("\nStage {}".format(stage))
                 # retrieve from each worker their part counts for current sf_name and update convergence data
                 self.__request_file_counts(sf_data)
@@ -324,13 +307,13 @@ class Hivemind:
         Updates inputted FileData.current_distribution with current density values for each worker sharing the file
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
-        worker_names = [*sf_data.desired_distribution.index]
-        for name in worker_names:
-            if self.workers_status[name] != Status.ONLINE:
-                sf_data.current_distribution.at[name, DEFAULT_COLUMN] = 0
+        worker_ids = [*sf_data.desired_distribution.index]
+        for id in worker_ids:
+            if self.workers_status[id] != Status.ONLINE:
+                sf_data.current_distribution.at[id, DEFAULT_COLUMN] = 0
             else:
-                worker = self.workers[name]  # get worker instance corresponding to name
-                sf_data.current_distribution.at[name, DEFAULT_COLUMN] = worker.get_parts_count(sf_data.name)
+                worker = self.workers[id]  # get worker instance corresponding to id
+                sf_data.current_distribution.at[id, DEFAULT_COLUMN] = worker.get_parts_count(sf_data.name)
 
     def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
         """
@@ -354,7 +337,7 @@ class Hivemind:
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
         hive_workers_names: List[str] = [*sf_data.desired_distribution.index]
-        sf_name: str = str_copy(sf_data.name)  # Creates an hard copy (str) of the shared file name
+        sf_name: str = str_copy(sf_data.name)  # Creates an hard copy (str) of the shared file id
         # First ask workers to reset theirs, for safety, popping in hivemind structures is only done at a later point
         self.__remove_routing_tables(sf_name, hive_workers_names)
 
@@ -365,7 +348,7 @@ class Hivemind:
         """
         for sf_name in sf_names:
             try:
-                self.sf_datas.pop(sf_name)
+                self.files_data.pop(sf_name)
             except KeyError as kE:
                 log.error("Key ({}) doesn't exist in hivemind's or sf_data dictionaries".format(sf_name))
                 log.error("Key Error message: {}".format(str(kE)))
@@ -401,7 +384,7 @@ class Hivemind:
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
-        :param str dw_name: name of the worker to be dropped from desired distribution, etc...
+        :param str dw_name: id of the worker to be dropped from desired distribution, etc...
         :returns Tuple[List[str], Optional[Worker], Dict[str, str]]: labels, new_worker, old_worker_name:new_worker_name
         """
         labels: List[str] = [*sf_data.desired_distribution.index]
@@ -422,7 +405,7 @@ class Hivemind:
         """
         Reduces the size of the hive by one, by removing all references to the dead worker in the hive FileData instance
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
-        :param str dw_name: name of the worker to be dropped from desired distribution, etc...
+        :param str dw_name: id of the worker to be dropped from desired distribution, etc...
         :returns bool: False if shrinking is not possible, True if shrinking was successful
         """
         cropped_adj_matrix: List[List[int]]
@@ -449,7 +432,7 @@ class Hivemind:
         """
         Generates a new desired distribution vector which is a subset of the original one.
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
-        :param str dw_name: name of the worker to be dropped from desired distribution, etc...
+        :param str dw_name: id of the worker to be dropped from desired distribution, etc...
         :returns List[List[float]] sf_data.desired_distribution: surviving worker names and their new desired density
         """
         sf_data.adjacency_matrix.drop(dw_name, axis='index', inplace=True)
@@ -474,7 +457,7 @@ class Hivemind:
         """
         Generates a new desired distribution vector which is a subset of the original one.
         :param FileData sf_data: reference to FileData instance object whose fields need to be updated
-        :param str w_name: name of the worker to be dropped from desired distribution, etc...
+        :param str w_name: id of the worker to be dropped from desired distribution, etc...
         :return Tuple[List[str], List[float]]: surviving worker names and their new desired density
         """
         # get probability dead worker's density, 'share it' by remaining workers, then remove it from vector column
@@ -491,10 +474,10 @@ class Hivemind:
     # region other helpers
     def __set_routing_tables(self, sf_name: str, worker_names: List[str], transition_matrix: pd.DataFrame):
         """
-        Inits the routing tables w.r.t. the inputed shared file name for all listed workers' names by passing them their
+        Inits the routing tables w.r.t. the inputed shared file id for all listed workers' names by passing them their
         respective vector column within the transition_matrix
-        :param str sf_name: name of the shared file
-        :param List[str] worker_names: name of the workers that share the file
+        :param str sf_name: id of the shared file
+        :param List[str] worker_names: id of the workers that share the file
         :param pd.DataFrame transition_matrix: labeled transition matrix to be splitted between named workers
         """
         for name in worker_names:
@@ -506,10 +489,10 @@ class Hivemind:
         """
         The new Worker instance receives the transition vector, of a shared file, of the disconnected Worker instance.
         The inheritance involves renaming a row within the column vector.
-        :param str sf_name: name of the file whose routing table is going to be passed between the workers
+        :param str sf_name: id of the file whose routing table is going to be passed between the workers
         :param Worker dead_worker: Worker instance recently disconnected from the an hive
         :param Worker new_worker: Worker instance that is replacing him in that hive
-        :param Dict[str, str] replacement_dict: old worker name, new worker name)
+        :param Dict[str, str] replacement_dict: old worker id, new worker id)
         """
         # TODO future-iterations:
         #  Obtain the transition vector w/o using dead_worker instance
@@ -518,20 +501,20 @@ class Hivemind:
 
     def __update_routing_tables(self, sf_name: str, worker_names: List[str], replacement_dict: Dict[str, str]) -> None:
         """
-        Updates the routing tables w.r.t. the inputted shared file name for all listed workers' names without altering
+        Updates the routing tables w.r.t. the inputted shared file id for all listed workers' names without altering
         their transition_vectors.
-        :param str sf_name: name of the shared file
-        :param List[str] worker_names: name of the workers that share the file
-        :param Dict[str, str] replacement_dict: old worker name, new worker name)
+        :param str sf_name: id of the shared file
+        :param List[str] worker_names: id of the workers that share the file
+        :param Dict[str, str] replacement_dict: old worker id, new worker id)
         """
         for name in worker_names:
             self.workers[name].update_file_routing(sf_name, replacement_dict)
 
     def __remove_routing_tables(self, sf_name: str, worker_names: List[str]) -> None:
         """
-        Removes the routing tables w.r.t. the inputted shared file name for all listed workers' names
-        :param str sf_name: name of the shared file to be removed from workers' routing tables
-        :param List[str] worker_names: name of the workers that share the file
+        Removes the routing tables w.r.t. the inputted shared file id for all listed workers' names
+        :param str sf_name: id of the shared file to be removed from workers' routing tables
+        :param List[str] worker_names: id of the workers that share the file
         """
         for name in worker_names:
             self.workers[name].remove_file_routing(sf_name)
@@ -575,10 +558,10 @@ class Hivemind:
 
     def __stop_tracking_worker(self, worker_name: str) -> None:
         """
-        Removes a worker name or instance key from workers_hives, workers_uptime and workers dictionaries. Hivemind will
+        Removes a worker id or instance key from workers_hives, workers_uptime and workers dictionaries. Hivemind will
         only keep a reference to the worker in workers_status, to simulate HttpCode responses. Calling this method will
         steadily increase performance of simulation as more and more nodes start to disconnect.
-        :param str worker_name: name of the worker to remove from Hivemind instance structures
+        :param str worker_name: id of the worker to remove from Hivemind instance structures
         """
         self.workers.pop(worker_name)
         self.workers_hives.pop(worker_name)
