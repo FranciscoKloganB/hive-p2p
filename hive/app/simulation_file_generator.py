@@ -197,13 +197,13 @@ def __init_hive_members(desired_node_count: int, peers_uptime_dict: Dict[str, fl
     return chosen_peers
 
 
-def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[Dict[Any]]:
+def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
     """
     Creates the "shared" key of simulation file (json file)
     :param Dict[str, float] peer_uptime_dict: names of all peers in the system and their uptimes
     :return Dict[Dict[Any]]shared_dict: the dictionary containing data respecting files to be shared in the system
     """
-    shared_dict: Dict[Any] = {}
+    shared_dict: Dict[str, Any] = {}
     peer_names: List[str] = [*peer_uptime_dict.keys()]
 
     print(
