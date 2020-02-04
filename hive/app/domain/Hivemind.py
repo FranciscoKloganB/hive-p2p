@@ -56,7 +56,7 @@ class Hivemind:
                 self.workers[worker.id] = worker
 
             # Read and split all shareable files specified on the input
-            file_parts, file_spreads: Tuple[Dict[str, Dict[int, SharedFilePart]], Dict[str, str]] = self.split_files(json_obj['shared'])
+            file_parts, file_spreads = self.split_files(json_obj['shared'])
 
             # For all shareable files, set that shared file_routing table
             self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
