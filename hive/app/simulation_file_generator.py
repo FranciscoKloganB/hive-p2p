@@ -1,22 +1,18 @@
-import copy
-import getopt
-import itertools
-import json
-import logging
 import os
-import random
 import sys
-
-from decimal import Decimal
-from pathlib import Path
-from typing import List, Dict, Any
+import copy
+import json
+import getopt
+import logging
+import itertools
 
 import numpy as np
-import utils.vectors as vectors
-import utils.matrices as matrices
 
+from pathlib import Path
+from typing import List, Dict, Any
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT
 from scripts.pyscripts import skewed_distribution_generator as sg, label_generator as cg
+
 
 # region usage
 def usage():
@@ -147,74 +143,6 @@ def __in_file_labels(peer_uptime_dict: Dict[str, float], peer_names: List[str]) 
                           "or accidently assign an unexisting label, the missing labels are automatically chosen"
                           "for you!\n".format(peer_uptime_dict)).strip().split(" ")
     return [*filter(lambda label: label in peer_names, chosen_labels)]
-
-
-def __in_adj_matrix(msg: str, size: int) -> List[List[int]]:
-    """
-    This method ensures the matrix is symmetric but doesn't to prevent transient state sets or absorbent nodes
-    :param str msg: message to be printed to the user upon first input request
-    :param int size: the size of the square matrix (size * size)
-    :return List[List[int]] adj_matrix: the adjency matrix representing the connections between a group of peers
-    """
-    print(msg + "\nExample input for 3x3 matrix nodes would be:\n1 1 1\n1 1 0\n0 1 1\n")
-    print("Warning: only symmetric matrices are accepted. Assymetric matrices may, but aren't guaranteed to converge!")
-    print("Warning: this algorithm isn't well when adjency matrices have absorbent nodes or transient state sets!\n")
-
-    goto_while: bool = False
-    while True:
-        adj_matrix: List[Any] = []
-        for _ in range(size):
-            row_vector = input().strip().split(" ")
-            if len(row_vector) == size:
-                try:
-                    row_vector = [float(char) for char in row_vector]  # transform line in row_vector
-                    adj_matrix.append(row_vector)
-                    continue  # if all lines are successfully converted, none of the print errors will occur
-                except ValueError:
-                    pass
-            print("Matrices are expected to be {}x{} with all entries being 0s or 1s. Try again: ".format(size, size))
-            goto_while = True
-            break
-
-        if goto_while:
-            goto_while = False
-            continue
-
-        for i in range(size):
-            for j in range(i, size):
-                if (adj_matrix[i][j] == adj_matrix[j][i]) and (adj_matrix[i][j] == 0 or adj_matrix[i][j] == 1):
-                    continue
-                print("Matrix was square, but is either assymetric or had entries different than 0 or 1. Try again: ")
-                goto_while = True
-                break
-            if goto_while:
-                break
-
-        if goto_while:
-            goto_while = False
-            continue
-
-        return adj_matrix
-
-
-def __in_desired_distribution(msg: str, size: int) -> List[float]:
-    """
-    This method guarantees the vector is stochastic
-    :param str msg: message to be printed to the user upon first input request
-    :param int size: the length of the vector
-    :return List[float] row_vector: the row_vector representing the desired distribution (steady state vector)
-    """
-    print(msg + "\nExample input stochatic vector for three nodes sharing a file would be: 0.35 0.15 0.5")
-    while True:
-        row_vector = input().strip().split(" ")
-        if len(row_vector) == size:
-            try:
-                row_vector = [float(number[:9]) for number in row_vector]  # transform line in stochastic vector
-                if round(sum(row_vector), 6) == 1:  # this round sum deals with machine's incorrect 0.1 representation
-                    return row_vector
-            except ValueError:
-                pass
-            print("Expected size {}, entries must be floats, their summation must equal 1.0. Try again: ".format(size))
 # endregion
 
 
@@ -269,28 +197,6 @@ def __init_hive_members(desired_node_count: int, peers_uptime_dict: Dict[str, fl
     return chosen_peers
 
 
-def __init_desired_distribution(size: int) -> List[float]:
-    """
-    Generates a row vector whose entries summation is one.
-    :param int size: the length of the vector
-    :return List[float] stochastic_vector: the row_vector representing the desired distribution (steady state vector)
-    """
-    secure_random = random.SystemRandom()
-    stochastic_vector = [0.0] * size
-    summation_pool = 1.0
-
-    for i in range(size):
-        if i == size - 1:
-            stochastic_vector[i] = float(round(Decimal(summation_pool), 6))
-            print(stochastic_vector)
-            print(sum(stochastic_vector))
-            return stochastic_vector
-        else:
-            probability = float(str(secure_random.uniform(0, summation_pool))[:8])  # Force all entries to 6 decimals
-            stochastic_vector[i] = probability
-            summation_pool -= probability
-
-
 def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[Dict[Any]]:
     """
     Creates the "shared" key of simulation file (json file)
@@ -314,16 +220,6 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[Dict[Any]]:
 
         shared_dict[file_name] = {}
         shared_dict[file_name]["state_labels"] = chosen_peers
-
-        if __in_yes_no("Would you like to manually construct an adjency matrix?"):
-            shared_dict[file_name]["adj_matrix"] = __in_adj_matrix("Insert a row major {}x{} matrix: ".format(n, n), n)
-        else:
-            shared_dict[file_name]["adj_matrix"] = matrices.new_symmetric_adjency_matrix(size=n)
-
-        if __in_yes_no("Would you like to manually insert a desired distribution vector?"):
-            shared_dict[file_name]["ddv"] = __in_desired_distribution("Insert a stochastic vector: ".format(n), n)
-        else:
-            shared_dict[file_name]["ddv"] = vectors.new_steady_state_vector(chosen_peers, peer_uptime_dict)
 
         add_file = __in_yes_no("Do you want to add more files to be shared under this simulation file?")
 
