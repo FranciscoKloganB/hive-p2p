@@ -507,8 +507,7 @@ class Hivemind:
         :return Tuple[List[str], List[float]]: surviving worker names and their new desired density
         """
         # get probability dead worker's density, 'share it' by remaining workers, then remove it from vector column
-        increment: float = \
-            sf_data.desired_distribution.at[w_name, DEFAULT_COLUMN] / (sf_data.desired_distribution.shape[0] - 1)
+        increment: float = sf_data.desired_distribution.at[w_name, DEFAULT_COLUMN] / (sf_data.desired_distribution.shape[0] - 1)
 
         sf_data.desired_distribution.drop(w_name, inplace=True)
         # fetch remaining labels and rows as found on the data frame
