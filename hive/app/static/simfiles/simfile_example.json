@@ -1,6 +1,6 @@
 {
-	"max_simulation_stages": 200,
-	"nodes_uptime" : {
+	"max_epochs": 200,
+	"peers_uptime" : {
 		"a" : 99.999,
 		"b" : 99.988,
 		"c" : 99.977,

@@ -103,12 +103,12 @@ def __in_samples_skewness() -> float:
 def __in_file_name(msg: str) -> str:
     """
     :param str msg: message to be printed to the user upon first input request
-    :return str file_name: the name of the file to be shared
+    :return str file_name: the id of the file to be shared
     """
     file_name = input(msg).strip()
     while True:
         if not file_name:
-            file_name = input("A non-blank file name is expected... Try again: ")
+            file_name = input("A non-blank file id is expected... Try again: ")
             continue
         if not Path(os.path.join(SHARED_ROOT, file_name)).is_file():
             logging.warning(" {} isn't inside ~/hive/app/static/shared folder.".format(file_name))
@@ -214,7 +214,7 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
     add_file: bool = True
     while add_file:
         n = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: ")
-        file_name = __in_file_name("Insert name of the file you wish to persist (include extension if it has one): ")
+        file_name = __in_file_name("Insert id of the file you wish to persist (include extension if it has one): ")
 
         chosen_peers: List[str] = __init_hive_members(n, peer_uptime_dict, peer_names)
 
@@ -231,7 +231,7 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
 def main(simfile_name: str):
     """
     Creates a structured json file within the user's file system that can be used as input for an HIVE system simulation
-    :param str simfile_name: name to be assigned to the simulation file (json file) in the user's file system
+    :param str simfile_name: id to be assigned to the simulation file (json file) in the user's file system
     """
     peers_uptime_dict: Dict[str, float] = __init_nodes_uptime_dict()
     simfile_json: Dict[str, Any] = {
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                 if simfile_name_:
                     main(simfile_name_)
                 else:
-                    sys.exit("Invalid simulation file name - blank name not allowed)...")
+                    sys.exit("Invalid simulation file id - blank id not allowed)...")
     except getopt.GetoptError:
         usage()
 # endregion
