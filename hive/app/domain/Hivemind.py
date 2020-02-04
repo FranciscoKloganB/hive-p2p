@@ -20,17 +20,15 @@ from utils.collections import safe_remove
 
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, REPLICATION_LEVEL
 
-from typing import cast, List, Set, Dict, Tuple, Optional, Any
+from typing import cast, List, Set, Union, Dict, Tuple, Optional, Any
 
 
 class Hivemind:
     """
     Representation of the P2P Network super node managing one or more hives ---- Simulator is piggybacked
     :ivar int max_epochs: number of stages the hive has to converge to the ddv before simulation is considered failed
-
     :ivar Dict[str, Hive] hives: collection mapping hives' uuid (attribute Hive.id) to the Hive instances
     :ivar Dict[str, Worker] workers: collection mapping workers' names to their Worker instances
-    :ivar Dict[str, Dict[int, SharedFilePart]] files: collection of file parts created by the Hivemind instance
     :ivar Dict[str, FileData] files_data: collection mapping file names on the system and their FileData instance
     :ivar Dict[Union[Worker, str], int] workers_status: maps workers or their names to their connectivity status
     :ivar Dict[str, List[FileData]] workers_hives: maps workers' names to hives they are known to belong to
@@ -51,7 +49,6 @@ class Hivemind:
             self.max_epochs: int = json_obj['max_epochs']
             self.hives: Dict[str, Hive] = {}
             self.workers: Dict[str, Worker] = {}
-            self.files: Dict[str, Dict[int, SharedFilePart]] = {}
 
             # Create the P2P network nodes (domain.Workers) without any job
             for worker_id, worker_uptime in json_obj['peers_uptime'].items():
@@ -59,8 +56,7 @@ class Hivemind:
                 self.workers[worker.id] = worker
 
             # Read and split all shareable files specified on the input
-            file_specifications: Dict[str, Any] = json_obj['shared']
-            self.split_files()
+            file_parts, file_spreads: Tuple[Dict[str, Dict[int, SharedFilePart]], Dict[str, str]] = self.split_files(json_obj['shared'])
 
             # For all shareable files, set that shared file_routing table
             self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
@@ -88,28 +84,32 @@ class Hivemind:
     # endregion
 
     # region file partitioning methods
-    def split_files(self, specified_file_names: List[str]) -> None:
+    def split_files(self, shared: Dict[str, Dict[str, Union[List[str], str]]]) -> Tuple[Dict[str, Dict[int, SharedFilePart]], Dict[str, str]]:
         """
-        For all specified files in the simulation specifications, reads their bytes from disk and splits them into globas.READ_SIZE, then instantiates a
-        domain.SharedFilePart instance
+        For all files in the shared, reads their bytes from disk and splits them into globas.READ_SIZE
+        :returns Tuple[Dict[str, Dict[int, SharedFilePart]], Dict[str, str]] files, spreads: collections used to initialize simulation w.r.t. file distribution
         """
-        for name in specified_file_names:
-            file_path: str = os.path.join(SHARED_ROOT, name)
-            file_name: str = Path(file_path).resolve().stem  # extracts the file name from the full path and also discards the file's extension
-            with open(file_path, "rb") as file:
+        hive: Hive
+        file_parts: Dict[int, SharedFilePart]
+        files: Dict[str, Dict[int, SharedFilePart]] = {}
+        spreads: Dict[str, str] = {}
+        for file_name in shared.keys():
+            with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
+                file_parts = {}
                 part_number: int = 0
-                file_parts: Dict[int, SharedFilePart] = {}
-                hive: Hive = Hive()
+                hive = Hive()
                 self.hives[hive.id] = hive
+                spreads[file_name] = shared[file_name]['initial_spread']
                 while True:
                     read_buffer = file.read(READ_SIZE)
                     if read_buffer:
                         part_number = part_number + 1
                         file_parts[part_number] = SharedFilePart(hive.id, file_name, part_number, read_buffer)
                     else:
-                        self.files[file_name] = file_parts
+                        files[file_name] = file_parts
                         break
                 hive.file = FileData(name=file_name, parts_count=part_number)
+            return files, spreads
     # endregion
 
     # region metropolis hastings and transition vector assignment methods
