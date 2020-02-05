@@ -123,29 +123,6 @@ class Hive:
     # endregion
 
     # region Membership
-    def remove_member(self, worker: Union[str, Worker]) -> None:
-        """
-        Removes a worker from the Hive's membership set.
-        :param Union[str, Worker] worker: id of the worker or instance object of class Worker to be removed from the set.
-        """
-        self.members.pop(worker, None)
-
-    def add_member(self, worker: Worker) -> None:
-        """
-        Adds a worker to the Hive's membership set.
-        :param Worker worker: instance object of class Worker to be added to the set.
-        """
-        self.members[worker.id] = worker
-
-    def replace_member(self, old_member: Union[str, Worker], new_member: Worker) -> None:
-        """
-        Replaces a worker from the Hive's membership set with some other worker.
-        :param Union[str, Worker] old_member: id of the worker or instance object of class Worker to be replaced in the set.
-        :param Worker new_member: instance object of class Worker to be added to the set.
-        """
-        self.members.pop(old_member)
-        self.members[new_member.id] = new_member
-
     def membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
         """
         Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
