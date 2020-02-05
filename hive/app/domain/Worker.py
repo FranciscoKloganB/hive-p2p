@@ -83,21 +83,27 @@ class Worker:
             return HttpCodes.DUMMY
         return self.hives[part.hive_id].route_part(destination, part)
 
-    def reroute_part(self, part: SharedFilePart) -> None:
+    def reroute_part(self, hive: Hive, part: SharedFilePart) -> None:
+        """
+        Tries to send a part until it delivers it to someone else
+        :param Hive hive: Hive instance that delivered the part on behalf of another worker
+        :param SharedFilePart part: file part that needs to be rerouted to avoid duplicates
+        """
         response_code = HttpCodes.DUMMY
         while response_code != HttpCodes.OK:
             response_code = self.send_part(part)
 
-    def receive_part(self, part: SharedFilePart) -> None:
+    def receive_part(self, hive: Hive, part: SharedFilePart) -> None:
         """
         Keeps a new, single, shared file part, along the ones already stored by the Worker instance
+        :param Hive hive: Hive instance that delivered the part on behalf of another worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
         if part.name not in self.files:
             self.files[part.name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
 
         if part.number in self.files[part.name]:
-            self.reroute_part(part)  # pass part's replica to someone else, who might or might not have it.
+            self.reroute_part(hive, part)  # pass part's replica to someone else, who might or might not have it.
         elif crypto.sha256(part.data) == part.sha256:
             self.files[part.name][part.number] = part  # if sha256 is correct and worker does not have a replica, he keeps it
         else:
@@ -122,7 +128,7 @@ class Worker:
                 while i < replicate and i < hive.hive_size:  # Second condition avoids infinite loop where hive_size < REPLICATION_LEVEL and Workers keep rerouting to each other
                     i += 1
                     part.references += 1
-                    self.reroute_part(part)
+                    self.reroute_part(hive, part)
             response_code = self.send_part(part)
             if response_code != HttpCodes.OK:
                 epoch_cache[number] = part

@@ -123,6 +123,7 @@ class Hive:
     # endregion
 
     # region Simulation Interface
+    # noinspection DuplicatedCode
     def spread_files(self, spread_mode: str, file_parts: Dict[int, SharedFilePart]):
         """
         Spreads files over the initial members of the Hive
@@ -134,14 +135,14 @@ class Hive:
             workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
             for worker in workers:
                 for part in file_parts.values():
-                    worker.receive_part(part)
+                    worker.receive_part(self, part)
 
         elif spread_mode == "u":
             for part in file_parts.values():
                 choices: List[Worker] = [*self.members.values()]
                 workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
-                    worker.receive_part(part)
+                    worker.receive_part(self, part)
 
         elif spread_mode == 'i':
             choices = [*self.members.values()]
@@ -153,7 +154,7 @@ class Hive:
                 choices: List[Worker] = choices.copy()
                 workers: List[Worker] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
-                    worker.receive_part(part)
+                    worker.receive_part(self, part)
 
     def execute_epoch(self) -> bool:
         """
