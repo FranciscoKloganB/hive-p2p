@@ -175,7 +175,7 @@ class Hive:
                         recoverable_parts.pop(number)  # this pop isn't necessary, but remains here for piece of mind and explicit explanation, O(1) anyway
                         return False  # This release only uses replication, thus having 0 references makes it impossible to recover original file
             else:  # Member is still online this epoch, so he can execute his own part of the epoch
-                worker.execute_epoch(self.file.name)
+                worker.execute_epoch(self, self.file.name)
 
         # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
         if len(disconnected_workers) == self.hive_size:

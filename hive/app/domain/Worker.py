@@ -106,21 +106,23 @@ class Worker:
     # endregion
 
     # region Swarm Guidance Interface
-    def execute_epoch(self, file_name: str) -> None:
+    def execute_epoch(self, hive: Hive, file_name: str) -> None:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
+        :param Hive hive: Hive instance that ordered execution of the epoch
         :param str file_name: the file parts that should be routed
         """
-        hive: Hive
         file_cache: Dict[int, SharedFilePart] = self.files.get(file_name, {})
         epoch_cache: Dict[int, SharedFilePart] = {}
         for number, part in file_cache.items():
-            replicate = part.can_replicate()
-            part.reset_epochs_to_recover()
-            while replicate:
-                replicate -= 1
-                part.references += 1
-                self.reroute_part(part)
+            replicate: int = part.can_replicate()  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
+            if replicate:
+                i: int = 0
+                part.reset_epochs_to_recover()  # Ensures other workers don't try to replicate and that Hive can resimulate delays
+                while i < replicate and i < hive.hive_size:  # Second condition avoids infinite loop where hive_size < REPLICATION_LEVEL and Workers keep rerouting to each other
+                    i += 1
+                    part.references += 1
+                    self.reroute_part(part)
             response_code = self.send_part(part)
             if response_code != HttpCodes.OK:
                 epoch_cache[number] = part
