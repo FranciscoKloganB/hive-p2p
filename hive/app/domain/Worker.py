@@ -112,34 +112,37 @@ class Worker:
         file_cache: Dict[int, SharedFilePart] = self.files.get(file_name, {})
         epoch_cache: Dict[int, SharedFilePart] = {}
         for number, part in file_cache.items():
-            replicate: int = part.can_replicate()  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
-            if replicate:
-                part.reset_epochs_to_recover()  # Ensures other workers don't try to replicate and that Hive can resimulate delays
-                while replicate:  # and i < hive.hive_size:  # Second condition avoids infinite loop where hive_size < REPLICATION_LEVEL and Workers keep rerouting to each other
-                    replicate -= 1
-                    send_replica(hive, part)
-
+            self.try_replication(hive, part)
             response_code = self.send_part(hive, part)
-            if response_code == HttpCodes.BAD_REQUEST:
+            if response_code == HttpCodes.OK:
+                pass  # self.files[file_name].pop(number), leave here for readability, but can't actually modify collection while iterating, pandora box!
+            elif response_code == HttpCodes.BAD_REQUEST:
                 part = self.init_recovery_protocol(part.name)  # TODO: future-iterations, right now, nothing is returned by init recovery protocol
                 epoch_cache[number] = part
             elif response_code != HttpCodes.OK:
                 epoch_cache[number] = part  # This case includes destination Workers rejecting requests, that would result in repeated parts on their end
-        self.files[file_name] = epoch_cache
+        self.files[file_name] = epoch_cache  # HACK to simulate HttpCodes.OK responses. With this line, only rejected items are kept for next epoch.
     # endregion
 
-    def send_replica(self, hive: Hive, part: SharedFilePart) -> int:
+    def try_replication(self, hive: Hive, part: SharedFilePart) -> None:
         """
         Equal to send part but with different semantics, as file is not routed following swarm guidance, but instead by choosing the most reliable peers in the hive
         post-scriptum: This function is hacked... And should only be used for simulation purposes
         :param Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
-        hive_members: List[Worker] = hive.desired_distribution.sort_values()
-        response_code = HttpCodes.DUMMY
-        while response_code != HttpCodes.OK:
-            response_code = self.send_part(hive, part)
-        part.references += 1
+        replicate: int = part.can_replicate()  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
+        if replicate:
+            hive_member_ids: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)]
+            for member_id in hive_member_ids:
+                if replicate == 0:
+                    break  # replication level achieved, no need to produce more copies
+                if member_id == self.id:
+                    continue  # don't send to self, it would only get rejected
+                if hive.route_part(member_id, part) == HttpCodes.OK:
+                    part.references += 1  # for each successful deliver increase number of copies in the hive
+                    replicate -= 1  # decrease needed replicas
+            part.reset_epochs_to_recover()  # Ensures other workers don't try to replicate and that Hive can resimulate delays
 
     # region PSUtils Interface
     # noinspection PyIncorrectDocstring
