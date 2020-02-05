@@ -6,10 +6,11 @@ DEBUG: bool = True
 READ_SIZE: int = 8192
 DEFAULT_COLUMN: int = 0
 REPLICATION_LEVEL: int = 3
-MIN_CONVERGENCE_THRESHOLD: int = 5
+MIN_CONVERGENCE_THRESHOLD: int = 3
 # endregion
 
 # region float constants
+AVG_UPTIME: float = 0.4
 A_TOL: float = 1e-2
 R_TOL: float = 0.4
 # endregion
