@@ -85,9 +85,9 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         for stage in range(self.max_epochs):
-            online_workers_list = self.__remove_some_workers(online_workers_list, stage)
             for hive in self.hives.values():
                 hive.execute_epoch()
+
             self.__process_stage_results(stage)
 
     def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> bool:
@@ -237,7 +237,7 @@ class Hivemind:
                 sf_data.current_distribution.at[id, DEFAULT_COLUMN] = 0
             else:
                 worker = self.workers[id]  # get worker instance corresponding to id
-                sf_data.current_distribution.at[id, DEFAULT_COLUMN] = worker.get_parts_count(sf_data.name)
+                sf_data.current_distribution.at[id, DEFAULT_COLUMN] = worker.get_file_parts_count(sf_data.name)
 
     def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
         """
