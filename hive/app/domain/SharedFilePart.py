@@ -1,5 +1,6 @@
+from random import randint
 from utils import convertions, crypto
-from globals.globals import REPLICATION_LEVEL
+from globals.globals import REPLICATION_LEVEL, MIN_DETECTION_DELAY, MAX_DETECTION_DELAY
 
 
 class SharedFilePart:
@@ -28,9 +29,26 @@ class SharedFilePart:
         self.name: str = name
         self.number: int = number
         self.references: int = REPLICATION_LEVEL
-        self.epochs_to_recover: int = 0
+        self.epochs_to_recover: int = -1
         self.data: str = convertions.bytes_to_base64_string(data)
         self.sha256: str = crypto.sha256(self.data)
+    # endregion
+
+    # region Simulation Interface
+    def set_epochs_to_recover(self) -> None:
+        """
+        When epochs_to_recover is a negative number (usually -1), it means that at least one reference to the SharedFilePart was lost in the current epoch; in
+        this case, set_recovery_delay assigns a number of epochs until a Worker who posses one reference to the SharedFilePart instance can generate references
+        for some other Workers.
+        """
+        if self.epochs_to_recover < 0:
+            self.epochs_to_recover = randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
+
+    def reset_epochs_to_recover(self) -> None:
+        self.epochs_to_recover = -1
+
+    def need_to_replicate_part(self) -> bool:
+        return True if self.references < REPLICATION_LEVEL and self.epochs_to_recover == 0 else False
     # endregion
 
     # region Overrides
@@ -41,5 +59,9 @@ class SharedFilePart:
     # region Helpers
     def decrease_and_get_references(self):
         self.references = self.references - 1
+        return self.references
+
+    def increase_and_get_references(self):
+        self.references = self.references + 1
         return self.references
     # endregion
