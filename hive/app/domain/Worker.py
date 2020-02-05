@@ -38,13 +38,13 @@ class Worker:
     # endregion
 
     # region Recovery
-    def init_recovery_protocol(self, file_name: str) -> None:
+    def init_recovery_protocol(self, file_name: str) -> SharedFilePart:
         """
         Reconstructs a file and then splits it into globals.READ_SIZE before redistributing them to the rest of the hive
         :param str file_name: id of the shared file that needs to be reconstructed by the Worker instance
         """
         # TODO future-iterations:
-        pass
+        raise NotImplementedError()
     # endregion
 
     # region Routing Table
@@ -70,9 +70,10 @@ class Worker:
     # endregion
 
     # region File Routing
-    def send_part(self, part: SharedFilePart) -> Union[int, HttpCodes]:
+    def send_part(self, hive: Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
         """
         Attempts to send a file part to another worker
+        :param Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
         routing_vector: pd.DataFrame = self.routing_table[part.name]
@@ -81,7 +82,7 @@ class Worker:
         destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
         if destination == self.id:
             return HttpCodes.DUMMY
-        return self.hives[part.hive_id].route_part(destination, part)
+        return hive.route_part(destination, part)
 
     def reroute_part(self, hive: Hive, part: SharedFilePart) -> None:
         """
@@ -91,24 +92,24 @@ class Worker:
         """
         response_code = HttpCodes.DUMMY
         while response_code != HttpCodes.OK:
-            response_code = self.send_part(part)
+            response_code = self.send_part(hive, part)
 
-    def receive_part(self, hive: Hive, part: SharedFilePart) -> None:
+    def receive_part(self, part: SharedFilePart) -> int:
         """
         Keeps a new, single, shared file part, along the ones already stored by the Worker instance
-        :param Hive hive: Hive instance that delivered the part on behalf of another worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        :returns HttpCodes int
         """
         if part.name not in self.files:
             self.files[part.name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
 
-        if part.number in self.files[part.name]:
-            self.reroute_part(hive, part)  # pass part's replica to someone else, who might or might not have it.
-        elif crypto.sha256(part.data) == part.sha256:
-            self.files[part.name][part.number] = part  # if sha256 is correct and worker does not have a replica, he keeps it
+        if crypto.sha256(part.data) != part.sha256:
+            return HttpCodes.BAD_REQUEST  # inform sender that his part is corrupt, don't initiate recovery protocol, to avoid denial of service attacks on worker
+        elif part.number in self.files[part.name]:
+            return HttpCodes.NOT_ACCEPTABLE  # reject repeated replicas even if they are correct
         else:
-            print("shared file part id: {}, corrupted".format(part.id))
-            self.init_recovery_protocol(part.name)
+            self.files[part.name][part.number] = part
+            return HttpCodes.OK  # accepted file part, because Sha256 was correct and Worker did not have this replica yet
     # endregion
 
     # region Swarm Guidance Interface
@@ -129,8 +130,11 @@ class Worker:
                     i += 1
                     part.references += 1
                     self.reroute_part(hive, part)
-            response_code = self.send_part(part)
-            if response_code != HttpCodes.OK:
+            response_code = self.send_part(hive, part)
+            if response_code == HttpCodes.BAD_REQUEST:
+                part = self.init_recovery_protocol(part.name)  # TODO: future-iterations, right now, nothing is returned by init recovery protocol
+                epoch_cache[number] = part
+            elif response_code != HttpCodes.OK:
                 epoch_cache[number] = part
         self.files[file_name] = epoch_cache
     # endregion

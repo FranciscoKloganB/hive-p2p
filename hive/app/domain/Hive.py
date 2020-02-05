@@ -67,8 +67,7 @@ class Hive:
         """
         member = self.members[destination_name]
         if member.status == Status.ONLINE:
-            member.receive_part(part)
-            return HttpCodes.OK
+            return member.receive_part(part)
         else:
             return HttpCodes.NOT_FOUND
     # endregion
@@ -127,7 +126,7 @@ class Hive:
     def spread_files(self, spread_mode: str, file_parts: Dict[int, SharedFilePart]):
         """
         Spreads files over the initial members of the Hive
-        :param str spread_mode: 'u' for uniform distribution, 'a' one peer receives all or 'i' to distribute according to the desired steady state distribution
+        :param str spread_mode: 'u' for uniform distribution, 'a' one* peer receives all or 'i' to distribute according to the desired steady state distribution
         :param Dict[int, SharedFilePart] file_parts: file parts to distribute over the members
         """
         if spread_mode == "a":
@@ -135,14 +134,14 @@ class Hive:
             workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
             for worker in workers:
                 for part in file_parts.values():
-                    worker.receive_part(self, part)
+                    worker.receive_part(part)
 
         elif spread_mode == "u":
             for part in file_parts.values():
                 choices: List[Worker] = [*self.members.values()]
                 workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
-                    worker.receive_part(self, part)
+                    worker.receive_part(part)
 
         elif spread_mode == 'i':
             choices = [*self.members.values()]
@@ -154,7 +153,7 @@ class Hive:
                 choices: List[Worker] = choices.copy()
                 workers: List[Worker] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
-                    worker.receive_part(self, part)
+                    worker.receive_part(part)
 
     def execute_epoch(self) -> bool:
         """
