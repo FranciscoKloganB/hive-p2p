@@ -16,7 +16,7 @@ class ConvergenceData:
     """
     # endregion
 
-    # region class variables, instance variables and constructors
+    # region Class Variables, Instance Variables and Constructors
     def __init__(self):
         self.cswc: int = 0
         self.convergence_set: List[int] = []
@@ -24,7 +24,7 @@ class ConvergenceData:
         self.largest_convergence_set: int = 0
     # endregion
 
-    # region instance methods
+    # region Instance Methods
     def cswc_increment(self, increment: int = 1) -> None:
         """
         Increases the counter that which registers how many consecutive stages had convergence
@@ -62,7 +62,7 @@ class ConvergenceData:
             self.convergence_set = []
     # endregion
 
-    # region static methods
+    # region Static Methods
     @staticmethod
     def equal_distributions(one: Union[pd.DataFrame, pd.Series, np.array],
                             another: Union[pd.DataFrame, pd.Series, np.array]) -> bool:
@@ -77,7 +77,7 @@ class ConvergenceData:
             return np.allclose(one, another, rtol=R_TOL, atol=A_TOL)
     # endregion
 
-    # region overrides
+    # region Overrides
     def __str__(self):
         return "time in convergence: " + str(ConvergenceData.recursive_len(self.convergence_sets)) + \
                "\nlargest_convergence_set: " + str(self.largest_convergence_set) + \
@@ -87,7 +87,7 @@ class ConvergenceData:
         return str(self.__dict__)
     # endregion
 
-    # region helpers
+    # region Helpers
     @staticmethod
     def recursive_len(item):
         if type(item) == list:
