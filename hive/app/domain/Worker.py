@@ -135,7 +135,7 @@ class Worker:
                 part = self.init_recovery_protocol(part.name)  # TODO: future-iterations, right now, nothing is returned by init recovery protocol
                 epoch_cache[number] = part
             elif response_code != HttpCodes.OK:
-                epoch_cache[number] = part
+                epoch_cache[number] = part  # This case includes destination Workers rejecting requests, that would result in repeated parts on their end
         self.files[file_name] = epoch_cache
     # endregion
 
