@@ -1,12 +1,13 @@
 import os
-import pandas as pd
-import numpy as np
-
 from math import ceil
-from typing import Any, List, Union
-from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL
-from domain.helpers.ConvergenceData import ConvergenceData
+from typing import Any, Union
+
+import numpy as np
+import pandas as pd
 from tabulate import tabulate
+
+from domain.helpers.ConvergenceData import ConvergenceData
+from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL
 
 
 class FileData:

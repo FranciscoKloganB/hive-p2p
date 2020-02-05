@@ -1,6 +1,6 @@
 import json
 import os
-from typing import List, Union, Dict, Tuple, Optional, Any
+from typing import List, Union, Dict, Any
 
 from domain.Enums import Status
 from domain.Hive import Hive
@@ -8,7 +8,6 @@ from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.helpers.FileData import FileData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, AVG_UPTIME
-from utils.collections import safe_remove
 
 
 class Hivemind:
@@ -124,12 +123,12 @@ class Hivemind:
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
         worker_ids = [*sf_data.desired_distribution.index]
-        for id in worker_ids:
-            if self.workers_status[id] != Status.ONLINE:
-                sf_data.current_distribution.at[id, DEFAULT_COLUMN] = 0
+        for worker_id in worker_ids:
+            if self.workers_status[worker_id] != Status.ONLINE:
+                sf_data.current_distribution.at[worker_id, DEFAULT_COLUMN] = 0
             else:
-                worker = self.workers[id]  # get worker instance corresponding to id
-                sf_data.current_distribution.at[id, DEFAULT_COLUMN] = worker.get_file_parts_count(sf_data.name)
+                worker = self.workers[worker_id]  # get worker instance corresponding to id
+                sf_data.current_distribution.at[worker_id, DEFAULT_COLUMN] = worker.get_file_parts_count(sf_data.name)
 
     def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
         """

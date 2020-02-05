@@ -1,16 +1,14 @@
+from typing import Union, Dict, Any, List
+
 import numpy as np
-import logging as log
 import pandas as pd
 
-from utils import crypto
-from copy import deepcopy
-from globals.globals import DEFAULT_COLUMN
-from domain.Hive import Hive
 from domain.Enums import Status, HttpCodes
+from domain.Hive import Hive
 from domain.SharedFilePart import SharedFilePart
+from globals.globals import DEFAULT_COLUMN
+from utils import crypto
 from utils.ResourceTracker import ResourceTracker as rT
-
-from typing import Union, Dict, Any, List
 
 
 class Worker:

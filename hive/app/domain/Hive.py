@@ -1,19 +1,18 @@
-import uuid
 import math
+import uuid
+from typing import Dict, List, Any
+
 import numpy as np
 import pandas as pd
+
 import utils.matrices as matrices
 import utils.metropolis_hastings as mh
-from domain.Hivemind import Hivemind
-
-from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
-from domain.helpers.FileData import FileData
+from domain.Hivemind import Hivemind
 from domain.SharedFilePart import SharedFilePart
-
+from domain.Worker import Worker
+from domain.helpers.FileData import FileData
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COLUMN
-
-from typing import Dict, List, Union, Any
 
 
 class Hive:
@@ -56,6 +55,7 @@ class Hive:
         TODO: future-iterations
         Remaining hive members upload all data they have to a cloud server
         """
+        # noinspection PyUnusedLocal
         cloud_ref: str = self.hivemind.get_cloud_reference()
 
     def route_part(self, destination_name: str, part: SharedFilePart) -> Any:
