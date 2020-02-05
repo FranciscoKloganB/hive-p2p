@@ -155,19 +155,21 @@ class Hive:
             self.members.pop(member.id)
 
         self.hive_size = len(self.members)
+
         if self.hive_size < self.critical_size:
             self.route_to_cloud()
 
         if self.hive_size < self.sufficient_size:
             new_members: Dict[str, Worker] = self.hivemind.find_replacement_worker(self.members, self.original_size - self.hive_size)
+            if not new_members:
+                return
             self.members.update(new_members)
-
+            self.hive_size = len(self.members)
         elif self.hive_size > self.redudant_size:
             # TODO: future-iterations
             #  evict peers
-            pass
+            self.hive_size = len(self.members)
 
-        self.hive_size = len(self.members)
         self.broadcast_transition_matrix(self.new_transition_matrix())
     # endregion
 
