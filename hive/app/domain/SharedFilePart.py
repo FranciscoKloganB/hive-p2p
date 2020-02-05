@@ -45,10 +45,19 @@ class SharedFilePart:
             self.epochs_to_recover = randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
 
     def reset_epochs_to_recover(self) -> None:
+        """
+        Resets self.epochs_to_recover attribute back to the default value of -1
+        """
         self.epochs_to_recover = -1
 
-    def need_to_replicate_part(self) -> bool:
-        return True if self.references < REPLICATION_LEVEL and self.epochs_to_recover == 0 else False
+    def can_replicate(self) -> int:
+        """
+        :returns int: tells the caller how many times he should replicate the SharedFilePart instance, if such action is possible
+        """
+        if self.references < REPLICATION_LEVEL and self.epochs_to_recover == 0:
+            return REPLICATION_LEVEL - self.epochs_to_recover
+        else:
+            return 0
     # endregion
 
     # region Overrides

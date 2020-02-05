@@ -6,7 +6,7 @@ import pandas as pd
 from domain.Enums import Status, HttpCodes
 from domain.Hive import Hive
 from domain.SharedFilePart import SharedFilePart
-from globals.globals import DEFAULT_COLUMN
+from globals.globals import DEFAULT_COLUMN, REPLICATION_LEVEL
 from utils import crypto
 from utils.ResourceTracker import ResourceTracker as rT
 
@@ -115,6 +115,12 @@ class Worker:
         file_cache: Dict[int, SharedFilePart] = self.files.get(file_name, {})
         epoch_cache: Dict[int, SharedFilePart] = {}
         for number, part in file_cache.items():
+            replicate = part.can_replicate()
+            part.reset_epochs_to_recover()
+            while replicate:
+                replicate -= 1
+                part.references += 1
+                self.reroute_part(part)
             response_code = self.send_part(part)
             if response_code != HttpCodes.OK:
                 epoch_cache[number] = part
