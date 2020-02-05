@@ -7,7 +7,7 @@ from domain.Hive import Hive
 from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.helpers.FileData import FileData
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, AVG_UPTIME
 from utils.collections import safe_remove
 
 
@@ -146,37 +146,34 @@ class Hivemind:
     # endregion
 
     # region Peer Search and Cloud References
-    def find_replacement_worker(self, sf_data: FileData, dw_name: str) -> Tuple[List[str], Optional[Worker], Dict[str, str]]:
+    def find_replacement_worker(self, exclusion_dict: Dict[str, Worker], quantity: int) -> Dict[str, Worker]:
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
-        :param FileData sf_data: reference to FileData instance object whose fields need to be updated
-        :param str dw_name: id of the worker to be dropped from desired distribution, etc...
-        :returns Tuple[List[str], Optional[Worker], Dict[str, str]]: labels, new_worker, old_worker_name:new_worker_name
+        :param Dict[str, Worker] exclusion_dict: collection of worker ids that the calling hive haves no interest in, for any reason
+        :param int quantity: how many replacements the calling hive desires.
+        :returns Dict[str, Worker] selected_workers: a collection of replacements a hive can use w/o guarantees that enough, if at all, replacements are found
         """
-        labels: List[str] = [*sf_data.desired_distribution.index]
-        dict_items = self.workers_uptime.items()
-        if len(labels) == len(dict_items):
-            return [], None, {}  # before a worker's disconnection the hive already had all existing network workers
+        selected_workers: Dict[str, Worker] = {}
+        next_round_workers_view: Dict[str, Worker] = {}
+        workers_view: Dict[str, Worker] = {key: value for key, value in self.workers if value.status == Status.ONLINE and value.id not in exclusion_dict}
 
-        base_uptime: Optional[float] = self.workers_uptime[dw_name] - 1.0
-        while base_uptime is not None:
-            for rw_name, uptime in dict_items:
-                if self.workers_status[rw_name] == Status.ONLINE and rw_name not in labels and uptime > base_uptime:
-                    return safe_remove(labels, dw_name), self.workers[rw_name], {dw_name: rw_name}
-            base_uptime = self.relax_replacement_conditions(base_uptime)
+        if not workers_view:
+            return selected_workers
 
-        return [], None, {}  # no replacement was found, all possible replacements seem to be offline or suspected
+        for worker_id, worker in workers_view:
+            if worker.uptime > AVG_UPTIME:
+                selected_workers[worker_id] = worker
+                if len(selected_workers) == quantity:
+                    return selected_workers  # desired replacements quantity can only be reached here, if not possible it's mandatory to go to the next for loop
+            else:
+                next_round_workers_view[worker_id] = worker
 
-    def relax_replacement_conditions(self, current_uptime: float) -> Optional[float]:
-        """
-        Decreases the minimum uptime required to accept a worker as replacement of some other disconnected worker
-        :param float current_uptime: current acceptance criteria for a replacement node
-        :returns Optional[float]: current_uptime - 10.0f, 0.0f or None
-        """
-        if current_uptime == 0.0:
-            return None
-        current_uptime -= 10.0
-        return current_uptime if current_uptime > 50.0 else 0.0
+        for worker_id, worker in next_round_workers_view:
+            selected_workers[worker_id] = worker  # to avoid slowing down the simulation and because a minimum uptime can be defined, we just pick any worker
+            if len(selected_workers) == quantity:
+                return selected_workers
+
+        return selected_workers
 
     def get_cloud_reference(self) -> str:
         """
