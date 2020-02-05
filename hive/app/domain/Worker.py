@@ -84,16 +84,6 @@ class Worker:
             return HttpCodes.DUMMY
         return hive.route_part(destination, part)
 
-    def reroute_part(self, hive: Hive, part: SharedFilePart) -> None:
-        """
-        Tries to send a part until it delivers it to someone else
-        :param Hive hive: Hive instance that delivered the part on behalf of another worker
-        :param SharedFilePart part: file part that needs to be rerouted to avoid duplicates
-        """
-        response_code = HttpCodes.DUMMY
-        while response_code != HttpCodes.OK:
-            response_code = self.send_part(hive, part)
-
     def receive_part(self, part: SharedFilePart) -> int:
         """
         Keeps a new, single, shared file part, along the ones already stored by the Worker instance
@@ -124,12 +114,11 @@ class Worker:
         for number, part in file_cache.items():
             replicate: int = part.can_replicate()  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
             if replicate:
-                i: int = 0
                 part.reset_epochs_to_recover()  # Ensures other workers don't try to replicate and that Hive can resimulate delays
-                while i < replicate and i < hive.hive_size:  # Second condition avoids infinite loop where hive_size < REPLICATION_LEVEL and Workers keep rerouting to each other
-                    i += 1
-                    part.references += 1
-                    self.reroute_part(hive, part)
+                while replicate:  # and i < hive.hive_size:  # Second condition avoids infinite loop where hive_size < REPLICATION_LEVEL and Workers keep rerouting to each other
+                    replicate -= 1
+                    send_replica(hive, part)
+
             response_code = self.send_part(hive, part)
             if response_code == HttpCodes.BAD_REQUEST:
                 part = self.init_recovery_protocol(part.name)  # TODO: future-iterations, right now, nothing is returned by init recovery protocol
@@ -138,6 +127,19 @@ class Worker:
                 epoch_cache[number] = part  # This case includes destination Workers rejecting requests, that would result in repeated parts on their end
         self.files[file_name] = epoch_cache
     # endregion
+
+    def send_replica(self, hive: Hive, part: SharedFilePart) -> int:
+        """
+        Equal to send part but with different semantics, as file is not routed following swarm guidance, but instead by choosing the most reliable peers in the hive
+        post-scriptum: This function is hacked... And should only be used for simulation purposes
+        :param Hive hive: Gateway hive that will deliver this file to other worker
+        :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        """
+        hive_members: List[Worker] = hive.desired_distribution.sort_values()
+        response_code = HttpCodes.DUMMY
+        while response_code != HttpCodes.OK:
+            response_code = self.send_part(hive, part)
+        part.references += 1
 
     # region PSUtils Interface
     # noinspection PyIncorrectDocstring
