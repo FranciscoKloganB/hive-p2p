@@ -220,7 +220,7 @@ class Hive:
         if len(disconnected_workers) == self.hive_size:
             return False
         elif len(disconnected_workers) > 0:
-            self.membership_maintenance(disconnected_workers)
+            self.membership_maintenance(disconnected_workers)  # CONTINUE HERE
 
         for part in lost_parts:
             if part.decrease_and_get_references() == 0:
