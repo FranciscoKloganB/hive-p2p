@@ -50,13 +50,18 @@ class Worker:
     # endregion
 
     # region Routing Table
-    def set_file_routing(self, file_name: str, transition_vector: pd.DataFrame) -> None:
+    def set_file_routing(self, file_name: str, transition_vector: Union[pd.Series, pd.DataFrame]) -> None:
         """
         Maps file id with state transition probabilities used for routing
         :param str file_name: a file id that is being shared on the hive
-        :param pd.DataFrame transition_vector: probabilities of going from current worker to some worker on the hive
+        :param Union[pd.Series, pd.DataFrame] transition_vector: probabilities of going from current worker to some worker on the hive
         """
-        self.routing_table[file_name] = transition_vector
+        if isinstance(transition_vector, pd.Series):
+            self.routing_table[file_name] = transition_vector.to_frame()
+        elif isinstance(transition_vector, pd.DataFrame):
+            self.routing_table[file_name] = transition_vector
+        else:
+            raise ValueError("Worker.set_file_routing expects a pandas.Series or pandas.DataFrame as type for transition vector parameter.")
 
     def remove_file_routing(self, file_name: str) -> None:
         """
