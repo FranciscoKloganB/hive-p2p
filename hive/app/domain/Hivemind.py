@@ -1,10 +1,11 @@
 import json
 import os
 import sys
+import domain.Hive as h
+
 from typing import List, Union, Dict, Any
 
 from domain.Enums import Status
-from domain.Hive import Hive
 from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.helpers.FileData import FileData
@@ -15,7 +16,7 @@ class Hivemind:
     """
     Representation of the P2P Network super node managing one or more hives ---- Simulator is piggybacked
     :ivar int max_epochs: number of stages the hive has to converge to the ddv before simulation is considered failed
-    :ivar Dict[str, Hive] hives: collection mapping hives' uuid (attribute Hive.id) to the Hive instances
+    :ivar Dict[str, h.Hive] hives: collection mapping hives' uuid (attribute Hive.id) to the Hive instances
     :ivar Dict[str, Worker] workers: collection mapping workers' names to their Worker instances
     :ivar Dict[str, FileData] files_data: collection mapping file names on the system and their FileData instance
     :ivar Dict[Union[Worker, str], int] workers_status: maps workers or their names to their connectivity status
@@ -34,7 +35,7 @@ class Hivemind:
             json_obj: Any = json.load(input_file)
 
             # Init basic simulation variables
-            self.hives: Dict[str, Hive] = {}
+            self.hives: Dict[str, h.Hive] = {}
             self.workers: Dict[str, Worker] = {}
 
             # Instantiaite jobless Workers
@@ -43,7 +44,7 @@ class Hivemind:
                 self.workers[worker.id] = worker
 
             # Read and split all shareable files specified on the input, also assign Hive initial attributes (uuid, members, and FileData)
-            hive: Hive
+            hive: h.Hive
             files_spreads: Dict[str, str] = {}
             files_dict: Dict[str, Dict[int, SharedFilePart]] = {}
             file_parts: Dict[int, SharedFilePart]
@@ -189,14 +190,14 @@ class Hivemind:
     # endregion
 
     # region Helpers
-    def __new_hive(self, shared: Dict[str, Dict[str, Union[List[str], str]]], file_name: str) -> Hive:
+    def __new_hive(self, shared: Dict[str, Dict[str, Union[List[str], str]]], file_name: str) -> h.Hive:
         """
         Creates a new hive
         """
         hive_members: Dict[str, Worker] = {}
         for worker_id in shared[file_name]['members']:
             hive_members[worker_id] = self.workers[worker_id]
-        hive = Hive(self, file_name, hive_members)
+        hive = h.Hive(self, file_name, hive_members)
         self.hives[hive.id] = hive
         return hive
     # endregion
