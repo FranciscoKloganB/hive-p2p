@@ -2,7 +2,7 @@ import getopt
 import json
 import os
 import sys
-import domain.hivemind as hm
+import domain.Hivemind as hm
 
 
 # region Usage, Help and Main
