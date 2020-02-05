@@ -4,12 +4,11 @@ from typing import Dict, List, Any
 
 import numpy as np
 import pandas as pd
-import domain.Hivemind as hm
 
 import utils.matrices as matrices
 import utils.metropolis_hastings as mh
 from domain.Enums import Status, HttpCodes
-
+from domain.Hivemind import Hivemind
 from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.helpers.FileData import FileData
@@ -19,7 +18,7 @@ from globals.globals import REPLICATION_LEVEL, DEFAULT_COLUMN
 class Hive:
     """
     :ivar str id: unique identifier in str format
-    :ivar Hivemind hm: reference to the master server, which in this case is just a simulator program
+    :ivar Hivemind hivemind: reference to the master server, which in this case is just a simulator program
     :ivar FileData Union[None, FileData]: instance of class FileData which contains information regarding the file persisted by this hive
     :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
     :ivar int hive_size: integer that keeps track of members collection size
@@ -29,7 +28,7 @@ class Hive:
     :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
     """
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
+    def __init__(self, hivemind: Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
         """
         Instantiates an Hive abstraction
         :param Hivemind hivemind: Hivemand instance object which leads the simulation
