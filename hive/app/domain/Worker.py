@@ -63,11 +63,7 @@ class Worker:
         Removes a shared file's routing information from the routing table
         :param str file_name: id of the shared file whose routing information is being removed from routing_table
         """
-        try:
-            self.files.pop(file_name)
-        except KeyError as kE:
-            log.error("Key ({}) doesn't exist in worker {}'s sf_parts dict".format(file_name, self.id))
-            log.error("Key Error message: {}".format(str(kE)))
+        self.files.pop(file_name)
     # endregion
 
     # region File Routing
@@ -104,8 +100,9 @@ class Worker:
         else:
             print("shared file part id: {}, corrupted".format(part.id))
             self.init_recovery_protocol(part.name)
-    # end region
+    # endregion
 
+    # region Swarm Guidance Interface
     def execute_epoch(self, file_name: str) -> None:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
@@ -121,7 +118,7 @@ class Worker:
         self.files[file_name] = epoch_cache
     # endregion
 
-    # region Helpers
+    # region PSUtils Interface
     # noinspection PyIncorrectDocstring
     @staticmethod
     def get_resource_utilization(*args) -> Dict[str, Any]:
@@ -141,31 +138,6 @@ class Worker:
         for arg in args:
             results[arg] = rT.get_value(arg)
         return results
-
-    def get_all_parts(self) -> Dict[str, Dict[int, SharedFilePart]]:
-        """
-        Sends all shared file parts kept by the Worker instance to the requestor regardless of the file's hive
-        :returns Dict[str, Dict[int, SharedFilePart]]: a deep copy of the Worker's instance shared file parts
-        """
-        return deepcopy(self.files)
-
-    def get_parts_count(self, sf_name: str) -> int:
-        """
-        Counts how many parts the Worker instance has of the named file
-        :param sf_name: id of the file kept by the Worker instance that must be counted
-        :returns int: number of parts from the named shared file currently on the Worker instance
-        """
-        return len(self.files[sf_name])
-
-    def get_epoch_status(self) -> Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]:
-        """
-        When called, the worker instance decides if it should switch status
-        """
-        if self.status == Status.OFFLINE:
-            return self.status
-        else:
-            self.status = np.random.choice(Worker.ON_OFF, p=[self.uptime, self.disconnect_chance])
-            return self.status
     # endregion
 
     # region Overrides
@@ -178,4 +150,32 @@ class Worker:
 
     def __ne__(self, other):
         return not(self == other)
+    # endregion
+
+    # region Helpers
+    def get_file_parts(self, file_name: str) -> Dict[int, SharedFilePart]:
+        """
+        Gets collection of file parts that correspond to the named file
+        :param str file_name: the file parts that caller wants to retrieve from this worker instance
+        :returns Dict[int, SharedFilePart]: reference to a collection that maps part numbers to file parts
+        """
+        return self.files.get(file_name, {})
+
+    def get_file_parts_count(self, file_name: str) -> int:
+        """
+        Counts how many parts the Worker instance has of the named file
+        :param str file_name: the file parts that caller wants to count
+        :returns int: number of parts from the named shared file currently on the Worker instance
+        """
+        return len(self.files.get(file_name, {}))
+
+    def get_epoch_status(self) -> Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]:
+        """
+        When called, the worker instance decides if it should switch status
+        """
+        if self.status == Status.OFFLINE:
+            return self.status
+        else:
+            self.status = np.random.choice(Worker.ON_OFF, p=[self.uptime, self.disconnect_chance])
+            return self.status
     # endregion
