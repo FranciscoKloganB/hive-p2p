@@ -1,4 +1,5 @@
 import uuid
+import math
 import numpy as np
 import pandas as pd
 import utils.matrices as matrices
@@ -17,10 +18,13 @@ from typing import Dict, List, Union, Any
 class Hive:
     """
     :ivar str id: unique identifier in str format
-    :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
     :ivar FileData Union[None, FileData]: instance of class FileData which contains information regarding the file persisted by this hive
+    :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
+    :ivar int hive_size: integer that keeps track of members collection size
+    :ivar int critical_size: minimum number of replicas required for data recovery plus the number of peer faults the system must support during replication.
+    :ivar int sufficient_size: depends on churn-rate and equals critical_size plus the number of peers expected to fail between two successive recovery phases
+    :ivar int redudant_size: application-specific system parameter, but basically represents that the hive is to big
     :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
-    :deprecated_ivar Dict[str, FileData] files: maps the name of the files persisted by the members of this Hive, to instances of FileData used by the Simulator class
     """
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, members: Dict[str, Worker]) -> None:
@@ -29,14 +33,14 @@ class Hive:
         :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
         """
         self.id: str = str(uuid.uuid4())
-        self.members: Dict[str, Worker] = members
         self.file: Union[None, FileData] = None
-
-        transition_matrix: pd.DataFrame = self.new_transition_matrix()
-        self.broadcast_transition_matrix(transition_matrix)
-
-        self.desired_distribution: pd.DataFrame = pd.DataFrame()
-        # self.files: Dict[str, FileData] = {}
+        self.members: Dict[str, Worker] = members
+        self.hive_size: int = len(members)
+        self.critical_size: int = REPLICATION_LEVEL
+        self.sufficient_size: int = self.critical_size + math.ceil(self.hive_size * 0.34)
+        self.redudant_size: int = self.sufficient_size + self.hive_size
+        self.desired_distribution = None
+        self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
 
     # endregion
 
@@ -54,6 +58,7 @@ class Hive:
             return HttpCodes.OK
         else:
             return HttpCodes.NOT_FOUND
+
     # endregion
 
     # region Swarm Guidance
@@ -65,7 +70,7 @@ class Hive:
         :returns List[float] desired_distribution: uptimes represent 'reliability', thus, desired distribution is the normalization of the members' uptimes
         """
         uptime_sum = sum(member_uptimes)
-        uptimes_normalized = [member_uptime/uptime_sum for member_uptime in member_uptimes]
+        uptimes_normalized = [member_uptime / uptime_sum for member_uptime in member_uptimes]
         self.desired_distribution = pd.DataFrame(data=uptimes_normalized, index=member_ids)
         return uptimes_normalized
 
@@ -99,6 +104,7 @@ class Hive:
         for worker in self.members.values():
             transition_vector = transition_matrix.loc[:, worker.id]
             worker.set_file_routing(self.file.name, transition_vector)
+
     # endregion
 
     # region Membership
@@ -124,6 +130,7 @@ class Hive:
         """
         self.members.pop(old_member)
         self.members[new_member.id] = new_member
+
     # endregion
 
     # region Simulation Interface
@@ -159,6 +166,34 @@ class Hive:
                 for worker in workers:
                     worker.receive_part(part)
 
-    def execute_epoch(self):
-        raise NotImplementedError()
+    def execute_epoch(self) -> bool:
+        """
+        Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
+        """
+        disconnected_workers: List[Worker] = []
+        lost_parts: List[SharedFilePart] = []
+        # Members execute epoch
+        for worker in self.members.values():
+            if worker.get_epoch_status() == Status.OFFLINE:
+                disconnected_workers.append(worker)
+                lost_parts.extend(worker.get_file_parts(self.file.name).values())
+            else:
+                worker.execute_epoch(self.file.name)
+
+        # Perfect failure detection, we assume that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
+        if len(disconnected_workers) == len(self.members):
+            return False
+        # Since at least a few members survived Hive maintenance is needed
+        else:
+
+            for member in disconnected_workers:
+                self.members.pop(member.id)
+
+        for part in lost_parts:
+            if part.decrease_and_get_references() == 0:
+                # TODO Simulation failed, this project does not have erasure coding yet, only pure replication of blocks
+                return False
+
+        # Verify
+
     # endregion
