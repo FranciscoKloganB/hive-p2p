@@ -4,6 +4,7 @@ import os
 import sys
 
 
+# region Usage, Help and Main
 def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
@@ -14,7 +15,7 @@ def usage():
     sys.exit(" ")
 
 
-def help():
+def myhelp():
     with open("{}/static/simfiles/simfile_example.json".format(os.getcwd())) as json_file:
         print("-------------------------------------------------------------------------\n")
         print("To create a simulation file automatically use simulation_file_generator.py script in ~/scripts/python folder.\n")
@@ -34,6 +35,7 @@ def main(simfile_name):
 
     simulation = Hivemind(simfile_name)
     simulation.execute_simulation()
+# endregion
 
 
 if __name__ == "__main__":
@@ -44,7 +46,7 @@ if __name__ == "__main__":
             if options in ("-u", "--usage"):
                 usage()
             if options in ("-h", "--help"):
-                help()
+                myhelp()
             if options in ("-s", "--simfile"):
                 simfile_name_ = str(args).strip()
                 main(simfile_name_)
