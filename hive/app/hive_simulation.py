@@ -2,6 +2,7 @@ import getopt
 import json
 import os
 import sys
+import domain.Hivemind as hm
 
 
 # region Usage, Help and Main
@@ -31,9 +32,7 @@ def main(simfile_name):
     if not simfile_name:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
-    from domain.Hivemind import Hivemind
-
-    simulation = Hivemind(simfile_name)
+    simulation = hm.Hivemind(simfile_name)
     simulation.execute_simulation()
 # endregion
 
