@@ -50,12 +50,12 @@ class Hivemind:
             self.hives: Dict[str, Hive] = {}
             self.workers: Dict[str, Worker] = {}
 
-            # Create the P2P network nodes (domain.Workers) without any job
+            # Instantiaite jobless Workers
             for worker_id, worker_uptime in json_obj['peers_uptime'].items():
                 worker: Worker = Worker(worker_id, worker_uptime)
                 self.workers[worker.id] = worker
 
-            # Read and split all shareable files specified on the input, also assign Hive initial attributes
+            # Read and split all shareable files specified on the input, also assign Hive initial attributes (uuid, members, and FileData)
             hive: Hive
             hive_members: Dict[str, Worker]
             files_spreads: Dict[str, str] = {}
@@ -68,7 +68,7 @@ class Hivemind:
                     part_number: int = 0
                     file_parts = {}
                     files_spreads[file_name] = shared[file_name]['spread']
-                    hive = self.__new_hive(shared, file_name)
+                    hive = self.__new_hive(shared, file_name)  # Among other things, assigns initial Hive members to the instance, implicitly set routing tables
                     while True:
                         read_buffer = file.read(READ_SIZE)
                         if read_buffer:
@@ -79,53 +79,9 @@ class Hivemind:
                             break
                     hive.file = FileData(name=file_name, parts_count=part_number)
 
-            # For all shareable files, set that shared file_routing table
-            self.__synthesize_shared_files_transition_matrices(json_obj['shared'])
-
             # Distribute files before starting simulation
-            self.distribute_file_parts(files_spreads, files_dict)
-    # endregion
-
-    # region domain.Worker related methods
-    def distribute_file_parts(self, spreads: Dict[str, str], shared: Dict[str, Dict[int, SharedFilePart]]) -> None:
-        """
-        Distributes file parts over the Hives.
-        :param Dict[str, str] spreads: collection mapping file names to their initial distribution in the hive
-        :param Dict[str, Dict[int, SharedFilePart]] shared: collection of file parts
-        """
-        for hive in self.hives.values():
-            hive.spread_files(spreads[hive.file.name], shared[hive.file.name])
-
-    # endregion
-
-    # region metropolis hastings and transition vector assignment methods
-    def __synthesize_transition_matrix(self, adj_matrix: List[List[int]], desired_distribution: List[float], states: List[str]) -> pd.DataFrame:
-        """
-        Calculates a transition matrix using the metropolis-hastings algorithm
-        :param states: list of worker names who form an hive
-        :param adj_matrix: adjacency matrix representing possible connections between all pairs of states i, j
-        :param desired_distribution: steady state file distribution that must be achieved by the hive's workers
-        :returns pd.DataFrame: labeled matrix with transition probabilities between all pairs of states i, j
-        """
-        transition_matrix: np.ndarray = mh.metropolis_algorithm(adj_matrix, desired_distribution, column_major_out=True)
-        return pd.DataFrame(transition_matrix, index=states, columns=states)
-
-    def __synthesize_shared_files_transition_matrices(self, shared_dict: Dict[str, Any]) -> None:
-        """
-        Fetches all the vectors and matrices required to build an hive for each of the named shared files in shared_dict
-        :param Dict[str, Any] shared_dict: collection of (shared_file_name, markov chain data) pairs
-        """
-        for ext_sf_name, markov_chain_data in shared_dict.items():
-            sf_name: str = Path(ext_sf_name).resolve().stem
-            labels: List[str] = markov_chain_data['state_labels']
-            adj_matrix: List[List[int]] = markov_chain_data['adj_matrix']
-            desired_distribution: List[float] = markov_chain_data['ddv']
-            # Setting the trackers in this phase speeds up simulation
-            self.__init_file_data(sf_name, adj_matrix, desired_distribution, labels)
-            # Compute transition matrix
-            transition_matrix: pd.DataFrame = self.__synthesize_transition_matrix(adj_matrix, desired_distribution, labels)
-            # Split transition matrix into column vectors
-            self.__set_routing_tables(sf_name, labels, transition_matrix)
+            for hive in self.hives.values():
+                hive.spread_files(files_spreads[hive.file.name], files_dict[hive.file.name])
     # endregion
 
     # region simulation execution methods
@@ -402,50 +358,7 @@ class Hivemind:
         self.__set_routing_tables(sf_data.name, cropped_labels, transition_matrix)
         return True
 
-    def __crop_adj_matrix(self, sf_data: FileData, dw_name: str) -> List[List[int]]:
-        """
-        Generates a new desired distribution vector which is a subset of the original one.
-        :param FileData sf_data: reference to FileData instance object whose fields need to be updated
-        :param str dw_name: id of the worker to be dropped from desired distribution, etc...
-        :returns List[List[float]] sf_data.desired_distribution: surviving worker names and their new desired density
-        """
-        sf_data.adjacency_matrix.drop(dw_name, axis='index', inplace=True)
-        sf_data.adjacency_matrix.drop(dw_name, axis='columns', inplace=True)
-        # TODO After the first failure we must update the ADJ Matrix labels, that is causing an error
-        size = sf_data.adjacency_matrix.shape[0]
-        for i in range(size):
-            is_absorbent_or_transient = True
-            for j in range(size):
-                # Ensure state i can reach and be reached by some other state j, where i != j
-                if sf_data.adjacency_matrix.iat[i, j] == 1 and i != j:
-                    is_absorbent_or_transient = False
-                    break
-            if is_absorbent_or_transient:
-                j = random_index(i, size)
-                sf_data.adjacency_matrix.iat[i, j] = 1
-                sf_data.adjacency_matrix.iat[j, i] = 1
-        cropped_adj_matrix: List[List[int]] = cast(List[List[int]], sf_data.adjacency_matrix.values.tolist())
-        return cropped_adj_matrix
-
-    def __crop_desired_distribution(self, sf_data: FileData, w_name: str):
-        """
-        Generates a new desired distribution vector which is a subset of the original one.
-        :param FileData sf_data: reference to FileData instance object whose fields need to be updated
-        :param str w_name: id of the worker to be dropped from desired distribution, etc...
-        :return Tuple[List[str], List[float]]: surviving worker names and their new desired density
-        """
-        # get probability dead worker's density, 'share it' by remaining workers, then remove it from vector column
-        increment: float = sf_data.desired_distribution.at[w_name, DEFAULT_COLUMN] / (sf_data.desired_distribution.shape[0] - 1)
-
-        sf_data.desired_distribution.drop(w_name, inplace=True)
-        # fetch remaining labels and rows as found on the data frame
-        new_labels: List[str] = [*sf_data.desired_distribution.index]
-        new_values: List[float] = [*sf_data.desired_distribution.iloc[:, 0]]
-        incremented_values: List[float] = [value + increment for value in new_values]
-        return new_labels, incremented_values
-    # endregion
-
-    # region other helpers
+    # region Helpers
     def __new_hive(self, shared: Dict[str, Dict[str, Union[List[str], str]]], file_name: str) -> Hive:
         """
         Creates a new hive
@@ -456,60 +369,6 @@ class Hivemind:
         hive = Hive(hive_members)
         self.hives[hive.id] = hive
         return hive
-
-    def __set_routing_tables(self, sf_name: str, worker_names: List[str], transition_matrix: pd.DataFrame):
-        """
-        Inits the routing tables w.r.t. the inputed shared file id for all listed workers' names by passing them their
-        respective vector column within the transition_matrix
-        :param str sf_name: id of the shared file
-        :param List[str] worker_names: id of the workers that share the file
-        :param pd.DataFrame transition_matrix: labeled transition matrix to be splitted between named workers
-        """
-        for name in worker_names:
-            transition_vector: pd.Series = transition_matrix.loc[:, name]  # <label, value> pairs in column[worker_name]
-            self.workers[name].set_file_routing(sf_name, transition_vector)
-
-    def __inherit_routing_table(
-            self, sf_name: str, dead_worker: Worker, new_worker: Worker, replacement_dict: Dict[str, str]) -> None:
-        """
-        The new Worker instance receives the transition vector, of a shared file, of the disconnected Worker instance.
-        The inheritance involves renaming a row within the column vector.
-        :param str sf_name: id of the file whose routing table is going to be passed between the workers
-        :param Worker dead_worker: Worker instance recently disconnected from the an hive
-        :param Worker new_worker: Worker instance that is replacing him in that hive
-        :param Dict[str, str] replacement_dict: old worker id, new worker id)
-        """
-        # TODO future-iterations:
-        #  Obtain the transition vector w/o using dead_worker instance
-        dw_transition_vector: pd.DataFrame = dead_worker.routing_table[sf_name]
-        new_worker.set_file_routing(sf_name, dw_transition_vector.rename(index=replacement_dict))
-
-    def __update_routing_tables(self, sf_name: str, worker_names: List[str], replacement_dict: Dict[str, str]) -> None:
-        """
-        Updates the routing tables w.r.t. the inputted shared file id for all listed workers' names without altering
-        their transition_vectors.
-        :param str sf_name: id of the shared file
-        :param List[str] worker_names: id of the workers that share the file
-        :param Dict[str, str] replacement_dict: old worker id, new worker id)
-        """
-        for name in worker_names:
-            self.workers[name].update_file_routing(sf_name, replacement_dict)
-
-    def __remove_routing_tables(self, sf_name: str, worker_names: List[str]) -> None:
-        """
-        Removes the routing tables w.r.t. the inputted shared file id for all listed workers' names
-        :param str sf_name: id of the shared file to be removed from workers' routing tables
-        :param List[str] worker_names: id of the workers that share the file
-        """
-        for name in worker_names:
-            self.workers[name].remove_file_routing(sf_name)
-
-    def __filter_and_map_online_workers(self) -> List[Worker]:
-        """
-        Filters and maps the workers' being managed by the Hivemind instance according to their Online statuses.
-        :returns List[Worker]: objects whose status is online
-        """
-        return [*map(lambda w: w[0], [*filter(lambda i: i[1] == Status.ONLINE, self.workers_status.items())])]
 
     def __expand_uptime_range_search(self, current_uptime: float) -> Optional[float]:
         """
@@ -522,8 +381,7 @@ class Hivemind:
         current_uptime -= 10.0
         return current_uptime if current_uptime > 50.0 else 0.0
 
-    def __try_care_taking(
-            self, stage: int, dead_worker: Worker, sf_data: FileData, sf_failures: Set[str], recover: Dict[int, SharedFilePart] = None) -> Set[str]:
+    def __try_care_taking(self, stage: int, dead_worker: Worker, sf_data: FileData, sf_failures: Set[str], recover: Dict[int, SharedFilePart] = None) -> Set[str]:
         """
         :param int stage: number representing the discrete time step the simulation is currently at
         :param Worker dead_worker: Worker instance that was removed from an hive
@@ -540,18 +398,6 @@ class Hivemind:
             sf_data.fclose()
             sf_failures.add(sf_data.name)
         return sf_failures
-
-    def __stop_tracking_worker(self, worker_name: str) -> None:
-        """
-        Removes a worker id or instance key from workers_hives, workers_uptime and workers dictionaries. Hivemind will
-        only keep a reference to the worker in workers_status, to simulate HttpCode responses. Calling this method will
-        steadily increase performance of simulation as more and more nodes start to disconnect.
-        :param str worker_name: id of the worker to remove from Hivemind instance structures
-        """
-        self.workers.pop(worker_name)
-        self.workers_hives.pop(worker_name)
-        self.workers_uptime.pop(worker_name)
-
     # endregion
 
     # endregion

@@ -29,8 +29,12 @@ class Hive:
         :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
         """
         self.id: str = str(uuid.uuid4())
-        self.members: Dict[str, Worker] = {}
+        self.members: Dict[str, Worker] = members
         self.file: Union[None, FileData] = None
+
+        transition_matrix: pd.DataFrame = self.new_transition_matrix()
+        self.broadcast_transition_matrix(transition_matrix)
+
         self.desired_distribution: pd.DataFrame = pd.DataFrame()
         # self.files: Dict[str, FileData] = {}
 
@@ -84,7 +88,7 @@ class Hive:
         transition_matrix: np.ndarray = mh.metropolis_algorithm(adjancency_matrix, desired_distribution, column_major_out=True)
         return pd.DataFrame(transition_matrix, index=member_ids, columns=member_ids)
 
-    def broadcast_transition_matrix(self) -> None:
+    def broadcast_transition_matrix(self, transition_matrix: pd.DataFrame) -> None:
         """
         Gives each member his respective slice (vector column) of the transition matrix the Hive is currently executing.
         post-scriptum: we could make an optimization that sets a transition matrix for the hive, ignoring the file names, instead of mapping different file
@@ -92,7 +96,6 @@ class Hive:
         note is kept for future reference. This also assumes an hive can store multiple files. For simplicity each Hive only manages one file for now.
         """
         transition_vector: pd.DataFrame
-        transition_matrix: pd.DataFrame = self.new_transition_matrix()
         for worker in self.members.values():
             transition_vector = transition_matrix.loc[:, worker.id]
             worker.set_file_routing(self.file.name, transition_vector)
