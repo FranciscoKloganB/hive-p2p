@@ -1,13 +1,13 @@
 import json
 import os
 import sys
-import domain.Hive as h
+import domain.hive as h
 
 from typing import List, Union, Dict, Any
 
-from domain.Enums import Status
-from domain.SharedFilePart import SharedFilePart
-from domain.Worker import Worker
+from domain.enums import Status
+from domain.filepart import SharedFilePart
+from domain.worker import Worker
 from domain.helpers.FileData import FileData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, AVG_UPTIME, MAX_EPOCHS
 

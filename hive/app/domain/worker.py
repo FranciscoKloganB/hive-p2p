@@ -2,10 +2,10 @@ from typing import Union, Dict, Any, List
 
 import numpy as np
 import pandas as pd
-import domain.Hive as h
+import domain as dm
 
-from domain.Enums import Status, HttpCodes
-from domain.SharedFilePart import SharedFilePart
+from domain.enums import Status, HttpCodes
+from domain.filepart import SharedFilePart
 from globals.globals import DEFAULT_COLUMN, REPLICATION_LEVEL
 from utils import crypto
 from utils.ResourceTracker import ResourceTracker as rT

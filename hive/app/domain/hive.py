@@ -4,15 +4,15 @@ from typing import Dict, List, Any
 
 import numpy as np
 import pandas as pd
-import domain.Hivemind as hm
+import domain.hivemind as hm
 
 import utils.matrices as matrices
 import utils.metropolis_hastings as mh
-import domain.Worker as w
+import domain.worker as w
 
-from domain.Enums import Status, HttpCodes
+from domain.enums import Status, HttpCodes
 
-from domain.SharedFilePart import SharedFilePart
+from domain.filepart import SharedFilePart
 from domain.helpers.FileData import FileData
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COLUMN
 
