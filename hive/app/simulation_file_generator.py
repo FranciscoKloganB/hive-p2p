@@ -14,19 +14,7 @@ from globals.globals import SHARED_ROOT, SIMULATION_ROOT
 from scripts.pyscripts import skewed_distribution_generator as sg, label_generator as cg
 
 
-# region usage
-def usage():
-    print(" -------------------------------------------------------------------------")
-    print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
-    print(" Generates a simulation file that can be used as input to an HIVE simulation\n")
-    print(" Typical usage: python simulation_file_generator.py --simfile=filename.json\n")
-    print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
-    print(" -------------------------------------------------------------------------\n")
-    sys.exit(" ")
-# endregion
-
-
-# region input consumption and checking functions
+# region Input Consumption and Verification
 def __in_initial_spread() -> str:
     """
     :returns str spread_mode: how files are distributed across the hive
@@ -103,8 +91,10 @@ def __in_file_name(msg: str) -> str:
     file_name = input(msg).strip()
     while True:
         if not file_name:
-            file_name = input("A non-blank file id is expected... Try again: ")
-            continue
+            print("Falling back to default name 'FBZ_0134.NEF' because inputed string was blank...\n")
+            file_name = "FBZ_0134.NEF"
+            # file_name = input("A non-blank file id is expected... Try again: ")
+            # continue
         if not Path(os.path.join(SHARED_ROOT, file_name)).is_file():
             logging.warning(" {} isn't inside ~/hive/app/static/shared folder.".format(file_name))
             print("File not found in~/hive/app/static/shared). Running the present simfile might cause bad behaviour.")
@@ -141,7 +131,7 @@ def __in_file_labels(peer_uptime_dict: Dict[str, float], peer_names: List[str]) 
 # endregion
 
 
-# region init and generation functions
+# region Generation Functions
 def __init_peer_uptime_dict() -> Dict[str, float]:
     """
     :return Dict[str, float] peers_uptime_dict: a dictionary the maps peers (state labels) to their machine uptimes.
@@ -222,7 +212,17 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
 # endregion
 
 
-# region actual main function
+# region Main and Usage
+def usage():
+    print(" -------------------------------------------------------------------------")
+    print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
+    print(" Generates a simulation file that can be used as input to an HIVE simulation\n")
+    print(" Typical usage: python simulation_file_generator.py --simfile=filename.json\n")
+    print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
+    print(" -------------------------------------------------------------------------\n")
+    sys.exit(" ")
+
+
 def main(simfile_name: str):
     """
     Creates a structured json file within the user's file system that can be used as input for an HIVE system simulation
@@ -235,7 +235,7 @@ def main(simfile_name: str):
     }
 
     with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
-        json.dump(simfile_json, outfile)
+        json.dump(simfile_json, outfile, indent=4)
 # endregion
 
 
