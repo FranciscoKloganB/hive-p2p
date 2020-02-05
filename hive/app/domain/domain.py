@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 import json
 import math
@@ -204,11 +206,8 @@ class Hivemind:
     # endregion
 
     # region Stage Processing
-    def __process_stage_results(self, stage: int) -> None:
-        """
-        Obtains all workers' densities regarding each shared file and logs progress in the system accordingly
-        :param int stage: number representing the discrete time step the simulation is currently at
-        """
+    """
+        def __process_stage_results(self, stage: int) -> None:
         if stage == MAX_EPOCHS - 1:
             for sf_data in self.files_data.values():
                 sf_data.fwrite("\nReached final stage... Executing tear down processes. Summary below:")
@@ -223,19 +222,7 @@ class Hivemind:
                 self.__request_file_counts(sf_data)
                 # when all queries for a file are done, verify convergence for data.file_name
                 self.__check_file_convergence(stage, sf_data)
-
-    def __request_file_counts(self, sf_data: FileData) -> None:
-        """
-        Updates inputted FileData.current_distribution with current density values for each worker sharing the file
-        :param FileData sf_data: data class instance containing generalized information regarding a shared file
-        """
-        worker_ids = [*sf_data.desired_distribution.index]
-        for worker_id in worker_ids:
-            if self.workers_status[worker_id] != Status.ONLINE:
-                sf_data.current_distribution.at[worker_id, DEFAULT_COLUMN] = 0
-            else:
-                worker = self.workers[worker_id]  # get worker instance corresponding to id
-                sf_data.current_distribution.at[worker_id, DEFAULT_COLUMN] = worker.get_file_parts_count(sf_data.name)
+    """
 
     def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
         """
