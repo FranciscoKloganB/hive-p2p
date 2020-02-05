@@ -2,9 +2,9 @@ from typing import Union, Dict, Any, List
 
 import numpy as np
 import pandas as pd
+import domain.Hive as h
 
 from domain.Enums import Status, HttpCodes
-from domain.Hive import Hive
 from domain.SharedFilePart import SharedFilePart
 from globals.globals import DEFAULT_COLUMN, REPLICATION_LEVEL
 from utils import crypto
@@ -18,7 +18,7 @@ class Worker:
     :ivar str id: unique identifier of the worker instance on the network
     :ivar float uptime: average worker uptime
     :ivar float disconnect_chance: (100.0 - worker_uptime) / 100.0
-    :ivar Dict[str, Hive] hives: dictionary that maps the hive_ids' this worker instance belongs to, to the respective Hive instances
+    :ivar Dict[str, h.Hive] hives: dictionary that maps the hive_ids' this worker instance belongs to, to the respective h.Hive instances
     :ivar Dict[str, Dict[int, SharedFilePart]] files: collection mapping file names to file parts and their contents
     :ivar Dict[str, pd.DataFrame] routing_table: collection mapping file names to the respective transition probabilities followed by the worker instance
     :ivar Union[int, Status] status: indicates if this worker instance is online or offline, might have other non-intuitive status, hence bool does not suffice
@@ -31,7 +31,7 @@ class Worker:
         self.id: str = worker_id
         self.uptime: float = worker_uptime
         self.disconnect_chance: float = 1.0 - worker_uptime
-        self.hives: Dict[str, Hive] = {}
+        self.hives: Dict[str, h.Hive] = {}
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
         self.status: Union[int, Status] = Status.ONLINE
@@ -70,10 +70,10 @@ class Worker:
     # endregion
 
     # region File Routing
-    def send_part(self, hive: Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
+    def send_part(self, hive: h.Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
         """
         Attempts to send a file part to another worker
-        :param Hive hive: Gateway hive that will deliver this file to other worker
+        :param h.Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
         routing_vector: pd.DataFrame = self.routing_table[part.name]
@@ -103,10 +103,10 @@ class Worker:
     # endregion
 
     # region Swarm Guidance Interface
-    def execute_epoch(self, hive: Hive, file_name: str) -> None:
+    def execute_epoch(self, hive: h.Hive, file_name: str) -> None:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
-        :param Hive hive: Hive instance that ordered execution of the epoch
+        :param h.Hive hive: h.Hive instance that ordered execution of the epoch
         :param str file_name: the file parts that should be routed
         """
         file_cache: Dict[int, SharedFilePart] = self.files.get(file_name, {})
@@ -124,11 +124,11 @@ class Worker:
         self.files[file_name] = epoch_cache  # HACK to simulate HttpCodes.OK responses. With this line, only rejected items are kept for next epoch.
     # endregion
 
-    def try_replication(self, hive: Hive, part: SharedFilePart) -> None:
+    def try_replication(self, hive: h.Hive, part: SharedFilePart) -> None:
         """
         Equal to send part but with different semantics, as file is not routed following swarm guidance, but instead by choosing the most reliable peers in the hive
         post-scriptum: This function is hacked... And should only be used for simulation purposes
-        :param Hive hive: Gateway hive that will deliver this file to other worker
+        :param h.Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
         replicate: int = part.can_replicate()  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
@@ -142,7 +142,7 @@ class Worker:
                 if hive.route_part(member_id, part) == HttpCodes.OK:
                     part.references += 1  # for each successful deliver increase number of copies in the hive
                     replicate -= 1  # decrease needed replicas
-            part.reset_epochs_to_recover()  # Ensures other workers don't try to replicate and that Hive can resimulate delays
+            part.reset_epochs_to_recover()  # Ensures other workers don't try to replicate and that h.Hive can resimulate delays
 
     # region PSUtils Interface
     # noinspection PyIncorrectDocstring

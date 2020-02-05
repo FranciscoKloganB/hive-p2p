@@ -8,10 +8,11 @@ import domain.Hivemind as hm
 
 import utils.matrices as matrices
 import utils.metropolis_hastings as mh
+import domain.Worker as w
+
 from domain.Enums import Status, HttpCodes
 
 from domain.SharedFilePart import SharedFilePart
-from domain.Worker import Worker
 from domain.helpers.FileData import FileData
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COLUMN
 
@@ -21,7 +22,7 @@ class Hive:
     :ivar str id: unique identifier in str format
     :ivar Hivemind hm: reference to the master server, which in this case is just a simulator program
     :ivar FileData Union[None, FileData]: instance of class FileData which contains information regarding the file persisted by this hive
-    :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
+    :ivar Dict[str, w.Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective w.Worker instance
     :ivar int hive_size: integer that keeps track of members collection size
     :ivar int critical_size: minimum number of replicas required for data recovery plus the number of peer faults the system must support during replication.
     :ivar int sufficient_size: depends on churn-rate and equals critical_size plus the number of peers expected to fail between two successive recovery phases
@@ -29,17 +30,17 @@ class Hive:
     :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
     """
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
+    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, w.Worker]) -> None:
         """
         Instantiates an Hive abstraction
         :param Hivemind hivemind: Hivemand instance object which leads the simulation
         :param str file_name: name of the file this Hive is responsible for
-        :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
+        :param Dict[str, w.Worker] members: collection mapping names of the Hive's initial workers' to their w.Worker instances
         """
         self.id: str = str(uuid.uuid4())
         self.hivemind = hivemind
         self.file: FileData = FileData(file_name)
-        self.members: Dict[str, Worker] = members
+        self.members: Dict[str, w.Worker] = members
         self.original_size: int = len(members)
         self.hive_size: int = len(members)
         self.critical_size: int = REPLICATION_LEVEL
@@ -131,16 +132,16 @@ class Hive:
         :param Dict[int, SharedFilePart] file_parts: file parts to distribute over the members
         """
         if spread_mode == "a":
-            choices: List[Worker] = [*self.members.values()]
-            workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+            choices: List[w.Worker] = [*self.members.values()]
+            workers: List[w.Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
             for worker in workers:
                 for part in file_parts.values():
                     worker.receive_part(part)
 
         elif spread_mode == "u":
             for part in file_parts.values():
-                choices: List[Worker] = [*self.members.values()]
-                workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+                choices: List[w.Worker] = [*self.members.values()]
+                workers: List[w.Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
                     worker.receive_part(part)
 
@@ -151,8 +152,8 @@ class Hive:
                 desired_distribution.append(self.desired_distribution.loc[member_id, DEFAULT_COLUMN].item())
 
             for part in file_parts.values():
-                choices: List[Worker] = choices.copy()
-                workers: List[Worker] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
+                choices: List[w.Worker] = choices.copy()
+                workers: List[w.Worker] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
                     worker.receive_part(part)
 
@@ -161,7 +162,7 @@ class Hive:
         Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
         """
         recoverable_parts: Dict[int, SharedFilePart] = {}
-        disconnected_workers: List[Worker] = []
+        disconnected_workers: List[w.Worker] = []
 
         # Members execute epoch
         for worker in self.members.values():
@@ -189,10 +190,10 @@ class Hive:
     # endregion
 
     # region Helpers
-    def membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
+    def membership_maintenance(self, disconnected_workers: List[w.Worker]) -> None:
         """
         Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
-        :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
+        :param List[w.Worker] disconnected_workers: collection of members who disconnected during this epoch
         """
         for member in disconnected_workers:
             self.members.pop(member.id)
@@ -203,7 +204,7 @@ class Hive:
             self.route_to_cloud()
 
         if self.hive_size < self.sufficient_size:
-            new_members: Dict[str, Worker] = self.hivemind.find_replacement_worker(self.members, self.original_size - self.hive_size)
+            new_members: Dict[str, w.Worker] = self.hivemind.find_replacement_worker(self.members, self.original_size - self.hive_size)
             if not new_members:
                 return
             self.members.update(new_members)
