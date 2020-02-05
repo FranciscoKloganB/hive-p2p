@@ -31,7 +31,13 @@ class SharedFilePart:
         self.sha256: str = crypto.sha256(self.data)
     # endregion
 
-    # region Override
+    # region Overrides
     def __str__(self):
         return "part_name: {},\npart_number: {},\npart_id: {},\npart_data: {},\nsha256: {}\n".format(self.name, self.number, self.id, self.data, self.sha256)
+    # endregionss
+
+    # region Helpers
+    def decrease_and_get_references(self):
+        self.references = self.references - 1
+        return self.references
     # endregion
