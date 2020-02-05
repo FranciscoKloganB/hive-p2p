@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from typing import List, Union, Dict, Any
 
 from domain.Enums import Status
@@ -22,7 +23,7 @@ class Hivemind:
     :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
     """
 
-    # region instance variables and constructors
+    # region Class Variables, Instance Variables and Constructors
     def __init__(self, simfile_name: str) -> None:
         """
         Instantiates an Hivemind object
@@ -75,12 +76,18 @@ class Hivemind:
         """
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
+        failed_hives: List[str] = []
         for stage in range(self.max_epochs):
             for hive in self.hives.values():
-                hive.execute_epoch()
+                if not hive.execute_epoch():
+                    failed_hives.append(hive.id)
+            for hive_id in failed_hives:
+                self.hives.pop(hive_id)
+                if not self.hives:
+                    sys.exit("Simulation terminated at stage {} because all hives failed before max epochs were reached".format(stage))
+    # endregion
 
-            self.__process_stage_results(stage)
-
+    # region Keeper Interface
     def receive_complaint(self, suspects_name: str) -> None:
         """
         Registers a complaint on the named worker, if enough complaints are received, broadcasts proper action to all
@@ -193,5 +200,4 @@ class Hivemind:
         hive = Hive(self, file_name, hive_members)
         self.hives[hive.id] = hive
         return hive
-
     # endregion
