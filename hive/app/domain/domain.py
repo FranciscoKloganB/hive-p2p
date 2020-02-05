@@ -152,7 +152,7 @@ class Hivemind:
             file_parts: Dict[int, SharedFilePart]
 
             shared: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['shared'].keys()
-            for file_name in shared.keys():
+            for file_name in shared:
                 with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
                     part_number: int = 0
                     file_parts = {}
