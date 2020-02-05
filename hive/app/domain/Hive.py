@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import utils.matrices as matrices
 import utils.metropolis_hastings as mh
+from domain.Hivemind import Hivemind
 
 from domain.Worker import Worker
 from domain.Enums import Status, HttpCodes
@@ -18,6 +19,7 @@ from typing import Dict, List, Union, Any
 class Hive:
     """
     :ivar str id: unique identifier in str format
+    :ivar Hivemind hivemind: reference to the master server, which in this case is just a simulator program
     :ivar FileData Union[None, FileData]: instance of class FileData which contains information regarding the file persisted by this hive
     :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
     :ivar int hive_size: integer that keeps track of members collection size
@@ -27,13 +29,16 @@ class Hive:
     :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
     """
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, members: Dict[str, Worker]) -> None:
+    def __init__(self, hivemind: Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
         """
         Instantiates an Hive abstraction
+        :param Hivemind hivemind: Hivemand instance object which leads the simulation
+        :param str file_name: name of the file this Hive is responsible for
         :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
         """
         self.id: str = str(uuid.uuid4())
-        self.file: Union[None, FileData] = None
+        self.hivemind = hivemind
+        self.file: FileData = FileData(file_name)
         self.members: Dict[str, Worker] = members
         self.hive_size: int = len(members)
         self.critical_size: int = REPLICATION_LEVEL
@@ -45,6 +50,13 @@ class Hive:
     # endregion
 
     # region Routing
+    def route_to_cloud(self) -> None:
+        """
+        TODO: future-iterations
+        Remaining hive members upload all data they have to a cloud server
+        """
+        cloud_ref: str = self.hivemind.get_cloud_reference()
+
     def route_part(self, destination_name: str, part: SharedFilePart) -> Any:
         """
         Receives a shared file part and sends it to the given destination
@@ -58,7 +70,6 @@ class Hive:
             return HttpCodes.OK
         else:
             return HttpCodes.NOT_FOUND
-
     # endregion
 
     # region Swarm Guidance
@@ -71,7 +82,11 @@ class Hive:
         """
         uptime_sum = sum(member_uptimes)
         uptimes_normalized = [member_uptime / uptime_sum for member_uptime in member_uptimes]
+
         self.desired_distribution = pd.DataFrame(data=uptimes_normalized, index=member_ids)
+        self.file.desired_distribution = self.desired_distribution
+        self.file.current_distribution = pd.DataFrame(data=[0] * len(uptimes_normalized), index=member_ids)
+
         return uptimes_normalized
 
     def new_transition_matrix(self) -> pd.DataFrame:
@@ -104,7 +119,6 @@ class Hive:
         for worker in self.members.values():
             transition_vector = transition_matrix.loc[:, worker.id]
             worker.set_file_routing(self.file.name, transition_vector)
-
     # endregion
 
     # region Membership
@@ -131,6 +145,28 @@ class Hive:
         self.members.pop(old_member)
         self.members[new_member.id] = new_member
 
+    def membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
+        """
+        Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
+        :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
+        """
+        for member in disconnected_workers:
+            self.members.pop(member.id)
+
+        self.hive_size = len(self.members)
+        if self.hive_size < self.critical_size:
+            self.route_to_cloud()
+            self.hivemind.find_replacement_worker()
+            pass
+        elif self.hive_size < self.sufficient_size:
+            self.hivemind.find_replacement_worker()
+        elif self.hive_size > self.redudant_size:
+            # TODO: future-iterations
+            #  evict peers
+            pass
+
+        self.hive_size = len(self.members)
+        self.broadcast_transition_matrix(self.new_transition_matrix())
     # endregion
 
     # region Simulation Interface
@@ -181,19 +217,13 @@ class Hive:
                 worker.execute_epoch(self.file.name)
 
         # Perfect failure detection, we assume that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
-        if len(disconnected_workers) == len(self.members):
+        if len(disconnected_workers) == self.hive_size:
             return False
-        # Since at least a few members survived Hive maintenance is needed
-        else:
-
-            for member in disconnected_workers:
-                self.members.pop(member.id)
+        elif len(disconnected_workers) > 0:
+            self.membership_maintenance(disconnected_workers)
 
         for part in lost_parts:
             if part.decrease_and_get_references() == 0:
                 # TODO Simulation failed, this project does not have erasure coding yet, only pure replication of blocks
                 return False
-
-        # Verify
-
     # endregion

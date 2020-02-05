@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 from math import ceil
-from typing import Any, List
+from typing import Any, List, Union
 from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL
 from domain.helpers.ConvergenceData import ConvergenceData
 from tabulate import tabulate
@@ -21,26 +21,16 @@ class FileData:
     """
 
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, name: str = "", parts_count: int = 0, cdv: pd.DataFrame = None, convergence_data: ConvergenceData = None):
+    def __init__(self, name: str):
         self.name: str = name
-        self.parts_count: int = parts_count
-        self.current_distribution: pd.DataFrame = cdv
-        self.convergence_data: ConvergenceData = convergence_data
+        self.parts_count: int = 0
+        self.desired_distribution: Union[None, pd.DataFrame] = None
+        self.current_distribution: Union[None, pd.DataFrame] = None
+        self.convergence_data: ConvergenceData = ConvergenceData()
         self.out_file: Any = open(os.path.join(OUTFILE_ROOT, self.name + ".out"), "w+")
     # endregion
 
     # region Instance Methods
-    def reset_distribution_data(self, labels: List[str], desired_distribution: List[float]) -> None:
-        """
-        Updates the FileData instance desired_distribution field with the new labeled probabilities and sets current
-        distribution to a labeled zero vector
-        :param List[str] labels: name of the workers that belong to this file's hive
-        :param List[float] desired_distribution: list of probabilities
-        """
-        # update desired_distribution and reset FileData fields
-        self.desired_distribution = pd.DataFrame(desired_distribution, index=labels)
-        self.current_distribution = pd.DataFrame([0] * len(desired_distribution), index=labels)
-
     def reset_convergence_data(self) -> None:
         """
         Resets the FileData instance field convergence_data by delegation to ConvergenceData instance method
