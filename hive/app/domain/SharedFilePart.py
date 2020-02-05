@@ -6,10 +6,11 @@ class SharedFilePart:
     """
     Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
     :ivar str id: concatenation of part_name | part_number
-    :ivar str id: uniquely identifies the hive that manages the shared file part instance
+    :ivar str hive_id: uniquely identifies the hive that manages the shared file part instance
     :ivar str name: original name of the file this part belongs to
     :ivar int number: unique identifier for this file on the P2P network
     :ivar int references: indicates how many references exist for this SharedFilePart
+    :ivar int epochs_to_recover: indicates when recovery of this file will occur during
     :ivar str data: base64 string corresponding to the actual contents of this file part
     :ivar str sha256: hash value resultant of applying sha256 hash function over part_data param
     """
@@ -27,6 +28,7 @@ class SharedFilePart:
         self.name: str = name
         self.number: int = number
         self.references: int = REPLICATION_LEVEL
+        self.epochs_to_recover: int = 0
         self.data: str = convertions.bytes_to_base64_string(data)
         self.sha256: str = crypto.sha256(self.data)
     # endregion
