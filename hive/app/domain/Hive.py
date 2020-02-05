@@ -40,6 +40,7 @@ class Hive:
         self.hivemind = hivemind
         self.file: FileData = FileData(file_name)
         self.members: Dict[str, Worker] = members
+        self.original_size: int = len(members)
         self.hive_size: int = len(members)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(self.hive_size * 0.34)
@@ -156,10 +157,11 @@ class Hive:
         self.hive_size = len(self.members)
         if self.hive_size < self.critical_size:
             self.route_to_cloud()
-            self.hivemind.find_replacement_worker()
-            pass
-        elif self.hive_size < self.sufficient_size:
-            self.hivemind.find_replacement_worker()
+
+        if self.hive_size < self.sufficient_size:
+            new_members: Dict[str, Worker] = self.hivemind.find_replacement_worker(self.members, self.original_size - self.hive_size)
+            self.members.update(new_members)
+
         elif self.hive_size > self.redudant_size:
             # TODO: future-iterations
             #  evict peers
