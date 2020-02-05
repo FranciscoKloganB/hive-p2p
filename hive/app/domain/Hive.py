@@ -158,4 +158,7 @@ class Hive:
                 workers: List[Worker] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
                     worker.receive_part(part)
+
+    def execute_epoch(self):
+        raise NotImplementedError()
     # endregion

@@ -1,26 +1,21 @@
-import os
 import json
+import logging as log
+import os
+from typing import List, Set, Union, Dict, Tuple, Optional, Any
+
 import numpy as np
 import pandas as pd
+
 import utils.metropolis_hastings as mh
-import logging as log
-
-from pathlib import Path
-
-from domain.Hive import Hive
 from domain.Enums import Status
-from domain.Worker import Worker
-from domain.helpers.FileData import FileData
+from domain.Hive import Hive
 from domain.SharedFilePart import SharedFilePart
+from domain.Worker import Worker
 from domain.helpers.ConvergenceData import ConvergenceData
-
-from utils.randoms import random_index
-from utils.convertions import str_copy
-from utils.collections import safe_remove
-
+from domain.helpers.FileData import FileData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN
-
-from typing import cast, List, Set, Union, Dict, Tuple, Optional, Any
+from utils.collections import safe_remove
+from utils.convertions import str_copy
 
 
 class Hivemind:
@@ -91,8 +86,8 @@ class Hivemind:
         """
         for stage in range(self.max_epochs):
             online_workers_list = self.__remove_some_workers(online_workers_list, stage)
-            for worker in online_workers_list:
-                worker.execute_epoch()
+            for hive in self.hives.values():
+                hive.execute_epoch()
             self.__process_stage_results(stage)
 
     def __care_taking(self, stage: int, sf_data: FileData, dead_worker: Worker) -> bool:
