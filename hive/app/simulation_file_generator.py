@@ -27,23 +27,6 @@ def usage():
 
 
 # region input consumption and checking functions
-def __in_max_stages() -> int:
-    """
-    :returns int max_stages: the number of stages this simulation should run at most
-    """
-    max_stages = input("\nEnter the maximum amount of stages [100, inf) the simulation should run: ")
-    while True:
-        try:
-            if max_stages == 'inf':
-                return int(sys.maxsize)
-            elif int(max_stages) > 99:
-                return int(max_stages)
-            max_stages = input("Maximum stages input should be a number in [100, inf)... Try again: ")
-        except ValueError:
-            max_stages = input("Input should be an integer.. Try again: ")
-            continue
-
-
 def __in_initial_spread() -> str:
     """
     :returns str spread_mode: how files are distributed across the hive
@@ -247,7 +230,6 @@ def main(simfile_name: str):
     """
     peers_uptime_dict: Dict[str, float] = __init_peer_uptime_dict()
     simfile_json: Dict[str, Any] = {
-        "max_epochs": __in_max_stages(),
         "peers_uptime": peers_uptime_dict,
         "shared": __init_shared_dict(peers_uptime_dict)
     }

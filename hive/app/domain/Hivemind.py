@@ -8,7 +8,7 @@ from domain.Hive import Hive
 from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
 from domain.helpers.FileData import FileData
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, AVG_UPTIME
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, AVG_UPTIME, MAX_EPOCHS
 
 
 class Hivemind:
@@ -34,7 +34,6 @@ class Hivemind:
             json_obj: Any = json.load(input_file)
 
             # Init basic simulation variables
-            self.max_epochs: int = json_obj['max_epochs']
             self.hives: Dict[str, Hive] = {}
             self.workers: Dict[str, Worker] = {}
 
@@ -77,7 +76,7 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         failed_hives: List[str] = []
-        for stage in range(self.max_epochs):
+        for stage in range(MAX_EPOCHS):
             for hive in self.hives.values():
                 if not hive.execute_epoch():
                     failed_hives.append(hive.id)
@@ -109,7 +108,7 @@ class Hivemind:
         Obtains all workers' densities regarding each shared file and logs progress in the system accordingly
         :param int stage: number representing the discrete time step the simulation is currently at
         """
-        if stage == self.max_epochs - 1:
+        if stage == MAX_EPOCHS - 1:
             for sf_data in self.files_data.values():
                 sf_data.fwrite("\nReached final stage... Executing tear down processes. Summary below:")
                 sf_data.convergence_data.save_sets_and_reset()
