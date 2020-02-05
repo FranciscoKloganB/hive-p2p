@@ -76,7 +76,10 @@ class Worker:
         Attempts to send a file part to another worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
-        destination = self.select_destination(part.name)
+        routing_vector: pd.DataFrame = self.routing_table[part.name]
+        hive_members: List[str] = [*routing_vector.index]
+        member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COLUMN]]
+        destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
         if destination == self.id:
             return HttpCodes.DUMMY
         return self.hives[part.hive_id].route_part(destination, part)
@@ -103,21 +106,19 @@ class Worker:
             self.init_recovery_protocol(part.name)
     # end region
 
-    def execute_epoch(self) -> None:
+    def execute_epoch(self, file_name: str) -> None:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
+        :param str file_name: the file parts that should be routed
         """
         hive: Hive
-        epoch_cache: Dict[int, SharedFilePart]
-        destination: str
-
-        for file_name, part_number_sfp_dict in self.files.items():
-            epoch_cache = {}
-            for part_number, part in part_number_sfp_dict.items():
-                response_code = self.send_part(part)
-                if response_code != HttpCodes.OK:
-                    epoch_cache[part_number] = part
-            self.files[file_name] = epoch_cache
+        file_cache: Dict[int, SharedFilePart] = self.files.get(file_name, {})
+        epoch_cache: Dict[int, SharedFilePart] = {}
+        for number, part in file_cache.items():
+            response_code = self.send_part(part)
+            if response_code != HttpCodes.OK:
+                epoch_cache[number] = part
+        self.files[file_name] = epoch_cache
     # endregion
 
     # region Helpers
@@ -160,18 +161,11 @@ class Worker:
         """
         When called, the worker instance decides if it should switch status
         """
-        return np.random.choice(Worker.ON_OFF, p=[self.uptime, self.disconnect_chance])
-
-    def select_destination(self, sf_name: str) -> str:
-        """
-        Selects the next destination for a shared file part
-        :param str sf_name: the id of the file the part to be routed belongs to
-        :returns str: the id of the worker to whom the file should be routed too
-        """
-        routing_vector: pd.DataFrame = self.routing_table[sf_name]
-        hive_members: List[str] = [*routing_vector.index]
-        member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COLUMN]]
-        return np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
+        if self.status == Status.OFFLINE:
+            return self.status
+        else:
+            self.status = np.random.choice(Worker.ON_OFF, p=[self.uptime, self.disconnect_chance])
+            return self.status
     # endregion
 
     # region Overrides
