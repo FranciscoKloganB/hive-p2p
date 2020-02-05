@@ -122,34 +122,6 @@ class Hive:
             worker.set_file_routing(self.file.name, transition_vector)
     # endregion
 
-    # region Membership
-    def membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
-        """
-        Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
-        :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
-        """
-        for member in disconnected_workers:
-            self.members.pop(member.id)
-
-        self.hive_size = len(self.members)
-
-        if self.hive_size < self.critical_size:
-            self.route_to_cloud()
-
-        if self.hive_size < self.sufficient_size:
-            new_members: Dict[str, Worker] = self.hivemind.find_replacement_worker(self.members, self.original_size - self.hive_size)
-            if not new_members:
-                return
-            self.members.update(new_members)
-            self.hive_size = len(self.members)
-        elif self.hive_size > self.redudant_size:
-            # TODO: future-iterations
-            #  evict peers
-            self.hive_size = len(self.members)
-
-        self.broadcast_transition_matrix(self.new_transition_matrix())
-    # endregion
-
     # region Simulation Interface
     def spread_files(self, spread_mode: str, file_parts: Dict[int, SharedFilePart]):
         """
@@ -187,24 +159,58 @@ class Hive:
         """
         Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
         """
+        recoverable_parts: Dict[int, SharedFilePart] = {}
         disconnected_workers: List[Worker] = []
-        lost_parts: List[SharedFilePart] = []
+
         # Members execute epoch
         for worker in self.members.values():
-            if worker.get_epoch_status() == Status.OFFLINE:
+            if worker.get_epoch_status() == Status.OFFLINE:  # Offline members require possible changes to membership and file maintenance
                 disconnected_workers.append(worker)
-                lost_parts.extend(worker.get_file_parts(self.file.name).values())
-            else:
+                lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
+                # Process data held by the disconnected worker
+                for number, part in lost_parts.items():
+                    if part.decrease_and_get_references() > 0:
+                        recoverable_parts[number] = part
+                    else:
+                        recoverable_parts.pop(number)  # this pop isn't necessary, but remains here for piece of mind and explicit explanation, O(1) anyway
+                        return False  # This release only uses replication, thus having 0 references makes it impossible to recover original file
+            else:  # Member is still online this epoch, so he can execute his own part of the epoch
                 worker.execute_epoch(self.file.name)
 
-        # Perfect failure detection, we assume that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
+        # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
         if len(disconnected_workers) == self.hive_size:
-            return False
+            return False  # Hive is completly offline, simulation failed
         elif len(disconnected_workers) > 0:
-            self.membership_maintenance(disconnected_workers)  # CONTINUE HERE
+            self.membership_maintenance(disconnected_workers)
 
-        for part in lost_parts:
-            if part.decrease_and_get_references() == 0:
-                # TODO Simulation failed, this project does not have erasure coding yet, only pure replication of blocks
-                return False
+        for part in recoverable_parts.values():
+            part.set_epochs_to_recover()
+    # endregion
+
+    # region Helpers
+    def membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
+        """
+        Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
+        :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
+        """
+        for member in disconnected_workers:
+            self.members.pop(member.id)
+
+        self.hive_size = len(self.members)
+
+        if self.hive_size < self.critical_size:
+            self.route_to_cloud()
+
+        if self.hive_size < self.sufficient_size:
+            new_members: Dict[str, Worker] = self.hivemind.find_replacement_worker(self.members, self.original_size - self.hive_size)
+            if not new_members:
+                return
+            self.members.update(new_members)
+            self.hive_size = len(self.members)
+        elif self.hive_size > self.redudant_size:
+            # TODO: future-iterations
+            #  evict peers
+            self.hive_size = len(self.members)
+
+        self.broadcast_transition_matrix(self.new_transition_matrix())
     # endregion
