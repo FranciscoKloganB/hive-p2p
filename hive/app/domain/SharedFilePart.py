@@ -1,4 +1,5 @@
 from utils import convertions, crypto
+from globals.globals import REPLICATION_LEVEL
 
 
 class SharedFilePart:
@@ -8,6 +9,7 @@ class SharedFilePart:
     :ivar str id: uniquely identifies the hive that manages the shared file part instance
     :ivar str name: original name of the file this part belongs to
     :ivar int number: unique identifier for this file on the P2P network
+    :ivar int references: indicates how many references exist for this SharedFilePart
     :ivar str data: base64 string corresponding to the actual contents of this file part
     :ivar str sha256: hash value resultant of applying sha256 hash function over part_data param
     """
@@ -24,6 +26,7 @@ class SharedFilePart:
         self.hive_id = hive_id
         self.name: str = name
         self.number: int = number
+        self.references: int = REPLICATION_LEVEL
         self.data: str = convertions.bytes_to_base64_string(data)
         self.sha256: str = crypto.sha256(self.data)
     # endregion
