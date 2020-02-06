@@ -83,7 +83,7 @@ class Hivemind:
             for hive_id in failed_hives:
                 self.hives.pop(hive_id)
                 if not self.hives:
-                    sys.exit("Simulation terminated at stage {} because all hives failed before max epochs were reached".format(stage))
+                    sys.exit("Simulation terminated at epoch {} because all hives failed before max epochs were reached".format(stage))
     # endregion
 
     # region Keeper Interface
@@ -110,7 +110,7 @@ class Hivemind:
         """
         if stage == MAX_EPOCHS - 1:
             for sf_data in self.files_data.values():
-                sf_data.fwrite("\nReached final stage... Executing tear down processes. Summary below:")
+                sf_data.fwrite("\nReached final epoch... Executing tear down processes. Summary below:")
                 sf_data.convergence_data.save_sets_and_reset()
                 sf_data.fwrite(str(sf_data.convergence_data))
                 sf_data.fclose()
@@ -143,7 +143,7 @@ class Hivemind:
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
         if sf_data.equal_distributions():
-            print("Singular convergence at stage {}".format(stage))
+            print("Singular convergence at epoch {}".format(stage))
             sf_data.convergence_data.cswc_increment(1)
             sf_data.convergence_data.try_append_to_convergence_set(stage)
         else:

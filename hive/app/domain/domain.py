@@ -132,6 +132,7 @@ class Hivemind:
         Instantiates an Hivemind object
         :param str simfile_name: path to json file containing the parameters this simulation should execute with
         """
+        self.epoch = 1
         self.results: Dict[int, Any] = {}
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
@@ -180,15 +181,19 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         failed_hives: List[str] = []
-        for stage in range(1, MAX_EPOCHS+1):
-            self.results[stage] = {}
+        while self.epoch < MAX_EPOCHS + 1:
+            self.results[self.epoch] = {}
             for hive in self.hives.values():
                 if not hive.execute_epoch():
                     failed_hives.append(hive.id)
             for hive_id in failed_hives:
                 self.hives.pop(hive_id)
                 if not self.hives:
-                    sys.exit("Simulation terminated at stage {} because all hives failed before max epochs were reached".format(stage))
+                    sys.exit("Simulation terminated at epoch {} because all hives failed before max epochs were reached".format(stage))
+
+    def append_epoch_results(self, hive_results: [Dict, Any]) -> None:
+        self.results[self.epoch] = hive_results
+
     # endregion
 
     # region Keeper Interface
@@ -209,21 +214,21 @@ class Hivemind:
 
     # region Stage Processing
     """
-        def __process_stage_results(self, stage: int) -> None:
-        if stage == MAX_EPOCHS - 1:
+        def __process_stage_results(self, epoch: int) -> None:
+        if epoch == MAX_EPOCHS - 1:
             for sf_data in self.files_data.values():
-                sf_data.fwrite("\nReached final stage... Executing tear down processes. Summary below:")
+                sf_data.fwrite("\nReached final epoch... Executing tear down processes. Summary below:")
                 sf_data.convergence_data.save_sets_and_reset()
                 sf_data.fwrite(str(sf_data.convergence_data))
                 sf_data.fclose()
             exit(0)
         else:
             for sf_data in self.files_data.values():
-                sf_data.fwrite("\nStage {}".format(stage))
+                sf_data.fwrite("\nStage {}".format(epoch))
                 # retrieve from each worker their part counts for current sf_name and update convergence data
                 self.__request_file_counts(sf_data)
                 # when all queries for a file are done, verify convergence for data.file_name
-                self.__check_file_convergence(stage, sf_data)
+                self.__check_file_convergence(epoch, sf_data)
     """
 
     def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
@@ -233,7 +238,7 @@ class Hivemind:
         :param FileData sf_data: data class instance containing generalized information regarding a shared file
         """
         if sf_data.equal_distributions():
-            print("Singular convergence at stage {}".format(stage))
+            print("Singular convergence at epoch {}".format(stage))
             sf_data.convergence_data.cswc_increment(1)
             sf_data.convergence_data.try_append_to_convergence_set(stage)
         else:
@@ -436,6 +441,7 @@ class Hive:
         """
         Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
         """
+        results: Dict[str, Any] = {}
         recoverable_parts: Dict[int, SharedFilePart] = {}
         disconnected_workers: List[Worker] = []
 
@@ -450,12 +456,14 @@ class Hive:
                         recoverable_parts[number] = part
                     else:
                         recoverable_parts.pop(number)  # this pop isn't necessary, but remains here for piece of mind and explicit explanation, O(1) anyway
+                        self.hivemind.append_epoch_results(results)
                         return False  # This release only uses replication, thus having 0 references makes it impossible to recover original file
             else:  # Member is still online this epoch, so he can execute his own part of the epoch
                 worker.execute_epoch(self, self.file.name)
 
         # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
         if len(disconnected_workers) == self.hive_size:
+            self.hivemind.append_epoch_results(results)
             return False  # Hive is completly offline, simulation failed
         elif len(disconnected_workers) > 0:
             self.membership_maintenance(disconnected_workers)
@@ -463,6 +471,7 @@ class Hive:
         for part in recoverable_parts.values():
             part.set_epochs_to_recover()
 
+        self.hivemind.append_epoch_results(results)
         return True
     # endregion
 
