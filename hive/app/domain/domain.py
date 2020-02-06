@@ -134,6 +134,7 @@ class Hivemind:
         """
         self.epoch = 1
         self.results: Dict[int, Any] = {}
+
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
             json_obj: Any = json.load(input_file)
@@ -184,7 +185,7 @@ class Hivemind:
         while self.epoch < MAX_EPOCHS + 1:
             self.results[self.epoch] = {}
             for hive in self.hives.values():
-                if not hive.execute_epoch():
+                if not hive.execute_epoch(self.epoch):
                     failed_hives.append(hive.id)
             for hive_id in failed_hives:
                 self.hives.pop(hive_id)
@@ -437,11 +438,12 @@ class Hive:
                 for worker in workers:
                     worker.receive_part(part)
 
-    def execute_epoch(self) -> bool:
+    def execute_epoch(self, epoch: int) -> bool:
         """
         Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
+        :param int epoch: simulation's current epoch
+        :returns bool: false if Hive failed to persist the file it was responsible for, otherwise true is returned.
         """
-        results: Dict[str, Any] = {}
         recoverable_parts: Dict[int, SharedFilePart] = {}
         disconnected_workers: List[Worker] = []
 
