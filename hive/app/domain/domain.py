@@ -641,7 +641,7 @@ class Worker:
         :param Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
-        replicate: int = part.can_replicate(hive.)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
+        replicate: int = part.can_replicate(hive.current_epoch)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
         if replicate:
             hive_member_ids: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)]
             for member_id in hive_member_ids:
