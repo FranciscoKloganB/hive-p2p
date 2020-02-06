@@ -132,6 +132,7 @@ class Hivemind:
         Instantiates an Hivemind object
         :param str simfile_name: path to json file containing the parameters this simulation should execute with
         """
+        self.results: Dict[int, Any] = {}
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
             json_obj: Any = json.load(input_file)
@@ -179,7 +180,8 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         failed_hives: List[str] = []
-        for stage in range(MAX_EPOCHS):
+        for stage in range(1, MAX_EPOCHS+1):
+            self.results[stage] = {}
             for hive in self.hives.values():
                 if not hive.execute_epoch():
                     failed_hives.append(hive.id)
