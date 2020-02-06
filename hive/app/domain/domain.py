@@ -49,7 +49,7 @@ class SharedFilePart:
     :ivar str name: original name of the file this part belongs to
     :ivar int number: unique identifier for this file on the P2P network
     :ivar int references: indicates how many references exist for this SharedFilePart
-    :ivar int epochs_to_recover: indicates when recovery of this file will occur during
+    :ivar int recovery_epoch: indicates when recovery of this file will occur during
     :ivar str data: base64 string corresponding to the actual contents of this file part
     :ivar str sha256: hash value resultant of applying sha256 hash function over part_data param
     """
@@ -67,33 +67,34 @@ class SharedFilePart:
         self.name: str = name
         self.number: int = number
         self.references: int = REPLICATION_LEVEL
-        self.epochs_to_recover: int = -1
+        self.recovery_epoch: int = sys.maxsize
         self.data: str = convertions.bytes_to_base64_string(data)
         self.sha256: str = crypto.sha256(self.data)
     # endregion
 
     # region Simulation Interface
-    def set_epochs_to_recover(self) -> None:
+    def set_epochs_to_recover(self, epoch: int) -> None:
         """
-        When epochs_to_recover is a negative number (usually -1), it means that at least one reference to the SharedFilePart was lost in the current epoch; in
-        this case, set_recovery_delay assigns a number of epochs until a Worker who posses one reference to the SharedFilePart instance can generate references
-        for some other Workers.
+        Assigns a value to the instance's recovery_epoch attribute that indicates when a Worker who posses a reference to it, can replicate the part.
+        :param int epoch: current simulation's epoch
         """
-        if self.epochs_to_recover < 0:
-            self.epochs_to_recover = randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
+        proposed_recovery_epoch = epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
+        self.recovery_epoch = proposed_recovery_epoch if proposed_recovery_epoch < self.recovery_epoch else self.recovery_epoch
 
     def reset_epochs_to_recover(self) -> None:
         """
-        Resets self.epochs_to_recover attribute back to the default value of -1
+        Resets self.recovery_epoch attribute back to the default value of -1
         """
-        self.epochs_to_recover = -1
+        self.recovery_epoch = -1
 
-    def can_replicate(self) -> int:
+    def can_replicate(self, epoch: int) -> int:
         """
-        :returns int: tells the caller how many times he should replicate the SharedFilePart instance, if such action is possible
+        :param int epoch: current simulation's epoch
+        :returns int: how many times the caller should replicate the SharedFilePart instance, if such action is possible
         """
-        if self.references < REPLICATION_LEVEL and self.epochs_to_recover == 0:
-            return REPLICATION_LEVEL - self.epochs_to_recover
+        if self.references < REPLICATION_LEVEL and self.recovery_epoch - epoch <= 0:
+            self.recovery_epoch = sys.maxsize  # Stops workers from repeatedly replicating this file part once one of them replicates
+            return REPLICATION_LEVEL - self.references
         else:
             return 0
     # endregion
@@ -482,7 +483,7 @@ class Hive:
             self.membership_maintenance(disconnected_workers)
 
         for part in recoverable_parts.values():
-            part.set_epochs_to_recover()
+            part.set_epochs_to_recover(epoch)
 
         self.hivemind.append_epoch_results(results)
         return True
