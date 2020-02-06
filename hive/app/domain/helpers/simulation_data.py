@@ -25,15 +25,22 @@ class SimulationData:
     def __init__(self):
         self.cswc: int = 0
         self.largest_convergence_window: int = 0
-        self.terminated: int = MAX_EPOCHS
-        self.successfull: bool = True
         self.convergence_set: List[int] = []
         self.convergence_sets: List[List[int]] = []
+        ###############################
+        # Updated on Hive.execute_epoch
+        self.terminated: int = MAX_EPOCHS
+        self.successfull: bool = True
         self.failed_workers_per_epoch: List[int] = [0] * MAX_EPOCHS
         self.lost_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
+        ###############################
+        ###############################
+        # Updated on Hive.route_part
         self.moved_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
         self.corrupted_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
         self.lost_messages_per_epoch: List[int] = [0] * MAX_EPOCHS
+        ###############################
+
     # endregion
 
     # region Instance Methods
