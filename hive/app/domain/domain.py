@@ -327,6 +327,7 @@ class Hive:
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(self.hive_size * 0.34)
         self.redudant_size: int = self.sufficient_size + self.hive_size
+        self.corruption_chances: List[float] = [0, 0]
         self.desired_distribution = None
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
 
@@ -348,8 +349,13 @@ class Hive:
         :param SharedFilePart part: the file part to send to specified worker
         :returns int: http codes based status of destination worker
         """
-        if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):
+        if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):  # Simulates channel loss - Makes convergence harder
             return HttpCodes.TIME_OUT
+
+        if np.random.choice(a=TRUE_FALSE, p=self.corruption_chances):  # File corruption, in a simplistic manner - Makes durability lower
+            if part.decrease_and_get_references() == 0:
+                return False
+            return HttpCodes.BAD_REQUEST
 
         member = self.members[destination_name]
         if member.status == Status.ONLINE:
@@ -450,6 +456,8 @@ class Hive:
         recoverable_parts: Dict[int, SharedFilePart] = {}
         disconnected_workers: List[Worker] = []
 
+        self.corruption_chances[0] = np.log10(epoch).item()
+        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         # Members execute epoch
         for worker in self.members.values():
             if worker.get_epoch_status() == Status.OFFLINE:  # Offline members require possible changes to membership and file maintenance
@@ -615,11 +623,11 @@ class Worker:
             if response_code == HttpCodes.OK:
                 pass  # self.files[file_name].pop(number), leave here for readability, but can't actually modify collection while iterating, pandora box!
             elif response_code == HttpCodes.BAD_REQUEST:
-                part = self.init_recovery_protocol(part.name)  # TODO: future-iterations, right now, nothing is returned by init recovery protocol
-                epoch_cache[number] = part
+                # TODO: future-iterations, right now, assume replicas is lost -> part = self.init_recovery_protocol(part.name)
+                pass  # self.files[file_name].pop(number), same as HttpCodes.OK, except destination worker did not keep this replica
             elif response_code != HttpCodes.OK:
-                epoch_cache[number] = part  # This case includes destination Workers rejecting requests, that would result in repeated parts on their end
-        self.files[file_name] = epoch_cache  # HACK to simulate HttpCodes.OK responses. With this line, only rejected items are kept for next epoch.
+                epoch_cache[number] = part  # This case includes HttpCodes.TIME_OUT and HttpCodes.NOT_ACCEPTABLE
+        self.files[file_name] = epoch_cache  # In next epoch this worker instance only keeps files that were not accepted or were not corrupted
     # endregion
 
     def try_replication(self, hive: Hive, part: SharedFilePart) -> None:
