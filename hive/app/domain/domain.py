@@ -189,7 +189,7 @@ class Hivemind:
             for hive_id in failed_hives:
                 self.hives.pop(hive_id)
                 if not self.hives:
-                    sys.exit("Simulation terminated at epoch {} because all hives failed before max epochs were reached".format(stage))
+                    sys.exit("Simulation terminated at epoch {} because all hives failed before max epochs were reached".format(self.epoch))
 
     def append_epoch_results(self, hive_results: [Dict, Any]) -> None:
         self.results[self.epoch] = hive_results
