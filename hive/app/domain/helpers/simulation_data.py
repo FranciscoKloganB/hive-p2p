@@ -32,7 +32,8 @@ class SimulationData:
         self.failed_workers_per_epoch: List[int] = [0] * MAX_EPOCHS
         self.lost_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
         self.moved_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
-
+        self.corrupted_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
+        self.lost_messages_per_epoch: List[int] = [0] * MAX_EPOCHS
     # endregion
 
     # region Instance Methods
