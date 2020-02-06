@@ -301,6 +301,8 @@ class Hivemind:
 
 class Hive:
     """
+    :ivar int current_epoch: tracks the epoch at which the Hive is currently at
+    :ivar List[float, float] corruption_chances: used to simulate file corruption on behalf of the workers, to avoid keeping independant distributions for each part and each replica
     :ivar str id: unique identifier in str format
     :ivar Hivemind hivemind: reference to the master server, which in this case is just a simulator program
     :ivar FileData Union[None, FileData]: instance of class FileData which contains information regarding the file persisted by this hive
@@ -319,6 +321,8 @@ class Hive:
         :param str file_name: name of the file this Hive is responsible for
         :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
         """
+        self.current_epoch: int = 0
+        self.corruption_chances: List[float] = [0, 0]
         self.id: str = str(uuid.uuid4())
         self.hivemind = hivemind
         self.file: FileData = FileData(file_name)
@@ -328,10 +332,8 @@ class Hive:
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(self.hive_size * 0.34)
         self.redudant_size: int = self.sufficient_size + self.hive_size
-        self.corruption_chances: List[float] = [0, 0]
         self.desired_distribution = None
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
-
     # endregion
 
     # region Routing
@@ -457,6 +459,7 @@ class Hive:
         recoverable_parts: Dict[int, SharedFilePart] = {}
         disconnected_workers: List[Worker] = []
 
+        self.current_epoch = epoch
         self.corruption_chances[0] = np.log10(epoch).item()
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         # Members execute epoch
@@ -638,7 +641,7 @@ class Worker:
         :param Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
-        replicate: int = part.can_replicate()  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
+        replicate: int = part.can_replicate(hive.)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
         if replicate:
             hive_member_ids: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)]
             for member_id in hive_member_ids:
