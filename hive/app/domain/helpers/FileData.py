@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate
 
-from domain.helpers.ConvergenceData import ConvergenceData
+from domain.helpers.simulation_data import SimulationData
 from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL
 
 
@@ -27,7 +27,7 @@ class FileData:
         self.parts_count: int = 0
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
-        self.convergence_data: ConvergenceData = ConvergenceData()
+        self.convergence_data: SimulationData = SimulationData()
         self.out_file: Any = open(os.path.join(OUTFILE_ROOT, self.name + ".out"), "w+")
     # endregion
 

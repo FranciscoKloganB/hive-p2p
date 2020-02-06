@@ -5,7 +5,7 @@ from typing import Union, List
 from globals.globals import MIN_CONVERGENCE_THRESHOLD, R_TOL, A_TOL
 
 
-class ConvergenceData:
+class SimulationData:
     # region docstrings
     """
     Holds data that helps an domain.Hivemind keep track of converge in a simulation
@@ -79,7 +79,7 @@ class ConvergenceData:
 
     # region Overrides
     def __str__(self):
-        return "time in convergence: " + str(ConvergenceData.recursive_len(self.convergence_sets)) + \
+        return "time in convergence: " + str(SimulationData.recursive_len(self.convergence_sets)) + \
                "\nlargest_convergence_set: " + str(self.largest_convergence_set) + \
                "\nconvergence_sets:\n " + str(self.convergence_sets)
 
@@ -91,7 +91,7 @@ class ConvergenceData:
     @staticmethod
     def recursive_len(item):
         if type(item) == list:
-            return sum(ConvergenceData.recursive_len(sub_item) for sub_item in item)
+            return sum(SimulationData.recursive_len(sub_item) for sub_item in item)
         else:
             return 1
     # endregion
