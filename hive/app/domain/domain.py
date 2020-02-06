@@ -13,7 +13,7 @@ from enum import Enum
 from random import randint
 from globals.globals import *
 from typing import Union, Dict, List, Any
-from domain.helpers.FileData import FileData
+from domain.helpers.file_data import FileData
 
 from utils import convertions, crypto, matrices
 from utils.ResourceTracker import ResourceTracker as rT
