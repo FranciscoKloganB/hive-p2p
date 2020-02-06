@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Union, List
-from globals.globals import MIN_CONVERGENCE_THRESHOLD, R_TOL, A_TOL
+from globals.globals import MIN_CONVERGENCE_THRESHOLD, R_TOL, A_TOL, MAX_EPOCHS
 
 
 class SimulationData:
@@ -10,18 +10,29 @@ class SimulationData:
     """
     Holds data that helps an domain.Hivemind keep track of converge in a simulation
     :ivar int cswc: indicates how many consecutive steps a file has in convergence
-    :ivar int largest_convergence_set: indicates the biggest set of consecutive steps throughout the simulation for a file
+    :ivar int largest_convergence_window: indicates the biggest set of consecutive steps throughout the simulation for a file
+    :ivar int terminated: indicates the epoch at which the Hive terminated
+    :ivar bool successfull: indicates if Hive survived the entire simulation
     :ivar List[int] convergence_set: current consecutive set of stages in which a file has seen convergence
     :ivar List[List[int]] convergence_sets: Set of all convergence sets found for this file during simulation
+    :ivar List[int] failed_workers_per_epoch: Used to calculate average failures per epoch and cumsum-average failures per epoch
+    :ivar List[int] lost_parts_per_epoch: Used to calculate average lost parts per epoch and cumsum-average lost parts per epoch
+    :ivar List[int] moved_parts_per_epoch: Used to calculate average parts moved per epoch and cumsum-average parts moved per epoch
     """
     # endregion
 
     # region Class Variables, Instance Variables and Constructors
     def __init__(self):
         self.cswc: int = 0
+        self.largest_convergence_window: int = 0
+        self.terminated: int = MAX_EPOCHS
+        self.successfull: bool = True
         self.convergence_set: List[int] = []
         self.convergence_sets: List[List[int]] = []
-        self.largest_convergence_set: int = 0
+        self.failed_workers_per_epoch: List[int] = [0] * MAX_EPOCHS
+        self.lost_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
+        self.moved_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
+
     # endregion
 
     # region Instance Methods
@@ -35,20 +46,20 @@ class SimulationData:
     def try_set_largest_convergence_set(self) -> None:
         """
         Verifies if the current convergence set is the largest of all seen so far, if it is, updates the ConvergenceData
-        instance field largest_convergence_set to be the length of the convergence_set
+        instance field largest_convergence_window to be the length of the convergence_set
         """
         set_len = len(self.convergence_set)
-        if set_len > self.largest_convergence_set:
-            self.largest_convergence_set = set_len
+        if set_len > self.largest_convergence_window:
+            self.largest_convergence_window = set_len
 
-    def try_append_to_convergence_set(self, stage: int) -> None:
+    def try_append_to_convergence_set(self, epoch: int) -> None:
         """
         Checks if the counter for consecutive epoch convergence is bigger than the minimum threshold for verified
         convergence and if it is, appends the inputted epoch to the current convergence set
-        :param stage:
+        :param epoch:
         """
         if self.cswc >= MIN_CONVERGENCE_THRESHOLD:
-            self.convergence_set.append(stage)
+            self.convergence_set.append(epoch)
 
     def save_sets_and_reset(self) -> None:
         """
@@ -64,8 +75,7 @@ class SimulationData:
 
     # region Static Methods
     @staticmethod
-    def equal_distributions(one: Union[pd.DataFrame, pd.Series, np.array],
-                            another: Union[pd.DataFrame, pd.Series, np.array]) -> bool:
+    def equal_distributions(one: pd.DataFrame, another: pd.DataFrame) -> bool:
         """
         :param pd.DataFrame one: labeled distribution
         :param pd.DataFrame another: another labeled distribution
@@ -74,13 +84,20 @@ class SimulationData:
         if len(one) != len(another):
             return False
         else:
-            return np.allclose(one, another, rtol=R_TOL, atol=A_TOL)
+            return np.allclose(one.sort_index(), another.sort_index(), rtol=R_TOL, atol=A_TOL)
+
+    @staticmethod
+    def recursive_len(item):
+        if type(item) == list:
+            return sum(SimulationData.recursive_len(sub_item) for sub_item in item)
+        else:
+            return 1
     # endregion
 
     # region Overrides
     def __str__(self):
         return "time in convergence: " + str(SimulationData.recursive_len(self.convergence_sets)) + \
-               "\nlargest_convergence_set: " + str(self.largest_convergence_set) + \
+               "\nlargest_convergence_window: " + str(self.largest_convergence_window) + \
                "\nconvergence_sets:\n " + str(self.convergence_sets)
 
     def __repr__(self):
@@ -88,10 +105,47 @@ class SimulationData:
     # endregion
 
     # region Helpers
-    @staticmethod
-    def recursive_len(item):
-        if type(item) == list:
-            return sum(SimulationData.recursive_len(sub_item) for sub_item in item)
-        else:
-            return 1
+    def set_epoch_data(self, terminated=False, moved=0, failed=0, lost=0, epoch=0):
+        """
+        Delegates to Hive.set_moved_parts_at_index, Hive.set_failed_workers_at_index, Hive.set_lost_parts_at_index
+        """
+        self.set_moved_parts_at_index(moved, epoch)
+        self.set_failed_workers_at_index(failed, epoch)
+        self.set_lost_parts_at_index(lost, epoch)
+
+        if terminated:
+            self.set_fail(epoch)
+
+    def set_moved_parts_at_index(self, n: int, i: int) -> None:
+        """
+        :param int n: the quantity of parts moved at epoch i
+        :param int i: index of epoch i in SimulationData.moved_parts_per_epoch list
+        """
+        self.moved_parts_per_epoch[i] += n
+
+    def set_failed_workers_at_index(self, n: int, i: int) -> None:
+        """
+        :param int n: the quantity of failed workers at epoch i
+        :param int i: index of epoch i in SimulationData.failed_workers_per_epoch list
+        """
+        self.failed_workers_per_epoch[i] += n
+
+    def set_lost_parts_at_index(self, n: int, i: int) -> None:
+        """
+        :param int n: the quantity of lost parts at epoch i
+        :param int i: index of epoch i in SimulationData.lost_parts_per_epoch list
+        """
+        self.lost_parts_per_epoch[i] += n
+
+    def set_fail(self, i: int) -> None:
+        """
+        Records the epoch at which the Hive terminated, should only be called if it finished early, by default, Hive.terminated = MAX_EPOCHS and
+        Hive.successfull = True.
+        :param int i: epoch at which Hive terminated
+        """
+        if i == MAX_EPOCHS:
+            return
+
+        self.terminated = i
+        self.successfull = False
     # endregion
