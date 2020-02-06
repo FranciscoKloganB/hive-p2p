@@ -31,6 +31,7 @@ class SimulationData:
         # Updated on Hive.execute_epoch
         self.terminated: int = MAX_EPOCHS
         self.successfull: bool = True
+        self.msg = "completed simulation successfully"
         self.failed_workers_per_epoch: List[int] = [0] * MAX_EPOCHS
         self.lost_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
         ###############################
@@ -145,15 +146,19 @@ class SimulationData:
         """
         self.lost_parts_per_epoch[i] += n
 
-    def set_fail(self, i: int) -> None:
+    def set_fail(self, i: int, msg: str = "") -> bool:
         """
         Records the epoch at which the Hive terminated, should only be called if it finished early.
         Default, Hive.terminated = MAX_EPOCHS and Hive.successfull = True.
         :param int i: epoch at which Hive terminated
+        :param str msg: a message
+        :returns bool: usually returns False, only returns True when param i, representing epoch is qual to MAX_EPOCHS
         """
         if i == MAX_EPOCHS:
-            return
+            return True
 
         self.terminated = i
         self.successfull = False
+        self.msg = msg
+        return False
     # endregion
