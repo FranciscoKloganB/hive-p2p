@@ -10,7 +10,8 @@ MAX_DETECTION_DELAY: int = 7  # 14 minutes
 AVG_UPTIME: float = 0.4
 REPLICATION_LEVEL: int = 3  # Each file part has 3 copies, for simulation purposes, this copies are soft copies.
 MIN_CONVERGENCE_THRESHOLD: int = 3
-
+LOSS_CHANCE: float = 0.04  # Each sent file as a 4% chance of timing out due to message being lost in travel
+DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE  # Each sent file as a 4% chance of timing out due to message being lost in travel
 # endregion
 
 # region Integer Constants
@@ -26,4 +27,9 @@ R_TOL: float = 0.4
 SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
+# endregion
+
+# region Other Constants
+TRUE_FALSE = [True, False]
+COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 # endregion

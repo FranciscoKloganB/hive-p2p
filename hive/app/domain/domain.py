@@ -348,6 +348,9 @@ class Hive:
         :param SharedFilePart part: the file part to send to specified worker
         :returns int: http codes based status of destination worker
         """
+        if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):
+            return HttpCodes.TIME_OUT
+
         member = self.members[destination_name]
         if member.status == Status.ONLINE:
             return member.receive_part(part)
