@@ -18,7 +18,7 @@ class FileData:
     :ivar int parts_count: the total number of parts the original file was split into, excluding replicas
     :ivar pd.DataFrame desired_distribution: file density distribution hive members must achieve with independent realizations for ideal persistence of the file
     :ivar pd.DataFrame current_distribution: tracks current of file distribution, updated at each epoch
-    :ivar ConvergenceData convergence_data: instance object with general information w.r.t. the simulation
+    :ivar ConvergenceData simulation_data: instance object with general information w.r.t. the simulation
     """
 
     # region Class Variables, Instance Variables and Constructors
@@ -27,16 +27,16 @@ class FileData:
         self.parts_count: int = 0
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
-        self.convergence_data: SimulationData = SimulationData()
+        self.simulation_data: SimulationData = SimulationData()
         self.out_file: Any = open(os.path.join(OUTFILE_ROOT, self.name + ".out"), "w+")
     # endregion
 
     # region Instance Methods
     def reset_convergence_data(self) -> None:
         """
-        Resets the FileData instance field convergence_data by delegation to ConvergenceData instance method
+        Resets the FileData instance field simulation_data by delegation to ConvergenceData instance method
         """
-        self.convergence_data.save_sets_and_reset()
+        self.simulation_data.save_sets_and_reset()
 
     def equal_distributions(self) -> bool:
         """

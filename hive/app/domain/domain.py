@@ -12,7 +12,7 @@ import utils.metropolis_hastings as mh
 from enum import Enum
 from random import randint
 from globals.globals import *
-from typing import Union, Dict, List, Any
+from typing import Union, Dict, List, Any, Tuple
 from domain.helpers.file_data import FileData
 
 from utils import convertions, crypto, matrices
@@ -220,8 +220,8 @@ class Hivemind:
         if epoch == MAX_EPOCHS - 1:
             for sf_data in self.files_data.values():
                 sf_data.fwrite("\nReached final epoch... Executing tear down processes. Summary below:")
-                sf_data.convergence_data.save_sets_and_reset()
-                sf_data.fwrite(str(sf_data.convergence_data))
+                sf_data.simulation_data.save_sets_and_reset()
+                sf_data.fwrite(str(sf_data.simulation_data))
                 sf_data.fclose()
             exit(0)
         else:
@@ -241,10 +241,10 @@ class Hivemind:
         """
         if sf_data.equal_distributions():
             print("Singular convergence at epoch {}".format(stage))
-            sf_data.convergence_data.cswc_increment(1)
-            sf_data.convergence_data.try_append_to_convergence_set(stage)
+            sf_data.simulation_data.cswc_increment(1)
+            sf_data.simulation_data.try_append_to_convergence_set(stage)
         else:
-            sf_data.convergence_data.save_sets_and_reset()
+            sf_data.simulation_data.save_sets_and_reset()
     # endregion
 
     # region Peer Search and Cloud References
@@ -453,37 +453,30 @@ class Hive:
     def execute_epoch(self, epoch: int) -> bool:
         """
         Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
+        If the Hive terminates early, the epoch's data is not added to FileData.SimulationData to avoid skewing previous results, when epoch causes failure early
         :param int epoch: simulation's current epoch
         :returns bool: false if Hive failed to persist the file it was responsible for, otherwise true is returned.
         """
-        recoverable_parts: Dict[int, SharedFilePart] = {}
-        disconnected_workers: List[Worker] = []
-
-        self.current_epoch = epoch
-        self.corruption_chances[0] = np.log10(epoch).item()
-        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
-        # Members execute epoch
+        lost_parts_count, recoverable_parts, disconnected_workers = self.__setup_epoch(epoch)
         for worker in self.members.values():
-            if worker.get_epoch_status() == Status.OFFLINE:  # Offline members require possible changes to membership and file maintenance
-                disconnected_workers.append(worker)
+            if worker.get_epoch_status() == Status.OFFLINE:
                 lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
+                lost_parts_count += len(lost_parts)
+                disconnected_workers.append(worker)
                 # Process data held by the disconnected worker
                 for number, part in lost_parts.items():
-                    if part.decrease_and_get_references() > 0:
-                        recoverable_parts[number] = part
-                    else:
-                        recoverable_parts.pop(number)  # this pop isn't necessary, but remains here for piece of mind and explicit explanation, O(1) anyway
-                        self.hivemind.append_epoch_results(results)
+                    if part.decrease_and_get_references() <= 0:
+                        self.file.simulation_data.set_fail(epoch)
                         return False  # This release only uses replication, thus having 0 references makes it impossible to recover original file
-            else:  # Member is still online this epoch, so he can execute his own part of the epoch
+                    recoverable_parts[number] = part
+            else:
                 worker.execute_epoch(self, self.file.name)
 
         # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
         if len(disconnected_workers) == self.hive_size:
-            self.hivemind.append_epoch_results(results)
             return False  # Hive is completly offline, simulation failed
         elif len(disconnected_workers) > 0:
-            self.membership_maintenance(disconnected_workers)
+            self.__membership_maintenance(disconnected_workers)
 
         for part in recoverable_parts.values():
             part.set_epochs_to_recover(epoch)
@@ -493,7 +486,7 @@ class Hive:
     # endregion
 
     # region Helpers
-    def membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
+    def __membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
         """
         Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
         :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
@@ -518,6 +511,12 @@ class Hive:
             self.hive_size = len(self.members)
 
         self.broadcast_transition_matrix(self.new_transition_matrix())
+
+    def __setup_epoch(self, epoch: int) -> Tuple[int, Dict[int, SharedFilePart], List[Worker]]:
+        self.current_epoch = epoch
+        self.corruption_chances[0] = np.log10(epoch).item()
+        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
+        return 0, {}, []
     # endregion
 
 

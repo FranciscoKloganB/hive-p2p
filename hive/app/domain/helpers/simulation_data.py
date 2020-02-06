@@ -147,8 +147,8 @@ class SimulationData:
 
     def set_fail(self, i: int) -> None:
         """
-        Records the epoch at which the Hive terminated, should only be called if it finished early, by default, Hive.terminated = MAX_EPOCHS and
-        Hive.successfull = True.
+        Records the epoch at which the Hive terminated, should only be called if it finished early.
+        Default, Hive.terminated = MAX_EPOCHS and Hive.successfull = True.
         :param int i: epoch at which Hive terminated
         """
         if i == MAX_EPOCHS:
