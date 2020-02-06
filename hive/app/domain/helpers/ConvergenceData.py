@@ -43,8 +43,8 @@ class ConvergenceData:
 
     def try_append_to_convergence_set(self, stage: int) -> None:
         """
-        Checks if the counter for consecutive stage convergence is bigger than the minimum threshold for verified
-        convergence and if it is, appends the inputted stage to the current convergence set
+        Checks if the counter for consecutive epoch convergence is bigger than the minimum threshold for verified
+        convergence and if it is, appends the inputted epoch to the current convergence set
         :param stage:
         """
         if self.cswc >= MIN_CONVERGENCE_THRESHOLD:
