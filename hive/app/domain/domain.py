@@ -191,7 +191,7 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         failed_hives: List[str] = []
-        while self.epoch < MAX_EPOCHS_PLUS:
+        while self.epoch < MAX_EPOCHS_PLUS and self.hives:
             print(self.epoch)
             for hive in self.hives.values():
                 if not hive.execute_epoch(self.epoch):
@@ -478,7 +478,7 @@ class Hive:
             return True
         except Exception as e:
             print(str(e))
-            self.__set_fail(epoch, "unexpected exception: \nException: {}\nStack trace:\n{}".format(str(e), traceback.print_exc()))
+            self.__set_fail(epoch, "unexpected exception: \\nException: {}\\nStack trace:\\n{}".format(str(e), traceback.print_exc()))
             self.__tear_down()
             return False
 
@@ -495,6 +495,11 @@ class Hive:
                 parts_in_hive += worker_parts_count
             else:
                 self.file.current_distribution.at[worker.id, DEFAULT_COLUMN] = 0
+
+        self.file.simulation_data.parts_in_hive[self.current_epoch] = parts_in_hive
+
+        if not parts_in_hive:
+            raise RuntimeError("No parts in hive")
 
         if self.file.equal_distributions(parts_in_hive):
             self.file.simulation_data.cswc_increment(1)

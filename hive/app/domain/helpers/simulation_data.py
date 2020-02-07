@@ -45,6 +45,7 @@ class SimulationData:
         self.corrupted_parts: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
         self.lost_messages: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
         ###############################
+        self.parts_in_hive: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
 
     # endregion
 
