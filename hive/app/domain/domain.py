@@ -219,39 +219,6 @@ class Hivemind:
         raise NotImplementedError()
     # endregion
 
-    # region Stage Processing
-    """
-        def __process_stage_results(self, epoch: int) -> None:
-        if epoch == MAX_EPOCHS - 1:
-            for sf_data in self.files_data.values():
-                sf_data.fwrite("\nReached final epoch... Executing tear down processes. Summary below:")
-                sf_data.simulation_data.save_sets_and_reset()
-                sf_data.fwrite(str(sf_data.simulation_data))
-                sf_data.fclose()
-            exit(0)
-        else:
-            for sf_data in self.files_data.values():
-                sf_data.fwrite("\nStage {}".format(epoch))
-                # retrieve from each worker their part counts for current sf_name and update convergence data
-                self.__request_file_counts(sf_data)
-                # when all queries for a file are done, verify convergence for data.file_name
-                self.__check_file_convergence(epoch, sf_data)
-    """
-
-    def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
-        """
-        Delegates verification of equality w.r.t. current and desired_distributions to the inputted FileData instance
-        :param int stage: number representing the discrete time step the simulation is currently at
-        :param FileData sf_data: data class instance containing generalized information regarding a shared file
-        """
-        if sf_data.equal_distributions():
-            print("Singular convergence at epoch {}".format(stage))
-            sf_data.simulation_data.cswc_increment(1)
-            sf_data.simulation_data.try_append_to_convergence_set(stage)
-        else:
-            sf_data.simulation_data.save_sets_and_reset()
-    # endregion
-
     # region Peer Search and Cloud References
     def find_replacement_worker(self, exclusion_dict: Dict[str, Worker], quantity: int) -> Dict[str, Worker]:
         """
