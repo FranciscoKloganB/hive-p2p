@@ -1,4 +1,6 @@
 import os
+from deprecated import deprecated
+
 from math import ceil
 from typing import Any, Union
 
@@ -45,20 +47,10 @@ class FileData:
         normalized_cdv = self.current_distribution.divide(self.parts_count)
         if DEBUG:
             self.fwrite("Desired Distribution:\n{}\nCurrent Distribution:\n{}\n".format(
-                tabulate(self.desired_distribution, headers='keys', tablefmt='psql'),
-                tabulate(normalized_cdv, headers='keys', tablefmt='psql')
+                tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')
             ))
         return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / self.parts_count))
         # return ConvergenceData.equal_distributions(self.desired_distribution, normalized_cdv)
-
-    def get_failure_threshold(self) -> int:
-        """
-        Calculates the maximum amount of files of a given file that can be lost at any given time
-        :returns int: the failure threshold for the file being represented by the FileData instance
-        """
-        highest_density_node_label = self.desired_distribution.idxmax().values[0]  # index/label of highval
-        highest_density_node_density = self.desired_distribution.at[highest_density_node_label, 0]  # highval
-        return self.parts_count - ceil(self.parts_count * highest_density_node_density)
     # endregion
 
     # region File I/O
@@ -92,4 +84,16 @@ class FileData:
 
     def __ne__(self, other):
         return not(self == other)
+    # endregion
+
+    # region Helpers
+    @deprecated(version='1.3', reason="This method does not work with the new Hives Simualtor at version 1.4")
+    def get_failure_threshold(self) -> int:
+        """
+        Calculates the maximum amount of files of a given file that can be lost at any given time
+        :returns int: the failure threshold for the file being represented by the FileData instance
+        """
+        highest_density_node_label = self.desired_distribution.idxmax().values[0]  # index/label of highval
+        highest_density_node_density = self.desired_distribution.at[highest_density_node_label, 0]  # highval
+        return self.parts_count - ceil(self.parts_count * highest_density_node_density)
     # endregion
