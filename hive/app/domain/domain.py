@@ -137,7 +137,7 @@ class Hivemind:
         :param str simfile_name: path to json file containing the parameters this simulation should execute with
         """
         self.epoch = 1
-        self.results: Dict[int, Any] = {}
+        self.results: Dict[str, Any] = {}
 
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
@@ -187,7 +187,6 @@ class Hivemind:
         """
         failed_hives: List[str] = []
         while self.epoch < MAX_EPOCHS_PLUS:
-            self.results[self.epoch] = {}
             for hive in self.hives.values():
                 if not hive.execute_epoch(self.epoch):
                     failed_hives.append(hive.id)
@@ -196,8 +195,8 @@ class Hivemind:
                 if not self.hives:
                     sys.exit("Simulation terminated at epoch {} because all hives disconnected before max epochs were reached".format(self.epoch))
 
-    def append_epoch_results(self, hive_results: [Dict, Any]) -> True:
-        self.results[self.epoch] = hive_results
+    def append_epoch_results(self, hive_id: str, hive_results: [Dict, Any]) -> True:
+        self.results[hive_id] = hive_results
     # endregion
 
     # region Keeper Interface
@@ -471,7 +470,7 @@ class Hive:
                 for number, part in lost_parts.items():
                     if part.decrease_and_get_references() <= 0:
                         self.__set_fail(epoch, "lost all replicas of at least one file part")
-                        self.hivemind.append_epoch_results(epoch_results)  # TODO
+                        self.__tear_down()
                         return False
                     recoverable_parts[number] = part
             else:
@@ -480,7 +479,7 @@ class Hive:
         # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
         if len(disconnected_workers) >= len(self.members):
             self.__set_fail(epoch, "all workers disconnected in the same epoch")
-            self.hivemind.append_epoch_results(epoch_results)  # TODO
+            self.__tear_down()
             return False
 
         self.file.simulation_data.set_epoch_data(disconnected=len(disconnected_workers), lost=lost_parts_count)
@@ -497,7 +496,7 @@ class Hive:
 
         self.__process_hive_convergence_state()
         if epoch == MAX_EPOCHS:
-            self.hivemind.append_epoch_results(epoch_results)  # TODO
+            self.__tear_down()
         return True
 
     def __process_hive_convergence_state(self):
@@ -546,7 +545,10 @@ class Hive:
         self.corruption_chances[0] = np.log10(epoch).item()
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         return 0, {}, []
-    # endregion
+
+    def __tear_down(self) -> None:
+        self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__())
+        # endregion
 
 
 class Worker:
