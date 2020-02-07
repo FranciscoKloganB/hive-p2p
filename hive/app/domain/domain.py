@@ -474,13 +474,16 @@ class Hive:
         Updates this epoch's distribution vector and compares it to the desired distribution vector to see if file distribution between members is near ideal
         and records epoch data accordingly.
         """
+        parts_in_hive: int = 0
         for worker in self.members.values():
             if worker.status == Status.ONLINE:
-                self.file.current_distribution.at[worker.id, DEFAULT_COLUMN] = worker.get_file_parts_count(self.file.name)
+                worker_parts_count = worker.get_file_parts_count(self.file.name)
+                self.file.current_distribution.at[worker.id, DEFAULT_COLUMN] = worker_parts_count
+                parts_in_hive += worker_parts_count
             else:
                 self.file.current_distribution.at[worker.id, DEFAULT_COLUMN] = 0
 
-        if self.file.equal_distributions():
+        if self.file.equal_distributions(parts_in_hive):
             self.file.simulation_data.cswc_increment(1)
             self.file.simulation_data.try_append_to_convergence_set(self.current_epoch)
         else:

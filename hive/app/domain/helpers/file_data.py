@@ -26,7 +26,6 @@ class FileData:
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, name: str):
         self.name: str = name
-        self.parts_count: int = 0
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
@@ -34,22 +33,16 @@ class FileData:
     # endregion
 
     # region Instance Methods
-    def reset_convergence_data(self) -> None:
-        """
-        Resets the FileData instance field simulation_data by delegation to ConvergenceData instance method
-        """
-        self.simulation_data.save_sets_and_reset()
-
-    def equal_distributions(self) -> bool:
+    def equal_distributions(self, parts_in_hive: int) -> bool:
         """
         Delegates distribution comparison to ConvergenceData.equal_distributions static method
         """
-        normalized_cdv = self.current_distribution.divide(self.parts_count)
+        normalized_cdv = self.current_distribution.divide(parts_in_hive)
         if DEBUG:
             self.fwrite("Desired Distribution:\n{}\nCurrent Distribution:\n{}\n".format(
                 tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')
             ))
-        return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / self.parts_count))
+        return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / parts_in_hive))
     # endregion
 
     # region File I/O
@@ -86,13 +79,9 @@ class FileData:
     # endregion
 
     # region Helpers
-    @deprecated(version='1.3', reason="This method does not work with the new Hives Simualtor at version 1.4")
-    def get_failure_threshold(self) -> int:
+    def reset_convergence_data(self) -> None:
         """
-        Calculates the maximum amount of files of a given file that can be lost at any given time
-        :returns int: the failure threshold for the file being represented by the FileData instance
+        Resets the FileData instance field simulation_data by delegation to ConvergenceData instance method
         """
-        highest_density_node_label = self.desired_distribution.idxmax().values[0]  # index/label of highval
-        highest_density_node_density = self.desired_distribution.at[highest_density_node_label, 0]  # highval
-        return self.parts_count - ceil(self.parts_count * highest_density_node_density)
+        self.simulation_data.save_sets_and_reset()
     # endregion
