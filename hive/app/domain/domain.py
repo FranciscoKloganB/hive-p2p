@@ -482,11 +482,10 @@ class Hive:
             self.__tear_down()
             return False
 
-        self.file.simulation_data.set_epoch_data(disconnected=len(disconnected_workers), lost=lost_parts_count)
+        self.evaluate_hive_convergence()
+        self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count)
 
-        status, size_before, size_after = None, None, None
-        if len(disconnected_workers) > 0:
-            status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
+        status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
         self.file.simulation_data.set_membership_maintenace_at_index(status, size_before, size_after, epoch)
 
         sum_delay = 0
@@ -494,9 +493,9 @@ class Hive:
             sum_delay += part.set_epochs_to_recover(epoch)
         self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
 
-        self.evaluate_hive_convergence()
         if epoch == MAX_EPOCHS:
             self.__tear_down()
+
         return True
 
     def evaluate_hive_convergence(self):
