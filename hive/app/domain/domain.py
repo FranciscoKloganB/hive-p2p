@@ -88,7 +88,7 @@ class SharedFilePart:
         """
         Resets self.recovery_epoch attribute back to the default value of -1
         """
-        self.recovery_epoch = -1
+        self.recovery_epoch = sys.maxsize
 
     def can_replicate(self, epoch: int) -> int:
         """
