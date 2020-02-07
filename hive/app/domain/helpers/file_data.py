@@ -50,7 +50,6 @@ class FileData:
                 tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')
             ))
         return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / self.parts_count))
-        # return ConvergenceData.equal_distributions(self.desired_distribution, normalized_cdv)
     # endregion
 
     # region File I/O
