@@ -470,14 +470,18 @@ class Hive:
                 # Process data held by the disconnected worker
                 for number, part in lost_parts.items():
                     if part.decrease_and_get_references() <= 0:
-                        return self.__set_fail(epoch, "lost all replicas of at least one file part")
+                        self.__set_fail(epoch, "lost all replicas of at least one file part")
+                        self.hivemind.append_epoch_results(epoch_results)  # TODO
+                        return False
                     recoverable_parts[number] = part
             else:
                 worker.execute_epoch(self, self.file.name)
 
         # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
         if len(disconnected_workers) >= len(self.members):
-            return self.__set_fail(epoch, "all workers disconnected in the same epoch")
+            self.__set_fail(epoch, "all workers disconnected in the same epoch")
+            self.hivemind.append_epoch_results(epoch_results)  # TODO
+            return False
 
         self.file.simulation_data.set_epoch_data(disconnected=len(disconnected_workers), lost=lost_parts_count)
 
