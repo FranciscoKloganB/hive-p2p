@@ -15,7 +15,7 @@ class SimulationData:
     :ivar bool successfull: indicates if Hive survived the entire simulation
     :ivar List[int] convergence_set: current consecutive set of stages in which a file has seen convergence
     :ivar List[List[int]] convergence_sets: Set of all convergence sets found for this file during simulation
-    :ivar List[int] failed_workers_per_epoch: Used to calculate average failures per epoch and cumsum-average failures per epoch
+    :ivar List[int] disconnected_workers_per_epoch: Used to calculate average failures per epoch and cumsum-average failures per epoch
     :ivar List[int] lost_parts_per_epoch: Used to calculate average lost parts per epoch and cumsum-average lost parts per epoch
     :ivar List[int] moved_parts_per_epoch: Used to calculate average parts moved per epoch and cumsum-average parts moved per epoch
     """
@@ -29,11 +29,11 @@ class SimulationData:
         self.convergence_sets: List[List[int]] = []
         ###############################
         # Updated on Hive.execute_epoch
-        self.terminated: int = MAX_EPOCHS
-        self.successfull: bool = True
-        self.msg = "completed simulation successfully"
-        self.failed_workers_per_epoch: List[int] = [0] * MAX_EPOCHS
-        self.lost_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
+        self.terminated: int = MAX_EPOCHS  # gathered
+        self.successfull: bool = True  # gathered
+        self.msg = "completed simulation successfully"  # gathered
+        self.disconnected_workers_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.lost_parts_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
         ###############################
         ###############################
         # Updated on Hive.route_part
@@ -114,16 +114,12 @@ class SimulationData:
     # endregion
 
     # region Helpers
-    def set_epoch_data(self, terminated=False, moved=0, failed=0, lost=0, epoch=0):
+    def set_epoch_data(self, disconnected=0, lost=0, epoch=0):
         """
         Delegates to Hive.set_moved_parts_at_index, Hive.set_failed_workers_at_index, Hive.set_lost_parts_at_index
         """
-        self.set_moved_parts_at_index(moved, epoch)
-        self.set_failed_workers_at_index(failed, epoch)
+        self.set_failed_workers_at_index(disconnected, epoch)
         self.set_lost_parts_at_index(lost, epoch)
-
-        if terminated:
-            self.set_fail(epoch)
 
     def set_moved_parts_at_index(self, n: int, i: int) -> None:
         """
@@ -134,10 +130,10 @@ class SimulationData:
 
     def set_failed_workers_at_index(self, n: int, i: int) -> None:
         """
-        :param int n: the quantity of failed workers at epoch i
-        :param int i: index of epoch i in SimulationData.failed_workers_per_epoch list
+        :param int n: the quantity of disconnected workers at epoch i
+        :param int i: index of epoch i in SimulationData.disconnected_workers_per_epoch list
         """
-        self.failed_workers_per_epoch[i] += n
+        self.disconnected_workers_per_epoch[i] += n
 
     def set_lost_parts_at_index(self, n: int, i: int) -> None:
         """

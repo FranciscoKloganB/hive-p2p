@@ -32,4 +32,9 @@ SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 # region Other Constants
 TRUE_FALSE = [True, False]
 COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
+HIVE_SIZE_BEFORE_RECOVER = "sizeBeforeRecover"
+HIVE_SIZE_AFTER_RECOVER = "sizeAfterRecover"
+HIVE_STATUS_BEFORE_RECOVER = "statusBeforeRecover"
+HIVE_STATUS_AFTER_RECOVER = "statusAfterRecover"
+EPOCH_RECOVERY_DELAY = "epochAvgDelay"
 # endregion

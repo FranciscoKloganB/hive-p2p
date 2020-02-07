@@ -73,13 +73,16 @@ class SharedFilePart:
     # endregion
 
     # region Simulation Interface
-    def set_epochs_to_recover(self, epoch: int) -> None:
+    def set_epochs_to_recover(self, epoch: int) -> int:
         """
         Assigns a value to the instance's recovery_epoch attribute that indicates when a Worker who posses a reference to it, can replicate the part.
         :param int epoch: current simulation's epoch
+        :returns int: expected delay
         """
-        proposed_recovery_epoch = epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
-        self.recovery_epoch = proposed_recovery_epoch if proposed_recovery_epoch < self.recovery_epoch else self.recovery_epoch
+        proposed_recovery_epoch: int = epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
+        if proposed_recovery_epoch < self.recovery_epoch:
+            self.recovery_epoch = proposed_recovery_epoch
+        return self.recovery_epoch - epoch
 
     def reset_epochs_to_recover(self) -> None:
         """
@@ -118,7 +121,7 @@ class SharedFilePart:
 class Hivemind:
     """
     Representation of the P2P Network super node managing one or more hives ---- Simulator is piggybacked
-    :ivar int max_epochs: number of stages the hive has to converge to the ddv before simulation is considered failed
+    :ivar int max_epochs: number of stages the hive has to converge to the ddv before simulation is considered disconnected
     :ivar Dict[str, Hive] hives: collection mapping hives' uuid (attribute Hive.id) to the Hive instances
     :ivar Dict[str, Worker] workers: collection mapping workers' names to their Worker instances
     :ivar Dict[str, FileData] files_data: collection mapping file names on the system and their FileData instance
@@ -191,7 +194,7 @@ class Hivemind:
             for hive_id in failed_hives:
                 self.hives.pop(hive_id)
                 if not self.hives:
-                    sys.exit("Simulation terminated at epoch {} because all hives failed before max epochs were reached".format(self.epoch))
+                    sys.exit("Simulation terminated at epoch {} because all hives disconnected before max epochs were reached".format(self.epoch))
 
     def append_epoch_results(self, hive_results: [Dict, Any]) -> True:
         self.results[self.epoch] = hive_results
@@ -306,7 +309,6 @@ class Hive:
     :ivar Hivemind hivemind: reference to the master server, which in this case is just a simulator program
     :ivar FileData Union[None, FileData]: instance of class FileData which contains information regarding the file persisted by this hive
     :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
-    :ivar int hive_size: integer that keeps track of members collection size
     :ivar int critical_size: minimum number of replicas required for data recovery plus the number of peer faults the system must support during replication.
     :ivar int sufficient_size: depends on churn-rate and equals critical_size plus the number of peers expected to fail between two successive recovery phases
     :ivar int redudant_size: application-specific system parameter, but basically represents that the hive is to big
@@ -327,10 +329,9 @@ class Hive:
         self.file: FileData = FileData(file_name)
         self.members: Dict[str, Worker] = members
         self.original_size: int = len(members)
-        self.hive_size: int = len(members)
         self.critical_size: int = REPLICATION_LEVEL
-        self.sufficient_size: int = self.critical_size + math.ceil(self.hive_size * 0.34)
-        self.redudant_size: int = self.sufficient_size + self.hive_size
+        self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
+        self.redudant_size: int = self.sufficient_size + len(self.members)
         self.desired_distribution = None
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
     # endregion
@@ -454,7 +455,7 @@ class Hive:
         Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
         If the Hive terminates early, the epoch's data is not added to FileData.SimulationData to avoid skewing previous results, when epoch causes failure early
         :param int epoch: simulation's current epoch
-        :returns bool: false if Hive failed to persist the file it was responsible for, otherwise true is returned.
+        :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
         """
         lost_parts_count, recoverable_parts, disconnected_workers, epoch_results = self.__setup_epoch(epoch)
         for worker in self.members.values():
@@ -471,45 +472,58 @@ class Hive:
                 worker.execute_epoch(self, self.file.name)
 
         # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
-        if len(disconnected_workers) >= self.hive_size:
+        if len(disconnected_workers) >= len(self.members):
             return self.__set_fail(epoch, "all workers disconnected in the same epoch")
 
-        if len(disconnected_workers) > 0:
-            self.__membership_maintenance(disconnected_workers)
+        self.file.simulation_data.set_epoch_data(disconnected=len(disconnected_workers), lost=lost_parts_count)
 
+        if len(disconnected_workers) > 0:
+            epoch_results = self.__membership_maintenance(disconnected_workers, epoch_results)
+
+        sum_delay = 0
         for part in recoverable_parts.values():
-            part.set_epochs_to_recover(epoch)
+            sum_delay += part.set_epochs_to_recover(epoch)
+        epoch_results[EPOCH_RECOVERY_DELAY] = sum_delay / len(recoverable_parts)
 
         self.hivemind.append_epoch_results(epoch_results)
         return True
     # endregion
 
     # region Helpers
-    def __membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
+    def __membership_maintenance(self, disconnected_workers: List[Worker], epoch_results: Dict[str, Any]) -> Dict[str, Any]:
         """
         Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
         :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
+        :param Dict[str, Any] epoch_results: dictionary used to store information regarding maintenance
+        :returns Dict[str, Any] epoch_results: possibly with new key, value entries
         """
         for member in disconnected_workers:
             self.members.pop(member.id)
 
-        self.hive_size = len(self.members)
+        epoch_results[HIVE_SIZE_BEFORE_RECOVER] = len(self.members)
+        new_members: Dict[str, Worker] = {}
 
-        if self.hive_size < self.critical_size:
-            self.route_to_cloud()
-
-        if self.hive_size < self.sufficient_size:
-            new_members: Dict[str, Worker] = self.hivemind.find_replacement_worker(self.members, self.original_size - self.hive_size)
-            if not new_members:
-                return
+        if len(self.members) < self.critical_size:
+            epoch_results[HIVE_STATUS_BEFORE_RECOVER] = "critical"
+            new_members = self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
             self.members.update(new_members)
-            self.hive_size = len(self.members)
-        elif self.hive_size > self.redudant_size:
-            # TODO: future-iterations
-            #  evict peers
-            self.hive_size = len(self.members)
+            self.route_to_cloud()  # In real world scenario this should be done before recruiting new members and in assynchronous mode
+        elif len(self.members) < self.sufficient_size:
+            epoch_results[HIVE_STATUS_BEFORE_RECOVER] = "sufficient"
+            new_members = self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
+            self.members.update(new_members)
+        elif len(self.members) > self.redudant_size:
+            # TODO: future-iterations evict worse members
+            epoch_results[HIVE_STATUS_BEFORE_RECOVER] = "redundant"
+        else:
+            epoch_results[HIVE_STATUS_BEFORE_RECOVER] = "stable"
 
-        self.broadcast_transition_matrix(self.new_transition_matrix())
+        if new_members:
+            # We should use a variable that compares hive size before and after recovery, because member eviction also causes Hive transition_matrix to change
+            self.broadcast_transition_matrix(self.new_transition_matrix())
+
+        epoch_results[HIVE_SIZE_AFTER_RECOVER] = len(self.members)
+        return epoch_results
 
     def __set_fail(self, epoch: int, msg: str) -> bool:
         return self.file.simulation_data.set_fail(epoch, msg)
