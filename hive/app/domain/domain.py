@@ -491,9 +491,9 @@ class Hive:
             sum_delay += part.set_epochs_to_recover(epoch)
         self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
 
-        self.hivemind.append_epoch_results(epoch_results)
-
         self.__process_hive_convergence_state()
+        if epoch == MAX_EPOCHS:
+            self.hivemind.append_epoch_results(epoch_results)  # TODO
         return True
 
     def __process_hive_convergence_state(self):
