@@ -481,7 +481,7 @@ class Hive:
         self.file.simulation_data.set_epoch_data(disconnected=len(disconnected_workers), lost=lost_parts_count)
 
         if len(disconnected_workers) > 0:
-            epoch_results = self.__membership_maintenance(disconnected_workers, epoch_results)
+            status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
 
         sum_delay = 0
         for part in recoverable_parts.values():
@@ -489,44 +489,47 @@ class Hive:
         epoch_results[EPOCH_RECOVERY_DELAY] = sum_delay / len(recoverable_parts)
 
         self.hivemind.append_epoch_results(epoch_results)
+
+        self.__process_hive_convergence_state()
         return True
+
+    def __process_hive_convergence_state(self):
+        pass
     # endregion
 
     # region Helpers
-    def __membership_maintenance(self, disconnected_workers: List[Worker], epoch_results: Dict[str, Any]) -> Dict[str, Any]:
+    def __membership_maintenance(self, disconnected_workers: List[Worker]) -> Tuple[str, int, int]:
         """
         Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
         :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
-        :param Dict[str, Any] epoch_results: dictionary used to store information regarding maintenance
-        :returns Dict[str, Any] epoch_results: possibly with new key, value entries
+        :returns Tuple[str, int, int] (status_before_recovery, size_before_recovery, size_after_recovery)
         """
         for member in disconnected_workers:
             self.members.pop(member.id)
 
-        epoch_results[HIVE_SIZE_BEFORE_RECOVER] = len(self.members)
+        status_before_recovery: str = "stable"
+        size_before_recovery: int = len(self.members)
         new_members: Dict[str, Worker] = {}
 
         if len(self.members) < self.critical_size:
-            epoch_results[HIVE_STATUS_BEFORE_RECOVER] = "critical"
+            status_before_recovery = "critical"
             new_members = self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
             self.members.update(new_members)
             self.route_to_cloud()  # In real world scenario this should be done before recruiting new members and in assynchronous mode
         elif len(self.members) < self.sufficient_size:
-            epoch_results[HIVE_STATUS_BEFORE_RECOVER] = "sufficient"
+            status_before_recovery = "sufficient"
             new_members = self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
             self.members.update(new_members)
         elif len(self.members) > self.redudant_size:
             # TODO: future-iterations evict worse members
-            epoch_results[HIVE_STATUS_BEFORE_RECOVER] = "redundant"
-        else:
-            epoch_results[HIVE_STATUS_BEFORE_RECOVER] = "stable"
+            status_before_recovery = "redundant"
 
         if new_members:
             # We should use a variable that compares hive size before and after recovery, because member eviction also causes Hive transition_matrix to change
             self.broadcast_transition_matrix(self.new_transition_matrix())
 
-        epoch_results[HIVE_SIZE_AFTER_RECOVER] = len(self.members)
-        return epoch_results
+        size_after_recovery: int = len(self.members)
+        return status_before_recovery, size_before_recovery, size_after_recovery
 
     def __set_fail(self, epoch: int, msg: str) -> bool:
         return self.file.simulation_data.set_fail(epoch, msg)

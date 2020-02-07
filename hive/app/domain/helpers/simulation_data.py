@@ -15,9 +15,9 @@ class SimulationData:
     :ivar bool successfull: indicates if Hive survived the entire simulation
     :ivar List[int] convergence_set: current consecutive set of stages in which a file has seen convergence
     :ivar List[List[int]] convergence_sets: Set of all convergence sets found for this file during simulation
-    :ivar List[int] disconnected_workers_per_epoch: Used to calculate average failures per epoch and cumsum-average failures per epoch
-    :ivar List[int] lost_parts_per_epoch: Used to calculate average lost parts per epoch and cumsum-average lost parts per epoch
-    :ivar List[int] moved_parts_per_epoch: Used to calculate average parts moved per epoch and cumsum-average parts moved per epoch
+    :ivar List[int] disconnected_workers: Used to calculate average failures per epoch and cumsum-average failures per epoch
+    :ivar List[int] lost_parts: Used to calculate average lost parts per epoch and cumsum-average lost parts per epoch
+    :ivar List[int] moved_parts: Used to calculate average parts moved per epoch and cumsum-average parts moved per epoch
     """
     # endregion
 
@@ -32,17 +32,23 @@ class SimulationData:
         self.terminated: int = MAX_EPOCHS  # gathered
         self.successfull: bool = True  # gathered
         self.msg = "completed simulation successfully"  # gathered
-        self.disconnected_workers_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
-        self.lost_parts_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.disconnected_workers: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.lost_parts: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.hive_status_before_maintenance: List[str] = [""] * MAX_EPOCHS  # gathered
+        self.hive_size_before_maintenance: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.hive_size_after_maintenance: List[int] = [0] * MAX_EPOCHS  # gathered
         ###############################
         ###############################
         # Updated on Hive.route_part
-        self.moved_parts_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
-        self.lost_messages_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
-        self.corrupted_parts_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
-
+        self.moved_parts: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.corrupted_parts: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.lost_messages: List[int] = [0] * MAX_EPOCHS  # gathered
         ###############################
 
+    def set_membership_maintenace_at_index(self, status: str, size_before: int, size_after: int, i: int) -> None:
+        self.hive_status_before_maintenance[i] = status
+        self.hive_size_before_maintenance[i] = size_before
+        self.hive_size_after_maintenance[i] = size_after
     # endregion
 
     # region Instance Methods
@@ -125,37 +131,37 @@ class SimulationData:
     def set_moved_parts_at_index(self, n: int, i: int) -> None:
         """
         :param int n: the quantity of parts moved at epoch i
-        :param int i: index of epoch i in SimulationData.moved_parts_per_epoch list
+        :param int i: index of epoch i in SimulationData.moved_parts list
         """
-        self.moved_parts_per_epoch[i] += n
+        self.moved_parts[i] += n
 
     def set_failed_workers_at_index(self, n: int, i: int) -> None:
         """
         :param int n: the quantity of disconnected workers at epoch i
-        :param int i: index of epoch i in SimulationData.disconnected_workers_per_epoch list
+        :param int i: index of epoch i in SimulationData.disconnected_workers list
         """
-        self.disconnected_workers_per_epoch[i] += n
+        self.disconnected_workers[i] += n
 
     def set_lost_parts_at_index(self, n: int, i: int) -> None:
         """
         :param int n: the quantity of lost parts at epoch i
-        :param int i: index of epoch i in SimulationData.lost_parts_per_epoch list
+        :param int i: index of epoch i in SimulationData.lost_parts list
         """
-        self.lost_parts_per_epoch[i] += n
+        self.lost_parts[i] += n
 
     def set_lost_messages_at_index(self, n: int, i: int) -> None:
         """
         :param int n: the quantity of loss messages at epoch i
-        :param int i: index of epoch i in SimulationData.lost_messages_per_epoch list
+        :param int i: index of epoch i in SimulationData.lost_messages list
         """
-        self.lost_messages_per_epoch[i] += n
+        self.lost_messages[i] += n
 
     def set_corrupt_files_at_index(self, n: int, i: int) -> None:
         """
         :param int n: the quantity of corrupted parts at epoch i
-        :param int i: index of epoch i in SimulationData.corrupted_parts_per_epoch list
+        :param int i: index of epoch i in SimulationData.corrupted_parts list
         """
-        self.corrupted_parts_per_epoch[i] += n
+        self.corrupted_parts[i] += n
 
     def set_fail(self, i: int, msg: str = "") -> bool:
         """
