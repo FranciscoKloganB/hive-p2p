@@ -82,6 +82,10 @@ class SharedFilePart:
         proposed_recovery_epoch: int = epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
         if proposed_recovery_epoch < self.recovery_epoch:
             self.recovery_epoch = proposed_recovery_epoch
+
+        if self.recovery_epoch == sys.maxsize:
+            return 0
+
         return self.recovery_epoch - epoch
 
     def reset_epochs_to_recover(self) -> None:
