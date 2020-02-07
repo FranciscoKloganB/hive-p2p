@@ -464,7 +464,11 @@ class Hive:
         sum_delay = 0
         for part in recoverable_parts.values():
             sum_delay += part.set_epochs_to_recover(epoch)
-        self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
+
+        if recoverable_parts:
+            self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
+        else:
+            self.file.simulation_data.set_delay_at_index(0, epoch)
 
         if epoch == MAX_EPOCHS:
             self.__tear_down()
