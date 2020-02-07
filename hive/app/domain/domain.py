@@ -535,7 +535,7 @@ class Hive:
 
     def __setup_epoch(self, epoch: int) -> Tuple[int, Dict[int, SharedFilePart], List[Worker]]:
         self.current_epoch = epoch
-        self.corruption_chances[0] = np.log10(epoch).item()
+        self.corruption_chances[0] = np.log10(epoch).item() / 100.0
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         return 0, {}, []
 
