@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from typing import Union, List
-from globals.globals import MIN_CONVERGENCE_THRESHOLD, R_TOL, A_TOL, MAX_EPOCHS
+from globals.globals import MIN_CONVERGENCE_THRESHOLD, R_TOL, A_TOL, MAX_EPOCHS, MAX_EPOCHS_PLUS
 
 
 class SimulationData:
@@ -32,23 +32,20 @@ class SimulationData:
         self.terminated: int = MAX_EPOCHS  # gathered
         self.successfull: bool = True  # gathered
         self.msg = "completed simulation successfully"  # gathered
-        self.disconnected_workers: List[int] = [0] * MAX_EPOCHS  # gathered
-        self.lost_parts: List[int] = [0] * MAX_EPOCHS  # gathered
-        self.hive_status_before_maintenance: List[str] = [""] * MAX_EPOCHS  # gathered
-        self.hive_size_before_maintenance: List[int] = [0] * MAX_EPOCHS  # gathered
-        self.hive_size_after_maintenance: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.disconnected_workers: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
+        self.lost_parts: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
+        self.hive_status_before_maintenance: List[str] = [""] * MAX_EPOCHS_PLUS  # gathered
+        self.hive_size_before_maintenance: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
+        self.hive_size_after_maintenance: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
+        self.delay: List[float] = [0.0] * MAX_EPOCHS_PLUS
         ###############################
         ###############################
         # Updated on Hive.route_part
-        self.moved_parts: List[int] = [0] * MAX_EPOCHS  # gathered
-        self.corrupted_parts: List[int] = [0] * MAX_EPOCHS  # gathered
-        self.lost_messages: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.moved_parts: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
+        self.corrupted_parts: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
+        self.lost_messages: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
         ###############################
 
-    def set_membership_maintenace_at_index(self, status: str, size_before: int, size_after: int, i: int) -> None:
-        self.hive_status_before_maintenance[i] = status
-        self.hive_size_before_maintenance[i] = size_before
-        self.hive_size_after_maintenance[i] = size_after
     # endregion
 
     # region Instance Methods
@@ -121,11 +118,18 @@ class SimulationData:
     # endregion
 
     # region Helpers
+    def set_delay_at_index(self, n: float, i: int) -> None:
+        """
+        :param float n: the delay at epoch i
+        :param int i: index of epoch i in SimulationData.delay list
+        """
+        self.delay[i] = n
+
     def set_epoch_data(self, disconnected=0, lost=0, epoch=0):
         """
         Delegates to Hive.set_moved_parts_at_index, Hive.set_failed_workers_at_index, Hive.set_lost_parts_at_index
         """
-        self.set_failed_workers_at_index(disconnected, epoch)
+        self.set_disconnected_workers_at_index(disconnected, epoch)
         self.set_lost_parts_at_index(lost, epoch)
 
     def set_moved_parts_at_index(self, n: int, i: int) -> None:
@@ -135,7 +139,7 @@ class SimulationData:
         """
         self.moved_parts[i] += n
 
-    def set_failed_workers_at_index(self, n: int, i: int) -> None:
+    def set_disconnected_workers_at_index(self, n: int, i: int) -> None:
         """
         :param int n: the quantity of disconnected workers at epoch i
         :param int i: index of epoch i in SimulationData.disconnected_workers list
@@ -178,4 +182,21 @@ class SimulationData:
         self.successfull = False
         self.msg = msg
         return False
+
+    def set_membership_maintenace_at_index(self, status: str, size_before: int, size_after: int, i: int) -> None:
+        """
+        :param string status: status of the hive before maintenance
+        :param int size_before: size of the hive before maintenance
+        :param int size_after: size of the hive after maintenace
+        :param int i: index of epoch i in SimulationData.delay list
+        """
+        if status is None or size_before is None or size_after is None:
+            self.hive_status_before_maintenance[i] = self.hive_status_before_maintenance[i-1]
+            self.hive_size_before_maintenance[i] = self.hive_size_before_maintenance[i-1]
+            self.hive_size_after_maintenance[i] = self.hive_size_after_maintenance[i-1]
+        else:
+            self.hive_status_before_maintenance[i] = status
+            self.hive_size_before_maintenance[i] = size_before
+            self.hive_size_after_maintenance[i] = size_after
     # endregion
+

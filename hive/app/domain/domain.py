@@ -186,7 +186,7 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         failed_hives: List[str] = []
-        while self.epoch < MAX_EPOCHS + 1:
+        while self.epoch < MAX_EPOCHS_PLUS:
             self.results[self.epoch] = {}
             for hive in self.hives.values():
                 if not hive.execute_epoch(self.epoch):
@@ -333,6 +333,7 @@ class Hive:
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
         self.redudant_size: int = self.sufficient_size + len(self.members)
         self.desired_distribution = None
+        self.file.simulation_data.set_membership_maintenace_at_index(status="stable", size_before=len(members), size_after=len(members), i=0)
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
     # endregion
 
@@ -460,7 +461,7 @@ class Hive:
         :param int epoch: simulation's current epoch
         :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
         """
-        lost_parts_count, recoverable_parts, disconnected_workers, epoch_results = self.__setup_epoch(epoch)
+        lost_parts_count, recoverable_parts, disconnected_workers = self.__setup_epoch(epoch)
         for worker in self.members.values():
             if worker.get_epoch_status() == Status.OFFLINE:
                 lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
@@ -480,13 +481,15 @@ class Hive:
 
         self.file.simulation_data.set_epoch_data(disconnected=len(disconnected_workers), lost=lost_parts_count)
 
+        status, size_before, size_after = None, None, None
         if len(disconnected_workers) > 0:
             status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
+        self.file.simulation_data.set_membership_maintenace_at_index(status, size_before, size_after, epoch)
 
         sum_delay = 0
         for part in recoverable_parts.values():
             sum_delay += part.set_epochs_to_recover(epoch)
-        epoch_results[EPOCH_RECOVERY_DELAY] = sum_delay / len(recoverable_parts)
+        self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
 
         self.hivemind.append_epoch_results(epoch_results)
 
@@ -534,11 +537,11 @@ class Hive:
     def __set_fail(self, epoch: int, msg: str) -> bool:
         return self.file.simulation_data.set_fail(epoch, msg)
 
-    def __setup_epoch(self, epoch: int) -> Tuple[int, Dict[int, SharedFilePart], List[Worker], Dict[str, Any]]:
+    def __setup_epoch(self, epoch: int) -> Tuple[int, Dict[int, SharedFilePart], List[Worker]]:
         self.current_epoch = epoch
         self.corruption_chances[0] = np.log10(epoch).item()
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
-        return 0, {}, [], {}
+        return 0, {}, []
     # endregion
 
 

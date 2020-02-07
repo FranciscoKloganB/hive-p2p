@@ -5,6 +5,7 @@ DEBUG: bool = True
 # region Simulation Settings
 READ_SIZE: int = 32768  # 32KB blocks. Should wield ~1440 SharedFileParts if the original file is ~45MB in size. With REPLICATION_LEVEL = 3, we run with 4320 parts
 MAX_EPOCHS = 720  # One day has 24h, meaning that one epoch per minute wwould be 1440, 720 defines one epoch every two minutes
+MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 MIN_DETECTION_DELAY: int = 1  # 2 minutes
 MAX_DETECTION_DELAY: int = 7  # 14 minutes
 AVG_UPTIME: float = 0.4
