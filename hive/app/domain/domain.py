@@ -494,13 +494,27 @@ class Hive:
             sum_delay += part.set_epochs_to_recover(epoch)
         self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
 
-        self.__process_hive_convergence_state()
+        self.evaluate_hive_convergence()
         if epoch == MAX_EPOCHS:
             self.__tear_down()
         return True
 
-    def __process_hive_convergence_state(self):
-        pass
+    def evaluate_hive_convergence(self):
+        """
+        Updates this epoch's distribution vector and compares it to the desired distribution vector to see if file distribution between members is near ideal
+        and records epoch data accordingly.
+        """
+        for worker in self.members.values():
+            if worker.status == Status.ONLINE:
+                self.file.current_distribution.at[worker.id, DEFAULT_COLUMN] = worker.get_file_parts_count(self.file.name)
+            else:
+                self.file.current_distribution.at[worker.id, DEFAULT_COLUMN] = 0
+
+        if self.file.equal_distributions():
+            self.file.simulation_data.cswc_increment(1)
+            self.file.simulation_data.try_append_to_convergence_set(self.current_epoch)
+        else:
+            self.file.simulation_data.save_sets_and_reset()
     # endregion
 
     # region Helpers
