@@ -37,9 +37,10 @@ class SimulationData:
         ###############################
         ###############################
         # Updated on Hive.route_part
-        self.moved_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
-        self.corrupted_parts_per_epoch: List[int] = [0] * MAX_EPOCHS
-        self.lost_messages_per_epoch: List[int] = [0] * MAX_EPOCHS
+        self.moved_parts_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.lost_messages_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.corrupted_parts_per_epoch: List[int] = [0] * MAX_EPOCHS  # gathered
+
         ###############################
 
     # endregion
@@ -141,6 +142,20 @@ class SimulationData:
         :param int i: index of epoch i in SimulationData.lost_parts_per_epoch list
         """
         self.lost_parts_per_epoch[i] += n
+
+    def set_lost_messages_at_index(self, n: int, i: int) -> None:
+        """
+        :param int n: the quantity of loss messages at epoch i
+        :param int i: index of epoch i in SimulationData.lost_messages_per_epoch list
+        """
+        self.lost_messages_per_epoch[i] += n
+
+    def set_corrupt_files_at_index(self, n: int, i: int) -> None:
+        """
+        :param int n: the quantity of corrupted parts at epoch i
+        :param int i: index of epoch i in SimulationData.corrupted_parts_per_epoch list
+        """
+        self.corrupted_parts_per_epoch[i] += n
 
     def set_fail(self, i: int, msg: str = "") -> bool:
         """

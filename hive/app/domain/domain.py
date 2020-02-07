@@ -352,12 +352,15 @@ class Hive:
         :param SharedFilePart part: the file part to send to specified worker
         :returns int: http codes based status of destination worker
         """
+        self.file.simulation_data.set_moved_parts_at_index(1, self.current_epoch)
         if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):  # Simulates channel loss - Makes convergence harder
+            self.file.simulation_data.set_lost_messages_at_index(1, self.current_epoch)
             return HttpCodes.TIME_OUT
 
         if np.random.choice(a=TRUE_FALSE, p=self.corruption_chances):  # File corruption, in a simplistic manner - Makes durability lower
             if part.decrease_and_get_references() == 0:
                 return False
+            self.file.simulation_data.set_corrupt_files_at_index(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST
 
         member = self.members[destination_name]
