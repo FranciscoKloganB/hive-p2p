@@ -1,7 +1,7 @@
+import json
 import os
-from deprecated import deprecated
+import re
 
-from math import ceil
 from typing import Any, Union
 
 import numpy as np
@@ -53,6 +53,10 @@ class FileData:
         """
         print(string)
         self.out_file.write(string + "\n")
+
+    def jwrite(self, data: SimulationData):
+        json_string = json.dumps(data.__dict__, indent=4, sort_keys=True, ensure_ascii=False)
+        self.fwrite(json_string)
 
     def fclose(self, string: str = None) -> None:
         """

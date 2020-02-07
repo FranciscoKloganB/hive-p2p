@@ -4,6 +4,7 @@ import sys
 import json
 import math
 import uuid
+import traceback
 
 import numpy as np
 import pandas as pd
@@ -433,47 +434,53 @@ class Hive:
         :param int epoch: simulation's current epoch
         :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
         """
-        lost_parts_count, recoverable_parts, disconnected_workers = self.__setup_epoch(epoch)
-        for worker in self.members.values():
-            if worker.get_epoch_status() == Status.OFFLINE:
-                lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
-                lost_parts_count += len(lost_parts)
-                disconnected_workers.append(worker)
-                # Process data held by the disconnected worker
-                for number, part in lost_parts.items():
-                    if part.decrease_and_get_references() <= 0:
-                        self.__set_fail(epoch, "lost all replicas of at least one file part")
-                        self.__tear_down()
-                        return False
-                    recoverable_parts[number] = part
-            else:
-                worker.execute_epoch(self, self.file.name)
+        try:
+            lost_parts_count, recoverable_parts, disconnected_workers = self.__setup_epoch(epoch)
+            for worker in self.members.values():
+                if worker.get_epoch_status() == Status.OFFLINE:
+                    lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
+                    lost_parts_count += len(lost_parts)
+                    disconnected_workers.append(worker)
+                    # Process data held by the disconnected worker
+                    for number, part in lost_parts.items():
+                        if part.decrease_and_get_references() <= 0:
+                            self.__set_fail(epoch, "lost all replicas of at least one file part")
+                            self.__tear_down()
+                            return False
+                        recoverable_parts[number] = part
+                else:
+                    worker.execute_epoch(self, self.file.name)
 
-        # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
-        if len(disconnected_workers) >= len(self.members):
-            self.__set_fail(epoch, "all workers disconnected in the same epoch")
+            # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
+            if len(disconnected_workers) >= len(self.members):
+                self.__set_fail(epoch, "all workers disconnected in the same epoch")
+                self.__tear_down()
+                return False
+
+            self.evaluate_hive_convergence()
+            self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count)
+
+            status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
+            self.file.simulation_data.set_membership_maintenace_at_index(status, size_before, size_after, epoch)
+
+            sum_delay = 0
+            for part in recoverable_parts.values():
+                sum_delay += part.set_epochs_to_recover(epoch)
+
+            if recoverable_parts:
+                self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
+            else:
+                self.file.simulation_data.set_delay_at_index(0, epoch)
+
+            if epoch == MAX_EPOCHS:
+                self.__tear_down()
+
+            return True
+        except Exception as e:
+            print(str(e))
+            self.__set_fail(epoch, "unexpected exception: \nException: {}\nStack trace:\n{}".format(str(e), traceback.print_exc()))
             self.__tear_down()
             return False
-
-        self.evaluate_hive_convergence()
-        self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count)
-
-        status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
-        self.file.simulation_data.set_membership_maintenace_at_index(status, size_before, size_after, epoch)
-
-        sum_delay = 0
-        for part in recoverable_parts.values():
-            sum_delay += part.set_epochs_to_recover(epoch)
-
-        if recoverable_parts:
-            self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
-        else:
-            self.file.simulation_data.set_delay_at_index(0, epoch)
-
-        if epoch == MAX_EPOCHS:
-            self.__tear_down()
-
-        return True
 
     def evaluate_hive_convergence(self):
         """
@@ -540,7 +547,8 @@ class Hive:
         return 0, {}, []
 
     def __tear_down(self) -> None:
-        self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__())
+        self.file.jwrite(self.file.simulation_data)
+        # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
         # endregion
 
 
