@@ -453,12 +453,12 @@ class Hive:
 
             # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
             if len(disconnected_workers) >= len(self.members):
-                self.__set_fail(epoch, "all workers disconnected in the same epoch")
+                self.__set_fail(epoch, "all hive's workers disconnected at the same epoch")
                 self.__tear_down()
                 return False
 
-            self.evaluate_hive_convergence()
             self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count)
+            self.evaluate_hive_convergence()
 
             status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
             self.file.simulation_data.set_membership_maintenace_at_index(status, size_before, size_after, epoch)
@@ -570,7 +570,7 @@ class Worker:
     :ivar Union[int, Status] status: indicates if this worker instance is online or offline, might have other non-intuitive status, hence bool does not suffice
     """
 
-    ON_OFF: List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] = [Status.ONLINE, Status.SUSPECT]
+    ON_OFF: List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] = [Status.ONLINE, Status.OFFLINE]
 
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, worker_id: str, worker_uptime: float):
@@ -745,9 +745,10 @@ class Worker:
         """
         When called, the worker instance decides if it should switch status
         """
-        if self.status == Status.OFFLINE:
+        if self.status != Status.ONLINE:
             return self.status
         else:
-            self.status = np.random.choice(Worker.ON_OFF, p=[self.uptime, self.disconnect_chance])
-            return self.status
+            epoch_status = np.random.choice(Worker.ON_OFF, p=[self.uptime, self.disconnect_chance])
+            self.status = epoch_status
+            return epoch_status
     # endregion
