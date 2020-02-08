@@ -81,7 +81,7 @@ class SharedFilePart:
         :returns int: expected delay
         """
         proposed_recovery_epoch: int = epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
-        if proposed_recovery_epoch < self.recovery_epoch:
+        if self.recovery_epoch < epoch or proposed_recovery_epoch < self.recovery_epoch:
             self.recovery_epoch = proposed_recovery_epoch
 
         if self.recovery_epoch == sys.maxsize:
@@ -680,18 +680,19 @@ class Worker:
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
         replicate: int = part.can_replicate(hive.current_epoch)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
-        if replicate:
+        if replicate > 0:
             hive_member_ids: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)]
             for member_id in hive_member_ids:
                 if replicate == 0:
+                    part.reset_epochs_to_recover()
                     break  # replication level achieved, no need to produce more copies
-                if member_id == self.id:
+                elif member_id == self.id:
                     continue  # don't send to self, it would only get rejected
-                if hive.route_part(member_id, part) == HttpCodes.OK:
-                    part.references += 1  # for each successful deliver increase number of copies in the hive
+                elif hive.route_part(member_id, part) == HttpCodes.OK:
                     replicate -= 1  # decrease needed replicas
-            part.reset_epochs_to_recover()  # Ensures other workers don't try to replicate and that Hive can resimulate delays
-
+                    part.references += 1  # for each successful deliver increase number of copies in the hive
+            if replicate > 0:
+                part.recovery_epoch = hive.current_epoch + 1
     # region PSUtils Interface
     # noinspection PyIncorrectDocstring
     @staticmethod
