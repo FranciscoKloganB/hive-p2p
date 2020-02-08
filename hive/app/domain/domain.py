@@ -444,6 +444,7 @@ class Hive:
                 else:
                     worker.execute_epoch(self, self.file.name)
 
+            print(disconnected_workers)
             # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
             if len(disconnected_workers) >= len(self.members):
                 self.__set_fail(epoch, "all hive's workers disconnected at the same epoch")
@@ -470,9 +471,10 @@ class Hive:
 
             return True
         except Exception as e:
-            print(str(e))
-            self.__set_fail(epoch, "unexpected exception: \\nException: {}\\nStack trace:\\n{}".format(str(e), traceback.print_exc()))
+            e_info = "".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
+            self.__set_fail(epoch, e_info)
             self.__tear_down()
+            print(e_info)
             return False
 
     def evaluate_hive_convergence(self):
