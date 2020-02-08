@@ -437,7 +437,7 @@ class Hive:
         try:
             lost_parts_count, recoverable_parts, disconnected_workers = self.__setup_epoch(epoch)
             for worker in self.members.values():
-                if worker.get_epoch_status() == Status.OFFLINE:
+                if worker.get_epoch_status() != Status.ONLINE:
                     lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
                     lost_parts_count += len(lost_parts)
                     disconnected_workers.append(worker)
