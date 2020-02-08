@@ -51,7 +51,6 @@ class FileData:
         Writes to the out_file referenced by the FileData's instance out_file field in append mode
         :param str string: a message to write to file
         """
-        print(string)
         self.out_file.write(string + "\n")
 
     def jwrite(self, data: SimulationData):
