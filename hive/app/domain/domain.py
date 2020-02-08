@@ -194,7 +194,8 @@ class Hivemind:
         while self.epoch < MAX_EPOCHS_PLUS and self.hives:
             print(self.epoch)
             for hive in self.hives.values():
-                if not hive.execute_epoch(self.epoch):
+                hive.execute_epoch(self.epoch)
+                if not hive.is_running():
                     failed_hives.append(hive.id)
             for hive_id in failed_hives:
                 self.hives.pop(hive_id)
@@ -293,6 +294,7 @@ class Hive:
         self.redudant_size: int = self.sufficient_size + len(self.members)
         self.desired_distribution = None
         self.file.simulation_data.set_membership_maintenace_at_index(status="stable", size_before=len(members), size_after=len(members), i=0)
+        self.running = True
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
     # endregion
 
@@ -399,6 +401,7 @@ class Hive:
             workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
             for worker in workers:
                 for part in file_parts.values():
+                    part.references += 1
                     worker.receive_part(part)
 
         elif spread_mode == "u":
@@ -406,6 +409,7 @@ class Hive:
                 choices: List[Worker] = [*self.members.values()]
                 workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
+                    part.references += 1
                     worker.receive_part(part)
 
         elif spread_mode == 'i':
@@ -418,9 +422,10 @@ class Hive:
                 choices: List[Worker] = choices.copy()
                 workers: List[Worker] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
+                    part.references += 1
                     worker.receive_part(part)
 
-    def execute_epoch(self, epoch: int) -> bool:
+    def execute_epoch(self, epoch: int) -> None:
         """
         Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
         If the Hive terminates early, the epoch's data is not added to FileData.SimulationData to avoid skewing previous results, when epoch causes failure early
@@ -439,17 +444,16 @@ class Hive:
                         if part.decrease_and_get_references() <= 0:
                             self.__set_fail(epoch, "lost all replicas of at least one file part")
                             self.__tear_down()
-                            return False
+                            return
                         recoverable_parts[number] = part
                 else:
                     worker.execute_epoch(self, self.file.name)
 
-            print(disconnected_workers)
             # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
             if len(disconnected_workers) >= len(self.members):
                 self.__set_fail(epoch, "all hive's workers disconnected at the same epoch")
                 self.__tear_down()
-                return False
+                return
 
             self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count)
             self.evaluate_hive_convergence()
@@ -460,22 +464,17 @@ class Hive:
             sum_delay = 0
             for part in recoverable_parts.values():
                 sum_delay += part.set_epochs_to_recover(epoch)
-
-            if recoverable_parts:
-                self.file.simulation_data.set_delay_at_index(sum_delay / len(recoverable_parts), epoch)
-            else:
-                self.file.simulation_data.set_delay_at_index(0, epoch)
+            self.file.simulation_data.set_delay_at_index((sum_delay / len(recoverable_parts)) if recoverable_parts else 0, epoch)
 
             if epoch == MAX_EPOCHS:
                 self.__tear_down()
 
-            return True
         except Exception as e:
-            e_info = "".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__))
-            self.__set_fail(epoch, e_info)
+            self.__set_fail(epoch, "".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
             self.__tear_down()
-            print(e_info)
-            return False
+
+    def is_running(self) -> bool:
+        return self.running
 
     def evaluate_hive_convergence(self):
         """
@@ -549,13 +548,15 @@ class Hive:
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         return 0, {}, []
 
-    def __tear_down(self) -> None:
-        self.file.jwrite(self.file.simulation_data)
-        # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
-        # endregion
-
     def __set_fail(self, epoch: int, msg: str) -> bool:
+        print(msg)
         return self.file.simulation_data.set_fail(epoch, msg)
+
+    def __tear_down(self) -> None:
+        # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
+        self.file.jwrite(self.file.simulation_data)
+        self.running = False
+    # endregion
 
 
 class Worker:
