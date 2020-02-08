@@ -301,9 +301,9 @@ class Hive:
         self.hivemind = hivemind
         self.file: FileData = FileData(file_name)
         self.members: Dict[str, Worker] = members
-        self.original_size: int = len(members)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
+        self.original_size: int = len(members)
         self.redudant_size: int = self.sufficient_size + len(self.members)
         self.desired_distribution = None
         self.file.simulation_data.set_membership_maintenace_at_index(status="stable", size_before=len(members), size_after=len(members), i=0)
@@ -311,7 +311,14 @@ class Hive:
     # endregion
 
     # region Routing
-    def route_to_cloud(self) -> None:
+    def remove_cloud_reference(self) -> None:
+        """
+        TODO: future-iterations
+        Remove cloud references and delete files within it
+        """
+        pass
+
+    def add_cloud_reference(self) -> None:
         """
         TODO: future-iterations
         Remaining hive members upload all data they have to a cloud server
@@ -515,35 +522,38 @@ class Hive:
         :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
         :returns Tuple[str, int, int] (status_before_recovery, size_before_recovery, size_after_recovery)
         """
+        # remove all disconnected workers from the hive
         for member in disconnected_workers:
             self.members.pop(member.id)
 
-        status_before_recovery: str = "stable"
-        size_before_recovery: int = len(self.members)
-        new_members: Dict[str, Worker] = {}
+        damaged_hive_size = len(self.members)
 
-        if len(self.members) < self.critical_size:
-            status_before_recovery = "critical"
-            new_members = self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
-            self.members.update(new_members)
-            self.route_to_cloud()  # In real world scenario this should be done before recruiting new members and in assynchronous mode
-        elif len(self.members) < self.sufficient_size:
+        if damaged_hive_size >= self.sufficient_size:
+            self.remove_cloud_reference()
+
+        if damaged_hive_size >= self.redudant_size:
+            status_before_recovery = "redundant"  # TODO: future-iterations evict worse members
+        elif self.original_size <= damaged_hive_size < self.redudant_size:
+            status_before_recovery = "stable"
+        elif self.sufficient_size <= damaged_hive_size < self.original_size:
             status_before_recovery = "sufficient"
-            new_members = self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
-            self.members.update(new_members)
-        elif len(self.members) > self.redudant_size:
-            # TODO: future-iterations evict worse members
-            status_before_recovery = "redundant"
+            self.members.update(self.__get_new_members())
+        elif self.critical_size < damaged_hive_size < self.sufficient_size:
+            status_before_recovery = "unstable"
+            self.members.update(self.__get_new_members())
+        else:
+            status_before_recovery = "critical"
+            self.add_cloud_reference()
+            self.members.update(self.__get_new_members())
 
-        if new_members:
-            # We should use a variable that compares hive size before and after recovery, because member eviction also causes Hive transition_matrix to change
+        healed_hive_size = len(self.members)
+        if damaged_hive_size != healed_hive_size:
             self.broadcast_transition_matrix(self.new_transition_matrix())
 
-        size_after_recovery: int = len(self.members)
-        return status_before_recovery, size_before_recovery, size_after_recovery
+        return status_before_recovery, damaged_hive_size, healed_hive_size
 
-    def __set_fail(self, epoch: int, msg: str) -> bool:
-        return self.file.simulation_data.set_fail(epoch, msg)
+    def __get_new_members(self) -> Dict[str, Worker]:
+        return self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
 
     def __setup_epoch(self, epoch: int) -> Tuple[int, Dict[int, SharedFilePart], List[Worker]]:
         self.current_epoch = epoch
@@ -555,6 +565,9 @@ class Hive:
         self.file.jwrite(self.file.simulation_data)
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
         # endregion
+
+    def __set_fail(self, epoch: int, msg: str) -> bool:
+        return self.file.simulation_data.set_fail(epoch, msg)
 
 
 class Worker:
