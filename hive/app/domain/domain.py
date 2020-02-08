@@ -231,25 +231,11 @@ class Hivemind:
         :returns Dict[str, Worker] selected_workers: a collection of replacements a hive can use w/o guarantees that enough, if at all, replacements are found
         """
         selected_workers: Dict[str, Worker] = {}
-        next_round_workers_view: Dict[str, Worker] = {}
-        workers_view: Dict[str, Worker] = {key: value for key, value in self.workers if value.status == Status.ONLINE and value.id not in exclusion_dict}
-
-        if not workers_view:
-            return selected_workers
-
-        for worker_id, worker in workers_view:
-            if worker.uptime > AVG_UPTIME:
-                selected_workers[worker_id] = worker
+        for worker in self.workers.values():
+            if worker.status == Status.ONLINE and worker.id not in exclusion_dict:
+                selected_workers[worker.id] = worker
                 if len(selected_workers) == quantity:
-                    return selected_workers  # desired replacements quantity can only be reached here, if not possible it's mandatory to go to the next for loop
-            else:
-                next_round_workers_view[worker_id] = worker
-
-        for worker_id, worker in next_round_workers_view:
-            selected_workers[worker_id] = worker  # to avoid slowing down the simulation and because a minimum uptime can be defined, we just pick any worker
-            if len(selected_workers) == quantity:
-                return selected_workers
-
+                    return selected_workers
         return selected_workers
 
     def get_cloud_reference(self) -> str:
