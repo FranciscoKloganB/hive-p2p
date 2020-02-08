@@ -80,9 +80,8 @@ class SharedFilePart:
         :param int epoch: current simulation's epoch
         :returns int: expected delay
         """
-        proposed_recovery_epoch: int = epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
-        if self.recovery_epoch < epoch or proposed_recovery_epoch < self.recovery_epoch:
-            self.recovery_epoch = proposed_recovery_epoch
+        if self.recovery_epoch < epoch or self.recovery_epoch == sys.maxsize:
+            self.recovery_epoch = epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
 
         if self.recovery_epoch == sys.maxsize:
             return 0
