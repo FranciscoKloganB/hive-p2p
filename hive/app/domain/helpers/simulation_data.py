@@ -126,12 +126,12 @@ class SimulationData:
         """
         self.delay[i] = n
 
-    def set_disconnected_and_losses(self, disconnected=0, lost=0, epoch=0):
+    def set_disconnected_and_losses(self, disconnected=0, lost=0, i=0):
         """
         Delegates to Hive.set_moved_parts_at_index, Hive.set_failed_workers_at_index, Hive.set_lost_parts_at_index
         """
-        self.set_disconnected_workers_at_index(disconnected, epoch)
-        self.set_lost_parts_at_index(lost, epoch)
+        self.set_disconnected_workers_at_index(disconnected, i)
+        self.set_lost_parts_at_index(lost, i)
 
     def set_moved_parts_at_index(self, n: int, i: int) -> None:
         """

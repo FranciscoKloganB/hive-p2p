@@ -454,7 +454,7 @@ class Hive:
                 self.__tear_down()
                 return
 
-            self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count)
+            self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count, i=epoch)
             self.evaluate_hive_convergence()
 
             status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
