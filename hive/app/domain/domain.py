@@ -581,7 +581,7 @@ class Worker:
         self.hives: Dict[str, Hive] = {}
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
-        self.status: Union[int, Status] = Status.ONLINE
+        self.status: int = Status.ONLINE
     # endregion
 
     # region Recovery
@@ -743,7 +743,7 @@ class Worker:
         """
         return len(self.files.get(file_name, {}))
 
-    def get_epoch_status(self) -> Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]:
+    def get_epoch_status(self) -> int:
         """
         When called, the worker instance decides if it should switch status
         """
