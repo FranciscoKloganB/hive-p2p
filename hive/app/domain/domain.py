@@ -67,7 +67,7 @@ class SharedFilePart:
         self.hive_id = hive_id
         self.name: str = name
         self.number: int = number
-        self.references: int = REPLICATION_LEVEL
+        self.references: int = 0
         self.recovery_epoch: int = sys.maxsize
         self.data: str = convertions.bytes_to_base64_string(data)
         self.sha256: str = crypto.sha256(self.data)
@@ -100,7 +100,6 @@ class SharedFilePart:
         :returns int: how many times the caller should replicate the SharedFilePart instance, if such action is possible
         """
         if self.references < REPLICATION_LEVEL and self.recovery_epoch - epoch <= 0:
-            self.recovery_epoch = sys.maxsize  # Stops workers from repeatedly replicating this file part once one of them replicates
             return REPLICATION_LEVEL - self.references
         else:
             return 0
@@ -114,10 +113,6 @@ class SharedFilePart:
     # region Helpers
     def decrease_and_get_references(self):
         self.references = self.references - 1
-        return self.references
-
-    def increase_and_get_references(self):
-        self.references = self.references + 1
         return self.references
     # endregion
 
@@ -678,20 +673,23 @@ class Worker:
         :param Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
         """
-        replicate: int = part.can_replicate(hive.current_epoch)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
-        if replicate > 0:
+        lost_replicas: int = part.can_replicate(hive.current_epoch)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
+        if lost_replicas > 0:
             hive_member_ids: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)]
             for member_id in hive_member_ids:
-                if replicate == 0:
-                    part.reset_epochs_to_recover()
+                if lost_replicas == 0:
                     break  # replication level achieved, no need to produce more copies
                 elif member_id == self.id:
                     continue  # don't send to self, it would only get rejected
                 elif hive.route_part(member_id, part) == HttpCodes.OK:
-                    replicate -= 1  # decrease needed replicas
+                    lost_replicas -= 1  # decrease needed replicas
                     part.references += 1  # for each successful deliver increase number of copies in the hive
-            if replicate > 0:
-                part.recovery_epoch = hive.current_epoch + 1
+
+            if lost_replicas > 0:
+                part.recovery_epoch = hive.current_epoch + 1  # speeds up recovery if total recovery was not possible
+            else:
+                part.reset_epochs_to_recover()
+
     # region PSUtils Interface
     # noinspection PyIncorrectDocstring
     @staticmethod
