@@ -194,10 +194,9 @@ class Hivemind:
                 if not hive.is_running():
                     failed_hives.append(hive.id)
             for hive_id in failed_hives:
+                print("Hive: {} terminated at epoch {}".format(hive_id, self.epoch))
                 self.hives.pop(hive_id)
-                if not self.hives:
-                    sys.exit("Simulation terminated at epoch {} because all hives disconnected before max epochs were reached".format(self.epoch))
-            self.epoch += 1
+            sys.exit(1) if not self.hives else self.epoch += 1
 
     def append_epoch_results(self, hive_id: str, hive_results: [Dict, Any]) -> True:
         self.results[hive_id] = hive_results
@@ -477,6 +476,9 @@ class Hive:
         Updates this epoch's distribution vector and compares it to the desired distribution vector to see if file distribution between members is near ideal
         and records epoch data accordingly.
         """
+        if not self.members:
+            raise RuntimeError("Hive no longer has members")
+
         parts_in_hive: int = 0
         for worker in self.members.values():
             if worker.status == Status.ONLINE:
