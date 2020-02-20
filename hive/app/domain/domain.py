@@ -50,7 +50,7 @@ class SharedFilePart:
     :ivar str name: original name of the file this part belongs to
     :ivar int number: unique identifier for this file on the P2P network
     :ivar int references: indicates how many references exist for this SharedFilePart
-    :ivar int recovery_epoch: indicates when recovery of this file will occur during
+    :ivar float recovery_epoch: indicates when recovery of this file will occur during
     :ivar str data: base64 string corresponding to the actual contents of this file part
     :ivar str sha256: hash value resultant of applying sha256 hash function over part_data param
     """
@@ -68,7 +68,7 @@ class SharedFilePart:
         self.name: str = name
         self.number: int = number
         self.references: int = 0
-        self.recovery_epoch: int = sys.maxsize
+        self.recovery_epoch: float = float('inf')
         self.data: str = convertions.bytes_to_base64_string(data)
         self.sha256: str = crypto.sha256(self.data)
     # endregion
@@ -80,26 +80,28 @@ class SharedFilePart:
         :param int epoch: current simulation's epoch
         :returns int: expected delay
         """
-        if self.recovery_epoch < epoch or self.recovery_epoch == sys.maxsize:
-            self.recovery_epoch = epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY)
+        new_proposed_epoch = float(epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY))
+        if new_proposed_epoch < self.recovery_epoch:
+            self.recovery_epoch = new_proposed_epoch
+        return 0 if self.recovery_epoch == float('inf') else self.recovery_epoch - float(epoch)
 
-        if self.recovery_epoch == sys.maxsize:
-            return 0
-
-        return self.recovery_epoch - epoch
-
-    def reset_epochs_to_recover(self) -> None:
+    def reset_epochs_to_recover(self, epoch: int) -> None:
         """
         Resets self.recovery_epoch attribute back to the default value of -1
-        """
-        self.recovery_epoch = sys.maxsize
-
-    def can_replicate(self, epoch: int) -> int:
-        """
         :param int epoch: current simulation's epoch
+        """
+        if self.references >= REPLICATION_LEVEL:
+            self.references = REPLICATION_LEVEL
+            self.recovery_epoch = float('inf')
+        else:
+            self.recovery_epoch = float(epoch + 1)
+
+    def can_replicate(self, current_epoch: int) -> int:
+        """
+        :param int current_epoch: current simulation's epoch
         :returns int: how many times the caller should replicate the SharedFilePart instance, if such action is possible
         """
-        if self.references < REPLICATION_LEVEL and self.recovery_epoch - epoch <= 0:
+        if (self.references < REPLICATION_LEVEL) and (self.recovery_epoch - float(current_epoch) <= 0.0):
             return REPLICATION_LEVEL - self.references
         else:
             return 0
@@ -651,22 +653,19 @@ class Worker:
         :param Hive hive: Hive instance that ordered execution of the epoch
         :param str file_name: the file parts that should be routed
         """
-        file_cache: Dict[int, SharedFilePart] = self.files.get(file_name, {})
-        epoch_cache: Dict[int, SharedFilePart] = {}
-        for number, part in file_cache.items():
-            self.try_replication(hive, part)
+        file_view: Dict[int, SharedFilePart] = self.files.get(file_name, {}).copy()
+        for number, part in file_view.items():
+            self.replicate(hive, part)
             response_code = self.send_part(hive, part)
             if response_code == HttpCodes.OK:
-                pass  # self.files[file_name].pop(number), leave here for readability, but can't actually modify collection while iterating, pandora box!
+                self.files[file_name].pop(number)  # Destination worker accepted and stored the sent part
             elif response_code == HttpCodes.BAD_REQUEST:
-                # TODO: future-iterations, right now, assume replicas is lost -> part = self.init_recovery_protocol(part.name)
-                pass  # self.files[file_name].pop(number), same as HttpCodes.OK, except destination worker did not keep this replica
-            elif response_code != HttpCodes.OK:
-                epoch_cache[number] = part  # This case includes HttpCodes.TIME_OUT and HttpCodes.NOT_ACCEPTABLE
-        self.files[file_name] = epoch_cache  # In next epoch this worker instance only keeps files that were not accepted or were not corrupted
+                self.files[file_name][number].decrease_and_get_references()
+                self.files[file_name].pop(number)  # Discard this part because destination worker implied the Sha256 is bad
+            # else (HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE) this worker keeps the file until, at least, the next epoch
     # endregion
 
-    def try_replication(self, hive: Hive, part: SharedFilePart) -> None:
+    def replicate(self, hive: Hive, part: SharedFilePart) -> None:
         """
         Equal to send part but with different semantics, as file is not routed following swarm guidance, but instead by choosing the most reliable peers in the hive
         post-scriptum: This function is hacked... And should only be used for simulation purposes
@@ -679,16 +678,12 @@ class Worker:
             for member_id in hive_member_ids:
                 if lost_replicas == 0:
                     break  # replication level achieved, no need to produce more copies
-                elif member_id == self.id:
+                if member_id == self.id:
                     continue  # don't send to self, it would only get rejected
-                elif hive.route_part(member_id, part) == HttpCodes.OK:
+                if hive.route_part(member_id, part) == HttpCodes.OK:
                     lost_replicas -= 1  # decrease needed replicas
                     part.references += 1  # for each successful deliver increase number of copies in the hive
-
-            if lost_replicas > 0:
-                part.recovery_epoch = hive.current_epoch + 1  # speeds up recovery if total recovery was not possible
-            else:
-                part.reset_epochs_to_recover()
+            part.reset_epochs_to_recover(hive.current_epoch)
 
     # region PSUtils Interface
     # noinspection PyIncorrectDocstring
