@@ -196,7 +196,7 @@ class Hivemind:
             for hive_id in failed_hives:
                 print("Hive: {} terminated at epoch {}".format(hive_id, self.epoch))
                 self.hives.pop(hive_id)
-            sys.exit(1) if not self.hives else self.epoch += 1
+            self.epoch += 1
 
     def append_epoch_results(self, hive_id: str, hive_results: [Dict, Any]) -> True:
         self.results[hive_id] = hive_results
