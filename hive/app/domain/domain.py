@@ -677,7 +677,8 @@ class Worker:
         """
         lost_replicas: int = part.can_replicate(hive.current_epoch)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
         if lost_replicas > 0:
-            hive_member_ids: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)]
+            sorted_view = hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)
+            hive_member_ids: List[str] = [*sorted_view.index]
             for member_id in hive_member_ids:
                 if lost_replicas == 0:
                     break  # replication level achieved, no need to produce more copies
