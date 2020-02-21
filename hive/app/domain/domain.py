@@ -332,6 +332,7 @@ class Hive:
             return member.receive_part(part)
         else:
             return HttpCodes.NOT_FOUND
+
     # endregion
 
     # region Swarm Guidance
@@ -542,7 +543,7 @@ class Hive:
 
     def __setup_epoch(self, epoch: int) -> Tuple[int, Dict[int, SharedFilePart], List[Worker]]:
         self.current_epoch = epoch
-        self.corruption_chances[0] = np.log10(epoch).item() / 100.0
+        self.corruption_chances[0] = 0.0  # np.log10(epoch).item() / 100.0
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         return 0, {}, []
 
