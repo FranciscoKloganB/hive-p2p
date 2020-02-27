@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 import uuid
 import traceback
 
@@ -623,10 +624,14 @@ class Worker:
         routing_vector: pd.DataFrame = self.routing_table[part.name]
         hive_members: List[str] = [*routing_vector.index]
         member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COLUMN]]
-        destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
-        if destination == self.id:
-            return HttpCodes.DUMMY
-        return hive.route_part(destination, part)
+        try:
+            destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
+            if destination == self.id:
+                return HttpCodes.DUMMY
+            return hive.route_part(destination, part)
+        except ValueError as vE:
+            print(routing_vector)
+            sys.exit("".join(traceback.format_exception(etype=type(vE), value=vE, tb=vE.__traceback__)))
 
     def receive_part(self, part: SharedFilePart) -> int:
         """
