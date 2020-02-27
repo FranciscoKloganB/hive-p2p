@@ -564,7 +564,6 @@ class Worker:
     :cvar List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] ON_OFF: possible Worker states, will be extended to include suspect down the line
     :ivar str id: unique identifier of the worker instance on the network
     :ivar float uptime: average worker uptime
-    :ivar float disconnect_chance: (100.0 - worker_uptime) / 100.0
     :ivar Dict[str, Hive] hives: dictionary that maps the hive_ids' this worker instance belongs to, to the respective Hive instances
     :ivar Dict[str, Dict[int, SharedFilePart]] files: collection mapping file names to file parts and their contents
     :ivar Dict[str, pd.DataFrame] routing_table: collection mapping file names to the respective transition probabilities followed by the worker instance
@@ -576,8 +575,7 @@ class Worker:
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, worker_id: str, worker_uptime: float):
         self.id: str = worker_id
-        self.uptime: float = worker_uptime
-        self.disconnect_chance: float = 1.0 - worker_uptime
+        self.uptime: float = math.ceil(worker_uptime * MAX_EPOCHS)
         self.hives: Dict[str, Hive] = {}
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
@@ -647,26 +645,6 @@ class Worker:
         else:
             self.files[part.name][part.number] = part
             return HttpCodes.OK  # accepted file part, because Sha256 was correct and Worker did not have this replica yet
-    # endregion
-
-    # region Swarm Guidance Interface
-    def execute_epoch(self, hive: Hive, file_name: str) -> None:
-        """
-        For each part kept by the Worker instance, get the destination and send the part to it
-        :param Hive hive: Hive instance that ordered execution of the epoch
-        :param str file_name: the file parts that should be routed
-        """
-        file_view: Dict[int, SharedFilePart] = self.files.get(file_name, {}).copy()
-        for number, part in file_view.items():
-            self.replicate(hive, part)
-            response_code = self.send_part(hive, part)
-            if response_code == HttpCodes.OK:
-                self.files[file_name].pop(number)  # Destination worker accepted and stored the sent part
-            elif response_code == HttpCodes.BAD_REQUEST:
-                self.files[file_name][number].decrease_and_get_references()
-                self.files[file_name].pop(number)  # Discard this part because destination worker implied the Sha256 is bad
-            # else (HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE) this worker keeps the file until, at least, the next epoch
-    # endregion
 
     def replicate(self, hive: Hive, part: SharedFilePart) -> None:
         """
@@ -688,6 +666,26 @@ class Worker:
                     lost_replicas -= 1  # decrease needed replicas
                     part.references += 1  # for each successful deliver increase number of copies in the hive
             part.reset_epochs_to_recover(hive.current_epoch)
+    # endregion
+
+    # region Swarm Guidance Interface
+    def execute_epoch(self, hive: Hive, file_name: str) -> None:
+        """
+        For each part kept by the Worker instance, get the destination and send the part to it
+        :param Hive hive: Hive instance that ordered execution of the epoch
+        :param str file_name: the file parts that should be routed
+        """
+        file_view: Dict[int, SharedFilePart] = self.files.get(file_name, {}).copy()
+        for number, part in file_view.items():
+            self.replicate(hive, part)
+            response_code = self.send_part(hive, part)
+            if response_code == HttpCodes.OK:
+                self.files[file_name].pop(number)  # Destination worker accepted and stored the sent part
+            elif response_code == HttpCodes.BAD_REQUEST:
+                self.files[file_name][number].decrease_and_get_references()
+                self.files[file_name].pop(number)  # Discard this part because destination worker implied the Sha256 is bad
+            # else (HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE) this worker keeps the file until, at least, the next epoch
+    # endregion
 
     # region PSUtils Interface
     # noinspection PyIncorrectDocstring
@@ -744,10 +742,8 @@ class Worker:
         """
         When called, the worker instance decides if it should switch status
         """
-        if self.status != Status.ONLINE:
+        if self.status != Status.ONLINE:  # if worker is in suspicious or offline state, return that state
             return self.status
-        else:
-            epoch_status = np.random.choice(Worker.ON_OFF, p=[self.uptime, self.disconnect_chance])
-            self.status = epoch_status
-            return epoch_status
+        self.uptime -= 1.0  # else see if he is online.
+        return Status.ONLINE if self.uptime > 0.0 else Status.OFFLINE
     # endregion
