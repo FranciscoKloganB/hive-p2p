@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 import json
 import math
 import uuid
@@ -744,6 +743,11 @@ class Worker:
         """
         if self.status != Status.ONLINE:  # if worker is in suspicious or offline state, return that state
             return self.status
+
         self.uptime -= 1.0  # else see if he is online.
-        return Status.ONLINE if self.uptime > 0.0 else Status.OFFLINE
+        if self.uptime > 0.0:
+            return Status.ONLINE
+        else:
+            self.uptime = 0.0
+            return Status.OFFLINE
     # endregion

@@ -6,8 +6,8 @@ DEBUG: bool = True
 READ_SIZE: int = 32768  # 32KB blocks. Should wield ~1440 SharedFileParts if the original file is ~45MB in size. With REPLICATION_LEVEL = 3, we run with 4320 parts
 MAX_EPOCHS = 720  # One day has 24h, meaning that one epoch per minute wwould be 1440, 720 defines one epoch every two minutes
 MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
-MIN_DETECTION_DELAY: int = 1  # 2 minutes
-MAX_DETECTION_DELAY: int = 3  # 6 minutes
+MIN_DETECTION_DELAY: int = 2  # 4 minutes
+MAX_DETECTION_DELAY: int = 6  # 12 minutes
 REPLICATION_LEVEL: int = 3  # Each file part has 3 copies, for simulation purposes, this copies are soft copies.
 MIN_CONVERGENCE_THRESHOLD: int = 3
 LOSS_CHANCE: float = 0.04  # Each sent file as a 4% chance of timing out due to message being lost in travel
