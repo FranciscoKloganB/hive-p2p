@@ -268,6 +268,7 @@ class Hive:
     :ivar int sufficient_size: depends on churn-rate and equals critical_size plus the number of peers expected to fail between two successive recovery phases
     :ivar int redudant_size: application-specific system parameter, but basically represents that the hive is to big
     :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
+    :ivar Dict[str, SharedFilePart] recoverable_parts: just an hammer
     """
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, hivemind: Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
@@ -290,6 +291,7 @@ class Hive:
         self.desired_distribution = None
         self.file.simulation_data.set_membership_maintenace_at_index(status="stable", size_before=len(members), size_after=len(members), i=0)
         self.running = True
+        self.lost_or_corrupt_parts = {}
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
     # endregion
 
@@ -433,27 +435,26 @@ class Hive:
         :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
         """
         try:
-            lost_parts_count, recoverable_parts, disconnected_workers = self.__setup_epoch(epoch)
+            lost_parts_count, self.lost_or_corrupt_parts, disconnected_workers = self.__setup_epoch(epoch)
             for worker in self.members.values():
                 if worker.get_epoch_status() != Status.ONLINE:
                     lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
                     lost_parts_count += len(lost_parts)
                     disconnected_workers.append(worker)
                     # Process data held by the disconnected worker
-                    for number, part in lost_parts.items():
+                    for part in lost_parts.values():
                         if part.decrease_and_get_references() <= 0:
-                            self.set_fail(epoch, "lost all replicas of at least one file part")
-                            self.tear_down()
-                            return
-                        recoverable_parts[number] = part
+                            raise RuntimeError("lost all replicas of at least one file part")
+                        self.lost_or_corrupt_parts[part.number] = part
                 else:
-                    worker.execute_epoch(self, self.file.name)
+                    worker.execute_epoch(self, self.file.name)  # corruption can cause file reference to be zeroed
+
+            for part in self.lost_or_corrupt_parts.values():
+                part.set_epochs_to_recover(epoch)
 
             # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
             if len(disconnected_workers) >= len(self.members):
-                self.set_fail(epoch, "all hive's workers disconnected at the same epoch")
-                self.tear_down()
-                return
+                raise RuntimeError("all hive's workers disconnected at the same epoch")
 
             self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count, i=epoch)
             self.evaluate_hive_convergence()
@@ -461,17 +462,13 @@ class Hive:
             status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
             self.file.simulation_data.set_membership_maintenace_at_index(status, size_before, size_after, epoch)
 
-            sum_delay = 0
-            for part in recoverable_parts.values():
-                sum_delay += part.set_epochs_to_recover(epoch)
-            self.file.simulation_data.set_delay_at_index((sum_delay / len(recoverable_parts)) if recoverable_parts else 0, epoch)
-
             if epoch == MAX_EPOCHS:
                 self.tear_down()
 
         except Exception as e:
             self.set_fail(epoch, "".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
             self.tear_down()
+            return
 
     def is_running(self) -> bool:
         return self.running
