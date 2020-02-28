@@ -228,11 +228,14 @@ class Hivemind:
         :returns Dict[str, Worker] selected_workers: a collection of replacements a hive can use w/o guarantees that enough, if at all, replacements are found
         """
         selected_workers: Dict[str, Worker] = {}
-        for worker in self.workers.values():
-            if worker.status == Status.ONLINE and worker.id not in exclusion_dict:
+        workers_view = self.workers.copy().values()
+        for worker in workers_view:
+            if len(selected_workers) == quantity:
+                return selected_workers
+            elif worker.status != Status.ONLINE:
+                self.workers.pop(worker.id, None)
+            elif worker.id not in exclusion_dict:
                 selected_workers[worker.id] = worker
-                if len(selected_workers) == quantity:
-                    return selected_workers
         return selected_workers
 
     def get_cloud_reference(self) -> str:
