@@ -515,7 +515,7 @@ class Hive:
         """
         # remove all disconnected workers from the hive
         for member in disconnected_workers:
-            self.members.pop(member.id)
+            self.members.pop(member.id, None)
 
         damaged_hive_size = len(self.members)
 
