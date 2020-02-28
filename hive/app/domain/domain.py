@@ -309,25 +309,29 @@ class Hive:
         # noinspection PyUnusedLocal
         cloud_ref: str = self.hivemind.get_cloud_reference()
 
-    def route_part(self, destination_name: str, part: SharedFilePart) -> Any:
+    def route_part(self, sender: str, destination: str, part: SharedFilePart, fresh_replica: bool = False) -> Any:
         """
         Receives a shared file part and sends it to the given destination
-        :param str destination_name: destination worker's id
+        :param str sender: id of the worker sending the message
+        :param str destination: destination worker's id
         :param SharedFilePart part: the file part to send to specified worker
+        :param bool fresh_replica: stops recently created replicas from being corrupted, since they are not likely to be corrupted in disk
         :returns int: http codes based status of destination worker
         """
+        if sender == destination:
+            return HttpCodes.DUMMY
+
         self.file.simulation_data.set_moved_parts_at_index(1, self.current_epoch)
-        if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):  # Simulates channel loss - Makes convergence harder
+
+        if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):
             self.file.simulation_data.set_lost_messages_at_index(1, self.current_epoch)
             return HttpCodes.TIME_OUT
 
-        if np.random.choice(a=TRUE_FALSE, p=self.corruption_chances):  # File corruption, in a simplistic manner - Makes durability lower
-            if part.decrease_and_get_references() == 0:
-                return False
+        if not fresh_replica and np.random.choice(a=TRUE_FALSE, p=self.corruption_chances):
             self.file.simulation_data.set_corrupt_files_at_index(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST
 
-        member = self.members[destination_name]
+        member: Worker = self.members[destination]
         if member.status == Status.ONLINE:
             return member.receive_part(part)
         else:
@@ -412,7 +416,7 @@ class Hive:
             choices = [*self.members.values()]
             desired_distribution: List[float] = []
             for member_id in choices:
-                desired_distribution.append(self.desired_distribution.loc[member_id, DEFAULT_COLUMN].item())
+                desired_distribution.append(self.desired_distribution.loc[member_id, DEFAULT_COL].item())
 
             for part in file_parts.values():
                 choices: List[Worker] = choices.copy()
@@ -438,8 +442,8 @@ class Hive:
                     # Process data held by the disconnected worker
                     for number, part in lost_parts.items():
                         if part.decrease_and_get_references() <= 0:
-                            self.__set_fail(epoch, "lost all replicas of at least one file part")
-                            self.__tear_down()
+                            self.set_fail(epoch, "lost all replicas of at least one file part")
+                            self.tear_down()
                             return
                         recoverable_parts[number] = part
                 else:
@@ -447,8 +451,8 @@ class Hive:
 
             # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
             if len(disconnected_workers) >= len(self.members):
-                self.__set_fail(epoch, "all hive's workers disconnected at the same epoch")
-                self.__tear_down()
+                self.set_fail(epoch, "all hive's workers disconnected at the same epoch")
+                self.tear_down()
                 return
 
             self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count, i=epoch)
@@ -463,11 +467,11 @@ class Hive:
             self.file.simulation_data.set_delay_at_index((sum_delay / len(recoverable_parts)) if recoverable_parts else 0, epoch)
 
             if epoch == MAX_EPOCHS:
-                self.__tear_down()
+                self.tear_down()
 
         except Exception as e:
-            self.__set_fail(epoch, "".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
-            self.__tear_down()
+            self.set_fail(epoch, "".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
+            self.tear_down()
 
     def is_running(self) -> bool:
         return self.running
@@ -484,10 +488,10 @@ class Hive:
         for worker in self.members.values():
             if worker.status == Status.ONLINE:
                 worker_parts_count = worker.get_file_parts_count(self.file.name)
-                self.file.current_distribution.at[worker.id, DEFAULT_COLUMN] = worker_parts_count
+                self.file.current_distribution.at[worker.id, DEFAULT_COL] = worker_parts_count
                 parts_in_hive += worker_parts_count
             else:
-                self.file.current_distribution.at[worker.id, DEFAULT_COLUMN] = 0
+                self.file.current_distribution.at[worker.id, DEFAULT_COL] = 0
 
         self.file.simulation_data.parts_in_hive[self.current_epoch] = parts_in_hive
 
@@ -547,11 +551,11 @@ class Hive:
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         return 0, {}, []
 
-    def __set_fail(self, epoch: int, msg: str) -> bool:
+    def set_fail(self, epoch: int, msg: str) -> bool:
         print(msg)
         return self.file.simulation_data.set_fail(epoch, msg)
 
-    def __tear_down(self) -> None:
+    def tear_down(self) -> None:
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
         self.file.jwrite(self.file.simulation_data)
         self.running = False
@@ -620,15 +624,14 @@ class Worker:
         Attempts to send a file part to another worker
         :param Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        :returns HttpCodes: response obtained from sending the part
         """
         routing_vector: pd.DataFrame = self.routing_table[part.name]
         hive_members: List[str] = [*routing_vector.index]
-        member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COLUMN]]
+        member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COL]]
         try:
             destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
-            if destination == self.id:
-                return HttpCodes.DUMMY
-            return hive.route_part(destination, part)
+            return hive.route_part(self.id, destination, part)
         except ValueError as vE:
             print(routing_vector)
             sys.exit("".join(traceback.format_exception(etype=type(vE), value=vE, tb=vE.__traceback__)))
@@ -659,14 +662,11 @@ class Worker:
         """
         lost_replicas: int = part.can_replicate(hive.current_epoch)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
         if lost_replicas > 0:
-            sorted_view = hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)
-            hive_member_ids: List[str] = [*sorted_view.index]
-            for member_id in hive_member_ids:
+            sorted_member_view: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COL, ascending=False).index]
+            for member_id in sorted_member_view:
                 if lost_replicas == 0:
                     break  # replication level achieved, no need to produce more copies
-                if member_id == self.id:
-                    continue  # don't send to self, it would only get rejected
-                if hive.route_part(member_id, part) == HttpCodes.OK:
+                elif hive.route_part(self.id, member_id, part, fresh_replica=True) == HttpCodes.OK:
                     lost_replicas -= 1  # decrease needed replicas
                     part.references += 1  # for each successful deliver increase number of copies in the hive
             part.reset_epochs_to_recover(hive.current_epoch)
@@ -684,11 +684,11 @@ class Worker:
             self.replicate(hive, part)
             response_code = self.send_part(hive, part)
             if response_code == HttpCodes.OK:
-                self.files[file_name].pop(number)  # Destination worker accepted and stored the sent part
+                self.discard_part(file_name, number)  # Destination worker accepted and stored the sent part
             elif response_code == HttpCodes.BAD_REQUEST:
-                self.files[file_name][number].decrease_and_get_references()
-                self.files[file_name].pop(number)  # Discard this part because destination worker implied the Sha256 is bad
-            # else (HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE) this worker keeps the file until, at least, the next epoch
+                self.discard_part(file_name, number, corrupt=True, hive=hive)  # Discard this part because destination worker implied the Sha256 is bad
+            elif HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
+                pass  # Keep file part for at least one more epoch
     # endregion
 
     # region PSUtils Interface
@@ -726,6 +726,20 @@ class Worker:
     # endregion
 
     # region Helpers
+    def discard_part(self, name: str, number: int, corrupt: bool = False, hive: Hive = None) -> None:
+        """
+        Safely deletes a part from the worker instance's cache
+        :param str name: name of the file the part belongs to
+        :param number: the part number that uniquely identifies it
+        :param corrupt: if discard is due to corruption
+        """
+        if corrupt:
+            remaining_references: int = self.files[name][number].decrease_and_get_references()
+            if remaining_references <= 0 and hive is not None:
+                hive.set_fail(hive.current_epoch, "lost all replicas of at least one file part")
+                hive.tear_down()
+        self.files[name].pop(number)
+
     def get_file_parts(self, file_name: str) -> Dict[int, SharedFilePart]:
         """
         Gets collection of file parts that correspond to the named file
