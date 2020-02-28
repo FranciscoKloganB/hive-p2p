@@ -34,11 +34,11 @@ class HttpCodes(Enum):
     Enumerator class used to represent HTTP response codes
     """
     DUMMY: int = -1
-    OK: int = 200
-    BAD_REQUEST: int = 400
-    NOT_FOUND: int = 404
-    NOT_ACCEPTABLE: int = 406
-    TIME_OUT: int = 408
+    OK: int = 200  # used when destination accepts the sent file
+    BAD_REQUEST: int = 400  # used when destination considers the sent file incorrect integrity wise
+    NOT_FOUND: int = 404  # used when destination is not in the hive
+    NOT_ACCEPTABLE: int = 406  # used when destination already has the part that was sent by sender
+    TIME_OUT: int = 408  # used when a message is lost in translation
     SERVER_DOWN: int = 521
 
 
@@ -727,18 +727,19 @@ class Worker:
     # region Helpers
     def discard_part(self, name: str, number: int, corrupt: bool = False, hive: Hive = None) -> None:
         """
+        # TODO future-iterations: refactor to work with multiple file names
         Safely deletes a part from the worker instance's cache
         :param str name: name of the file the part belongs to
         :param int number: the part number that uniquely identifies it
         :param bool corrupt: if discard is due to corruption
         :param Hive hive:
         """
-        if corrupt:
-            if self.files[name][number].decrease_and_get_references() <= 0:
+        part: SharedFilePart = self.files.get(name, {}).pop(number, None)
+        if part and corrupt:
+            if part.decrease_and_get_references() == 0:
                 raise RuntimeError("lost all replicas of at least one file part")
             else:
-                hive.lost_or_corrupt_parts[number] = self.files[name][number]  # TODO future-iterations: refactor to work with multiple file names
-        self.files[name].pop(number)
+                hive.lost_or_corrupt_parts[number] = part
 
     def get_file_parts(self, file_name: str) -> Dict[int, SharedFilePart]:
         """
