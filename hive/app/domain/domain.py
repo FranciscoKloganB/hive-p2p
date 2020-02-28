@@ -115,7 +115,7 @@ class SharedFilePart:
 
     # region Helpers
     def decrease_and_get_references(self):
-        self.references = self.references - 1
+        self.references -= 1
         return self.references
     # endregion
 
@@ -444,7 +444,7 @@ class Hive:
                     disconnected_workers.append(worker)
                     # Process data held by the disconnected worker
                     for part in lost_parts.values():
-                        if part.decrease_and_get_references() <= 0:
+                        if part.decrease_and_get_references() == 0:
                             raise RuntimeError("lost all replicas of at least one file part")
                         self.lost_or_corrupt_parts[part.number] = part
                 else:
@@ -664,10 +664,10 @@ class Worker:
             sorted_member_view: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COL, ascending=False).index]
             for member_id in sorted_member_view:
                 if lost_replicas == 0:
-                    break  # replication level achieved, no need to produce more copies
+                    break
                 elif hive.route_part(self.id, member_id, part, fresh_replica=True) == HttpCodes.OK:
-                    lost_replicas -= 1  # decrease needed replicas
-                    part.references += 1  # for each successful deliver increase number of copies in the hive
+                    lost_replicas -= 1
+                    part.references += 1
             part.reset_epochs_to_recover(hive.current_epoch)
     # endregion
 
@@ -683,9 +683,9 @@ class Worker:
             self.replicate(hive, part)
             response_code = self.send_part(hive, part)
             if response_code == HttpCodes.OK:
-                self.discard_part(file_name, number)  # Destination worker accepted and stored the sent part
+                self.discard_part(file_name, number)
             elif response_code == HttpCodes.BAD_REQUEST:
-                self.discard_part(file_name, number, corrupt=True, hive=hive)  # Discard this part because destination worker implied the Sha256 is bad
+                self.discard_part(file_name, number, corrupt=True, hive=hive)
             elif HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
                 pass  # Keep file part for at least one more epoch
     # endregion
