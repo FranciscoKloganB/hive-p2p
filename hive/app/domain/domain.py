@@ -727,14 +727,15 @@ class Worker:
         """
         Safely deletes a part from the worker instance's cache
         :param str name: name of the file the part belongs to
-        :param number: the part number that uniquely identifies it
-        :param corrupt: if discard is due to corruption
+        :param int number: the part number that uniquely identifies it
+        :param bool corrupt: if discard is due to corruption
+        :param Hive hive:
         """
         if corrupt:
-            remaining_references: int = self.files[name][number].decrease_and_get_references()
-            if remaining_references <= 0 and hive is not None:
-                hive.set_fail(hive.current_epoch, "lost all replicas of at least one file part")
-                hive.tear_down()
+            if self.files[name][number].decrease_and_get_references() <= 0:
+                raise RuntimeError("lost all replicas of at least one file part")
+            else:
+                hive.lost_or_corrupt_parts[number] = self.files[name][number]  # TODO future-iterations: refactor to work with multiple file names
         self.files[name].pop(number)
 
     def get_file_parts(self, file_name: str) -> Dict[int, SharedFilePart]:
