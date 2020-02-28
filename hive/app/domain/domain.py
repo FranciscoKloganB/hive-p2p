@@ -292,7 +292,6 @@ class Hive:
         self.desired_distribution = None
         self.file.simulation_data.set_membership_maintenace_at_index(status="stable", size_before=len(members), size_after=len(members), i=0)
         self.running = True
-        self.lost_or_corrupt_parts = {}
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
     # endregion
 
@@ -436,7 +435,7 @@ class Hive:
         :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
         """
         try:
-            lost_parts_count, self.lost_or_corrupt_parts, disconnected_workers = self.__setup_epoch(epoch)
+            lost_parts_count, lost_parts, disconnected_workers = self.__setup_epoch(epoch)
             for worker in self.members.values():
                 if worker.get_epoch_status() != Status.ONLINE:
                     lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
@@ -446,11 +445,11 @@ class Hive:
                     for part in lost_parts.values():
                         if part.decrease_and_get_references() == 0:
                             raise RuntimeError("lost all replicas of at least one file part")
-                        self.lost_or_corrupt_parts[part.number] = part
+                        lost_parts[part.number] = part
                 else:
                     worker.execute_epoch(self, self.file.name)  # corruption can cause file reference to be zeroed
 
-            for part in self.lost_or_corrupt_parts.values():
+            for part in lost_parts.values():
                 part.set_epochs_to_recover(epoch)
 
             # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
@@ -739,7 +738,7 @@ class Worker:
             if part.decrease_and_get_references() == 0:
                 raise RuntimeError("lost all replicas of at least one file part")
             else:
-                hive.lost_or_corrupt_parts[number] = part
+                part.set_epochs_to_recover(hive.current_epoch)
 
     def get_file_parts(self, file_name: str) -> Dict[int, SharedFilePart]:
         """
