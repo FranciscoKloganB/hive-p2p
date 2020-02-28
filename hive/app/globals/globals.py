@@ -15,7 +15,7 @@ DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE  # Each sent file as a 4% chance of ti
 # endregion
 
 # region Integer Constants
-DEFAULT_COLUMN: int = 0
+DEFAULT_COL: int = 0
 # endregion
 
 # region Float Constants
