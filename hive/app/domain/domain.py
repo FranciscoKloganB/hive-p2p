@@ -90,8 +90,7 @@ class SharedFilePart:
         Resets self.recovery_epoch attribute back to the default value of -1
         :param int epoch: current simulation's epoch
         """
-        if self.references >= REPLICATION_LEVEL:
-            self.references = REPLICATION_LEVEL
+        if self.references == REPLICATION_LEVEL:
             self.recovery_epoch = float('inf')
         else:
             self.recovery_epoch = float(epoch + 1)
@@ -101,7 +100,9 @@ class SharedFilePart:
         :param int current_epoch: current simulation's epoch
         :returns int: how many times the caller should replicate the SharedFilePart instance, if such action is possible
         """
-        if (self.references < REPLICATION_LEVEL) and (self.recovery_epoch - float(current_epoch) <= 0.0):
+        if self.recovery_epoch == float('inf'):
+            return 0
+        elif self.references < REPLICATION_LEVEL and self.recovery_epoch - float(current_epoch) <= 0.0:
             return REPLICATION_LEVEL - self.references
         else:
             return 0
@@ -457,6 +458,7 @@ class Hive:
                 raise RuntimeError("all hive's workers disconnected at the same epoch")
 
             self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count, i=epoch)
+
             self.evaluate_hive_convergence()
 
             status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
