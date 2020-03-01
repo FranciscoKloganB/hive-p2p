@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-import domain.metropolis_hastings as mH
+import utils.metropolis_hastings as mH
 
 from utils.printers import print_test, print_pow
 

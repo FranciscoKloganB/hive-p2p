@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import Enum
 
 
@@ -14,7 +16,11 @@ class HttpCodes(Enum):
     """
     Enumerator class used to represent HTTP response codes
     """
-    OK: int = 200
-    NOT_FOUND: int = 404
-    TIME_OUT: int = 408
+    DUMMY: int = -1
+    OK: int = 200  # used when destination accepts the sent file
+    BAD_REQUEST: int = 400  # used when destination considers the sent file incorrect integrity wise
+    NOT_FOUND: int = 404  # used when destination is not in the hive
+    NOT_ACCEPTABLE: int = 406  # used when destination already has the part that was sent by sender
+    TIME_OUT: int = 408  # used when a message is lost in translation
     SERVER_DOWN: int = 521
+

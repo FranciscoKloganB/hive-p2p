@@ -1,8 +1,9 @@
 import logging
 
+import numpy as np
 import matplotlib.pyplot as plt
 
-from typing import List, Tuple, Optional
+from typing import Tuple, Union
 from scipy.stats import skewnorm
 
 
@@ -23,8 +24,7 @@ def generate_skewed_samples(sample_count: int = 20000, skewness: float = -90.0) 
     return samples
 
 
-def generate_skewed_samples_extended(
-        bin_count: int = 7001, sample_count: int = 7001, skewness: float = -90.0) -> Tuple[np.array, np.array]:
+def generate_skewed_samples_extended(bin_count: int = 7001, sample_count: int = 7001, skewness: float = -90.0) -> Tuple[np.array, np.array]:
     """
     Generates samples from a skewed normal distribution.
      bin_count at 7001 represents all values between [30.00, 100.00] with 0.01 step
@@ -59,8 +59,7 @@ def generate_skewed_samples_extended(
     return samples, bin_probability
 
 
-def plot_uptime_distribution(
-        bin_count: Union[int, str] = 'auto', sample_count: int = 10000, skewness: float = -90.0) -> None:
+def plot_uptime_distribution(bin_count: Union[int, str] = 'auto', sample_count: int = 10000, skewness: float = -0.0) -> None:
     """
     Displays generate_skewed_samples in a two axis plot
     :param Union[int, str] bin_count: the number of bins to be depicted in the matplotlib.pyplot.hist plot

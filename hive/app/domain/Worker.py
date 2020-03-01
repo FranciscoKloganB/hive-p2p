@@ -1,147 +1,151 @@
+from __future__ import annotations
+
+import math
+import sys
+import traceback
 import numpy as np
-import logging as log
 import pandas as pd
+import domain.Hive as h
 
 from utils import crypto
-from copy import deepcopy
-from domain.Enums import HttpCodes
-from typing import Dict, Union, Any
-from globals.globals import DEFAULT_COLUMN
+from typing import Union, Dict, Any, List
+from domain.Enums import Status, HttpCodes
 from domain.SharedFilePart import SharedFilePart
+from globals.globals import DEFAULT_COL, MAX_EPOCHS
 from utils.ResourceTracker import ResourceTracker as rT
 
 
 class Worker:
     """
     Defines a worker node on the P2P network.
-    :ivar Dict[str, Dict[int, SharedFilePart]] shared_files: collection of file parts kept by the worker instance
-    :ivar str name: unique identifier of the worker instance on the network
-    :ivar Hivemind hivemind: super node managing the Worker instance
-    :ivar Dict[str, pd.DataFrame] routing_table: maps file names with their state transition probabilities
+    :cvar List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] ON_OFF: possible Worker states, will be extended to include suspect down the line
+    :ivar str id: unique identifier of the worker instance on the network
+    :ivar float uptime: average worker uptime
+    :ivar Dict[str, Hive] hives: dictionary that maps the hive_ids' this worker instance belongs to, to the respective Hive instances
+    :ivar Dict[str, Dict[int, SharedFilePart]] files: collection mapping file names to file parts and their contents
+    :ivar Dict[str, pd.DataFrame] routing_table: collection mapping file names to the respective transition probabilities followed by the worker instance
+    :ivar Union[int, Status] status: indicates if this worker instance is online or offline, might have other non-intuitive status, hence bool does not suffice
     """
 
-    # region class variables, instance variables and constructors
-    def __init__(self, hivemind: Any, name: str):
-        self.hivemind: Any = hivemind
-        self.name: str = name
-        self.shared_files: Dict[str, Dict[int, SharedFilePart]] = {}
+    ON_OFF: List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] = [Status.ONLINE, Status.OFFLINE]
+
+    # region Class Variables, Instance Variables and Constructors
+    def __init__(self, worker_id: str, worker_uptime: float):
+        self.id: str = worker_id
+        self.uptime: float = math.ceil(worker_uptime * MAX_EPOCHS)
+        self.hives: Dict[str, h.Hive] = {}
+        self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
+        self.status: int = Status.ONLINE
     # endregion
 
-    # region file recovery methods
-    def init_recovery_protocol(self, sf_name: str) -> None:
+    # region Recovery
+    def init_recovery_protocol(self, file_name: str) -> SharedFilePart:
         """
         Reconstructs a file and then splits it into globals.READ_SIZE before redistributing them to the rest of the hive
-        :param str sf_name: name of the shared file that needs to be reconstructed by the Worker instance
+        :param str file_name: id of the shared file that needs to be reconstructed by the Worker instance
         """
         # TODO future-iterations:
-        #  1. Recovery algorithm
-        raise NotImplementedError
+        raise NotImplementedError()
     # endregion
 
-    # region routing table management methods
-    def set_file_routing(self, sf_name: str, transition_vector: Union[pd.Series, pd.DataFrame]) -> None:
+    # region Routing Table
+    def set_file_routing(self, file_name: str, transition_vector: Union[pd.Series, pd.DataFrame]) -> None:
         """
-        Maps file name with state transition probabilities
-        :param str sf_name: a file name that is being shared on the hive
-        :param Union[pd.Series, pd.DataFrame] transition_vector: probabilities of going from current worker to some
-         worker on the hive
+        Maps file id with state transition probabilities used for routing
+        :param str file_name: a file id that is being shared on the hive
+        :param Union[pd.Series, pd.DataFrame] transition_vector: probabilities of going from current worker to some worker on the hive
         """
         if isinstance(transition_vector, pd.Series):
-            self.routing_table[sf_name] = transition_vector.to_frame()
+            self.routing_table[file_name] = transition_vector.to_frame()
         elif isinstance(transition_vector, pd.DataFrame):
-            self.routing_table[sf_name] = transition_vector
+            self.routing_table[file_name] = transition_vector
         else:
-            raise ValueError("Worker.set_file_routing expects a pandas.Series or pandas.DataFrame transition vector.")
+            raise ValueError("Worker.set_file_routing expects a pandas.Series or pandas.DataFrame as type for transition vector parameter.")
 
-    def update_file_routing(self, sf_name: str, replacement_dict: Dict[str, str]) -> None:
+    def remove_file_routing(self, file_name: str) -> None:
         """
-        Updates a shared file's routing information within the routing table
-        :param str sf_name: name of the shared file whose routing information is being updated
-        :param Dict[str, str] replacement_dict: old worker name, new worker name)
+        Removes a shared file's routing information from the routing table
+        :param str file_name: id of the shared file whose routing information is being removed from routing_table
         """
-        self.routing_table[sf_name].rename(index=replacement_dict, inplace=True)
-
-    def remove_file_routing(self, sf_name: str) -> None:
-        """
-        Removes a shared file's routing information from within the routing table
-        :param str sf_name: name of the shared file whose routing information is being removed from routing_table
-        """
-        try:
-            self.shared_files.pop(sf_name)
-        except KeyError as kE:
-            log.error("Key ({}) doesn't exist in worker {}'s sf_parts dict".format(sf_name, self.name))
-            log.error("Key Error message: {}".format(str(kE)))
+        self.files.pop(file_name)
     # endregion
 
-    # region file sending and receiving methods
-    def receive_part(self, sfp: SharedFilePart, no_check: bool = False) -> None:
+    # region File Routing
+    def send_part(self, hive: h.Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
+        """
+        Attempts to send a file part to another worker
+        :param Hive hive: Gateway hive that will deliver this file to other worker
+        :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        :returns HttpCodes: response obtained from sending the part
+        """
+        routing_vector: pd.DataFrame = self.routing_table[part.name]
+        hive_members: List[str] = [*routing_vector.index]
+        member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COL]]
+        try:
+            destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
+            return hive.route_part(self.id, destination, part)
+        except ValueError as vE:
+            print(routing_vector)
+            sys.exit("".join(traceback.format_exception(etype=type(vE), value=vE, tb=vE.__traceback__)))
+
+    def receive_part(self, part: SharedFilePart) -> int:
         """
         Keeps a new, single, shared file part, along the ones already stored by the Worker instance
-        :param SharedFilePart sfp: data class instance with data w.r.t. the shared file part and it's raw contents
-        :param bool no_check: whether or not method verifies sha256 of the received part
+        :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        :returns HttpCodes int
         """
-        if no_check or crypto.sha256(sfp.part_data) == sfp.sha256:
-            if sfp.part_name not in self.shared_files:
-                self.shared_files[sfp.part_name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
-            self.shared_files[sfp.part_name][sfp.part_number] = sfp
-        else:
-            print("part_name: {}, part_number: {} - corrupted".format(sfp.part_name, str(sfp.part_number)))
-            self.init_recovery_protocol(sfp.part_name)
+        if part.name not in self.files:
+            self.files[part.name] = {}  # init dict that accepts <key: id, value: sfp> pairs for the file
 
-    def receive_parts(self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
-        """
-        Keeps incoming shared file parts along with the ones already owned by the Worker instance
-        :param dict sf_id_sfp_dict: mapping of shared file part id to SharedFileParts instances
-        :param str sf_name: name of the file the parts belong to.
-        :param bool no_check: whether or not method verifies sha256 of each part.
-        """
-        if sf_name:
-            self.__update_shared_files_dict(sf_id_sfp_dict, sf_name, no_check)
+        if crypto.sha256(part.data) != part.sha256:
+            return HttpCodes.BAD_REQUEST  # inform sender that his part is corrupt, don't initiate recovery protocol, to avoid denial of service attacks on worker
+        elif part.number in self.files[part.name]:
+            return HttpCodes.NOT_ACCEPTABLE  # reject repeated replicas even if they are correct
         else:
-            for sf_part in sf_id_sfp_dict.values():  # receive_part(...) automatically fetches the part_number for part
-                self.receive_part(sf_part, no_check)
+            self.files[part.name][part.number] = part
+            return HttpCodes.OK  # accepted file part, because Sha256 was correct and Worker did not have this replica yet
 
-    def route_parts(self) -> None:
+    def replicate(self, hive: h.Hive, part: SharedFilePart) -> None:
+        """
+        Equal to send part but with different semantics, as file is not routed following swarm guidance, but instead by choosing the most reliable peers in the hive
+        post-scriptum: This function is hacked... And should only be used for simulation purposes
+        :param Hive hive: Gateway hive that will deliver this file to other worker
+        :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        """
+        lost_replicas: int = part.can_replicate(hive.current_epoch)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
+        if lost_replicas > 0:
+            sorted_member_view: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COL, ascending=False).index]
+            for member_id in sorted_member_view:
+                if lost_replicas == 0:
+                    break
+                elif hive.route_part(self.id, member_id, part, fresh_replica=True) == HttpCodes.OK:
+                    lost_replicas -= 1
+                    part.references += 1
+            part.reset_epochs_to_recover(hive.current_epoch)
+    # endregion
+
+    # region Swarm Guidance Interface
+    def execute_epoch(self, hive: h.Hive, file_name: str) -> None:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
+        :param Hive hive: Hive instance that ordered execution of the epoch
+        :param str file_name: the file parts that should be routed
         """
-        for sf_name, sf_id_sfp_dict in self.shared_files.items():
-            tmp: Dict[int, SharedFilePart] = {}
-            for sf_id, sf_part in sf_id_sfp_dict.items():
-                dest_worker = self.get_next_state(sf_name=sf_name)
-                if dest_worker == self.name:
-                    tmp[sf_id] = sf_part  # store <sf_id, sf_part> pair in tmp dict, we don't need to send to ourselves
-                else:
-                    response_code = self.hivemind.route_file_part(dest_worker, sf_part)
-                    if response_code != HttpCodes.OK:
-                        self.hivemind.receive_complaint(dest_worker)
-                        tmp[sf_id] = sf_part  # store <sf_id, sf_part>, original destination doesn't respond
-            self.shared_files[sf_name] = tmp  # update sf_parts[sf_name] with all parts that weren't transmitted
+        file_view: Dict[int, SharedFilePart] = self.files.get(file_name, {}).copy()
+        for number, part in file_view.items():
+            self.replicate(hive, part)
+            response_code = self.send_part(hive, part)
+            if response_code == HttpCodes.OK:
+                self.discard_part(file_name, number)
+            elif response_code == HttpCodes.BAD_REQUEST:
+                self.discard_part(file_name, number, corrupt=True, hive=hive)
+            elif HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
+                pass  # Keep file part for at least one more epoch
     # endregion
 
-    # region helpers
-    def get_parts_count(self, sf_name: str) -> int:
-        """
-        Counts how many parts the Worker instance has of the named shared file
-        :param sf_name: name of the file kept by the Worker instance that must be counted
-        :returns int: number of parts from the named shared file currently on the Worker instance
-        """
-        return len(self.shared_files[sf_name])
-
-    def get_next_state(self, sf_name: str) -> str:
-        """
-        Selects the next destination for a shared file part
-        :param str sf_name: the name of the file the part to be routed belongs to
-        :returns str: the name of the worker to whom the file should be routed too
-        """
-        routing_data: pd.DataFrame = self.routing_table[sf_name]
-        row_labels: List[str] = [*routing_data.index]
-        label_probabilities: List[float] = [*routing_data.iloc[:, DEFAULT_COLUMN]]
-        return np.random.choice(a=row_labels, p=label_probabilities).item()  # converts numpy.str to python str
-    # endregion
-
-    # region resource utilization methods
+    # region PSUtils Interface
+    # noinspection PyIncorrectDocstring
     @staticmethod
     def get_resource_utilization(*args) -> Dict[str, Any]:
         """
@@ -162,57 +166,62 @@ class Worker:
         return results
     # endregion
 
-    # region mock methods
-    def get_all_parts(self) -> Dict[str, Dict[int, SharedFilePart]]:
-        """
-        Sends all shared file parts kept by the Worker instance to the requestor regardless of the file's hive
-        :returns Dict[str, Dict[int, SharedFilePart]]: a deep copy of the Worker's instance shared file parts
-        """
-        return deepcopy(self.shared_files)
-    # endregion
-
-    # region helpers
-    def __update_shared_files_dict(
-            self, sf_id_sfp_dict: Dict[int, SharedFilePart], sf_name: str = None, no_check: bool = False) -> None:
-        """
-        Creates a key value pair in the Worker instance shared_files field or updates the existing one with more parts
-        :param sf_id_sfp_dict: collection mapping part.id to SharedFilePart instances
-        :param sf_name: the named of the shared file
-        :param no_check: if integrity of the shared file parts in the dictionary need to be checked or not
-        """
-        if (not no_check) and (self.__sf_id_sfp_dict_needs_fix(sf_id_sfp_dict)):
-            # if check == True and if any part as an incorrect sha256, then, fix file and return
-            self.init_recovery_protocol(sf_name)
-        else:
-            # if (check == False) OR (check == True and all parts have correct sha256), then, update dict accordingly
-            if sf_name in self.shared_files:
-                self.shared_files[sf_name].update(sf_id_sfp_dict)  # Appends sf_id_sfp_dict values to existing values
-            else:
-                self.shared_files[sf_name] = sf_id_sfp_dict
-
-    def __sf_id_sfp_dict_needs_fix(self, sf_id_sfp_dict: Dict[int, SharedFilePart]) -> bool:
-        """
-        Verifies the integrity of all shared file parts in the inputted dictionary
-        :param sf_id_sfp_dict: collection mapping part.id to SharedFilePart instances
-        :returns bool: True if any of the parts in the dictionary fails the integrity test, False if all are deemed OK
-        """
-        for sfp in sf_id_sfp_dict.values():
-            if crypto.sha256(sfp.part_data) != sfp.sha256:
-                return True
-        return False
-
-    # endregion
-
-    # region override class methods
+    # region Overrides
     def __hash__(self):
         # allows a worker object to be used as a dictionary key
-        return hash(str(self.name))
+        return hash(str(self.id))
 
     def __eq__(self, other):
-        if isinstance(other, str):
-            return self.name == other
-        return (self.hivemind, self.name) == (other.hivemind, other.name)
+        return self.id == other
 
     def __ne__(self, other):
         return not(self == other)
+    # endregion
+
+    # region Helpers
+    def discard_part(self, name: str, number: int, corrupt: bool = False, hive: h.Hive = None) -> None:
+        """
+        # TODO future-iterations: refactor to work with multiple file names
+        Safely deletes a part from the worker instance's cache
+        :param str name: name of the file the part belongs to
+        :param int number: the part number that uniquely identifies it
+        :param bool corrupt: if discard is due to corruption
+        :param Hive hive:
+        """
+        part: SharedFilePart = self.files.get(name, {}).pop(number, None)
+        if part and corrupt:
+            if part.decrease_and_get_references() == 0:
+                raise RuntimeError("lost all replicas of at least one file part")
+            else:
+                part.set_epochs_to_recover(hive.current_epoch)
+
+    def get_file_parts(self, file_name: str) -> Dict[int, SharedFilePart]:
+        """
+        Gets collection of file parts that correspond to the named file
+        :param str file_name: the file parts that caller wants to retrieve from this worker instance
+        :returns Dict[int, SharedFilePart]: reference to a collection that maps part numbers to file parts
+        """
+        return self.files.get(file_name, {})
+
+    def get_file_parts_count(self, file_name: str) -> int:
+        """
+        Counts how many parts the Worker instance has of the named file
+        :param str file_name: the file parts that caller wants to count
+        :returns int: number of parts from the named shared file currently on the Worker instance
+        """
+        return len(self.files.get(file_name, {}))
+
+    def get_epoch_status(self) -> int:
+        """
+        When called, the worker instance decides if it should switch status
+        """
+        if self.status != Status.ONLINE:  # if worker is in suspicious or offline state, return that state
+            return self.status
+
+        self.uptime -= 1.0  # else see if he is online.
+        if self.uptime > 0.0:
+            return Status.ONLINE
+        else:
+            self.uptime = 0.0
+            return Status.OFFLINE
     # endregion
