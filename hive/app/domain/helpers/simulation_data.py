@@ -184,7 +184,7 @@ class SimulationData:
         """
         self.terminated = i
         self.successfull = False
-        self.msg = msg
+        self.msg.append(msg)
 
     def set_membership_maintenace_at_index(self, status: str, size_before: int, size_after: int, i: int) -> None:
         """
