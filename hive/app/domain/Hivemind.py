@@ -86,6 +86,7 @@ class Hivemind:
                 hive.execute_epoch(self.epoch)
                 if not hive.is_running():
                     terminated_hives.append(hive.id)
+                    hive.tear_down(self.epoch)
             for hid in terminated_hives:
                 print("Hive: {} terminated at epoch {}".format(hid, self.epoch))
                 self.hives.pop(hid)

@@ -194,42 +194,15 @@ class Hive:
         :param int epoch: simulation's current epoch
         :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
         """
-        if not self.running:
-            return self.tear_down()
-
         self.setup_epoch(epoch)
         try:
             offline_workers: List[Worker] = self.workers_execute_epoch()
             self.evaluate_hive_convergence()
             self.membership_maintenance(offline_workers)
             if epoch == MAX_EPOCHS:
-                self.tear_down()
+                self.running = False
         except Exception as e:
             self.set_fail("Unexpected exception: ".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
-            self.tear_down()
-
-    def workers_execute_epoch(self, lost_parts_count: int = 0) -> List[Worker]:
-        """
-        Orders all members of the hive to execute their epoch and updates some fields within SimulationData output file accordingly
-        :param int lost_parts_count: zero
-        :returns List[Worker] offline_workers: a populated list of offline workers.
-        """
-        offline_workers: List[Worker] = []
-        for worker in self.members.values():
-            if worker.get_epoch_status() == Status.ONLINE:
-                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause Hive failure: see Worker.discard_part(...)
-            else:
-                lost_parts = worker.get_file_parts(self.file.name)
-                lost_parts_count += len(lost_parts)
-                offline_workers.append(worker)
-                for part in lost_parts.values():
-                    part.set_epochs_to_recover(self.current_epoch)
-                    if part.decrease_and_get_references() == 0:
-                        self.set_fail("lost all replicas of at least one file part")
-        if len(offline_workers) >= len(self.members):
-            self.set_fail("lost all replicas of at least one file part")
-        self.file.simulation_data.set_disconnected_and_losses(len(offline_workers), lost_parts_count, self.current_epoch)
-        return offline_workers
 
     def is_running(self) -> bool:
         return self.running
@@ -264,6 +237,34 @@ class Hive:
     # endregion
 
     # region Helpers
+    def setup_epoch(self, epoch: int) -> None:
+        self.current_epoch = epoch
+        self.corruption_chances[0] = 0.0  # np.log10(epoch).item() / 100.0
+        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
+
+    def workers_execute_epoch(self, lost_parts_count: int = 0) -> List[Worker]:
+        """
+        Orders all members of the hive to execute their epoch and updates some fields within SimulationData output file accordingly
+        :param int lost_parts_count: zero
+        :returns List[Worker] offline_workers: a populated list of offline workers.
+        """
+        offline_workers: List[Worker] = []
+        for worker in self.members.values():
+            if worker.get_epoch_status() == Status.ONLINE:
+                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause Hive failure: see Worker.discard_part(...)
+            else:
+                lost_parts = worker.get_file_parts(self.file.name)
+                lost_parts_count += len(lost_parts)
+                offline_workers.append(worker)
+                for part in lost_parts.values():
+                    part.set_epochs_to_recover(self.current_epoch)
+                    if part.decrease_and_get_references() == 0:
+                        self.set_fail("lost all replicas of at least one file part")
+        if len(offline_workers) >= len(self.members):
+            self.set_fail("lost all replicas of at least one file part")
+        self.file.simulation_data.set_disconnected_and_losses(len(offline_workers), lost_parts_count, self.current_epoch)
+        return offline_workers
+
     def membership_maintenance(self, offline_workers: List[Worker]) -> None:
         """
         Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
@@ -301,18 +302,12 @@ class Hive:
     def __get_new_members(self) -> Dict[str, Worker]:
         return self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
 
-    def setup_epoch(self, epoch: int) -> None:
-        self.current_epoch = epoch
-        self.corruption_chances[0] = 0.0  # np.log10(epoch).item() / 100.0
-        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
-
     def set_fail(self, msg: str) -> bool:
         self.running = False
         return self.file.simulation_data.set_fail(self.current_epoch, msg)
 
-    def tear_down(self) -> None:
+    def tear_down(self, epoch: int) -> None:
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
-        self.running = False
-        self.file.jwrite(self.file.simulation_data)
+        self.file.jwrite(self.file.simulation_data, epoch)
 
     # endregion
