@@ -194,42 +194,39 @@ class Hive:
         :param int epoch: simulation's current epoch
         :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
         """
+        if not self.running:
+            return self.tear_down()
+
+        lost_parts_count, lost_parts, offline_workers = self.__setup_epoch(epoch)
+
         try:
-            lost_parts_count, lost_parts, disconnected_workers = self.__setup_epoch(epoch)
             for worker in self.members.values():
-                if worker.get_epoch_status() != Status.ONLINE:
-                    lost_parts: Dict[int, SharedFilePart] = worker.get_file_parts(self.file.name)
-                    lost_parts_count += len(lost_parts)
-                    disconnected_workers.append(worker)
-                    # Process data held by the disconnected worker
-                    for part in lost_parts.values():
-                        if part.decrease_and_get_references() == 0:
-                            raise RuntimeError("lost all replicas of at least one file part")
-                        lost_parts[part.number] = part
+                if worker.get_epoch_status() == Status.ONLINE:
+                    worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause Hive failure: see Worker.discard_part(...)
                 else:
-                    worker.execute_epoch(self, self.file.name)  # corruption can cause file reference to be zeroed
+                    worker_parts = worker.get_file_parts(self.file.name)
+                    lost_parts_count += len(lost_parts)
+                    offline_workers.append(worker)
+                    for part in worker_parts.values():
+                        lost_parts[part.number] = part
+                        part.set_epochs_to_recover(epoch)
+                        if part.decrease_and_get_references() == 0:
+                            self.set_fail("lost all replicas of at least one file part")
 
-            for part in lost_parts.values():
-                part.set_epochs_to_recover(epoch)
+            if len(offline_workers) >= len(self.members):
+                self.set_fail("lost all replicas of at least one file part")
 
-            # Perfect failure detection, assumes that once a machine goes offline it does so permanently for all hives, so, pop members who disconnected
-            if len(disconnected_workers) >= len(self.members):
-                raise RuntimeError("all hive's workers disconnected at the same epoch")
-
-            self.file.simulation_data.set_disconnected_and_losses(disconnected=len(disconnected_workers), lost=lost_parts_count, i=epoch)
+            self.file.simulation_data.set_disconnected_and_losses(len(offline_workers), lost_parts_count, epoch)
 
             self.evaluate_hive_convergence()
-
-            status, size_before, size_after = self.__membership_maintenance(disconnected_workers)
-            self.file.simulation_data.set_membership_maintenace_at_index(status, size_before, size_after, epoch)
+            self.membership_maintenance(offline_workers)
 
             if epoch == MAX_EPOCHS:
                 self.tear_down()
 
         except Exception as e:
-            self.set_fail(epoch, "".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
+            self.set_fail("Unexpected exception: ".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
             self.tear_down()
-            return
 
     def is_running(self) -> bool:
         return self.running
@@ -240,7 +237,7 @@ class Hive:
         and records epoch data accordingly.
         """
         if not self.members:
-            raise RuntimeError("Hive no longer has members")
+            self.set_fail("Hive no longer has members")
 
         parts_in_hive: int = 0
         for worker in self.members.values():
@@ -254,7 +251,7 @@ class Hive:
         self.file.simulation_data.parts_in_hive[self.current_epoch] = parts_in_hive
 
         if not parts_in_hive:
-            raise RuntimeError("No parts in hive")
+            self.set_fail("No parts in hive")
 
         if self.file.equal_distributions(parts_in_hive):
             self.file.simulation_data.cswc_increment(1)
@@ -264,11 +261,10 @@ class Hive:
     # endregion
 
     # region Helpers
-    def __membership_maintenance(self, disconnected_workers: List[Worker]) -> Tuple[str, int, int]:
+    def membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
         """
         Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
         :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
-        :returns Tuple[str, int, int] (status_before_recovery, size_before_recovery, size_after_recovery)
         """
         # remove all disconnected workers from the hive
         for member in disconnected_workers:
@@ -298,7 +294,7 @@ class Hive:
         if damaged_hive_size != healed_hive_size:
             self.broadcast_transition_matrix(self.new_transition_matrix())
 
-        return status_before_recovery, damaged_hive_size, healed_hive_size
+        self.file.simulation_data.set_membership_maintenace_at_index(status_before_recovery, damaged_hive_size, healed_hive_size, self.current_epoch)
 
     def __get_new_members(self) -> Dict[str, Worker]:
         return self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
@@ -309,12 +305,13 @@ class Hive:
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         return 0, {}, []
 
-    def set_fail(self, epoch: int, msg: str) -> bool:
-        print(msg)
-        return self.file.simulation_data.set_fail(epoch, msg)
+    def set_fail(self, msg: str) -> bool:
+        self.running = False
+        return self.file.simulation_data.set_fail(self.current_epoch, msg)
 
     def tear_down(self) -> None:
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
-        self.file.jwrite(self.file.simulation_data)
         self.running = False
+        self.file.jwrite(self.file.simulation_data)
+
     # endregion
