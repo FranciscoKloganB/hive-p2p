@@ -27,8 +27,6 @@ class Worker:
     :ivar Union[int, Status] status: indicates if this worker instance is online or offline, might have other non-intuitive status, hence bool does not suffice
     """
 
-    ON_OFF: List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] = [Status.ONLINE, Status.OFFLINE]
-
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, worker_id: str, worker_uptime: float):
         self.id: str = worker_id
@@ -144,28 +142,6 @@ class Worker:
                 pass  # Keep file part for at least one more epoch
     # endregion
 
-    # region PSUtils Interface
-    # noinspection PyIncorrectDocstring
-    @staticmethod
-    def get_resource_utilization(*args) -> Dict[str, Any]:
-        """
-        Obtains one ore more performance attributes for the Worker's instance machine
-        :param *args: Variable length argument list. See below
-        :keyword arg:
-        :arg cpu: system wide float detailing cpu usage as a percentage,
-        :arg cpu_count: number of non-logical cpu on the machine as an int
-        :arg cpu_avg: average system load over the last 1, 5 and 15 minutes as a tuple
-        :arg mem: statistics about memory usage as a named tuple including the following fields (total, available),
-        expressed in bytes as floats
-        :arg disk: get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
-        :returns Dict[str, Any] detailing the usage of the respective key arg. If arg is invalid the value will be -1.
-        """
-        results: Dict[str, Any] = {}
-        for arg in args:
-            results[arg] = rT.get_value(arg)
-        return results
-    # endregion
-
     # region Overrides
     def __hash__(self):
         # allows a worker object to be used as a dictionary key
@@ -224,4 +200,26 @@ class Worker:
         else:
             self.uptime = 0.0
             return Status.OFFLINE
+    # endregion
+
+    # region PSUtils Interface
+    # noinspection PyIncorrectDocstring
+    @staticmethod
+    def get_resource_utilization(*args) -> Dict[str, Any]:
+        """
+        Obtains one ore more performance attributes for the Worker's instance machine
+        :param *args: Variable length argument list. See below
+        :keyword arg:
+        :arg cpu: system wide float detailing cpu usage as a percentage,
+        :arg cpu_count: number of non-logical cpu on the machine as an int
+        :arg cpu_avg: average system load over the last 1, 5 and 15 minutes as a tuple
+        :arg mem: statistics about memory usage as a named tuple including the following fields (total, available),
+        expressed in bytes as floats
+        :arg disk: get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
+        :returns Dict[str, Any] detailing the usage of the respective key arg. If arg is invalid the value will be -1.
+        """
+        results: Dict[str, Any] = {}
+        for arg in args:
+            results[arg] = rT.get_value(arg)
+        return results
     # endregion
