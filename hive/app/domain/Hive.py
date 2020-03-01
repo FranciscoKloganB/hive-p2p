@@ -287,10 +287,12 @@ class Hive:
         elif self.critical_size < damaged_hive_size < self.sufficient_size:
             status_before_recovery = "unstable"
             self.members.update(self.__get_new_members())
-        else:
+        elif 0 < damaged_hive_size <= self.critical_size:
             status_before_recovery = "critical"
             self.members.update(self.__get_new_members())
             self.add_cloud_reference()
+        else:
+            status_before_recovery = "dead"
 
         healed_hive_size = len(self.members)
         if damaged_hive_size != healed_hive_size:
