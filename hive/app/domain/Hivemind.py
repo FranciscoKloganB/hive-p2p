@@ -78,16 +78,17 @@ class Hivemind:
         """
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
-        failed_hives: List[str] = []
+
         while self.epoch < MAX_EPOCHS_PLUS and self.hives:
-            print(self.epoch)
+            print("epoch: {}".format(self.epoch))
+            terminated_hives: List[str] = []
             for hive in self.hives.values():
                 hive.execute_epoch(self.epoch)
                 if not hive.is_running():
-                    failed_hives.append(hive.id)
-            for hive_id in failed_hives:
-                print("Hive: {} terminated at epoch {}".format(hive_id, self.epoch))
-                self.hives.pop(hive_id)
+                    terminated_hives.append(hive.id)
+            for hid in terminated_hives:
+                print("Hive: {} terminated at epoch {}".format(hid, self.epoch))
+                self.hives.pop(hid)
             self.epoch += 1
 
     def append_epoch_results(self, hive_id: str, hive_results: [Dict, Any]) -> True:
