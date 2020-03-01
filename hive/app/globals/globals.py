@@ -3,11 +3,11 @@ import os
 DEBUG: bool = True
 
 # region Simulation Settings
-READ_SIZE: int = 20971520  # 512KB = 524288 bytes || 32KB = 32768 bytes. Defines the raw size of each SharedFilePart.
-MAX_EPOCHS = 5  # One day has 24h, meaning that one epoch per minute wwould be 1440, 720 defines one epoch every two minutes
+READ_SIZE: int = 524288  # 512KB = 524288b || 32KB = 32768b || 20MB = 20971520b. Defines the raw size of each SharedFilePart.
+MAX_EPOCHS = 360  # One day has 24h, meaning that one epoch per minute wwould be 1440, 720 defines one epoch every two minutes
 MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 MIN_DETECTION_DELAY: int = 1  # 2 minutes
-MAX_DETECTION_DELAY: int = 2  # 2 minutes
+MAX_DETECTION_DELAY: int = 4  # 8 minutes
 REPLICATION_LEVEL: int = 3  # Each file part has 3 copies, for simulation purposes, this copies are soft copies.
 MIN_CONVERGENCE_THRESHOLD: int = 3
 LOSS_CHANCE: float = 0.04  # Each sent file as a 4% chance of timing out due to message being lost in travel

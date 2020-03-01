@@ -265,7 +265,7 @@ class Hive:
                 lost_parts_count += len(lost_parts)
                 offline_workers.append(worker)
                 for part in lost_parts.values():
-                    self.set_recovery_epoch_sum += self.set_recovery_epoch(part)
+                    self.set_recovery_epoch(part)
                     if part.decrease_and_get_references() == 0:
                         self.set_fail("lost all replicas of file part with id: {}".format(part.id))
         if len(offline_workers) >= len(self.members):
