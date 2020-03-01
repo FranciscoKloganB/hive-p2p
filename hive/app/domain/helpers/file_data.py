@@ -58,7 +58,7 @@ class FileData:
 
     def jwrite(self, data: SimulationData, epoch: int):
         if not data.msg:
-            data.msg.append("completed simulation successfully;")
+            data.msg.append("completed simulation successfully")
         if DEBUG:
             [print("* {};".format(reason)) for reason in data.msg]
         data.disconnected_workers = data.disconnected_workers[:epoch]
