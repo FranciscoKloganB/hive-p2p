@@ -30,7 +30,8 @@ class Hive:
     :ivar int sufficient_size: depends on churn-rate and equals critical_size plus the number of peers expected to fail between two successive recovery phases
     :ivar int original_size: stores the initial hive size
     :ivar int redundant_size: application-specific system parameter, but basically represents that the hive is to big
-    :ivar int epoch_delay: stores the sum of the values returned by all SharedFilePart.set_recovery_epoch calls - used for simulation output purposes
+    :ivar int set_recovery_epoch_sum: stores the sum of the values returned by all SharedFilePart.set_recovery_epoch calls - used for simulation output purposes
+    :ivar int set_recovery_epoch_calls: stores how many times SharedFilePart.set_recovery_epoch calls was called  during the current epoch
     :ivar bool running: indicates if the hive has terminated - used for simulation purposes
     """
     # region Class Variables, Instance Variables and Constructors
@@ -53,7 +54,8 @@ class Hive:
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
         self.running: bool = True
-        self.epoch_delay: int = 0
+        self.set_recovery_epoch_sum: int = 0
+        self.set_recovery_epoch_calls: int = 0
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
     # endregion
 
@@ -243,7 +245,8 @@ class Hive:
         self.current_epoch = epoch
         self.corruption_chances[0] = 0.0  # np.log10(epoch).item() / 100.0
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
-        self.epoch_delay = 0
+        self.set_recovery_epoch_sum = 0
+        self.set_recovery_epoch_calls = 0
 
     def workers_execute_epoch(self, lost_parts_count: int = 0) -> List[Worker]:
         """
@@ -260,7 +263,7 @@ class Hive:
                 lost_parts_count += len(lost_parts)
                 offline_workers.append(worker)
                 for part in lost_parts.values():
-                    part.set_recovery_epoch(self.current_epoch)
+                    self.set_recovery_epoch_sum += self.set_recovery_epoch(part)
                     if part.decrease_and_get_references() == 0:
                         self.set_fail("lost all replicas of file part with id: {}".format(part.id))
         if len(offline_workers) >= len(self.members):
@@ -315,4 +318,7 @@ class Hive:
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
         self.file.jwrite(self.file.simulation_data, epoch)
 
+    def set_recovery_epoch(self, part: SharedFilePart) -> None:
+        self.set_recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
+        self.set_recovery_epoch_calls += 1
     # endregion

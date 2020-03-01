@@ -169,7 +169,7 @@ class Worker:
             if part.decrease_and_get_references() == 0:
                 hive.set_fail("lost all replicas of file part with id: {}, and last loss was due to corruption".format(part.id))
             else:
-                part.set_recovery_epoch(hive.current_epoch)
+                hive.set_recovery_epoch(part)
 
     def get_file_parts(self, file_name: str) -> Dict[int, SharedFilePart]:
         """
