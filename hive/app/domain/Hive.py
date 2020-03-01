@@ -34,6 +34,7 @@ class Hive:
     :ivar int set_recovery_epoch_calls: stores how many times SharedFilePart.set_recovery_epoch calls was called  during the current epoch
     :ivar bool running: indicates if the hive has terminated - used for simulation purposes
     """
+
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
         """
