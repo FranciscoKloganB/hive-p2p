@@ -50,7 +50,6 @@ class Hive:
         self.original_size: int = len(members)
         self.redudant_size: int = self.sufficient_size + len(self.members)
         self.desired_distribution = None
-        self.file.simulation_data.set_membership_maintenace_at_index(status="stable", size_before=len(members), size_after=len(members), i=0)
         self.running = True
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
     # endregion
@@ -302,9 +301,9 @@ class Hive:
     def __get_new_members(self) -> Dict[str, Worker]:
         return self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
 
-    def set_fail(self, msg: str) -> bool:
+    def set_fail(self, msg: str) -> None:
         self.running = False
-        return self.file.simulation_data.set_fail(self.current_epoch, msg)
+        self.file.simulation_data.set_fail(self.current_epoch, msg)
 
     def tear_down(self, epoch: int) -> None:
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
