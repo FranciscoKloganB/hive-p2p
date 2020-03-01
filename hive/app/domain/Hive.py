@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 import math
 import uuid
 import traceback
-import utils.matrices as matrices
-import utils.metropolis_hastings as mh
 import numpy as np
 import pandas as pd
+import domain.Hivemind as hm
 
+import utils.matrices as matrices
+import utils.metropolis_hastings as mh
 from domain.Worker import Worker
-from domain.Hivemind import Hivemind
 from typing import Dict, List, Any, Tuple
 from domain.Enums import Status, HttpCodes
 from domain.helpers.file_data import FileData
@@ -30,7 +32,7 @@ class Hive:
     :ivar Dict[str, SharedFilePart] recoverable_parts: just an hammer
     """
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, hivemind: Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
+    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
         """
         Instantiates an Hive abstraction
         :param Hivemind hivemind: Hivemand instance object which leads the simulation

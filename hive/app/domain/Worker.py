@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 import math
 import sys
 import traceback
 import numpy as np
 import pandas as pd
+import domain.Hive as h
 
+from utils import crypto
 from typing import Union, Dict, Any, List
 from domain.Enums import Status, HttpCodes
-from domain.Hive import Hive
 from domain.SharedFilePart import SharedFilePart
 from globals.globals import DEFAULT_COL, MAX_EPOCHS
-from utils import crypto
 from utils.ResourceTracker import ResourceTracker as rT
 
 
@@ -31,7 +33,7 @@ class Worker:
     def __init__(self, worker_id: str, worker_uptime: float):
         self.id: str = worker_id
         self.uptime: float = math.ceil(worker_uptime * MAX_EPOCHS)
-        self.hives: Dict[str, Hive] = {}
+        self.hives: Dict[str, h.Hive] = {}
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
         self.status: int = Status.ONLINE
@@ -70,7 +72,7 @@ class Worker:
     # endregion
 
     # region File Routing
-    def send_part(self, hive: Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
+    def send_part(self, hive: h.Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
         """
         Attempts to send a file part to another worker
         :param Hive hive: Gateway hive that will deliver this file to other worker
@@ -104,7 +106,7 @@ class Worker:
             self.files[part.name][part.number] = part
             return HttpCodes.OK  # accepted file part, because Sha256 was correct and Worker did not have this replica yet
 
-    def replicate(self, hive: Hive, part: SharedFilePart) -> None:
+    def replicate(self, hive: h.Hive, part: SharedFilePart) -> None:
         """
         Equal to send part but with different semantics, as file is not routed following swarm guidance, but instead by choosing the most reliable peers in the hive
         post-scriptum: This function is hacked... And should only be used for simulation purposes
@@ -124,7 +126,7 @@ class Worker:
     # endregion
 
     # region Swarm Guidance Interface
-    def execute_epoch(self, hive: Hive, file_name: str) -> None:
+    def execute_epoch(self, hive: h.Hive, file_name: str) -> None:
         """
         For each part kept by the Worker instance, get the destination and send the part to it
         :param Hive hive: Hive instance that ordered execution of the epoch
@@ -177,7 +179,7 @@ class Worker:
     # endregion
 
     # region Helpers
-    def discard_part(self, name: str, number: int, corrupt: bool = False, hive: Hive = None) -> None:
+    def discard_part(self, name: str, number: int, corrupt: bool = False, hive: h.Hive = None) -> None:
         """
         # TODO future-iterations: refactor to work with multiple file names
         Safely deletes a part from the worker instance's cache
