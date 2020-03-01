@@ -14,7 +14,7 @@ from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COL
 class Hivemind:
     """
     Representation of the P2P Network super node managing one or more hives ---- Simulator is piggybacked
-    :ivar int max_epochs: number of stages the hive has to converge to the ddv before simulation is considered failed
+    :ivar int max_epochs: number of stages the hive has to converge to the ddv before simulation is considered disconnected
     :ivar Dict[str, Hive] hives: collection mapping hives' uuid (attribute Hive.id) to the Hive instances
     :ivar Dict[str, Worker] workers: collection mapping workers' names to their Worker instances
     :ivar Dict[str, FileData] files_data: collection mapping file names on the system and their FileData instance
@@ -29,6 +29,9 @@ class Hivemind:
         Instantiates an Hivemind object
         :param str simfile_name: path to json file containing the parameters this simulation should execute with
         """
+        self.epoch = 1
+        self.results: Dict[str, Any] = {}
+
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
             json_obj: Any = json.load(input_file)
@@ -48,8 +51,8 @@ class Hivemind:
             files_dict: Dict[str, Dict[int, SharedFilePart]] = {}
             file_parts: Dict[int, SharedFilePart]
 
-            shared: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['shared'].keys()
-            for file_name in shared.keys():
+            shared: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['shared']
+            for file_name in shared:
                 with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
                     part_number: int = 0
                     file_parts = {}
@@ -76,14 +79,19 @@ class Hivemind:
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
         failed_hives: List[str] = []
-        for stage in range(MAX_EPOCHS):
+        while self.epoch < MAX_EPOCHS_PLUS and self.hives:
+            print(self.epoch)
             for hive in self.hives.values():
-                if not hive.execute_epoch():
+                hive.execute_epoch(self.epoch)
+                if not hive.is_running():
                     failed_hives.append(hive.id)
             for hive_id in failed_hives:
+                print("Hive: {} terminated at epoch {}".format(hive_id, self.epoch))
                 self.hives.pop(hive_id)
-                if not self.hives:
-                    sys.exit("Simulation terminated at epoch {} because all hives failed before max epochs were reached".format(stage))
+            self.epoch += 1
+
+    def append_epoch_results(self, hive_id: str, hive_results: [Dict, Any]) -> True:
+        self.results[hive_id] = hive_results
     # endregion
 
     # region Keeper Interface
@@ -102,54 +110,6 @@ class Hivemind:
         raise NotImplementedError()
     # endregion
 
-    # region Stage Processing
-    def __process_stage_results(self, stage: int) -> None:
-        """
-        Obtains all workers' densities regarding each shared file and logs progress in the system accordingly
-        :param int stage: number representing the discrete time step the simulation is currently at
-        """
-        if stage == MAX_EPOCHS - 1:
-            for sf_data in self.files_data.values():
-                sf_data.fwrite("\nReached final epoch... Executing tear down processes. Summary below:")
-                sf_data.convergence_data.save_sets_and_reset()
-                sf_data.fwrite(str(sf_data.convergence_data))
-                sf_data.fclose()
-            exit(0)
-        else:
-            for sf_data in self.files_data.values():
-                sf_data.fwrite("\nStage {}".format(stage))
-                # retrieve from each worker their part counts for current sf_name and update convergence data
-                self.__request_file_counts(sf_data)
-                # when all queries for a file are done, verify convergence for data.file_name
-                self.__check_file_convergence(stage, sf_data)
-
-    def __request_file_counts(self, sf_data: FileData) -> None:
-        """
-        Updates inputted FileData.current_distribution with current density values for each worker sharing the file
-        :param FileData sf_data: data class instance containing generalized information regarding a shared file
-        """
-        worker_ids = [*sf_data.desired_distribution.index]
-        for worker_id in worker_ids:
-            if self.workers_status[worker_id] != Status.ONLINE:
-                sf_data.current_distribution.at[worker_id, DEFAULT_COLUMN] = 0
-            else:
-                worker = self.workers[worker_id]  # get worker instance corresponding to id
-                sf_data.current_distribution.at[worker_id, DEFAULT_COLUMN] = worker.get_file_parts_count(sf_data.name)
-
-    def __check_file_convergence(self, stage: int, sf_data: FileData) -> None:
-        """
-        Delegates verification of equality w.r.t. current and desired_distributions to the inputted FileData instance
-        :param int stage: number representing the discrete time step the simulation is currently at
-        :param FileData sf_data: data class instance containing generalized information regarding a shared file
-        """
-        if sf_data.equal_distributions():
-            print("Singular convergence at epoch {}".format(stage))
-            sf_data.convergence_data.cswc_increment(1)
-            sf_data.convergence_data.try_append_to_convergence_set(stage)
-        else:
-            sf_data.convergence_data.save_sets_and_reset()
-    # endregion
-
     # region Peer Search and Cloud References
     def find_replacement_worker(self, exclusion_dict: Dict[str, Worker], quantity: int) -> Dict[str, Worker]:
         """
@@ -159,25 +119,14 @@ class Hivemind:
         :returns Dict[str, Worker] selected_workers: a collection of replacements a hive can use w/o guarantees that enough, if at all, replacements are found
         """
         selected_workers: Dict[str, Worker] = {}
-        next_round_workers_view: Dict[str, Worker] = {}
-        workers_view: Dict[str, Worker] = {key: value for key, value in self.workers if value.status == Status.ONLINE and value.id not in exclusion_dict}
-
-        if not workers_view:
-            return selected_workers
-
-        for worker_id, worker in workers_view:
-            if worker.uptime > AVG_UPTIME:
-                selected_workers[worker_id] = worker
-                if len(selected_workers) == quantity:
-                    return selected_workers  # desired replacements quantity can only be reached here, if not possible it's mandatory to go to the next for loop
-            else:
-                next_round_workers_view[worker_id] = worker
-
-        for worker_id, worker in next_round_workers_view:
-            selected_workers[worker_id] = worker  # to avoid slowing down the simulation and because a minimum uptime can be defined, we just pick any worker
+        workers_view = self.workers.copy().values()
+        for worker in workers_view:
             if len(selected_workers) == quantity:
                 return selected_workers
-
+            elif worker.status != Status.ONLINE:
+                self.workers.pop(worker.id, None)
+            elif worker.id not in exclusion_dict:
+                selected_workers[worker.id] = worker
         return selected_workers
 
     def get_cloud_reference(self) -> str:

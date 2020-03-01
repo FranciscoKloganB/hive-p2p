@@ -17,24 +17,22 @@ class Worker:
     :cvar List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] ON_OFF: possible Worker states, will be extended to include suspect down the line
     :ivar str id: unique identifier of the worker instance on the network
     :ivar float uptime: average worker uptime
-    :ivar float disconnect_chance: (100.0 - worker_uptime) / 100.0
     :ivar Dict[str, Hive] hives: dictionary that maps the hive_ids' this worker instance belongs to, to the respective Hive instances
     :ivar Dict[str, Dict[int, SharedFilePart]] files: collection mapping file names to file parts and their contents
     :ivar Dict[str, pd.DataFrame] routing_table: collection mapping file names to the respective transition probabilities followed by the worker instance
     :ivar Union[int, Status] status: indicates if this worker instance is online or offline, might have other non-intuitive status, hence bool does not suffice
     """
 
-    ON_OFF: List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] = [Status.ONLINE, Status.SUSPECT]
+    ON_OFF: List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] = [Status.ONLINE, Status.OFFLINE]
 
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, worker_id: str, worker_uptime: float):
         self.id: str = worker_id
-        self.uptime: float = worker_uptime
-        self.disconnect_chance: float = 1.0 - worker_uptime
+        self.uptime: float = math.ceil(worker_uptime * MAX_EPOCHS)
         self.hives: Dict[str, Hive] = {}
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
-        self.status: Union[int, Status] = Status.ONLINE
+        self.status: int = Status.ONLINE
     # endregion
 
     # region Recovery
@@ -75,14 +73,17 @@ class Worker:
         Attempts to send a file part to another worker
         :param Hive hive: Gateway hive that will deliver this file to other worker
         :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        :returns HttpCodes: response obtained from sending the part
         """
         routing_vector: pd.DataFrame = self.routing_table[part.name]
         hive_members: List[str] = [*routing_vector.index]
-        member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COLUMN]]
-        destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
-        if destination == self.id:
-            return HttpCodes.DUMMY
-        return hive.route_part(destination, part)
+        member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COL]]
+        try:
+            destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
+            return hive.route_part(self.id, destination, part)
+        except ValueError as vE:
+            print(routing_vector)
+            sys.exit("".join(traceback.format_exception(etype=type(vE), value=vE, tb=vE.__traceback__)))
 
     def receive_part(self, part: SharedFilePart) -> int:
         """
@@ -100,6 +101,24 @@ class Worker:
         else:
             self.files[part.name][part.number] = part
             return HttpCodes.OK  # accepted file part, because Sha256 was correct and Worker did not have this replica yet
+
+    def replicate(self, hive: Hive, part: SharedFilePart) -> None:
+        """
+        Equal to send part but with different semantics, as file is not routed following swarm guidance, but instead by choosing the most reliable peers in the hive
+        post-scriptum: This function is hacked... And should only be used for simulation purposes
+        :param Hive hive: Gateway hive that will deliver this file to other worker
+        :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
+        """
+        lost_replicas: int = part.can_replicate(hive.current_epoch)  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
+        if lost_replicas > 0:
+            sorted_member_view: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COL, ascending=False).index]
+            for member_id in sorted_member_view:
+                if lost_replicas == 0:
+                    break
+                elif hive.route_part(self.id, member_id, part, fresh_replica=True) == HttpCodes.OK:
+                    lost_replicas -= 1
+                    part.references += 1
+            part.reset_epochs_to_recover(hive.current_epoch)
     # endregion
 
     # region Swarm Guidance Interface
@@ -109,40 +128,17 @@ class Worker:
         :param Hive hive: Hive instance that ordered execution of the epoch
         :param str file_name: the file parts that should be routed
         """
-        file_cache: Dict[int, SharedFilePart] = self.files.get(file_name, {})
-        epoch_cache: Dict[int, SharedFilePart] = {}
-        for number, part in file_cache.items():
-            self.try_replication(hive, part)
+        file_view: Dict[int, SharedFilePart] = self.files.get(file_name, {}).copy()
+        for number, part in file_view.items():
+            self.replicate(hive, part)
             response_code = self.send_part(hive, part)
             if response_code == HttpCodes.OK:
-                pass  # self.files[file_name].pop(number), leave here for readability, but can't actually modify collection while iterating, pandora box!
+                self.discard_part(file_name, number)
             elif response_code == HttpCodes.BAD_REQUEST:
-                part = self.init_recovery_protocol(part.name)  # TODO: future-iterations, right now, nothing is returned by init recovery protocol
-                epoch_cache[number] = part
-            elif response_code != HttpCodes.OK:
-                epoch_cache[number] = part  # This case includes destination Workers rejecting requests, that would result in repeated parts on their end
-        self.files[file_name] = epoch_cache  # HACK to simulate HttpCodes.OK responses. With this line, only rejected items are kept for next epoch.
+                self.discard_part(file_name, number, corrupt=True, hive=hive)
+            elif HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
+                pass  # Keep file part for at least one more epoch
     # endregion
-
-    def try_replication(self, hive: Hive, part: SharedFilePart) -> None:
-        """
-        Equal to send part but with different semantics, as file is not routed following swarm guidance, but instead by choosing the most reliable peers in the hive
-        post-scriptum: This function is hacked... And should only be used for simulation purposes
-        :param Hive hive: Gateway hive that will deliver this file to other worker
-        :param SharedFilePart part: data class instance with data w.r.t. the shared file part and it's raw contents
-        """
-        replicate: int = part.can_replicate()  # Number of times that file part needs to be replicated to achieve REPLICATION_LEVEL
-        if replicate:
-            hive_member_ids: List[str] = [*hive.desired_distribution.sort_values(DEFAULT_COLUMN, ascending=False)]
-            for member_id in hive_member_ids:
-                if replicate == 0:
-                    break  # replication level achieved, no need to produce more copies
-                if member_id == self.id:
-                    continue  # don't send to self, it would only get rejected
-                if hive.route_part(member_id, part) == HttpCodes.OK:
-                    part.references += 1  # for each successful deliver increase number of copies in the hive
-                    replicate -= 1  # decrease needed replicas
-            part.reset_epochs_to_recover()  # Ensures other workers don't try to replicate and that Hive can resimulate delays
 
     # region PSUtils Interface
     # noinspection PyIncorrectDocstring
@@ -179,6 +175,22 @@ class Worker:
     # endregion
 
     # region Helpers
+    def discard_part(self, name: str, number: int, corrupt: bool = False, hive: Hive = None) -> None:
+        """
+        # TODO future-iterations: refactor to work with multiple file names
+        Safely deletes a part from the worker instance's cache
+        :param str name: name of the file the part belongs to
+        :param int number: the part number that uniquely identifies it
+        :param bool corrupt: if discard is due to corruption
+        :param Hive hive:
+        """
+        part: SharedFilePart = self.files.get(name, {}).pop(number, None)
+        if part and corrupt:
+            if part.decrease_and_get_references() == 0:
+                raise RuntimeError("lost all replicas of at least one file part")
+            else:
+                part.set_epochs_to_recover(hive.current_epoch)
+
     def get_file_parts(self, file_name: str) -> Dict[int, SharedFilePart]:
         """
         Gets collection of file parts that correspond to the named file
@@ -195,13 +207,17 @@ class Worker:
         """
         return len(self.files.get(file_name, {}))
 
-    def get_epoch_status(self) -> Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]:
+    def get_epoch_status(self) -> int:
         """
         When called, the worker instance decides if it should switch status
         """
-        if self.status == Status.OFFLINE:
+        if self.status != Status.ONLINE:  # if worker is in suspicious or offline state, return that state
             return self.status
+
+        self.uptime -= 1.0  # else see if he is online.
+        if self.uptime > 0.0:
+            return Status.ONLINE
         else:
-            self.status = np.random.choice(Worker.ON_OFF, p=[self.uptime, self.disconnect_chance])
-            return self.status
+            self.uptime = 0.0
+            return Status.OFFLINE
     # endregion
