@@ -39,7 +39,7 @@ class FileData:
         """
         if parts_in_hive == 0:
             return False
-        
+
         normalized_cdv = self.current_distribution.divide(parts_in_hive)
         if DEBUG:
             self.fwrite("Desired Distribution:\n{}\nCurrent Distribution:\n{}\n".format(

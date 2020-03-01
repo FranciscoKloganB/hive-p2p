@@ -30,7 +30,7 @@ class Worker:
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, worker_id: str, worker_uptime: float):
         self.id: str = worker_id
-        self.uptime: float = float('inf') if worker_uptime == 100.0 else math.ceil(worker_uptime * MAX_EPOCHS)
+        self.uptime: float = float('inf') if worker_uptime == 1.0 else math.ceil(worker_uptime * MAX_EPOCHS)
         self.hives: Dict[str, h.Hive] = {}
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
