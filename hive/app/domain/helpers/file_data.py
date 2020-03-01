@@ -62,6 +62,7 @@ class FileData:
         if DEBUG:
             [print("* {};".format(reason)) for reason in data.msg]
         data.disconnected_workers = data.disconnected_workers[:epoch]
+        data.delay = data.delay[:epoch]
         data.lost_parts = data.lost_parts[:epoch]
         data.hive_status_before_maintenance = data.hive_status_before_maintenance[:epoch]
         data.hive_size_before_maintenance = data.hive_size_before_maintenance[:epoch]
