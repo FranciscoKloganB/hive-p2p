@@ -167,7 +167,7 @@ class Worker:
         part: SharedFilePart = self.files.get(name, {}).pop(number, None)
         if part and corrupt:
             if part.decrease_and_get_references() == 0:
-                raise RuntimeError("lost all replicas of at least one file part")
+                hive.set_fail("lost all replicas of at least one file part")
             else:
                 part.set_epochs_to_recover(hive.current_epoch)
 
