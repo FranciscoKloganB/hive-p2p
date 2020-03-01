@@ -178,7 +178,6 @@ class SimulationData:
         """
         if i == MAX_EPOCHS:
             return True
-
         self.terminated = i
         self.successfull = False
         self.msg = msg

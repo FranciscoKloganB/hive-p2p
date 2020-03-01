@@ -164,7 +164,7 @@ def __init_hive_members(desired_node_count: int, peers_uptime_dict: Dict[str, fl
     """
 
     if len(peer_names) < desired_node_count:
-        raise RuntimeError("User requested that file is shared by more peers than the number of peers in the system")
+        raise ValueError("User requested that file is shared by more peers than the number of peers in the system")
 
     chosen_peers = []
     peer_names_copy = copy.deepcopy(peer_names)

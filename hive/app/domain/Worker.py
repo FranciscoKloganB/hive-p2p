@@ -9,8 +9,8 @@ import domain.Hive as h
 
 from utils import crypto
 from typing import Union, Dict, Any, List
-from domain.Enums import Status, HttpCodes
-from domain.SharedFilePart import SharedFilePart
+from domain.helpers.Enums import Status, HttpCodes
+from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import DEFAULT_COL, MAX_EPOCHS
 from utils.ResourceTracker import ResourceTracker as rT
 
@@ -26,8 +26,6 @@ class Worker:
     :ivar Dict[str, pd.DataFrame] routing_table: collection mapping file names to the respective transition probabilities followed by the worker instance
     :ivar Union[int, Status] status: indicates if this worker instance is online or offline, might have other non-intuitive status, hence bool does not suffice
     """
-
-    ON_OFF: List[Union[Status.ONLINE, Status.OFFLINE, Status.SUSPECT]] = [Status.ONLINE, Status.OFFLINE]
 
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, worker_id: str, worker_uptime: float):
@@ -144,28 +142,6 @@ class Worker:
                 pass  # Keep file part for at least one more epoch
     # endregion
 
-    # region PSUtils Interface
-    # noinspection PyIncorrectDocstring
-    @staticmethod
-    def get_resource_utilization(*args) -> Dict[str, Any]:
-        """
-        Obtains one ore more performance attributes for the Worker's instance machine
-        :param *args: Variable length argument list. See below
-        :keyword arg:
-        :arg cpu: system wide float detailing cpu usage as a percentage,
-        :arg cpu_count: number of non-logical cpu on the machine as an int
-        :arg cpu_avg: average system load over the last 1, 5 and 15 minutes as a tuple
-        :arg mem: statistics about memory usage as a named tuple including the following fields (total, available),
-        expressed in bytes as floats
-        :arg disk: get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
-        :returns Dict[str, Any] detailing the usage of the respective key arg. If arg is invalid the value will be -1.
-        """
-        results: Dict[str, Any] = {}
-        for arg in args:
-            results[arg] = rT.get_value(arg)
-        return results
-    # endregion
-
     # region Overrides
     def __hash__(self):
         # allows a worker object to be used as a dictionary key
@@ -191,7 +167,7 @@ class Worker:
         part: SharedFilePart = self.files.get(name, {}).pop(number, None)
         if part and corrupt:
             if part.decrease_and_get_references() == 0:
-                raise RuntimeError("lost all replicas of at least one file part")
+                hive.set_fail("lost all replicas of at least one file part")
             else:
                 part.set_epochs_to_recover(hive.current_epoch)
 
@@ -215,13 +191,31 @@ class Worker:
         """
         When called, the worker instance decides if it should switch status
         """
-        if self.status != Status.ONLINE:  # if worker is in suspicious or offline state, return that state
-            return self.status
+        if self.status == Status.ONLINE:
+            self.uptime -= 1
+            self.status = Status.ONLINE if self.uptime > 0 else Status.OFFLINE
+        return self.status
 
-        self.uptime -= 1.0  # else see if he is online.
-        if self.uptime > 0.0:
-            return Status.ONLINE
-        else:
-            self.uptime = 0.0
-            return Status.OFFLINE
+    # endregion
+
+    # region PSUtils Interface
+    # noinspection PyIncorrectDocstring
+    @staticmethod
+    def get_resource_utilization(*args) -> Dict[str, Any]:
+        """
+        Obtains one ore more performance attributes for the Worker's instance machine
+        :param *args: Variable length argument list. See below
+        :keyword arg:
+        :arg cpu: system wide float detailing cpu usage as a percentage,
+        :arg cpu_count: number of non-logical cpu on the machine as an int
+        :arg cpu_avg: average system load over the last 1, 5 and 15 minutes as a tuple
+        :arg mem: statistics about memory usage as a named tuple including the following fields (total, available),
+        expressed in bytes as floats
+        :arg disk: get_disk_usage dictionary with total and used keys (gigabytes as float) and percent key as float
+        :returns Dict[str, Any] detailing the usage of the respective key arg. If arg is invalid the value will be -1.
+        """
+        results: Dict[str, Any] = {}
+        for arg in args:
+            results[arg] = rT.get_value(arg)
+        return results
     # endregion
