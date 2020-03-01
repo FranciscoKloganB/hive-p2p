@@ -4,7 +4,7 @@ DEBUG: bool = True
 
 # region Simulation Settings
 READ_SIZE: int = 20971520  # 512KB = 524288 bytes || 32KB = 32768 bytes. Defines the raw size of each SharedFilePart.
-MAX_EPOCHS = 50  # One day has 24h, meaning that one epoch per minute wwould be 1440, 720 defines one epoch every two minutes
+MAX_EPOCHS = 5  # One day has 24h, meaning that one epoch per minute wwould be 1440, 720 defines one epoch every two minutes
 MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 MIN_DETECTION_DELAY: int = 1  # 2 minutes
 MAX_DETECTION_DELAY: int = 2  # 2 minutes
