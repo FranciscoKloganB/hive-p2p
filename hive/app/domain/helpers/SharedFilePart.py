@@ -37,7 +37,7 @@ class SharedFilePart:
     # endregion
 
     # region Simulation Interface
-    def set_epochs_to_recover(self, epoch: int) -> int:
+    def set_recovery_epoch(self, epoch: int) -> int:
         """
         Assigns a value to the instance's recovery_epoch attribute that indicates when a Worker who posses a reference to it, can replicate the part.
         :param int epoch: current simulation's epoch

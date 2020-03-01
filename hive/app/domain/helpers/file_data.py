@@ -37,6 +37,9 @@ class FileData:
         """
         Delegates distribution comparison to ConvergenceData.equal_distributions static method
         """
+        if parts_in_hive == 0:
+            return False
+
         normalized_cdv = self.current_distribution.divide(parts_in_hive)
         if DEBUG:
             self.fwrite("Desired Distribution:\n{}\nCurrent Distribution:\n{}\n".format(
@@ -54,14 +57,17 @@ class FileData:
         self.out_file.write(string + "\n")
 
     def jwrite(self, data: SimulationData, epoch: int):
-        print(self.simulation_data.msg)
-        stop: int = epoch+1
-        data.disconnected_workers = data.disconnected_workers[0:stop]
-        data.lost_parts = data.lost_parts[0:stop]
-        data.hive_status_before_maintenance = data.hive_status_before_maintenance[0:stop]
-        data.hive_size_before_maintenance = data.hive_size_before_maintenance[0:stop]
-        data.hive_size_after_maintenance = data.hive_size_after_maintenance[0:stop]
-        data.delay = data.delay[0:stop]
+        if not data.msg:
+            data.msg.append("completed simulation successfully")
+        if DEBUG:
+            [print("* {};".format(reason)) for reason in data.msg]
+        data.disconnected_workers = data.disconnected_workers[:epoch]
+        data.delay = data.delay[:epoch]
+        data.lost_parts = data.lost_parts[:epoch]
+        data.hive_status_before_maintenance = data.hive_status_before_maintenance[:epoch]
+        data.hive_size_before_maintenance = data.hive_size_before_maintenance[:epoch]
+        data.hive_size_after_maintenance = data.hive_size_after_maintenance[:epoch]
+        data.delay = data.delay[:epoch]
         json_string = json.dumps(data.__dict__, indent=4, sort_keys=True, ensure_ascii=False)
         self.fwrite(json_string)
 
