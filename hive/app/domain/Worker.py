@@ -30,7 +30,7 @@ class Worker:
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, worker_id: str, worker_uptime: float):
         self.id: str = worker_id
-        self.uptime: float = float('inf') if worker_uptime == 1.0 else math.ceil(worker_uptime * MAX_EPOCHS)
+        self.uptime: float = float('inf') if worker_uptime == 10.0 else math.ceil(worker_uptime * MAX_EPOCHS)
         self.hives: Dict[str, h.Hive] = {}
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
@@ -167,7 +167,7 @@ class Worker:
         part: SharedFilePart = self.files.get(name, {}).pop(number, None)
         if part and corrupt:
             if part.decrease_and_get_references() == 0:
-                hive.set_fail("lost all replicas of at least one file part")
+                hive.set_fail("lost all replicas of file part with id: {}, and last loss was due to corruption".format(part.id))
             else:
                 part.set_epochs_to_recover(hive.current_epoch)
 

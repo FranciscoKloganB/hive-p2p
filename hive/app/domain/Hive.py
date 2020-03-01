@@ -258,9 +258,9 @@ class Hive:
                 for part in lost_parts.values():
                     part.set_epochs_to_recover(self.current_epoch)
                     if part.decrease_and_get_references() == 0:
-                        self.set_fail("lost all replicas of at least one file part")
+                        self.set_fail("lost all replicas of file part with id: {}".format(part.id))
         if len(offline_workers) >= len(self.members):
-            self.set_fail("lost all replicas of at least one file part")
+            self.set_fail("all hive members disconnected simultaneously")
         self.file.simulation_data.set_disconnected_and_losses(len(offline_workers), lost_parts_count, self.current_epoch)
         return offline_workers
 
