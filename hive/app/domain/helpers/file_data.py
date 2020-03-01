@@ -55,8 +55,8 @@ class FileData:
 
     def jwrite(self, data: SimulationData, epoch: int):
         print(self.simulation_data.msg)
-        start: int = 1
-        stop: int = epoch + 1
+        start: int = 0
+        stop: int = epoch
         data.disconnected_workers = data.disconnected_workers[start:stop]
         data.lost_parts = data.lost_parts[start:stop]
         data.hive_status_before_maintenance = data.hive_status_before_maintenance[start:stop]
