@@ -4,10 +4,10 @@ import os
 import json
 
 from domain.Hive import Hive
-from domain.Enums import Status
+from domain.helpers.Enums import Status
 from domain.Worker import Worker
 from typing import List, Union, Dict, Any
-from domain.SharedFilePart import SharedFilePart
+from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, MAX_EPOCHS_PLUS
 
 

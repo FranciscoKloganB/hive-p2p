@@ -6,14 +6,14 @@ import traceback
 import numpy as np
 import pandas as pd
 import domain.Hivemind as hm
-
 import utils.matrices as matrices
 import utils.metropolis_hastings as mh
+
 from domain.Worker import Worker
 from typing import Dict, List, Any, Tuple
-from domain.Enums import Status, HttpCodes
 from domain.helpers.file_data import FileData
-from domain.SharedFilePart import SharedFilePart
+from domain.helpers.Enums import Status, HttpCodes
+from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, COMMUNICATION_CHANCES, MAX_EPOCHS
 
 

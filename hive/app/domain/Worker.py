@@ -9,8 +9,8 @@ import domain.Hive as h
 
 from utils import crypto
 from typing import Union, Dict, Any, List
-from domain.Enums import Status, HttpCodes
-from domain.SharedFilePart import SharedFilePart
+from domain.helpers.Enums import Status, HttpCodes
+from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import DEFAULT_COL, MAX_EPOCHS
 from utils.ResourceTracker import ResourceTracker as rT
 
