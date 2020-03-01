@@ -10,7 +10,7 @@ import utils.matrices as matrices
 import utils.metropolis_hastings as mh
 
 from domain.Worker import Worker
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Union
 from domain.helpers.file_data import FileData
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
@@ -197,36 +197,39 @@ class Hive:
         if not self.running:
             return self.tear_down()
 
-        lost_parts_count, lost_parts, offline_workers = self.__setup_epoch(epoch)
-
+        self.setup_epoch(epoch)
         try:
-            for worker in self.members.values():
-                if worker.get_epoch_status() == Status.ONLINE:
-                    worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause Hive failure: see Worker.discard_part(...)
-                else:
-                    worker_parts = worker.get_file_parts(self.file.name)
-                    lost_parts_count += len(lost_parts)
-                    offline_workers.append(worker)
-                    for part in worker_parts.values():
-                        lost_parts[part.number] = part
-                        part.set_epochs_to_recover(epoch)
-                        if part.decrease_and_get_references() == 0:
-                            self.set_fail("lost all replicas of at least one file part")
-
-            if len(offline_workers) >= len(self.members):
-                self.set_fail("lost all replicas of at least one file part")
-
-            self.file.simulation_data.set_disconnected_and_losses(len(offline_workers), lost_parts_count, epoch)
-
+            offline_workers: List[Worker] = self.workers_execute_epoch()
             self.evaluate_hive_convergence()
             self.membership_maintenance(offline_workers)
-
             if epoch == MAX_EPOCHS:
                 self.tear_down()
-
         except Exception as e:
             self.set_fail("Unexpected exception: ".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
             self.tear_down()
+
+    def workers_execute_epoch(self, lost_parts_count: int = 0) -> List[Worker]:
+        """
+        Orders all members of the hive to execute their epoch and updates some fields within SimulationData output file accordingly
+        :param int lost_parts_count: zero
+        :returns List[Worker] offline_workers: a populated list of offline workers.
+        """
+        offline_workers: List[Worker] = []
+        for worker in self.members.values():
+            if worker.get_epoch_status() == Status.ONLINE:
+                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause Hive failure: see Worker.discard_part(...)
+            else:
+                lost_parts = worker.get_file_parts(self.file.name)
+                lost_parts_count += len(lost_parts)
+                offline_workers.append(worker)
+                for part in lost_parts.values():
+                    part.set_epochs_to_recover(self.current_epoch)
+                    if part.decrease_and_get_references() == 0:
+                        self.set_fail("lost all replicas of at least one file part")
+        if len(offline_workers) >= len(self.members):
+            self.set_fail("lost all replicas of at least one file part")
+        self.file.simulation_data.set_disconnected_and_losses(len(offline_workers), lost_parts_count, self.current_epoch)
+        return offline_workers
 
     def is_running(self) -> bool:
         return self.running
@@ -237,7 +240,7 @@ class Hive:
         and records epoch data accordingly.
         """
         if not self.members:
-            self.set_fail("Hive no longer has members")
+            self.set_fail("hive has no remaining members")
 
         parts_in_hive: int = 0
         for worker in self.members.values():
@@ -251,7 +254,7 @@ class Hive:
         self.file.simulation_data.parts_in_hive[self.current_epoch] = parts_in_hive
 
         if not parts_in_hive:
-            self.set_fail("No parts in hive")
+            self.set_fail("hive has no remaining parts")
 
         if self.file.equal_distributions(parts_in_hive):
             self.file.simulation_data.cswc_increment(1)
@@ -299,11 +302,10 @@ class Hive:
     def __get_new_members(self) -> Dict[str, Worker]:
         return self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
 
-    def __setup_epoch(self, epoch: int) -> Tuple[int, Dict[int, SharedFilePart], List[Worker]]:
+    def setup_epoch(self, epoch: int) -> None:
         self.current_epoch = epoch
         self.corruption_chances[0] = 0.0  # np.log10(epoch).item() / 100.0
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
-        return 0, {}, []
 
     def set_fail(self, msg: str) -> bool:
         self.running = False
