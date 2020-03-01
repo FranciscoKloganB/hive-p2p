@@ -23,13 +23,15 @@ class Hive:
     :ivar List[float, float] corruption_chances: used to simulate file corruption on behalf of the workers, to avoid keeping independant distributions for each part and each replica
     :ivar str id: unique identifier in str format
     :ivar Hivemind hivemind: reference to the master server, which in this case is just a simulator program
-    :ivar FileData Union[None, FileData]: instance of class FileData which contains information regarding the file persisted by this hive
     :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
+    :ivar FileData file: instance of class FileData which contains information regarding the file persisted by this hive
+    :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
     :ivar int critical_size: minimum number of replicas required for data recovery plus the number of peer faults the system must support during replication.
     :ivar int sufficient_size: depends on churn-rate and equals critical_size plus the number of peers expected to fail between two successive recovery phases
-    :ivar int redudant_size: application-specific system parameter, but basically represents that the hive is to big
-    :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
-    :ivar Dict[str, SharedFilePart] recoverable_parts: just an hammer
+    :ivar int original_size: stores the initial hive size
+    :ivar int redundant_size: application-specific system parameter, but basically represents that the hive is to big
+    :ivar int epoch_delay: stores the sum of the values returned by all SharedFilePart.set_recovery_epoch calls - used for simulation output purposes
+    :ivar bool running: indicates if the hive has terminated - used for simulation purposes
     """
     # region Class Variables, Instance Variables and Constructors
     def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
@@ -43,14 +45,15 @@ class Hive:
         self.corruption_chances: List[float] = [0, 0]
         self.id: str = str(uuid.uuid4())
         self.hivemind = hivemind
-        self.file: FileData = FileData(file_name)
         self.members: Dict[str, Worker] = members
+        self.file: FileData = FileData(file_name)
+        self.desired_distribution: pd.DataFrame = pd.DataFrame()
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
         self.original_size: int = len(members)
-        self.redudant_size: int = self.sufficient_size + len(self.members)
-        self.desired_distribution = None
-        self.running = True
+        self.redundant_size: int = self.sufficient_size + len(self.members)
+        self.running: bool = True
+        self.epoch_delay: int = 0
         self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
     # endregion
 
@@ -240,6 +243,7 @@ class Hive:
         self.current_epoch = epoch
         self.corruption_chances[0] = 0.0  # np.log10(epoch).item() / 100.0
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
+        self.epoch_delay = 0
 
     def workers_execute_epoch(self, lost_parts_count: int = 0) -> List[Worker]:
         """
@@ -256,7 +260,7 @@ class Hive:
                 lost_parts_count += len(lost_parts)
                 offline_workers.append(worker)
                 for part in lost_parts.values():
-                    part.set_epochs_to_recover(self.current_epoch)
+                    part.set_recovery_epoch(self.current_epoch)
                     if part.decrease_and_get_references() == 0:
                         self.set_fail("lost all replicas of file part with id: {}".format(part.id))
         if len(offline_workers) >= len(self.members):
@@ -277,9 +281,9 @@ class Hive:
         if damaged_hive_size >= self.sufficient_size:
             self.remove_cloud_reference()
 
-        if damaged_hive_size >= self.redudant_size:
+        if damaged_hive_size >= self.redundant_size:
             status_before_recovery = "redundant"  # TODO: future-iterations evict worse members
-        elif self.original_size <= damaged_hive_size < self.redudant_size:
+        elif self.original_size <= damaged_hive_size < self.redundant_size:
             status_before_recovery = "stable"
         elif self.sufficient_size <= damaged_hive_size < self.original_size:
             status_before_recovery = "sufficient"
