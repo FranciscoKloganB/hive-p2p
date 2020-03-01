@@ -1,14 +1,12 @@
-import json
 import os
-import sys
-from typing import List, Union, Dict, Any
+import json
 
-from domain.Enums import Status
 from domain.Hive import Hive
-from domain.SharedFilePart import SharedFilePart
+from domain.Enums import Status
 from domain.Worker import Worker
-from domain.helpers.FileData import FileData
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, DEFAULT_COLUMN, AVG_UPTIME, MAX_EPOCHS
+from typing import List, Union, Dict, Any
+from domain.SharedFilePart import SharedFilePart
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, MAX_EPOCHS_PLUS
 
 
 class Hivemind:

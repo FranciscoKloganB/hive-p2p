@@ -1,18 +1,18 @@
 import math
 import uuid
-from typing import Dict, List, Any
-
+import traceback
+import utils.matrices as matrices
+import utils.metropolis_hastings as mh
 import numpy as np
 import pandas as pd
 
-import utils.matrices as matrices
-import utils.metropolis_hastings as mh
-from domain.Enums import Status, HttpCodes
-from domain.Hivemind import Hivemind
-from domain.SharedFilePart import SharedFilePart
 from domain.Worker import Worker
-from domain.helpers.FileData import FileData
-from globals.globals import REPLICATION_LEVEL, DEFAULT_COLUMN
+from domain.Hivemind import Hivemind
+from typing import Dict, List, Any, Tuple
+from domain.Enums import Status, HttpCodes
+from domain.helpers.file_data import FileData
+from domain.SharedFilePart import SharedFilePart
+from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, COMMUNICATION_CHANCES, MAX_EPOCHS
 
 
 class Hive:
