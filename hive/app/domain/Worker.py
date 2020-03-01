@@ -191,15 +191,11 @@ class Worker:
         """
         When called, the worker instance decides if it should switch status
         """
-        if self.status != Status.ONLINE:  # if worker is in suspicious or offline state, return that state
-            return self.status
+        if self.status == Status.ONLINE:
+            self.uptime -= 1
+            self.status = Status.ONLINE if self.uptime > 0 else Status.OFFLINE
+        return self.status
 
-        self.uptime -= 1.0  # else see if he is online.
-        if self.uptime > 0.0:
-            return Status.ONLINE
-        else:
-            self.uptime = 0.0
-            return Status.OFFLINE
     # endregion
 
     # region PSUtils Interface
