@@ -53,10 +53,7 @@ class SharedFilePart:
         Resets self.recovery_epoch attribute back to the default value of -1
         :param int epoch: current simulation's epoch
         """
-        if self.references == REPLICATION_LEVEL:
-            self.recovery_epoch = float('inf')
-        else:
-            self.recovery_epoch = float(epoch + 1)
+        self.recovery_epoch = float('inf') if self.references == REPLICATION_LEVEL else float(epoch + 1)
 
     def can_replicate(self, current_epoch: int) -> int:
         """
@@ -65,7 +62,7 @@ class SharedFilePart:
         """
         if self.recovery_epoch == float('inf'):
             return 0
-        elif self.references < REPLICATION_LEVEL and self.recovery_epoch - float(current_epoch) <= 0.0:
+        elif 0 < self.references < REPLICATION_LEVEL and self.recovery_epoch - float(current_epoch) <= 0.0:
             return REPLICATION_LEVEL - self.references
         else:
             return 0
