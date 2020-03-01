@@ -264,17 +264,16 @@ class Hive:
     # endregion
 
     # region Helpers
-    def membership_maintenance(self, disconnected_workers: List[Worker]) -> None:
+    def membership_maintenance(self, offline_workers: List[Worker]) -> None:
         """
         Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
-        :param List[Worker] disconnected_workers: collection of members who disconnected during this epoch
+        :param List[Worker] offline_workers: collection of members who disconnected during this epoch
         """
         # remove all disconnected workers from the hive
-        for member in disconnected_workers:
+        for member in offline_workers:
             self.members.pop(member.id, None)
 
         damaged_hive_size = len(self.members)
-
         if damaged_hive_size >= self.sufficient_size:
             self.remove_cloud_reference()
 
@@ -290,8 +289,8 @@ class Hive:
             self.members.update(self.__get_new_members())
         else:
             status_before_recovery = "critical"
-            self.add_cloud_reference()
             self.members.update(self.__get_new_members())
+            self.add_cloud_reference()
 
         healed_hive_size = len(self.members)
         if damaged_hive_size != healed_hive_size:
