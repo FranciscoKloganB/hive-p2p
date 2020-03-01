@@ -140,6 +140,13 @@ class SimulationData:
         """
         self.moved_parts[i-1] += n
 
+    def set_parts_at_index(self, n: int, i: int) -> None:
+        """
+        :param int n: the quantity of parts moved at epoch i
+        :param int i: index of epoch i in SimulationData.parts_in_hive list
+        """
+        self.parts_in_hive[i-1] += n
+
     def set_disconnected_workers_at_index(self, n: int, i: int) -> None:
         """
         :param int n: the quantity of disconnected workers at epoch i

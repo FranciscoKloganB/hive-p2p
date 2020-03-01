@@ -223,7 +223,7 @@ class Hive:
             else:
                 self.file.current_distribution.at[worker.id, DEFAULT_COL] = 0
 
-        self.file.simulation_data.parts_in_hive[self.current_epoch] = parts_in_hive
+        self.file.simulation_data.set_parts_at_index(parts_in_hive, self.current_epoch)
 
         if not parts_in_hive:
             self.set_fail("hive has no remaining parts")
