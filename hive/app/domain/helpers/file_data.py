@@ -57,15 +57,14 @@ class FileData:
         self.out_file.write(string + "\n")
 
     def jwrite(self, data: SimulationData, epoch: int):
-        print(self.simulation_data.msg)
-        start: int = 0
-        stop: int = epoch
-        data.disconnected_workers = data.disconnected_workers[start:stop]
-        data.lost_parts = data.lost_parts[start:stop]
-        data.hive_status_before_maintenance = data.hive_status_before_maintenance[start:stop]
-        data.hive_size_before_maintenance = data.hive_size_before_maintenance[start:stop]
-        data.hive_size_after_maintenance = data.hive_size_after_maintenance[start:stop]
-        data.delay = data.delay[start:stop]
+        if not data.msg:
+            data.msg.append("completed simulation successfully;")
+        data.disconnected_workers = data.disconnected_workers[:epoch]
+        data.lost_parts = data.lost_parts[:epoch]
+        data.hive_status_before_maintenance = data.hive_status_before_maintenance[:epoch]
+        data.hive_size_before_maintenance = data.hive_size_before_maintenance[:epoch]
+        data.hive_size_after_maintenance = data.hive_size_after_maintenance[:epoch]
+        data.delay = data.delay[:epoch]
         json_string = json.dumps(data.__dict__, indent=4, sort_keys=True, ensure_ascii=False)
         self.fwrite(json_string)
 

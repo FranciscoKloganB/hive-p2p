@@ -31,7 +31,7 @@ class SimulationData:
         # Updated on Hive.execute_epoch
         self.terminated: int = MAX_EPOCHS  # gathered
         self.successfull: bool = True  # gathered
-        self.msg = "completed simulation successfully"  # gathered
+        self.msg = []  # gathered
         self.disconnected_workers: List[int] = [0] * MAX_EPOCHS  # gathered
         self.lost_parts: List[int] = [0] * MAX_EPOCHS_PLUS  # gathered
         self.hive_status_before_maintenance: List[str] = [""] * MAX_EPOCHS  # gathered
