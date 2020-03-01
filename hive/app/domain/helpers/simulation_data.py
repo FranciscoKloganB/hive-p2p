@@ -119,12 +119,13 @@ class SimulationData:
     # endregion
 
     # region Helpers
-    def set_delay_at_index(self, n: float, i: int) -> None:
+    def set_delay_at_index(self, delay: int, calls: int, i: int) -> None:
         """
-        :param float n: the delay at epoch i
+        :param int delay: the delay sum
+        :param int calls: number of times a delay was generated
         :param int i: index of epoch i in SimulationData.delay list
         """
-        self.delay[i-1] = n
+        self.delay[i-1] = 0 if calls == 0 else delay / calls
 
     def set_disconnected_and_losses(self, disconnected=0, lost=0, i=0):
         """
