@@ -245,7 +245,7 @@ class Hive:
     # region Helpers
     def setup_epoch(self, epoch: int) -> None:
         self.current_epoch = epoch
-        self.corruption_chances[0] = 0.0  # np.log10(epoch).item() / 100.0
+        self.corruption_chances[0] = np.log10(epoch).item() / 100.0
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         self.set_recovery_epoch_sum = 0
         self.set_recovery_epoch_calls = 0
