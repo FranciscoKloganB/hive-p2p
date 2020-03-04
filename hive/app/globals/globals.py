@@ -1,6 +1,6 @@
 import os
 
-DEBUG: bool = True
+DEBUG: bool = False
 
 # region Simulation Settings
 READ_SIZE: int = 131072  # 32KB = 32768b || 128KB = 131072b || 512KB = 524288b || 20MB = 20971520b. Defines the raw size of each SharedFilePart.
