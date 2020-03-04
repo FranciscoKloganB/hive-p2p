@@ -164,6 +164,8 @@ class Hive:
         :param str spread_mode: 'u' for uniform distribution, 'a' one* peer receives all or 'i' to distribute according to the desired steady state distribution
         :param Dict[int, SharedFilePart] file_parts: file parts to distribute over the members
         """
+        self.file.simulation_data.initial_spread = spread_mode
+
         if spread_mode == "a":
             choices: List[Worker] = [*self.members.values()]
             workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
@@ -317,9 +319,9 @@ class Hive:
         self.running = False
         self.file.simulation_data.set_fail(self.current_epoch, msg)
 
-    def tear_down(self, epoch: int) -> None:
+    def tear_down(self, epoch: int, origin: str) -> None:
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
-        self.file.jwrite(self.file.simulation_data, epoch)
+        self.file.jwrite(self, origin, epoch)
 
     def set_recovery_epoch(self, part: SharedFilePart) -> None:
         self.set_recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)

@@ -1,14 +1,14 @@
 import json
-import os
 
 import numpy as np
 import pandas as pd
+import domain.Hive as h
 
 from pathlib import Path
 from tabulate import tabulate
 from typing import Any, Union, Dict
-from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL, READ_SIZE, MAX_EPOCHS, MIN_DETECTION_DELAY, MAX_DETECTION_DELAY, REPLICATION_LEVEL, \
-    MIN_CONVERGENCE_THRESHOLD, LOSS_CHANCE, DELIVER_CHANCE
+
+from globals.globals import *
 from domain.helpers.SimulationData import SimulationData
 
 
@@ -60,30 +60,41 @@ class FileData:
         """
         self.out_file.write(string + "\n")
 
-    def jwrite(self, data: SimulationData, epoch: int):
-        if not data.msg:
-            data.msg.append("completed simulation successfully")
+    def jwrite(self, hive: h.Hive, origin: str, epoch: int):
+        sim_data: SimulationData = self.simulation_data
+        if not sim_data.msg:
+            sim_data.msg.append("completed simulation successfully")
         if DEBUG:
-            [print("* {};".format(reason)) for reason in data.msg]
-        data.disconnected_workers = data.disconnected_workers[:epoch]
-        data.delay = data.delay[:epoch]
-        data.lost_parts = data.lost_parts[:epoch]
-        data.hive_status_before_maintenance = data.hive_status_before_maintenance[:epoch]
-        data.hive_size_before_maintenance = data.hive_size_before_maintenance[:epoch]
-        data.hive_size_after_maintenance = data.hive_size_after_maintenance[:epoch]
-        data.delay = data.delay[:epoch]
+            [print("* {};".format(reason)) for reason in sim_data.msg]
+
+        sim_data.disconnected_workers = sim_data.disconnected_workers[:epoch]
+        sim_data.delay = sim_data.delay[:epoch]
+        sim_data.lost_parts = sim_data.lost_parts[:epoch]
+        sim_data.hive_status_before_maintenance = sim_data.hive_status_before_maintenance[:epoch]
+        sim_data.hive_size_before_maintenance = sim_data.hive_size_before_maintenance[:epoch]
+        sim_data.hive_size_after_maintenance = sim_data.hive_size_after_maintenance[:epoch]
+        sim_data.delay = sim_data.delay[:epoch]
 
         extras: Dict[str, Any] = {
+            "simfile_name" : origin,
+            "hive_id": hive.id,
+            "file_name": self.name,
             "read_size": READ_SIZE,
+            "critical_size_threshold": hive.critical_size,
+            "sufficient_size_threshold": hive.sufficient_size,
+            "original_hive_size": hive.original_size,
+            "redundant_size": hive.redundant_size,
             "max_epochs": MAX_EPOCHS,
             "min_recovery_delay": MIN_DETECTION_DELAY,
             "max_recovery_delay": MAX_DETECTION_DELAY,
             "replication_level": REPLICATION_LEVEL,
             "convergence_treshold": MIN_CONVERGENCE_THRESHOLD,
             "channel_loss": LOSS_CHANCE,
+            "corruption_chance_tod": hive.corruption_chances[0]
         }
 
-        json_string = json.dumps(data.__dict__.update(extras), indent=4, sort_keys=True, ensure_ascii=False)
+        json_dict = sim_data.__dict__.update(extras)
+        json_string = json.dumps(json_dict, indent=4, sort_keys=True, ensure_ascii=False)
         self.fwrite(json_string)
 
     def fclose(self, string: str = None) -> None:
