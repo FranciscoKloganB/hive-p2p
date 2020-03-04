@@ -31,6 +31,7 @@ class Hivemind:
         :param str simfile_name: path to json file containing the parameters this simulation should execute with
         :param int sim_number: allows different simulation executions to be distinguishable from each other
         """
+        self.origin = simfile_name
         self.sim_number = sim_number
         self.epoch = 1
 
@@ -87,7 +88,7 @@ class Hivemind:
                 hive.execute_epoch(self.epoch)
                 if not hive.is_running():
                     terminated_hives.append(hive.id)
-                    hive.tear_down(self.epoch)
+                    hive.tear_down(self.origin, self.epoch)
             for hid in terminated_hives:
                 print("Hive: {} terminated at epoch {}".format(hid, self.epoch))
                 self.hives.pop(hid)

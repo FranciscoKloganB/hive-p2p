@@ -319,7 +319,7 @@ class Hive:
         self.running = False
         self.file.simulation_data.set_fail(self.current_epoch, msg)
 
-    def tear_down(self, epoch: int, origin: str) -> None:
+    def tear_down(self, origin: str, epoch: int) -> None:
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
         self.file.jwrite(self, origin, epoch)
 
