@@ -83,6 +83,42 @@ def __in_samples_skewness() -> float:
             continue
 
 
+def __in_samples_mean() -> float:
+    """
+    :return float mean: the mean value
+    """
+    print("\nMean should be [0.0, 100.0];")
+    mean = input("Enter the desired mean for the normal distribution: ")
+    while True:
+        try:
+            mean = float(mean)
+            if 0.0 <= mean <= 100.0:
+                return float(str(mean)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
+            else:
+                mean = input("Mean should be in [0, 100.0]... Try again: ")
+        except ValueError:
+            mean = input("Input should be an integer or a float... Try again: ")
+            continue
+
+
+def __in_samples_std() -> float:
+    """
+    :return float std: the standard deviation value
+    """
+    print("\nStandard deviation should be [0.0, 50.0]")
+    std = input("Enter the desired standard deviation: ")
+    while True:
+        try:
+            std = float(std)
+            if 0 <= std <= 50.0:
+                return float(str(std)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
+            else:
+                std = input("Standard deviation should be in [0.0, 50.0]... Try again: ")
+        except ValueError:
+            std = input("Input should be an integer or a float... Try again: ")
+            continue
+
+
 def __in_file_name(msg: str) -> str:
     """
     :param str msg: message to be printed to the user upon first input request
@@ -139,15 +175,30 @@ def __init_peer_uptime_dict() -> Dict[str, float]:
     number_of_nodes = __in_number_of_nodes("\nEnter the number of nodes you wish to have in the network [2, 9999]: ")
     min_uptime = float(str(__in_min_node_uptime("\nEnter the mininum node uptime of nodes in the network [0.0, 100.0]: "))[:9]) / 100.0
 
-    skewness = __in_samples_skewness()
-    samples = sg.generate_skewed_samples(skewness=skewness).tolist()
+    # skewness = __in_samples_skewness()
+    # samples = sg.generate_skewed_samples(skewness=skewness).tolist()
+    #
+    # peers_uptime_dict = {}
+    # for label in itertools.islice(cg.yield_label(), number_of_nodes):
+    #     uptime = abs(samples.pop()) / 100.0  # gets and removes last element in samples to assign it to label
+    #     if uptime > 1.0:
+    #         peers_uptime_dict[label] = 1.0
+    #     elif uptime > min_uptime:
+    #         peers_uptime_dict[label] = uptime
+    #     else:
+    #         peers_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
+    # samples.clear()
+    # return peers_uptime_dict
+    mean = __in_samples_mean()
+    std = __in_samples_std()
+    samples = ng.generate_samples(surveys=1, mean=mean, std=std).tolist()
 
     peers_uptime_dict = {}
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
-        uptime = abs(samples.pop()) / 100.0  # gets and removes last element in samples to assign it to label
-        if uptime > 1.0:
+        uptime = abs(samples.pop()[0]) / 100.0  # gets and removes last element in samples to assign it to label
+        if uptime >= 1.0:
             peers_uptime_dict[label] = 1.0
-        elif uptime > min_uptime:
+        elif min_uptime < uptime < 1.0:
             peers_uptime_dict[label] = uptime
         else:
             peers_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
@@ -249,7 +300,7 @@ if __name__ == "__main__":
             if options in ("-u", "--usage"):
                 usage()
             if options in ("-p", "--plotuptimedistr"):
-                sg.plot_uptime_distribution()
+                ng.plot_uptime_distribution()
             if options in ("-s", "--simfile"):
                 simfile_name_ = str(args).strip()
                 if simfile_name_:
