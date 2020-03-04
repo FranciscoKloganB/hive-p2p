@@ -7,7 +7,7 @@ from typing import Tuple, Union
 from scipy.stats import skewnorm
 
 
-def generate_skewed_samples(sample_count: int = 20000, skewness: float = -90.0) -> np.array:
+def generate_skewed_samples(sample_count: int = 10000, skewness: float = -90.0) -> np.array:
     """
     Generates samples from a skewed normal distribution.
     Note:
@@ -59,16 +59,17 @@ def generate_skewed_samples_extended(bin_count: int = 7001, sample_count: int = 
     return samples, bin_probability
 
 
-def plot_uptime_distribution(bin_count: Union[int, str] = 'auto', sample_count: int = 10000, skewness: float = -0.0) -> None:
+if __name__ == "__main__":
     """
     Displays generate_skewed_samples in a two axis plot
     :param Union[int, str] bin_count: the number of bins to be depicted in the matplotlib.pyplot.hist plot
     :param int sample_count: the number of skewed samples to be drawn
     :param float skewness: where peak density will be found. (-) values are left skewed, (+) values are right skewed
     """
-    samples: np.array = generate_skewed_samples(sample_count, skewness)
-    plt.hist(samples, bin_count, density=True)
-    plt.title("Peer Node Uptime Distribution")
-    plt.xlabel("uptime")
-    plt.ylabel("density")
+    samples: np.array = generate_skewed_samples(skewness=float(input("input skewness: ")))
+    plt.hist(samples, 'auto', density=True)
+    plt.title("Peer Uptime Distribution")
+    plt.xlabel("Time Spent Online")
+    plt.ylabel("Frequency")
+    plt.xlim(0.0, 100.0)
     plt.show()
