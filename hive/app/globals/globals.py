@@ -9,7 +9,7 @@ MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 MIN_DETECTION_DELAY: int = 1  # 2 minutes
 MAX_DETECTION_DELAY: int = 3  # 6 minutes
 REPLICATION_LEVEL: int = 3  # Each file part has 3 copies, for simulation purposes, this copies are soft copies.
-MIN_CONVERGENCE_THRESHOLD: int = 3
+MIN_CONVERGENCE_THRESHOLD: int = 2
 LOSS_CHANCE: float = 0.04  # Each sent file as a 4% chance of timing out due to message being lost in travel
 DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE  # Each sent file as a 4% chance of timing out due to message being lost in travel
 # endregion
