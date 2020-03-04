@@ -6,6 +6,9 @@ import domain.Hivemind as hm
 
 
 # region Usage, Help and Main
+from globals.globals import SIMULATION_ROOT
+
+
 def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
@@ -32,9 +35,10 @@ def main(fname):
     if not fname:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
-    for i in range(30):
-        simulation = hm.Hivemind(simfile_name=fname, sim_number=i+1)
-        simulation.execute_simulation()
+    for name in os.listdir(SIMULATION_ROOT):
+        for i in range(30):
+            simulation = hm.Hivemind(simfile_name=name, sim_number=i+1)
+            simulation.execute_simulation()
 # endregion
 
 
