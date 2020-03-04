@@ -249,9 +249,7 @@ if __name__ == "__main__":
             if options in ("-u", "--usage"):
                 usage()
             if options in ("-p", "--plotuptimedistr"):
-                bin_count_: int = int(input("How many bins should the distribution have?"))
-                sample_count_: int = int(input("How many samples should be drawn?"))
-                sg.plot_uptime_distribution(bin_count_, sample_count_)
+                sg.plot_uptime_distribution()
             if options in ("-s", "--simfile"):
                 simfile_name_ = str(args).strip()
                 if simfile_name_:

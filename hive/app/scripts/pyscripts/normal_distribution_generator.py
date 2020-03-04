@@ -28,9 +28,9 @@ def generate_samples(surveys: int = 10, sample_count: int = 10000, mean: float =
 def generate_samples_extended(bin_count: int = 7001, sample_count: int = 7001) -> Tuple[np.array, np.array]:
     """
     Generates samples from a skewed normal distribution.
-     bin_count at 7001 represents all values between [30.00, 100.00] with 0.01 step
-     bin_count at 800001 would represents all values between [20.0000, 100.000] with 0.0001 step, and so on...
-     To let matplotlib.skewnorm module define an automatic number of bins use bin_count='auto'
+     surveys at 7001 represents all values between [30.00, 100.00] with 0.01 step
+     surveys at 800001 would represents all values between [20.0000, 100.000] with 0.0001 step, and so on...
+     To let matplotlib.skewnorm module define an automatic number of bins use surveys='auto'
      Keeping bins_count = sample_count is just an hack to facilitate np.random.choice(bins_count, sample_count)
      Because we are using bin_counts here, it is advised not to draw to many samples, as the function will be
      exponentially slower
