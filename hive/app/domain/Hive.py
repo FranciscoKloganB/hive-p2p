@@ -10,7 +10,7 @@ import utils.matrices as matrices
 import utils.metropolis_hastings as mh
 
 from domain.Worker import Worker
-from typing import Dict, List, Any, Tuple, Union
+from typing import Dict, List, Any
 from domain.helpers.FileData import FileData
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
