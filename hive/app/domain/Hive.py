@@ -36,19 +36,20 @@ class Hive:
     """
 
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
+    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker], sim_number: int = 0) -> None:
         """
         Instantiates an Hive abstraction
         :param Hivemind hivemind: Hivemand instance object which leads the simulation
         :param str file_name: name of the file this Hive is responsible for
         :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
+        :param int sim_number: optional value that can be passed to FileData to generate different .out names
         """
         self.current_epoch: int = 0
         self.corruption_chances: List[float] = [0, 0]
         self.id: str = str(uuid.uuid4())
         self.hivemind = hivemind
         self.members: Dict[str, Worker] = members
-        self.file: FileData = FileData(file_name)
+        self.file: FileData = FileData(file_name, sim_number=sim_number)
         self.desired_distribution: pd.DataFrame = pd.DataFrame()
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
