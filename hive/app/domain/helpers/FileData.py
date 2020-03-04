@@ -35,7 +35,7 @@ class FileData:
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
-        self.out_file: Any = open(os.path.join(OUTFILE_ROOT, "{}_{}{}".format(name, sim_number, ".out" if DEBUG else ".json")), "w+")
+        self.out_file: Any = open(os.path.join(OUTFILE_ROOT, "{}_{}{}".format(Path(name).resolve().stem, sim_number, ".out" if DEBUG else ".json")), "w+")
     # endregion
 
     # region Instance Methods
@@ -95,8 +95,9 @@ class FileData:
             "corruption_chance_tod": hive.corruption_chances[0]
         }
 
-        json_dict = sim_data.__dict__.update(extras)
-        json_string = json.dumps(json_dict, indent=4, sort_keys=True, ensure_ascii=False)
+        sim_data_dict = sim_data.__dict__
+        sim_data_dict.update(extras)
+        json_string = json.dumps(sim_data_dict, indent=4, sort_keys=True, ensure_ascii=False)
         self.fwrite(json_string)
 
     def fclose(self, string: str = None) -> None:
