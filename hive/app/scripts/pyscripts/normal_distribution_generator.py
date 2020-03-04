@@ -59,6 +59,16 @@ def generate_samples_extended(bin_count: int = 7001, sample_count: int = 7001) -
     return results, bin_probability
 
 
+def plot_uptime_distribution(bin_count: Union[int, str] = 'auto', mean: float = 34.0, std: float = 33.0) -> None:
+    results: np.array = generate_samples(mean=mean, std=std)
+    plt.hist(results, bin_count, density=True)
+    plt.title("Peer Uptime Distribution")
+    plt.xlabel("Time Spent Online")
+    plt.ylabel("Frequency")
+    plt.xlim(0.0, 100.0)
+    plt.show()
+
+
 if __name__ == "__main__":
     samples: np.array = generate_samples(mean=float(input("mean: ")), std=float(input("standard deviation: ")))
     plt.hist(samples, 'auto', density=True)
