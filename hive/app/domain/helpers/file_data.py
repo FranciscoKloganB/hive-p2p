@@ -33,7 +33,7 @@ class FileData:
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
-        self.out_file: Any = open(os.path.join(OUTFILE_ROOT, "{}_{}{}".format(self.name, sim_number, ".out")), "w+")
+        self.out_file: Any = open(os.path.join(OUTFILE_ROOT, "{}_{}{}".format(self.name, sim_number, ".out" if DEBUG else ".json")), "w+")
     # endregion
 
     # region Instance Methods
