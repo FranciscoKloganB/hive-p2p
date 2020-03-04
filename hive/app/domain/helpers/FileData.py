@@ -6,8 +6,9 @@ import pandas as pd
 
 from pathlib import Path
 from tabulate import tabulate
-from typing import Any, Union
-from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL
+from typing import Any, Union, Dict
+from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL, READ_SIZE, MAX_EPOCHS, MIN_DETECTION_DELAY, MAX_DETECTION_DELAY, REPLICATION_LEVEL, \
+    MIN_CONVERGENCE_THRESHOLD, LOSS_CHANCE, DELIVER_CHANCE
 from domain.helpers.SimulationData import SimulationData
 
 
@@ -71,7 +72,18 @@ class FileData:
         data.hive_size_before_maintenance = data.hive_size_before_maintenance[:epoch]
         data.hive_size_after_maintenance = data.hive_size_after_maintenance[:epoch]
         data.delay = data.delay[:epoch]
-        json_string = json.dumps(data.__dict__, indent=4, sort_keys=True, ensure_ascii=False)
+
+        extras: Dict[str, Any] = {
+            "read_size": READ_SIZE,
+            "max_epochs": MAX_EPOCHS,
+            "min_recovery_delay": MIN_DETECTION_DELAY,
+            "max_recovery_delay": MAX_DETECTION_DELAY,
+            "replication_level": REPLICATION_LEVEL,
+            "convergence_treshold": MIN_CONVERGENCE_THRESHOLD,
+            "channel_loss": LOSS_CHANCE,
+        }
+
+        json_string = json.dumps(data.__dict__.update(extras), indent=4, sort_keys=True, ensure_ascii=False)
         self.fwrite(json_string)
 
     def fclose(self, string: str = None) -> None:
@@ -105,3 +117,4 @@ class FileData:
         """
         self.simulation_data.save_sets_and_reset()
     # endregion
+
