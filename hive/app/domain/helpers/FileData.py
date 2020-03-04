@@ -31,11 +31,11 @@ class FileData:
         :param str name: name of the file referenced by this data class instance
         :param int sim_number: optional value that can be passed to FileData to generate different .out names
         """
-        self.name: str = str(Path(name).resolve().stem)
+        self.name: str = name
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
-        self.out_file: Any = open(os.path.join(OUTFILE_ROOT, "{}_{}{}".format(self.name, sim_number, ".out" if DEBUG else ".json")), "w+")
+        self.out_file: Any = open(os.path.join(OUTFILE_ROOT, "{}_{}{}".format(name, sim_number, ".out" if DEBUG else ".json")), "w+")
     # endregion
 
     # region Instance Methods
@@ -78,7 +78,7 @@ class FileData:
         sim_data.delay = sim_data.delay[:epoch]
 
         extras: Dict[str, Any] = {
-            "simfile_name" : origin,
+            "simfile_name": origin,
             "hive_id": hive.id,
             "file_name": self.name,
             "read_size": READ_SIZE,
