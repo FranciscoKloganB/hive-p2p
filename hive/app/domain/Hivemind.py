@@ -146,7 +146,7 @@ class Hivemind:
         hive_members: Dict[str, Worker] = {}
         for worker_id in shared[file_name]['members']:
             hive_members[worker_id] = self.workers[worker_id]
-        hive = Hive(self, file_name, hive_members, sim_number=self.sim_number)
+        hive = Hive(self, file_name, hive_members, sim_number=self.sim_number, origin=self.origin)
         self.hives[hive.id] = hive
         return hive
     # endregion

@@ -36,7 +36,7 @@ class Hive:
     """
 
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker], sim_number: int = 0) -> None:
+    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker], sim_number: int = 0, origin: str = "") -> None:
         """
         Instantiates an Hive abstraction
         :param Hivemind hivemind: Hivemand instance object which leads the simulation
@@ -49,7 +49,7 @@ class Hive:
         self.id: str = str(uuid.uuid4())
         self.hivemind = hivemind
         self.members: Dict[str, Worker] = members
-        self.file: FileData = FileData(file_name, sim_number=sim_number)
+        self.file: FileData = FileData(file_name, sim_number=sim_number, origin=origin)
         self.desired_distribution: pd.DataFrame = pd.DataFrame()
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)

@@ -26,7 +26,7 @@ class FileData:
     """
 
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, name: str, sim_number: int = 0):
+    def __init__(self, name: str, sim_number: int = 0, origin: str = ""):
         """
         :param str name: name of the file referenced by this data class instance
         :param int sim_number: optional value that can be passed to FileData to generate different .out names
@@ -35,7 +35,15 @@ class FileData:
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
-        self.out_file: Any = open(os.path.join(OUTFILE_ROOT, "{}_{}{}".format(Path(name).resolve().stem, sim_number, ".out" if DEBUG else ".json")), "w+")
+        self.out_file: Any = open(
+            os.path.join(
+                OUTFILE_ROOT, "{}_{}{}".format(
+                    Path(name).resolve().stem,
+                    Path(origin).resolve().stem,
+                    sim_number,
+                    ".out" if DEBUG else ".json"
+                )
+            ), "w+")
     # endregion
 
     # region Instance Methods
