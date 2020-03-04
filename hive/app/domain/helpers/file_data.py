@@ -1,15 +1,14 @@
 import json
 import os
-import re
-
-from typing import Any, Union
 
 import numpy as np
 import pandas as pd
-from tabulate import tabulate
 
-from domain.helpers.simulation_data import SimulationData
+from pathlib import Path
+from tabulate import tabulate
+from typing import Any, Union
 from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL
+from domain.helpers.simulation_data import SimulationData
 
 
 class FileData:
@@ -29,7 +28,7 @@ class FileData:
         :param str name: name of the file referenced by this data class instance
         :param int sim_number: optional value that can be passed to FileData to generate different .out names
         """
-        self.name: str = name
+        self.name: str = Path(name).resolve().stem
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
