@@ -28,7 +28,7 @@ class FileData:
         :param str name: name of the file referenced by this data class instance
         :param int sim_number: optional value that can be passed to FileData to generate different .out names
         """
-        self.name: str = Path(name).resolve().stem
+        self.name: str = str(Path(name).resolve().stem)
         self.desired_distribution: Union[None, pd.DataFrame] = None
         self.current_distribution: Union[None, pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
