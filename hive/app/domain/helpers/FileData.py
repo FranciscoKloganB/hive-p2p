@@ -8,7 +8,7 @@ from pathlib import Path
 from tabulate import tabulate
 from typing import Any, Union
 from globals.globals import OUTFILE_ROOT, DEBUG, R_TOL
-from domain.helpers.simulation_data import SimulationData
+from domain.helpers.SimulationData import SimulationData
 
 
 class FileData:

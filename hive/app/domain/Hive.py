@@ -11,7 +11,7 @@ import utils.metropolis_hastings as mh
 
 from domain.Worker import Worker
 from typing import Dict, List, Any, Tuple, Union
-from domain.helpers.file_data import FileData
+from domain.helpers.FileData import FileData
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, COMMUNICATION_CHANCES, MAX_EPOCHS
