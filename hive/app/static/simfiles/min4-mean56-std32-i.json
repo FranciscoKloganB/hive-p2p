@@ -131,24 +131,7 @@
     },
     "shared": {
         "FBZ_0134.NEF": {
-            "members": [
-                "ak",
-                "dd",
-                "l",
-                "bn",
-                "cj",
-                "ca",
-                "bq",
-                "ar",
-                "ct",
-                "cb",
-                "ce",
-                "ax",
-                "k",
-                "cr",
-                "c",
-                "au"
-            ],
+            "members": 8,
             "spread": "i"
         }
     }
