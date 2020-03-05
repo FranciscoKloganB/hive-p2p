@@ -7,7 +7,7 @@ READ_SIZE: int = 131072  # 32KB = 32768b || 128KB = 131072b || 512KB = 524288b |
 MAX_EPOCHS = 720  # One day has 24h, meaning that one epoch per minute wwould be 1440, 720 defines one epoch every two minutes
 MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 MIN_DETECTION_DELAY: int = 1  # 2 minutes
-MAX_DETECTION_DELAY: int = 3  # 6 minutes
+MAX_DETECTION_DELAY: int = 4  # 8 minutes
 REPLICATION_LEVEL: int = 3  # Each file part has 3 copies, for simulation purposes, this copies are soft copies.
 MIN_CONVERGENCE_THRESHOLD: int = 2
 LOSS_CHANCE: float = 0.04  # Each sent file as a 4% chance of timing out due to message being lost in travel
