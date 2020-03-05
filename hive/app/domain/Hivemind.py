@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import json
+import numpy as np
 
 from domain.Hive import Hive
 from domain.helpers.Enums import Status
@@ -144,8 +145,9 @@ class Hivemind:
         Creates a new hive
         """
         hive_members: Dict[str, Worker] = {}
-        for worker_id in shared[file_name]['members']:
-            hive_members[worker_id] = self.workers[worker_id]
+        initial_members: np.array = np.random.choice(a=[*self.workers.keys()], size=shared[file_name]['hive_size'], replace=False)
+        for member_id in initial_members:
+            hive_members[member_id] = self.workers[member_id]
         hive = Hive(self, file_name, hive_members, sim_number=self.sim_number, origin=self.origin)
         self.hives[hive.id] = hive
         return hive

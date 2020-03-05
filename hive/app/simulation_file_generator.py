@@ -249,16 +249,13 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
 
     add_file: bool = True
     while add_file:
-        n = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: \n")
         file_name = __in_file_name("\nInsert name of the file you wish to persist (include extension if it has one): ")
-        chosen_peers: List[str] = __init_hive_members(n, peer_uptime_dict, peer_names)
-
         shared_dict[file_name] = {}
-        shared_dict[file_name]["members"] = chosen_peers
         shared_dict[file_name]["spread"] = __in_initial_spread()
-
+        shared_dict[file_name]["hive_size"] = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: \n")
+        # n = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: \n")
+        # shared_dict[file_name]["members"] = __init_hive_members(n, peer_uptime_dict, peer_names)
         add_file = __in_yes_no("\nDo you want to add more files to be shared under this simulation file?")
-
     return shared_dict
 # endregion
 
