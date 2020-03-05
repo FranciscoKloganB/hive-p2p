@@ -196,9 +196,9 @@ def __init_peer_uptime_dict() -> Dict[str, float]:
     peers_uptime_dict = {}
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
         uptime = abs(samples.pop()[0]) / 100.0  # gets and removes last element in samples to assign it to label
-        if uptime >= 1.0:
-            peers_uptime_dict[label] = 1.0
-        elif min_uptime < uptime < 1.0:
+        if uptime >= 0.99:
+            peers_uptime_dict[label] = 0.99
+        elif min_uptime < uptime < 0.99:
             peers_uptime_dict[label] = uptime
         else:
             peers_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
