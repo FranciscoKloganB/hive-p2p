@@ -23,10 +23,7 @@ def usage():
 
 
 def plotvalues(epoch_means, mean):
-    # epochs_mean = y
-    # mean = epochs_mean
-
-    figure, axis = plt.subplot()
+    figure, axis = plt.subplots()
     plt.title("Corrupted Parts Plot")
 
     x = np.arange(start=0, stop=720)
@@ -37,9 +34,9 @@ def plotvalues(epoch_means, mean):
     plt.ylim(0, 1100)
 
     # Plot the epoch mean data
-    axis.plot(x, epoch_means, marker='o')
+    axis.plot(xs=x, ys=epoch_means, marker='o')
     # Plot the global mean
-    axis.plot(x, mean, label='global mean', linestyle='--')
+    axis.plot(xs=x, ys=[mean]*len(x), label='global mean', linestyle='--')
 
     plt.show()
     plt.savefig()
@@ -55,7 +52,7 @@ def main(directory, state):
             # Serialize json file
             json_obj = json.load(instance)
             # Epoch data from [0, terminated) w.r.t. number of corrupted_parts of the current simulation instance
-            data = json_obj["corrupted_parts"][:]
+            data = json_obj["corrupted_parts"][:json_obj["terminated"]]
             # Calculate and store the mean of current simulation instance
             avg_corrupted_parts.append(np.mean(data))
             # Calculate and store the mean at each epoch i of the current simulation instance
