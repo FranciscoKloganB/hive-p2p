@@ -23,8 +23,8 @@ def usage():
 
 
 def plotvalues(epoch_means, mean, plot_fname):
-    plt.figure("Corrupted Parts Plot")
-    plt.title("Corrupted Parts Plot")
+    plt.figure()
+    plt.title("Average part corruption over 30 simulations")
     plt.xlabel("Epoch (X)")
     plt.ylabel("Avg. Number of Corrupted Parts")
     plt.xlim(0, 720)
@@ -32,8 +32,8 @@ def plotvalues(epoch_means, mean, plot_fname):
     plt.axhline(y=mean,  label="global average", color='r', linestyle='-')
     plt.plot(epoch_means, label="cumulative average")
     plt.legend()
-    plt.show()
-    # plt.savefig(plot_fname)
+    # plt.show()
+    plt.savefig(plot_fname)
 
 
 def main(directory, state):
