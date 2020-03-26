@@ -31,6 +31,7 @@ def plotvalues(epoch_means, mean, plot_fname):
     plt.ylim(0, 6)
     plt.axhline(y=mean,  label="global average", color='r', linestyle='-')
     plt.plot(epoch_means, label="cumulative average")
+    plt.legend()
     plt.show()
     # plt.savefig(plot_fname)
 
