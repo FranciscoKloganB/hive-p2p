@@ -22,24 +22,17 @@ def usage():
     sys.exit(" ")
 
 
-def plotvalues(epoch_means, mean):
-    figure, axis = plt.subplots()
+def plotvalues(epoch_means, mean, plot_fname):
+    plt.figure("Corrupted Parts Plot")
     plt.title("Corrupted Parts Plot")
-
-    x = np.arange(start=0, stop=720)
-    plt.xlabel("Epoch")
+    plt.xlabel("Epoch (X)")
+    plt.ylabel("Avg. Number of Corrupted Parts")
     plt.xlim(0, 720)
-
-    plt.ylabel("Corrupted Parts")
-    plt.ylim(0, 1100)
-
-    # Plot the epoch mean data
-    axis.plot(xs=x, ys=epoch_means, marker='o')
-    # Plot the global mean
-    axis.plot(xs=x, ys=[mean]*len(x), label='global mean', linestyle='--')
-
+    plt.ylim(0, 6)
+    plt.axhline(y=mean,  label="global average", color='r', linestyle='-')
+    plt.plot(epoch_means, label="cumulative average")
     plt.show()
-    plt.savefig()
+    # plt.savefig(plot_fname)
 
 
 def main(directory, state):
@@ -66,7 +59,7 @@ def main(directory, state):
     avg_corrupted_parts_epoch = [meansum/30 for meansum in avg_corrupted_parts_epoch]
     # Calculate the global mean
     avg_corrupted_parts_mean = np.mean(avg_corrupted_parts)
-    plotvalues(epoch_means=avg_corrupted_parts_epoch, mean=avg_corrupted_parts_mean)
+    plotvalues(epoch_means=avg_corrupted_parts_epoch, mean=avg_corrupted_parts_mean, plot_fname="{}-{}".format(meandir, istate))
 
 
 if __name__ == "__main__":
