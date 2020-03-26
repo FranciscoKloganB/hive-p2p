@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import json
+import numpy as np
 
 from domain.Hive import Hive
 from domain.helpers.Enums import Status
@@ -21,16 +22,19 @@ class Hivemind:
     :ivar Dict[Union[Worker, str], int] workers_status: maps workers or their names to their connectivity status
     :ivar Dict[str, List[FileData]] workers_hives: maps workers' names to hives they are known to belong to
     :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
+    :ivar int sim_number: allows different simulation executions to be distinguishable from each other
     """
 
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, simfile_name: str) -> None:
+    def __init__(self, simfile_name: str, sim_number: int) -> None:
         """
         Instantiates an Hivemind object
         :param str simfile_name: path to json file containing the parameters this simulation should execute with
+        :param int sim_number: allows different simulation executions to be distinguishable from each other
         """
+        self.origin = simfile_name
+        self.sim_number = sim_number
         self.epoch = 1
-        self.results: Dict[str, Any] = {}
 
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
         with open(simfile_path) as input_file:
@@ -78,7 +82,6 @@ class Hivemind:
         """
         Runs a stochastic swarm guidance algorithm applied to a P2P network
         """
-
         while self.epoch < MAX_EPOCHS_PLUS and self.hives:
             print("epoch: {}".format(self.epoch))
             terminated_hives: List[str] = []
@@ -86,14 +89,11 @@ class Hivemind:
                 hive.execute_epoch(self.epoch)
                 if not hive.is_running():
                     terminated_hives.append(hive.id)
-                    hive.tear_down(self.epoch)
+                    hive.tear_down(self.origin, self.epoch)
             for hid in terminated_hives:
                 print("Hive: {} terminated at epoch {}".format(hid, self.epoch))
                 self.hives.pop(hid)
             self.epoch += 1
-
-    def append_epoch_results(self, hive_id: str, hive_results: [Dict, Any]) -> True:
-        self.results[hive_id] = hive_results
     # endregion
 
     # region Keeper Interface
@@ -145,9 +145,10 @@ class Hivemind:
         Creates a new hive
         """
         hive_members: Dict[str, Worker] = {}
-        for worker_id in shared[file_name]['members']:
-            hive_members[worker_id] = self.workers[worker_id]
-        hive = Hive(self, file_name, hive_members)
+        initial_members: np.array = np.random.choice(a=[*self.workers.keys()], size=shared[file_name]['hive_size'], replace=False)
+        for member_id in initial_members:
+            hive_members[member_id] = self.workers[member_id]
+        hive = Hive(self, file_name, hive_members, sim_number=self.sim_number, origin=self.origin)
         self.hives[hive.id] = hive
         return hive
     # endregion

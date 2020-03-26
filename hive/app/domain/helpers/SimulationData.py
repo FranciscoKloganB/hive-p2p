@@ -46,6 +46,7 @@ class SimulationData:
         self.lost_messages: List[int] = [0] * MAX_EPOCHS  # gathered
         ###############################
         self.parts_in_hive: List[int] = [0] * MAX_EPOCHS  # gathered
+        self.initial_spread = ""
 
     # endregion
 

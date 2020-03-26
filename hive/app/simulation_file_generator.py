@@ -11,7 +11,7 @@ import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT
-from scripts.pyscripts import skewed_distribution_generator as sg, label_generator as cg
+from scripts.pyscripts import skewed_distribution_generator as sg, normal_distribution_generator as ng, label_generator as cg
 
 
 # region Input Consumption and Verification
@@ -83,6 +83,42 @@ def __in_samples_skewness() -> float:
             continue
 
 
+def __in_samples_mean() -> float:
+    """
+    :return float mean: the mean value
+    """
+    print("\nMean should be [0.0, 100.0];")
+    mean = input("Enter the desired mean for the normal distribution: ")
+    while True:
+        try:
+            mean = float(mean)
+            if 0.0 <= mean <= 100.0:
+                return float(str(mean)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
+            else:
+                mean = input("Mean should be in [0, 100.0]... Try again: ")
+        except ValueError:
+            mean = input("Input should be an integer or a float... Try again: ")
+            continue
+
+
+def __in_samples_std() -> float:
+    """
+    :return float std: the standard deviation value
+    """
+    print("\nStandard deviation should be [0.0, 50.0]")
+    std = input("Enter the desired standard deviation: ")
+    while True:
+        try:
+            std = float(std)
+            if 0 <= std <= 50.0:
+                return float(str(std)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
+            else:
+                std = input("Standard deviation should be in [0.0, 50.0]... Try again: ")
+        except ValueError:
+            std = input("Input should be an integer or a float... Try again: ")
+            continue
+
+
 def __in_file_name(msg: str) -> str:
     """
     :param str msg: message to be printed to the user upon first input request
@@ -139,15 +175,30 @@ def __init_peer_uptime_dict() -> Dict[str, float]:
     number_of_nodes = __in_number_of_nodes("\nEnter the number of nodes you wish to have in the network [2, 9999]: ")
     min_uptime = float(str(__in_min_node_uptime("\nEnter the mininum node uptime of nodes in the network [0.0, 100.0]: "))[:9]) / 100.0
 
-    skewness = __in_samples_skewness()
-    samples = sg.generate_skewed_samples(skewness=skewness).tolist()
+    # skewness = __in_samples_skewness()
+    # samples = sg.generate_skewed_samples(skewness=skewness).tolist()
+    #
+    # peers_uptime_dict = {}
+    # for label in itertools.islice(cg.yield_label(), number_of_nodes):
+    #     uptime = abs(samples.pop()) / 100.0  # gets and removes last element in samples to assign it to label
+    #     if uptime > 1.0:
+    #         peers_uptime_dict[label] = 1.0
+    #     elif uptime > min_uptime:
+    #         peers_uptime_dict[label] = uptime
+    #     else:
+    #         peers_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
+    # samples.clear()
+    # return peers_uptime_dict
+    mean = __in_samples_mean()
+    std = __in_samples_std()
+    samples = ng.generate_samples(surveys=1, mean=mean, std=std).tolist()
 
     peers_uptime_dict = {}
     for label in itertools.islice(cg.yield_label(), number_of_nodes):
-        uptime = abs(samples.pop()) / 100.0  # gets and removes last element in samples to assign it to label
-        if uptime > 1.0:
-            peers_uptime_dict[label] = 1.0
-        elif uptime > min_uptime:
+        uptime = abs(samples.pop()[0]) / 100.0  # gets and removes last element in samples to assign it to label
+        if uptime >= 0.99:
+            peers_uptime_dict[label] = 0.99
+        elif min_uptime < uptime < 0.99:
             peers_uptime_dict[label] = uptime
         else:
             peers_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
@@ -198,16 +249,13 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
 
     add_file: bool = True
     while add_file:
-        n = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: \n")
         file_name = __in_file_name("\nInsert name of the file you wish to persist (include extension if it has one): ")
-        chosen_peers: List[str] = __init_hive_members(n, peer_uptime_dict, peer_names)
-
         shared_dict[file_name] = {}
-        shared_dict[file_name]["members"] = chosen_peers
         shared_dict[file_name]["spread"] = __in_initial_spread()
-
+        shared_dict[file_name]["hive_size"] = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: \n")
+        # n = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: \n")
+        # shared_dict[file_name]["members"] = __init_hive_members(n, peer_uptime_dict, peer_names)
         add_file = __in_yes_no("\nDo you want to add more files to be shared under this simulation file?")
-
     return shared_dict
 # endregion
 
@@ -249,9 +297,7 @@ if __name__ == "__main__":
             if options in ("-u", "--usage"):
                 usage()
             if options in ("-p", "--plotuptimedistr"):
-                bin_count_: int = int(input("How many bins should the distribution have?"))
-                sample_count_: int = int(input("How many samples should be drawn?"))
-                sg.plot_uptime_distribution(bin_count_, sample_count_)
+                ng.plot_uptime_distribution()
             if options in ("-s", "--simfile"):
                 simfile_name_ = str(args).strip()
                 if simfile_name_:

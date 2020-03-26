@@ -10,8 +10,8 @@ import utils.matrices as matrices
 import utils.metropolis_hastings as mh
 
 from domain.Worker import Worker
-from typing import Dict, List, Any, Tuple, Union
-from domain.helpers.file_data import FileData
+from typing import Dict, List, Any
+from domain.helpers.FileData import FileData
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, COMMUNICATION_CHANCES, MAX_EPOCHS
@@ -36,19 +36,20 @@ class Hive:
     """
 
     # region Class Variables, Instance Variables and Constructors
-    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker]) -> None:
+    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker], sim_number: int = 0, origin: str = "") -> None:
         """
         Instantiates an Hive abstraction
         :param Hivemind hivemind: Hivemand instance object which leads the simulation
         :param str file_name: name of the file this Hive is responsible for
         :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
+        :param int sim_number: optional value that can be passed to FileData to generate different .out names
         """
         self.current_epoch: int = 0
         self.corruption_chances: List[float] = [0, 0]
         self.id: str = str(uuid.uuid4())
         self.hivemind = hivemind
         self.members: Dict[str, Worker] = members
-        self.file: FileData = FileData(file_name)
+        self.file: FileData = FileData(file_name, sim_number=sim_number, origin=origin)
         self.desired_distribution: pd.DataFrame = pd.DataFrame()
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
@@ -163,6 +164,8 @@ class Hive:
         :param str spread_mode: 'u' for uniform distribution, 'a' one* peer receives all or 'i' to distribute according to the desired steady state distribution
         :param Dict[int, SharedFilePart] file_parts: file parts to distribute over the members
         """
+        self.file.simulation_data.initial_spread = spread_mode
+
         if spread_mode == "a":
             choices: List[Worker] = [*self.members.values()]
             workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
@@ -316,9 +319,9 @@ class Hive:
         self.running = False
         self.file.simulation_data.set_fail(self.current_epoch, msg)
 
-    def tear_down(self, epoch: int) -> None:
+    def tear_down(self, origin: str, epoch: int) -> None:
         # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
-        self.file.jwrite(self.file.simulation_data, epoch)
+        self.file.jwrite(self, origin, epoch)
 
     def set_recovery_epoch(self, part: SharedFilePart) -> None:
         self.set_recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
