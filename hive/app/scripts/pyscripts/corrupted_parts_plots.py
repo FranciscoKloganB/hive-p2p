@@ -11,8 +11,6 @@ from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 
-from globals.globals import OUTFILE_ROOT
-
 
 def usage():
     print(" -------------------------------------------------------------------------")
@@ -48,12 +46,12 @@ def plotvalues(epoch_means, mean):
 
 
 def main(directory, state):
-    path = os.path.join(OUTFILE_ROOT, directory, state)
+    path = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', '..', 'static', 'outfiles')), directory, state)
     avg_corrupted_parts: List[float] = []
     avg_corrupted_parts_epoch: List[float] = [0.0] * 720
     for file in os.listdir(path):
         # Process each outfile representing one simulation instance, with similar initial conditions
-        with open(file) as instance:
+        with open(os.path.join(path, file)) as instance:
             # Serialize json file
             json_obj = json.load(instance)
             # Epoch data from [0, terminated) w.r.t. number of corrupted_parts of the current simulation instance
