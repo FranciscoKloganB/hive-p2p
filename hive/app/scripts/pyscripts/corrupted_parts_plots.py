@@ -10,6 +10,7 @@ from typing import List, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.font_manager import FontProperties
 
 
 def usage():
@@ -34,13 +35,13 @@ def plotvalues(epoch_means, mean, terminations, plot_fname):
     # Trace cumulative means
     plt.plot(epoch_means, label="cumulative average")
     # Trace terminations
-    plt.axvline(x=terminations.pop(), label="at least one simulation instance ended", color='y', linestyle='--')
-    for epoch in terminations:
-        plt.axvline(x=epoch, color='y', linestyle='--')
+    # plt.axvline(x=terminations.pop(), label="at least one simulation instance ended", color='y', linestyle='--')
+    # for epoch in terminations:
+    #     plt.axvline(x=epoch, color='y', linestyle='--')
     # Display legends
-    plt.legend()
+    plt.legend(loc='lower right')
     # plt.show()
-    plt.savefig(plot_fname)
+    plt.savefig(plot_fname, prop=FontProperties().set_size('small'))
 
 
 def process_file(filepath, avg_corrupted_parts, terminated_at_acount):
