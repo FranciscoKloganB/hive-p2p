@@ -44,7 +44,7 @@ def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.savefig("{}-{}-{}".format("delay", directory, state), prop=FontProperties().set_size('small'))
 
 
-def process_file(filepath, avg_delay_parts, terminated_at_acount):
+def process_file(filepath, avg_delay, terminated_at_acount):
     with open(filepath) as instance:
         # Serialize json file
         json_obj = json.load(instance)
@@ -57,7 +57,7 @@ def process_file(filepath, avg_delay_parts, terminated_at_acount):
         # Epoch data from [0, terminated) w.r.t. delay of the current simulation instance
         data = json_obj["delay"][:terminated]
         # Calculate and store the mean of current simulation instance
-        avg_delay_parts.append(np.mean(data))
+        avg_delay.append(np.mean(data))
         # Calculate and store the mean at each epoch i of the current simulation instance
         temp_list = []
         for i in range(terminated):
@@ -67,7 +67,7 @@ def process_file(filepath, avg_delay_parts, terminated_at_acount):
         return temp_list
 
 
-def get_epochs_means(avg_delay_parts_epoch, terminated_at_acount):
+def get_epochs_means(avg_delay_epoch, terminated_at_acount):
     breakpoints = sorted([epoch - 1 for epoch in terminated_at_acount.keys()], reverse=True)  # epoch 1 is index 0, epoch 720 is epoch 719
     last_breakpoint = breakpoints[0]
     next_breakpoint = breakpoints.pop()
@@ -75,32 +75,32 @@ def get_epochs_means(avg_delay_parts_epoch, terminated_at_acount):
     divisor = 30
     while at <= last_breakpoint:  # from 0 up to maximum of 719, inclusive
         if at == last_breakpoint:
-            avg_delay_parts_epoch[at] /= divisor
-            return avg_delay_parts_epoch
+            avg_delay_epoch[at] /= divisor
+            return avg_delay_epoch
         elif at == next_breakpoint:
-            avg_delay_parts_epoch[at] /= divisor
+            avg_delay_epoch[at] /= divisor
             divisor -= terminated_at_acount[next_breakpoint + 1]  # Subtract simulation instances who died at epoch <next_stop>, before doing the mean calculus
             next_breakpoint = breakpoints.pop()  # pop doesn't cause error because, if next stop is last stop, then while block does not execute
             at += 1
         else:
-            avg_delay_parts_epoch[at] /= divisor
+            avg_delay_epoch[at] /= divisor
             at += 1
 
 
 def main(directory, state):
     path = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', '..', 'static', 'outfiles')), directory, state)
-    avg_delay_parts: List[float] = []
-    avg_delay_parts_epoch: List[float] = [0.0] * 720
+    avg_delay: List[float] = []
+    avg_delay_epoch: List[float] = [0.0] * 720
     terminated_at_acount: Dict[int, int] = {}
     for filename in os.listdir(path):
-        _ = process_file(os.path.join(path, filename), avg_delay_parts, terminated_at_acount)
-        avg_delay_parts_epoch = [sum(n) for n in zip_longest(avg_delay_parts_epoch, _, fillvalue=0)]
+        _ = process_file(os.path.join(path, filename), avg_delay, terminated_at_acount)
+        avg_delay_epoch = [sum(n) for n in zip_longest(avg_delay_epoch, _, fillvalue=0)]
     # Calculate the global mean
-    avg_delay_parts_mean = np.mean(avg_delay_parts)
+    avg_delay_mean = np.mean(avg_delay)
     # Calculate the global mean at epoch i; Since we have a sum of means, at each epoch, we only need to divide each element by the number of seen instances
-    avg_delay_parts_epoch = get_epochs_means(avg_delay_parts_epoch, terminated_at_acount)
+    avg_delay_epoch = get_epochs_means(avg_delay_epoch, terminated_at_acount)
 
-    plotvalues(avg_delay_parts_epoch, avg_delay_parts_mean, [*terminated_at_acount.keys()], directory, state)
+    plotvalues(avg_delay_epoch, avg_delay_mean, [*terminated_at_acount.keys()], directory, state)
 
 
 if __name__ == "__main__":
