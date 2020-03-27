@@ -78,8 +78,8 @@ def get_epochs_means(avg_corrupted_parts_epoch, terminated_at_acount):
             avg_corrupted_parts_epoch[at] /= divisor
             return avg_corrupted_parts_epoch
         elif at == next_breakpoint:
-            divisor -= terminated_at_acount[next_breakpoint + 1]  # Subtract simulation instances who died at epoch <next_stop>, before doing the mean calculus
             avg_corrupted_parts_epoch[at] /= divisor
+            divisor -= terminated_at_acount[next_breakpoint + 1]  # Subtract simulation instances who died at epoch <next_stop>, before doing the mean calculus
             next_breakpoint = breakpoints.pop()  # pop doesn't cause error because, if next stop is last stop, then while block does not execute
             at += 1
         else:
