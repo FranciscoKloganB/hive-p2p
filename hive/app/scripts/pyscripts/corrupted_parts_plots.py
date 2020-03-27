@@ -23,7 +23,7 @@ def usage():
     sys.exit(" ")
 
 
-def plotvalues(epoch_means, mean, terminations, plot_fname):
+def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.figure()
     plt.title("Corruption Analysis - iState 'a'")
     plt.xlabel("Epoch")
@@ -41,7 +41,7 @@ def plotvalues(epoch_means, mean, terminations, plot_fname):
     # Display legends
     plt.legend(loc='lower right')
     # plt.show()
-    plt.savefig(plot_fname, prop=FontProperties().set_size('small'))
+    plt.savefig("{}-{}-{}".format("corruption", directory, state), prop=FontProperties().set_size('small'))
 
 
 def process_file(filepath, avg_corrupted_parts, terminated_at_acount):
@@ -100,7 +100,7 @@ def main(directory, state):
     # Calculate the global mean at epoch i; Since we have a sum of means, at each epoch, we only need to divide each element by the number of seen instances
     avg_corrupted_parts_epoch = get_epochs_means(avg_corrupted_parts_epoch, terminated_at_acount)
 
-    plotvalues(avg_corrupted_parts_epoch, avg_corrupted_parts_mean, [*terminated_at_acount.keys()], "{}-{}-{}".format("corruption", directory, state))
+    plotvalues(avg_corrupted_parts_epoch, avg_corrupted_parts_mean, [*terminated_at_acount.keys()], directory, state)
 
 
 if __name__ == "__main__":
