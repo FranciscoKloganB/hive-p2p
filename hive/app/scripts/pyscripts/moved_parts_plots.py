@@ -29,7 +29,7 @@ def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Number of Moved Messages")
     plt.xlim(0, 720)
-    plt.ylim(0, 50)
+    plt.ylim(0, 1100)
     # Trace global mean
     plt.axhline(y=mean,  label="global average", color='c', linestyle='-')
     # Trace cumulative means
