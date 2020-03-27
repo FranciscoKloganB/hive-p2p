@@ -16,7 +16,7 @@ from matplotlib.font_manager import FontProperties
 def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
-    print(" Collect data regarding corrupted parts from a site of output files located in referenced directory\n")
+    print(" Collect data regarding corrupted parts from a collection of output files located in referenced directory\n")
     print(" Typical usage: python corrupted_parts_plots.py --meandir=mean32 --istate=a\n")
     print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
     print(" -------------------------------------------------------------------------\n")
