@@ -22,15 +22,22 @@ def usage():
     sys.exit(" ")
 
 
-def plotvalues(epoch_means, mean, plot_fname):
+def plotvalues(epoch_means, mean, terminations, plot_fname):
     plt.figure()
     plt.title("Average part corruption over 30 simulations")
     plt.xlabel("Epoch (X)")
     plt.ylabel("Avg. Number of Corrupted Parts")
     plt.xlim(0, 720)
     plt.ylim(0, 6)
-    plt.axhline(y=mean,  label="global average", color='r', linestyle='-')
+    # Trace global mean
+    plt.axhline(y=mean,  label="global average", color='c', linestyle='-')
+    # Trace cumulative means
     plt.plot(epoch_means, label="cumulative average")
+    # Trace terminations
+    plt.axvline(x=terminations.pop(), label="at least one simulation instance ended", color='y', linestyle='--')
+    for epoch in terminations:
+        plt.axvline(x=epoch, color='y', linestyle='--')
+    # Display legends
     plt.legend()
     # plt.show()
     plt.savefig(plot_fname)
@@ -60,19 +67,23 @@ def process_file(filepath, avg_corrupted_parts, terminated_at_acount):
 
 
 def get_epochs_means(avg_corrupted_parts_epoch, terminated_at_acount):
-    breakpoints = sorted([*terminated_at_acount.keys()], reverse=True)
-    last_stop = breakpoints[0]
-    next_stop = breakpoints.pop()
+    breakpoints = sorted([epoch - 1 for epoch in terminated_at_acount.keys()], reverse=True)  # epoch 1 is index 0, epoch 720 is epoch 719
+    last_breakpoint = breakpoints[0]
+    next_breakpoint = breakpoints.pop()
     at = 0
     divisor = 30
-    while at < last_stop:
-        if at == next_stop:
-            divisor -= terminated_at_acount[next_stop]  # Subtract simulation instances who died at epoch <next_stop>, which we will process in next iter
-            next_stop = breakpoints.pop()  # pop doesn't cause error because, if next stop is last stop, then while block does not execute
+    while at <= last_breakpoint:  # from 0 up to maximum of 719, inclusive
+        if at == last_breakpoint:
+            avg_corrupted_parts_epoch[at] /= divisor
+            return avg_corrupted_parts_epoch
+        elif at == next_breakpoint:
+            divisor -= terminated_at_acount[next_breakpoint + 1]  # Subtract simulation instances who died at epoch <next_stop>, before doing the mean calculus
+            avg_corrupted_parts_epoch[at] /= divisor
+            next_breakpoint = breakpoints.pop()  # pop doesn't cause error because, if next stop is last stop, then while block does not execute
+            at += 1
         else:
             avg_corrupted_parts_epoch[at] /= divisor
             at += 1
-    return avg_corrupted_parts_epoch
 
 
 def main(directory, state):
@@ -88,7 +99,7 @@ def main(directory, state):
     # Calculate the global mean at epoch i; Since we have a sum of means, at each epoch, we only need to divide each element by the number of seen instances
     avg_corrupted_parts_epoch = get_epochs_means(avg_corrupted_parts_epoch, terminated_at_acount)
 
-    plotvalues(epoch_means=avg_corrupted_parts_epoch, mean=avg_corrupted_parts_mean, plot_fname="{}-{}".format(meandir, istate))
+    plotvalues(avg_corrupted_parts_epoch, avg_corrupted_parts_mean, [*terminated_at_acount.keys()], "{}-{}".format(meandir, istate))
 
 
 if __name__ == "__main__":
