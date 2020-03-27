@@ -25,11 +25,11 @@ def usage():
 
 def plotvalues(epoch_means, mean, terminations, plot_fname):
     plt.figure()
-    plt.title("Average part corruption over 30 simulations")
-    plt.xlabel("Epoch (X)")
+    plt.title("Corruption Analysis - iState 'a'")
+    plt.xlabel("Epoch")
     plt.ylabel("Avg. Number of Corrupted Parts")
     plt.xlim(0, 720)
-    plt.ylim(0, 6)
+    plt.ylim(0, 10)
     # Trace global mean
     plt.axhline(y=mean,  label="global average", color='c', linestyle='-')
     # Trace cumulative means
@@ -100,7 +100,7 @@ def main(directory, state):
     # Calculate the global mean at epoch i; Since we have a sum of means, at each epoch, we only need to divide each element by the number of seen instances
     avg_corrupted_parts_epoch = get_epochs_means(avg_corrupted_parts_epoch, terminated_at_acount)
 
-    plotvalues(avg_corrupted_parts_epoch, avg_corrupted_parts_mean, [*terminated_at_acount.keys()], "{}-{}".format(meandir, istate))
+    plotvalues(avg_corrupted_parts_epoch, avg_corrupted_parts_mean, [*terminated_at_acount.keys()], "{}-{}-{}".format("corruption", directory, state))
 
 
 if __name__ == "__main__":
@@ -119,4 +119,18 @@ if __name__ == "__main__":
     except getopt.GetoptError:
         usage()
         sys.exit(0)
-    main(meandir, istate) if (meandir and istate) else usage()
+    if (meandir and istate):
+        main(meandir, istate)
+    else:
+        main('mean32', 'a')
+        main('mean32', 'i')
+        main('mean32', 'u')
+        main('mean56', 'a')
+        main('mean56', 'i')
+        main('mean56', 'u')
+        main('mean78', 'a')
+        main('mean78', 'i')
+        main('mean78', 'u')
+        main('mean90', 'a')
+        main('mean90', 'i')
+        main('mean90', 'u')
