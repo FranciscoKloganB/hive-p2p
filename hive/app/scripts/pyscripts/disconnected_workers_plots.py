@@ -29,7 +29,7 @@ def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Number of Disconnected Workers")
     plt.xlim(0, 720)
-    plt.ylim(0, 5)
+    plt.ylim(0, 0.5)
     # Trace global mean
     plt.axhline(y=mean,  label="global average", color='c', linestyle='-')
     # Trace cumulative means
