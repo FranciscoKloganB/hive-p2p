@@ -77,13 +77,15 @@ class FileData:
         if DEBUG:
             [print("* {};".format(reason)) for reason in sim_data.msg]
 
-        sim_data.disconnected_workers = sim_data.disconnected_workers[:epoch]
+        sim_data.corrupted_parts = sim_data.corrupted_parts[:epoch]
         sim_data.delay = sim_data.delay[:epoch]
+        sim_data.disconnected_workers = sim_data.disconnected_workers[:epoch]
+        sim_data.lost_messages = sim_data.lost_messages[:epoch]
         sim_data.lost_parts = sim_data.lost_parts[:epoch]
         sim_data.hive_status_before_maintenance = sim_data.hive_status_before_maintenance[:epoch]
         sim_data.hive_size_before_maintenance = sim_data.hive_size_before_maintenance[:epoch]
         sim_data.hive_size_after_maintenance = sim_data.hive_size_after_maintenance[:epoch]
-        sim_data.delay = sim_data.delay[:epoch]
+        sim_data.moved_parts = sim_data.moved_parts[:epoch]
 
         extras: Dict[str, Any] = {
             "simfile_name": origin,
