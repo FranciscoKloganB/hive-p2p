@@ -24,30 +24,42 @@ def usage():
 
 
 def plotvalues(convergence_times_list, directory, state):
-    time_in_convergence = convergence_times_list[0]
-    termination_epochs = convergence_times_list[1]
-    largest_window = convergence_times_list[3]
-    smallest_window = convergence_times_list[4]
+    print()
 
-    # colors: time_in_convergence, termination_epochs, largest_window, smallest_window
-    colors = ['blue', 'red', 'cyan', 'tan']
-    color_labels = ["time in converrgence", "termination epoch", "largest convergence window", "smallest convergence window"]
-
-    # TODO: Figure how to build X axis to have 30 columns and Y axis to have instance_data values
-    x = []
-    for i in range(len(time_in_convergence)):
-        instance_data = [time_in_convergence[i], termination_epochs[i], largest_window[i], smallest_window[i]]
-        x.append(instance_data)
+    time_in_convergence = []
+    termination_epochs = []
+    largest_window = []
+    smallest_window = []
+    for e in convergence_times_list:
+        time_in_convergence.append(e[0])
+        termination_epochs.append(e[1])
+        largest_window.append(e[3])
+        smallest_window.append(e[4])
 
     fig, ax = plt.subplots()
-    ax.hist(x, bins=len(time_in_convergence), range=(0, 30), density=False, color=colors, label=color_labels, histtype='bar', stacked=False)
-    ax.legend(loc='upper right', prop={'size': 10})
 
-    plt.title("Convergence Analysis - iState({})".format(state))
-    plt.xlabel("Simulation Instances")
-    plt.ylabel("Epochs")
+    width = 0.25  # the width of the bars
+    simulation_instance_count = len(convergence_times_list)
+    simulation_labels = ["S{}".format(i) for i in range(1, simulation_instance_count + 1)]  # label of each bar
+    x = np.arange(simulation_instance_count)  # number of bars
+
+    ax.bar(x - width, time_in_convergence, width, label='time in converrgence')
+    ax.bar(x - width / 2, termination_epochs, width, label='termination epoch')
+    ax.bar(x + width / 2, largest_window, width, label='largest convergence window')
+    ax.bar(x + width, smallest_window, width, label='smallest convergence window')
+
+    ax.set_title("Convergence Analysis - iState({})".format(state))
+    ax.set_xlabel("Simulation Instances")
+    ax.set_ylabel("Epochs")
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(simulation_labels)
+
     plt.axhline(y=np.mean(time_in_convergence),  label="avg. time in convergence", color='green', linestyle='--')
     plt.axhline(y=np.mean(termination_epochs),  label="avg. termination epoch", color='yellow', linestyle='--')
+    ax.legend()
+
+    fig.tight_layout()
     plt.show()
     # plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
 
