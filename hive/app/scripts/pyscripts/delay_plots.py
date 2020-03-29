@@ -25,7 +25,7 @@ def usage():
 
 def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.figure()
-    plt.title("Delay Analysis - mean({}), iState({})".format(directory, state))
+    plt.title("Delay Analysis - {}i{}".format(directory, state))
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Delay")
     plt.xlim(0, 720)

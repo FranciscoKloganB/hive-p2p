@@ -25,7 +25,7 @@ def usage():
 
 def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.figure()
-    plt.title("Lost Message Analysis - mean({}), iState({})".format(directory, state))
+    plt.title("Lost Message Analysis - {}i{}".format(directory, state))
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Number of Lost Messages")
     plt.xlim(0, 720)

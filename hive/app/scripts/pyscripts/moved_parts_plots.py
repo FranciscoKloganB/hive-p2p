@@ -25,7 +25,7 @@ def usage():
 
 def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.figure()
-    plt.title("Moved Parts Analysis - mean({}), iState({})".format(directory, state))
+    plt.title("Moved Parts Analysis - {}i{}".format(directory, state))
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Number of Moved Messages")
     plt.xlim(0, 720)
