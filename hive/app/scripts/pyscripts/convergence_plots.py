@@ -43,10 +43,10 @@ def plotvalues(convergence_times_list, directory, state):
     simulation_labels = ["S{}".format(i) for i in range(1, simulation_instance_count + 1)]  # label of each bar
     x = np.arange(simulation_instance_count)  # number of bars
 
-    ax.bar(x - (3/2) * width, time_in_convergence, width, label='time in converrgence')
-    ax.bar(x - width / 2, termination_epochs, width, label='termination epoch')
-    ax.bar(x + width / 2, largest_window, width, label='largest convergence window')
-    ax.bar(x + (3/2) * width, smallest_window, width, label='smallest convergence window')
+    ax.bar(x - (3/2) * width, time_in_convergence, width, label='time in converrgence', color='darkslategrey')
+    ax.bar(x - width / 2, termination_epochs, width, label='termination epoch', color='tan')
+    ax.bar(x + width / 2, largest_window, width, label='largest convergence window', color='olivedrab')
+    ax.bar(x + (3/2) * width, smallest_window, width, label='smallest convergence window', color='yellowgreen')
 
     ax.set_title("Convergence Analysis - iState({})".format(state))
     ax.set_xlabel("Simulation Instances")
@@ -55,8 +55,8 @@ def plotvalues(convergence_times_list, directory, state):
     ax.set_xticks(x)
     ax.set_xticklabels(simulation_labels)
 
-    plt.axhline(y=np.mean(time_in_convergence),  label="avg. time in convergence", color='green', linestyle='--')
-    plt.axhline(y=np.mean(termination_epochs),  label="avg. termination epoch", color='yellow', linestyle='--')
+    plt.axhline(y=np.mean(time_in_convergence),  label="avg. time in convergence", color='darkcyan', linestyle='--')
+    plt.axhline(y=np.mean(termination_epochs),  label="avg. termination epoch", color='darkkhaki', linestyle='--')
     ax.legend()
 
     fig.tight_layout()
