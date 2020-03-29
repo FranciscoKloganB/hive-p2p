@@ -23,25 +23,31 @@ def usage():
     sys.exit(" ")
 
 
-def plotvalues(convergence_times_list, global_avg_time_in_convergence, directory, state):
+def plotvalues(convergence_times_list, directory, state):
     time_in_convergence = convergence_times_list[0]
     termination_epochs = convergence_times_list[1]
     largest_window = convergence_times_list[3]
     smallest_window = convergence_times_list[4]
 
     # colors: time_in_convergence, termination_epochs, largest_window, smallest_window
-    bin_count = len(time_in_convergence)
     colors = ['blue', 'red', 'cyan', 'tan']
     color_labels = ["time in converrgence", "termination epoch", "largest convergence window", "smallest convergence window"]
 
+    # TODO: Figure how to build X axis to have 30 columns and Y axis to have instance_data values
+    x = []
+    for i in range(len(time_in_convergence)):
+        instance_data = [time_in_convergence[i], termination_epochs[i], largest_window[i], smallest_window[i]]
+        x.append(instance_data)
+
     fig, ax = plt.subplots()
-    x = [time_in_convergence, termination_epochs, largest_window, smallest_window]
-    ax.hist(x, bin_count, range=(0, 720), colors=colors, label=color_labels, density=False, histtype='bar', stacked=False)
+    ax.hist(x, bins=len(time_in_convergence), range=(0, 30), density=False, color=colors, label=color_labels, histtype='bar', stacked=False)
     ax.legend(loc='upper right', prop={'size': 10})
-    ax.title("Convergence Analysis - iState({})".format(state))
+
+    plt.title("Convergence Analysis - iState({})".format(state))
     plt.xlabel("Simulation Instances")
     plt.ylabel("Epochs")
-    plt.axhline(y=global_avg_time_in_convergence,  label="avg. time in convergence", color='k', linestyle='--')
+    plt.axhline(y=np.mean(time_in_convergence),  label="avg. time in convergence", color='green', linestyle='--')
+    plt.axhline(y=np.mean(termination_epochs),  label="avg. termination epoch", color='yellow', linestyle='--')
     plt.show()
     # plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
 
@@ -70,10 +76,8 @@ def main(directory, state):
     convergence_times_list: List[Tuple[int, int, float, int, int]] = []
     for filename in os.listdir(path):
         process_file(os.path.join(path, filename), convergence_times_list)
-    # Calculate the global mean
-    global_avg_time_in_convergence = np.mean(convergence_times_list[2])
     # Calculate the global mean at epoch i; Since we have a sum of means, at each epoch, we only need to divide each element by the number of seen instances
-    plotvalues(convergence_times_list, global_avg_time_in_convergence, directory, state)
+    plotvalues(convergence_times_list, directory, state)
 
 
 if __name__ == "__main__":
