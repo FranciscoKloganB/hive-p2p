@@ -25,7 +25,7 @@ def usage():
 
 def plotvalues(convergence_times_list, directory, state):
     print()
-
+    # Format data sources
     time_in_convergence = []
     termination_epochs = []
     largest_window = []
@@ -36,33 +36,36 @@ def plotvalues(convergence_times_list, directory, state):
         largest_window.append(e[3])
         smallest_window.append(e[4])
 
+    # Init figure and axis
     fig, ax = plt.subplots()
     fig.set_size_inches(14, 7)
 
+    # Format figure bar locations and groups
     width = 0.2  # the width of the bars
     simulation_instance_count = len(convergence_times_list)
     simulation_labels = ["S{}".format(i) for i in range(1, simulation_instance_count + 1)]  # label of each bar
     x = np.arange(simulation_instance_count)  # number of bars
-
     ax.bar(x - (3/2) * width, time_in_convergence, width, label='time in converrgence', color='darkslategrey')
     ax.bar(x - width / 2, termination_epochs, width, label='termination epoch', color='tan')
     ax.bar(x + width / 2, largest_window, width, label='largest convergence window', color='olivedrab')
     ax.bar(x + (3/2) * width, smallest_window, width, label='smallest convergence window', color='yellowgreen')
-
+    # Set labels
     ax.set_title("Convergence Analysis - iState({})".format(state))
     ax.set_xlabel("Simulation Instances")
     ax.set_ylabel("Epochs")
-
+    # Build figure
     ax.set_xticks(x)
     ax.set_xticklabels(simulation_labels)
-
     plt.axhline(y=np.mean(time_in_convergence),  label="avg. time in convergence", color='darkcyan', linestyle='--')
     plt.axhline(y=np.mean(termination_epochs),  label="avg. termination epoch", color='darkkhaki', linestyle='--')
-    ax.legend()
-
+    # Format legend
+    leg = ax.legend(loc='upper right')
+    # Get the bounding box of the original legend and shift its place
+    bb = leg.get_bbox_to_anchor().inverse_transformed(ax.transAxes)
+    
     fig.tight_layout()
-    # plt.show()
-    plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
+    plt.show()
+    # plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
 
 
 def process_file(filepath, convergence_times_list):
@@ -120,14 +123,14 @@ if __name__ == "__main__":
         main(meandir, istate)
     else:
         main('mean32', 'a')
-        main('mean32', 'i')
-        main('mean32', 'u')
-        main('mean56', 'a')
-        main('mean56', 'i')
-        main('mean56', 'u')
-        main('mean78', 'a')
-        main('mean78', 'i')
-        main('mean78', 'u')
-        main('mean90', 'a')
-        main('mean90', 'i')
-        main('mean90', 'u')
+        # main('mean32', 'i')
+        # main('mean32', 'u')
+        # main('mean56', 'a')
+        # main('mean56', 'i')
+        # main('mean56', 'u')
+        # main('mean78', 'a')
+        # main('mean78', 'i')
+        # main('mean78', 'u')
+        # main('mean90', 'a')
+        # main('mean90', 'i')
+        # main('mean90', 'u')
