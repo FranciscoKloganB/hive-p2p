@@ -25,7 +25,7 @@ def usage():
 
 def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.figure()
-    plt.title("Disconnected Workers Analysis - iState({})".format(state))
+    plt.title("Disconnected Workers Analysis - mean({}), iState({})".format(directory, state))
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Number of Disconnected Workers")
     plt.xlim(0, 720)

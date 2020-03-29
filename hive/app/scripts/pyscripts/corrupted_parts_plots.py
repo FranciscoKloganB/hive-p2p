@@ -25,7 +25,7 @@ def usage():
 
 def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.figure()
-    plt.title("Corruption Analysis - iState({})".format(state))
+    plt.title("Corruption Analysis - mean({}), iState({})".format(directory, state))
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Number of Corrupted Parts")
     plt.xlim(0, 720)
