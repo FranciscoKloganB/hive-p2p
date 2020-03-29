@@ -38,15 +38,15 @@ def plotvalues(convergence_times_list, directory, state):
 
     fig, ax = plt.subplots()
 
-    width = 0.25  # the width of the bars
+    width = 0.2  # the width of the bars
     simulation_instance_count = len(convergence_times_list)
     simulation_labels = ["S{}".format(i) for i in range(1, simulation_instance_count + 1)]  # label of each bar
     x = np.arange(simulation_instance_count)  # number of bars
 
-    ax.bar(x - width, time_in_convergence, width, label='time in converrgence')
+    ax.bar(x - (3/2) * width, time_in_convergence, width, label='time in converrgence')
     ax.bar(x - width / 2, termination_epochs, width, label='termination epoch')
     ax.bar(x + width / 2, largest_window, width, label='largest convergence window')
-    ax.bar(x + width, smallest_window, width, label='smallest convergence window')
+    ax.bar(x + (3/2) * width, smallest_window, width, label='smallest convergence window')
 
     ax.set_title("Convergence Analysis - iState({})".format(state))
     ax.set_xlabel("Simulation Instances")
