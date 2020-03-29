@@ -59,10 +59,12 @@ def plotvalues(convergence_times_list, directory, state):
     plt.axhline(y=np.mean(time_in_convergence),  label="avg. time in convergence", color='darkcyan', linestyle='--')
     plt.axhline(y=np.mean(termination_epochs),  label="avg. termination epoch", color='darkkhaki', linestyle='--')
     # Format legend
-    leg = ax.legend(loc='upper right')
+    leg = ax.legend(loc='lower center', prop={'size': 9}, ncol=6, fancybox=True, shadow=True)
     # Get the bounding box of the original legend and shift its place
     bb = leg.get_bbox_to_anchor().inverse_transformed(ax.transAxes)
-    
+    bb.y0 -= 0.15  # yOffset
+    bb.y1 -= 0.15  # yOffset
+    leg.set_bbox_to_anchor(bb, transform=ax.transAxes)
     fig.tight_layout()
     plt.show()
     # plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
