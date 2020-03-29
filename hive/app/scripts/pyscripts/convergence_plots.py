@@ -66,8 +66,8 @@ def plotvalues(convergence_times_list, directory, state):
     bb.y1 -= 0.15  # yOffset
     leg.set_bbox_to_anchor(bb, transform=ax.transAxes)
     fig.tight_layout()
-    plt.show()
-    # plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
+    # plt.show()
+    plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
 
 
 def process_file(filepath, convergence_times_list):
@@ -125,14 +125,14 @@ if __name__ == "__main__":
         main(meandir, istate)
     else:
         main('mean32', 'a')
-        # main('mean32', 'i')
-        # main('mean32', 'u')
-        # main('mean56', 'a')
-        # main('mean56', 'i')
-        # main('mean56', 'u')
-        # main('mean78', 'a')
-        # main('mean78', 'i')
-        # main('mean78', 'u')
-        # main('mean90', 'a')
-        # main('mean90', 'i')
-        # main('mean90', 'u')
+        main('mean32', 'i')
+        main('mean32', 'u')
+        main('mean56', 'a')
+        main('mean56', 'i')
+        main('mean56', 'u')
+        main('mean78', 'a')
+        main('mean78', 'i')
+        main('mean78', 'u')
+        main('mean90', 'a')
+        main('mean90', 'i')
+        main('mean90', 'u')
