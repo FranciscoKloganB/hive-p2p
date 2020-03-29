@@ -60,8 +60,8 @@ def plotvalues(convergence_times_list, directory, state):
     ax.legend()
 
     fig.tight_layout()
-    plt.show()
-    # plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
+    # plt.show()
+    plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
 
 
 def process_file(filepath, convergence_times_list):
