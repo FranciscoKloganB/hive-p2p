@@ -37,6 +37,7 @@ def plotvalues(convergence_times_list, directory, state):
         smallest_window.append(e[4])
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(14, 7)
 
     width = 0.2  # the width of the bars
     simulation_instance_count = len(convergence_times_list)
