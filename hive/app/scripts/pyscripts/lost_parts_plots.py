@@ -25,9 +25,9 @@ def usage():
 
 def plotvalues(epoch_means, mean, terminations, directory, state):
     plt.figure()
-    plt.title("Lost Parts Analysis - {}i{}".format(directory, state))
+    # plt.title("Lost Parts Analysis - {}i{}".format(directory, state))
     plt.xlabel("Epoch")
-    plt.ylabel("Avg. Number of Lost Parts")
+    plt.ylabel("Avg. Lost Parts")
     plt.xlim(0, 720)
     plt.ylim(0, 1)
     # Trace global mean

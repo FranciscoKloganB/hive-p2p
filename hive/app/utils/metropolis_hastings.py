@@ -59,7 +59,7 @@ def _construct_random_walk_matrix(adj_matrix: np.ndarray, shape: Tuple[int, int]
     """
     rw: np.ndarray = np.zeros(shape=shape)
     for i in range(size):
-        degree: numpy.int32 = np.sum(adj_matrix[i, :])  # all possible states reachable from state i, including self
+        degree: np.int32 = np.sum(adj_matrix[i, :])  # all possible states reachable from state i, including self
         for j in range(size):
             rw[i, j] = adj_matrix[i, j] / degree
     return rw
@@ -92,6 +92,7 @@ def _mh_summation(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
     """
     size: int = rw.shape[0]
     pii: np.int32 = rw[i, i]
+    print("pii: {}".format(rw[i, i]))
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
