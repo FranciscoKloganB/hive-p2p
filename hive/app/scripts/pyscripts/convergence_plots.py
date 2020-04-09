@@ -50,7 +50,7 @@ def plotvalues(convergence_times_list, directory, state):
     ax.bar(x + width / 2, largest_window, width, label='largest convergence window', color='olivedrab')
     ax.bar(x + (3/2) * width, smallest_window, width, label='smallest convergence window', color='yellowgreen')
     # Set labels
-    ax.set_title("Convergence Analysis - {}i{}".format(directory, state))
+    # ax.set_title("Convergence Analysis - {}i{}".format(directory, state))
     ax.set_xlabel("Simulation Instances")
     ax.set_ylabel("Epochs")
     # Build figure

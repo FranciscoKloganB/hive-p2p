@@ -31,12 +31,12 @@ def myhelp():
     sys.exit(" ")
 
 
-def main(fname):
+def main(fname, epochs):
     if not fname:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
     for name in os.listdir(SIMULATION_ROOT):
-        for i in range(30):
+        for i in range(epochs):
             simulation = hm.Hivemind(simfile_name=name, sim_number=i+1)
             simulation.execute_simulation()
 # endregion
@@ -44,8 +44,9 @@ def main(fname):
 
 if __name__ == "__main__":
     simfile_name_ = None
+    run_ = 30
     try:
-        options, args = getopt.getopt(sys.argv[1:], "uhs:", ["usage", "help", "simfile="])
+        options, args = getopt.getopt(sys.argv[1:], "uhs:r:", ["usage", "help", "simfile=", "runs="])
         for options, args in options:
             if options in ("-u", "--usage"):
                 usage()
@@ -53,6 +54,11 @@ if __name__ == "__main__":
                 myhelp()
             if options in ("-s", "--simfile"):
                 simfile_name_ = str(args).strip()
-                main(simfile_name_)
+                print(simfile_name_)
+            if options in ("-r", "--runs"):
+                run_ = int(str(args).strip())
+                print(run_)
+        if simfile_name_ and run_:
+            main(simfile_name_, run_)
     except getopt.GetoptError:
         usage()
