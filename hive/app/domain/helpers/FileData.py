@@ -8,7 +8,7 @@ import domain.Hive as h
 
 from pathlib import Path
 from tabulate import tabulate
-from typing import Any, Union, Dict
+from typing import Any, Union, Dict, List
 
 from globals.globals import *
 from domain.helpers.SimulationData import SimulationData
@@ -38,6 +38,7 @@ class FileData:
         self.out_file: Any = open(os.path.join(
             OUTFILE_ROOT, "{}_{}{}.{}".format(Path(name).resolve().stem, Path(origin).resolve().stem, sim_number, "json")
         ), "w+")
+        self.tol = 0.0
     # endregion
 
     # region Instance Methods
@@ -50,10 +51,12 @@ class FileData:
 
         normalized_cdv = self.current_distribution.divide(parts_in_hive)
         if DEBUG:
-            self.fwrite("Desired Distribution:\n{}\nCurrent Distribution:\n{}\n".format(
-                tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')
-            ))
-        return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / parts_in_hive))
+            self.print_distributions(normalized_cdv)
+        # return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / parts_in_hive))
+        for i in range(len(self.current_distribution)):
+            if np.abs(self.current_distribution[i] - self.desired_distribution) > self.tol:
+                return False
+        return True
     # endregion
 
     # region File I/O
@@ -129,10 +132,20 @@ class FileData:
     # endregion
 
     # region Helpers
+    def new_desired_distribution(self, desired_distribution: pd.DataFrame, member_ids: List[str]) -> None:
+        self.desired_distribution = desired_distribution
+        self.current_distribution = pd.DataFrame(data=[0] * len(desired_distribution), index=member_ids)
+        self.tol = np.abs(self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min())
+
+    def print_distributions(self, normalized_cdv: List[float]) -> None:
+        text = "Desired Distribution:\n{}\nCurrent Distribution:\n{}\n"
+        self.fwrite(text.format(tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')))
+
     def reset_convergence_data(self) -> None:
         """
         Resets the FileData instance field simulation_data by delegation to ConvergenceData instance method
         """
         self.simulation_data.save_sets_and_reset()
+
     # endregion
 

@@ -119,8 +119,7 @@ class Hive:
         uptimes_normalized = [member_uptime / uptime_sum for member_uptime in member_uptimes]
 
         self.desired_distribution = pd.DataFrame(data=uptimes_normalized, index=member_ids)
-        self.file.desired_distribution = self.desired_distribution
-        self.file.current_distribution = pd.DataFrame(data=[0] * len(uptimes_normalized), index=member_ids)
+        self.file.new_desired_distribution(self.desired_distribution, member_ids)
 
         return uptimes_normalized
 
