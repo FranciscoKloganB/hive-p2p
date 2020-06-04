@@ -38,7 +38,7 @@ class FileData:
         self.out_file: Any = open(os.path.join(
             OUTFILE_ROOT, "{}_{}{}.{}".format(Path(name).resolve().stem, Path(origin).resolve().stem, sim_number, "json")
         ), "w+")
-        self.tol = 0.0
+        self.parts_in_hive = 0
     # endregion
 
     # region Instance Methods
@@ -54,7 +54,7 @@ class FileData:
             self.print_distributions(normalized_cdv)
         # return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / parts_in_hive))
         for i in range(len(self.current_distribution)):
-            if np.abs(self.current_distribution[i] - self.desired_distribution) > self.tol:
+            if np.abs(self.current_distribution[i] - self.desired_distribution) > self.new_tolerance(parts_in_hive):
                 return False
         return True
     # endregion
@@ -132,10 +132,15 @@ class FileData:
     # endregion
 
     # region Helpers
-    def new_desired_distribution(self, desired_distribution: pd.DataFrame, member_ids: List[str]) -> None:
+    def new_desired_distribution(self, desired_distribution: pd.DataFrame, member_ids: List[str], parts_in_hive: int = 0) -> None:
         self.desired_distribution = desired_distribution
         self.current_distribution = pd.DataFrame(data=[0] * len(desired_distribution), index=member_ids)
-        self.tol = np.abs(self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min())
+
+    def new_tolerance(self, parts_in_hive) -> np.float64:
+        if (self.parts_in_hive == 0):
+            return np.abs(self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min())
+        else:
+            return np.abs(self.desired_distribution[DEFAULT_COL].max() * parts_in_hive)
 
     def print_distributions(self, normalized_cdv: List[float]) -> None:
         text = "Desired Distribution:\n{}\nCurrent Distribution:\n{}\n"
