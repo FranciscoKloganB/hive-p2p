@@ -58,10 +58,11 @@ class Hive:
         self.running: bool = True
         self.set_recovery_epoch_sum: int = 0
         self.set_recovery_epoch_calls: int = 0
-        self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
+        self.create_and_bcast_new_transition_matrix()
     # endregion
 
     # region Routing
+
     def remove_cloud_reference(self) -> None:
         """
         TODO: future-iterations
@@ -108,6 +109,7 @@ class Hive:
     # endregion
 
     # region Swarm Guidance
+
     def new_desired_distribution(self, member_ids: List[str], member_uptimes: List[float]) -> List[float]:
         """
         Normalizes inputted member uptimes and saves it on Hive.desired_distribution attribute
@@ -140,6 +142,7 @@ class Hive:
         desired_distribution = self.new_desired_distribution(member_ids, member_uptimes)
 
         transition_matrix: np.ndarray = mh.metropolis_algorithm(adjancency_matrix, desired_distribution, column_major_out=True)
+
         return pd.DataFrame(transition_matrix, index=member_ids, columns=member_ids)
 
     def broadcast_transition_matrix(self, transition_matrix: pd.DataFrame) -> None:
@@ -156,6 +159,7 @@ class Hive:
     # endregion
 
     # region Simulation Interface
+
     # noinspection DuplicatedCode
     def spread_files(self, spread_mode: str, file_parts: Dict[int, SharedFilePart]):
         """
@@ -245,6 +249,7 @@ class Hive:
     # endregion
 
     # region Helpers
+
     def setup_epoch(self, epoch: int) -> None:
         self.current_epoch = epoch
         self.corruption_chances[0] = np.log10(epoch).item() / 300.0
@@ -307,7 +312,7 @@ class Hive:
 
         healed_hive_size = len(self.members)
         if damaged_hive_size != healed_hive_size:
-            self.broadcast_transition_matrix(self.new_transition_matrix())
+            self.create_and_bcast_new_transition_matrix()
 
         self.file.simulation_data.set_membership_maintenace_at_index(status_before_recovery, damaged_hive_size, healed_hive_size, self.current_epoch)
 
@@ -325,4 +330,22 @@ class Hive:
     def set_recovery_epoch(self, part: SharedFilePart) -> None:
         self.set_recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
         self.set_recovery_epoch_calls += 1
+
+    def validate_transition_matrix(self, transition_matrix: pd.DataFrame, target_distribution: pd.DataFrame) -> bool:
+        t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 2048)
+        column_count = t_pow.shape[1]
+        for j in range(column_count):
+            test_target = t_pow[:, j]  # gets array column j
+            if not np.allclose(test_target, target_distribution[DEFAULT_COL].values):
+                return False
+        return True
     # endregion
+
+    def create_and_bcast_new_transition_matrix(self):
+        tries = 0
+        while (tries < 3):
+            result = self.new_transition_matrix()
+            if self.validate_transition_matrix(result, self.desired_distribution):
+                self.broadcast_transition_matrix(result)
+                break
+        self.broadcast_transition_matrix(self.new_transition_matrix())  # if after 3 validations attempts no matrix was generated, use any other one.
