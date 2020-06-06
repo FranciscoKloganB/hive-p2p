@@ -132,7 +132,8 @@ class FileData:
     # endregion
 
     # region Helpers
-    def new_desired_distribution(self, desired_distribution: pd.DataFrame, member_ids: List[str], parts_in_hive: int = 0) -> None:
+
+    def new_desired_distribution(self, desired_distribution: pd.DataFrame, member_ids: List[str]) -> None:
         self.desired_distribution = desired_distribution
         self.current_distribution = pd.DataFrame(data=[0] * len(desired_distribution), index=member_ids)
 
@@ -140,7 +141,7 @@ class FileData:
         if (self.parts_in_hive == 0):
             return np.abs(self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min())
         else:
-            return np.abs(self.desired_distribution[DEFAULT_COL].max() * parts_in_hive)
+            return np.abs(self.desired_distribution[DEFAULT_COL].max() * parts_in_hive) / parts_in_hive
 
     def print_distributions(self, normalized_cdv: List[float]) -> None:
         text = "Desired Distribution:\n{}\nCurrent Distribution:\n{}\n"
