@@ -27,12 +27,13 @@ def optimize_adjency_matrix(a: List[List[int]]) -> Any:
         Aopt >= 0,  # a_opt must be a non negative matrix
         (Aopt @ ones_vector) == ones_vector,  # whose lines are stochastic
         (Aopt * (ones_matrix - adj_matrix)) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
-        -t * I <= Aopt - U, Aopt - U <= t * I  # define valid eigenvalues interval, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
+        -t * I << Aopt - U, Aopt - U << t * I  # define valid eigenvalues interval, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
     ]
     # Formulate and Solve Problem
     objective = cp.Minimize(t)
     problem = cp.Problem(objective, constraints)
     problem.solve(solver=cp.SCS)
+
     print("The optimal value is", problem.value)
     print("A solution X is")
     print(Aopt.value)
