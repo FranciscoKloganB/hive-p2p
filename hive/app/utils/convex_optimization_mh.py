@@ -1,4 +1,6 @@
 import cvxpy as cp
+import cvxopt as co
+
 import numpy as np
 
 from typing import List, Any
@@ -13,26 +15,28 @@ def optimize_adjency_matrix(a: List[List[int]]) -> Any:
     # Allocate python variables
     n: int = len(a)
     adj_matrix: np.ndarray = np.asarray(a)
-    ones_vector: np.ndarray = np.ones((n, 1))
+    ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
     ones_matrix: np.ndarray = np.ones((n, n))
     zeros_matrix: np.ndarray = np.zeros((n, n))
-    U: np.ndarray = (1/n) * ones_matrix
+    U: np.ndarray = np.ones((n, n)) / n
 
     # Specificy problem variables
     Aopt: cp.Variable = cp.Variable((n, n), symmetric=True)
     t: cp.Variable = cp.Variable()
-    I: np.ndarray = np.eye(n)
+    I: np.ndarray = np.identity(n)
+
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
-        Aopt >= 0,  # a_opt must be a non negative matrix
-        (Aopt @ ones_vector) == ones_vector,  # whose lines are stochastic
+        Aopt >= 0,  # Aopt entries must be non-negative
+        (Aopt @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
         (Aopt * (ones_matrix - adj_matrix)) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
-        -t * I << Aopt - U, Aopt - U << t * I  # define valid eigenvalues interval, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
+        (Aopt - U) >> (-t * I),  # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
+        (Aopt - U) << (t * I)  # eigenvalue upper bound
     ]
     # Formulate and Solve Problem
     objective = cp.Minimize(t)
     problem = cp.Problem(objective, constraints)
-    problem.solve(solver=cp.SCS)
+    problem.solve(solver=cp.CVXOPT)
 
     print("The optimal value is", problem.value)
     print("A solution X is")
@@ -40,4 +44,6 @@ def optimize_adjency_matrix(a: List[List[int]]) -> Any:
 
 
 if __name__ == "__main__":
-    optimize_adjency_matrix([[0, 1, 1], [1, 1, 1], [1, 1, 0]])
+    # from utils.matrices import new_symmetric_adjency_matrix
+    # optimize_adjency_matrix(new_symmetric_adjency_matrix(5))
+    optimize_adjency_matrix([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
