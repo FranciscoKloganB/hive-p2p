@@ -9,30 +9,30 @@ from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
 
 
 # region module public functions
-def metropolis_algorithm(a: np.ndarray, ddv: np.ndarray, column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
+def mh_transition_matrix(A: np.ndarray, v_: np.ndarray, column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
     """
     Constructs a transition matrix with desired distribution as steady state
-    :param List[List[int]] a: any adjacency matrix
-    :param List[float] ddv: a stochastic desired distribution vector
+    :param np.ndarray A: any symmetric adjacency matrix
+    :param np.ndarray v_: a stochastic desired distribution vector
     :param bool column_major_in: indicates whether adj_matrix given in input is in row or column major form
     :param bool column_major_out: indicates whether to return transition_matrix output is in row or column major form
     :returns np.ndarray transition_matrix: unlabeled transition matrix
     """
 
     # Input checking
-    if ddv.shape[0] != a.shape[1]:
-        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(ddv.shape, a.shape))
-    if a.shape[0] != a.shape[1]:
-        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(a.shape[0], a.shape[1]))
+    if v_.shape[0] != A.shape[1]:
+        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(ddv.shape, A.shape))
+    if A.shape[0] != A.shape[1]:
+        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(A.shape[0], A.shape[1]))
 
     if column_major_in:
-        a = a.transpose()
+        A = A.transpose()
 
-    shape: Tuple[int, int] = a.shape
-    size: int = a.shape[0]
+    shape: Tuple[int, int] = A.shape
+    size: int = A.shape[0]
 
-    rw: np.ndarray = _construct_random_walk_matrix(a, shape, size)
-    r: np.ndarray = _construct_rejection_matrix(ddv, rw, shape, size)
+    rw: np.ndarray = _construct_random_walk_matrix(A, shape, size)
+    r: np.ndarray = _construct_rejection_matrix(v_, rw, shape, size)
 
     transition_matrix: np.ndarray = np.zeros(shape=shape)
 
@@ -47,7 +47,54 @@ def metropolis_algorithm(a: np.ndarray, ddv: np.ndarray, column_major_in: bool =
     # endregion
 
 
-# region module private functions
+# region optimization
+def optimal_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> np.ndarray:
+    """
+    Constructs a transition matrix using metropolis-hastings.
+    :param np.ndarray A: Symmetric stochastic adjency matrix previously optimized for the uniform distribution vector.
+    :param np.ndarray v_: a stochastic desired distribution vector
+    :returns np.ndarray T: Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv.
+    """
+    return mh_transition_matrix(A, v_)
+
+
+def adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[float, np.ndarray]:
+    """
+    Constructs an optimized adjacency matrix
+    :param List[List[int]] A: any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
+    :returns  List[List[int]] adj_matrix_optimized: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
+    """
+    # Allocate python variables
+    n: int = A.shape[0]
+    ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
+    ones_matrix: np.ndarray = np.ones((n, n))
+    zeros_matrix: np.ndarray = np.zeros((n, n))
+    U: np.ndarray = np.ones((n, n)) / n
+
+    # Specificy problem variables
+    Aopt: cvx.Variable = cvx.Variable((n, n), symmetric=True)
+    t: cvx.Variable = cvx.Variable()
+    I: np.ndarray = np.identity(n)
+
+    # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
+    constraints = [
+        Aopt >= 0,  # Aopt entries must be non-negative
+        (Aopt @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
+        cvx.multiply(Aopt, ones_matrix - A) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
+        (Aopt - U) >> (-t * I),  # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
+        (Aopt - U) << (t * I)  # eigenvalue upper bound
+    ]
+
+    # Formulate and Solve Problem
+    objective = cvx.Minimize(t)
+    problem = cvx.Problem(objective, constraints)
+    problem.solve(solver=cvx.MOSEK)
+
+    return problem.value, Aopt.value
+# endregion
+
+
+# region helpers
 def _construct_random_walk_matrix(adj_matrix: np.ndarray, shape: Tuple[int, int], size: int) -> np.ndarray:
     """
     Constructs a random walk over the adjacency matrix
@@ -95,45 +142,4 @@ def _mh_summation(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
-# endregion
-
-
-# region optimization
-def optimal_mh_transition_matrix(a: np.ndarray, ddv: List[float]) -> np.ndarray:
-    return metropolis_algorithm(a, ddv)
-
-
-def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Tuple[float, np.ndarray]:
-    """
-    Constructs an optimized adjacency matrix
-    :param List[List[int]] a: any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
-    :returns  List[List[int]] adj_matrix_optimized: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
-    """
-    # Allocate python variables
-    n: int = len(a)
-    adj_matrix: np.ndarray = np.asarray(a)
-    ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
-    ones_matrix: np.ndarray = np.ones((n, n))
-    zeros_matrix: np.ndarray = np.zeros((n, n))
-    U: np.ndarray = np.ones((n, n)) / n
-
-    # Specificy problem variables
-    Aopt: cvx.Variable = cvx.Variable((n, n), symmetric=True)
-    t: cvx.Variable = cvx.Variable()
-    I: np.ndarray = np.identity(n)
-
-    # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
-    constraints = [
-        Aopt >= 0,  # Aopt entries must be non-negative
-        (Aopt @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(Aopt, ones_matrix - adj_matrix) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
-        (Aopt - U) >> (-t * I),  # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
-        (Aopt - U) << (t * I)  # eigenvalue upper bound
-    ]
-    # Formulate and Solve Problem
-    objective = cvx.Minimize(t)
-    problem = cvx.Problem(objective, constraints)
-    problem.solve(solver=cvx.MOSEK)
-
-    return problem.value, Aopt.value
 # endregion
