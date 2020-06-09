@@ -2,14 +2,14 @@ import cvxpy as cvx
 import numpy as np
 import mosek
 
-from typing import List, Any
+from typing import List, Tuple
 
 
-def optimize_adjency_matrix(a: List[List[int]]) -> Any:
+def optimize_adjency_matrix(a: List[List[int]]) -> Tuple[float, np.ndarray]:
     """
     Constructs an optimized adjacency matrix
     :param List[List[int]] a: any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
-    :returns  List[List[int]] a_opt: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
+    :returns  List[List[int]] adj_matrix_optimized: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
     """
     # Allocate python variables
     n: int = len(a)
@@ -37,12 +37,12 @@ def optimize_adjency_matrix(a: List[List[int]]) -> Any:
     problem = cvx.Problem(objective, constraints)
     problem.solve(solver=cvx.MOSEK)
 
-    print("The optimal eigenvalue is", problem.value)
-    print("Aopt solution is:")
-    print(Aopt.value)
+    return problem.value, Aopt.value
 
 
 if __name__ == "__main__":
     # from utils.matrices import new_symmetric_adjency_matrix
     # optimize_adjency_matrix(new_symmetric_adjency_matrix(5))
-    optimize_adjency_matrix([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
+    adj_matrix_optimized, eigenvalue = optimize_adjency_matrix([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
+    print(f"The optimal eigenvalue is: {eigenvalue}")
+    print(f"Aopt solution is: \n{adj_matrix_optimized}")
