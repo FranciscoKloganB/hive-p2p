@@ -8,57 +8,39 @@ from domain.exceptions.DistributionShapeError import DistributionShapeError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
 
 
-# region module public functions
-def mh_transition_matrix(A: np.ndarray, v_: np.ndarray, column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
+# region transition matrix generators
+
+def regular_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """
-    Constructs a transition matrix with desired distribution as steady state
-    :param np.ndarray A: any symmetric adjacency matrix
+    Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
+    :param np.ndarray A: Symmetric unoptimized adjency matrix.
     :param np.ndarray v_: a stochastic desired distribution vector
-    :param bool column_major_in: indicates whether adj_matrix given in input is in row or column major form
-    :param bool column_major_out: indicates whether to return transition_matrix output is in row or column major form
-    :returns np.ndarray transition_matrix: unlabeled transition matrix
+    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
+    return _metropolis_hastings(A, v_), 0.0  # TODO: Get mixing rate of this transition matrix
 
-    # Input checking
-    if v_.shape[0] != A.shape[1]:
-        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(ddv.shape, A.shape))
-    if A.shape[0] != A.shape[1]:
-        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(A.shape[0], A.shape[1]))
 
-    if column_major_in:
-        A = A.transpose()
+def optimal_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+    """
+    Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
+    The provided adjacency matrix A is first optimized with semi-definite programming techniques for the uniform distribution vector.
+    :param np.ndarray A: Symmetric unoptimized adjency matrix.
+    :param np.ndarray v_: a stochastic desired distribution vector
+    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
+    """
+    Aopt, mixing_rate = __adjency_matrix_sdp_optimization(A)
+    return _metropolis_hastings(Aopt, v_), mixing_rate
 
-    shape: Tuple[int, int] = A.shape
-    size: int = A.shape[0]
 
-    rw: np.ndarray = _construct_random_walk_matrix(A, shape, size)
-    r: np.ndarray = _construct_rejection_matrix(v_, rw, shape, size)
+def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+    pass
 
-    transition_matrix: np.ndarray = np.zeros(shape=shape)
-
-    for i in range(size):
-        for j in range(size):
-            if i != j:
-                transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
-        # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
-        transition_matrix[i, i] = _mh_summation(rw, r, i)
-
-    return transition_matrix.transpose() if column_major_out else transition_matrix
-    # endregion
+# endregion
 
 
 # region optimization
-def optimal_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> np.ndarray:
-    """
-    Constructs a transition matrix using metropolis-hastings.
-    :param np.ndarray A: Symmetric stochastic adjency matrix previously optimized for the uniform distribution vector.
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :returns np.ndarray T: Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv.
-    """
-    return mh_transition_matrix(A, v_)
 
-
-def adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[float, np.ndarray]:
+def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Constructs an optimized adjacency matrix
     :param List[List[int]] A: any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
@@ -90,11 +72,50 @@ def adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[float, np.ndarray]:
     problem = cvx.Problem(objective, constraints)
     problem.solve(solver=cvx.MOSEK)
 
-    return problem.value, Aopt.value
+    return Aopt.value, problem.value
+
 # endregion
 
 
-# region helpers
+# region metropolis hastings implementation
+
+def _metropolis_hastings(A: np.ndarray, v_: np.ndarray, column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
+    """
+    Constructs a transition matrix with desired distribution as steady state
+    :param np.ndarray A: any symmetric adjacency matrix
+    :param np.ndarray v_: a stochastic desired distribution vector
+    :param bool column_major_in: indicates whether adj_matrix given in input is in row or column major form
+    :param bool column_major_out: indicates whether to return transition_matrix output is in row or column major form
+    :returns np.ndarray transition_matrix: unlabeled transition matrix
+    """
+
+    # Input checking
+    if v_.shape[0] != A.shape[1]:
+        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(v_.shape, A.shape))
+    if A.shape[0] != A.shape[1]:
+        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(A.shape[0], A.shape[1]))
+
+    if column_major_in:
+        A = A.transpose()
+
+    shape: Tuple[int, int] = A.shape
+    size: int = A.shape[0]
+
+    rw: np.ndarray = _construct_random_walk_matrix(A, shape, size)
+    r: np.ndarray = _construct_rejection_matrix(v_, rw, shape, size)
+
+    transition_matrix: np.ndarray = np.zeros(shape=shape)
+
+    for i in range(size):
+        for j in range(size):
+            if i != j:
+                transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
+        # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
+        transition_matrix[i, i] = _mh_summation(rw, r, i)
+
+    return transition_matrix.transpose() if column_major_out else transition_matrix
+
+
 def _construct_random_walk_matrix(adj_matrix: np.ndarray, shape: Tuple[int, int], size: int) -> np.ndarray:
     """
     Constructs a random walk over the adjacency matrix
