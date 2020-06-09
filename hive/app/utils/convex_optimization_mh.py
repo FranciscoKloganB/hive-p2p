@@ -1,7 +1,6 @@
-import cvxpy as cp
-import cvxopt as co
-
+import cvxpy as cvx
 import numpy as np
+import mosek
 
 from typing import List, Any
 
@@ -21,25 +20,25 @@ def optimize_adjency_matrix(a: List[List[int]]) -> Any:
     U: np.ndarray = np.ones((n, n)) / n
 
     # Specificy problem variables
-    Aopt: cp.Variable = cp.Variable((n, n), symmetric=True)
-    t: cp.Variable = cp.Variable()
+    Aopt: cvx.Variable = cvx.Variable((n, n), symmetric=True)
+    t: cvx.Variable = cvx.Variable()
     I: np.ndarray = np.identity(n)
 
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
         Aopt >= 0,  # Aopt entries must be non-negative
         (Aopt @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        (Aopt * (ones_matrix - adj_matrix)) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
+        cvx.multiply(Aopt, ones_matrix - adj_matrix) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
         (Aopt - U) >> (-t * I),  # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
         (Aopt - U) << (t * I)  # eigenvalue upper bound
     ]
     # Formulate and Solve Problem
-    objective = cp.Minimize(t)
-    problem = cp.Problem(objective, constraints)
-    problem.solve(solver=cp.CVXOPT)
+    objective = cvx.Minimize(t)
+    problem = cvx.Problem(objective, constraints)
+    problem.solve(solver=cvx.MOSEK)
 
-    print("The optimal value is", problem.value)
-    print("A solution X is")
+    print("The optimal eigenvalue is", problem.value)
+    print("Aopt solution is:")
     print(Aopt.value)
 
 
