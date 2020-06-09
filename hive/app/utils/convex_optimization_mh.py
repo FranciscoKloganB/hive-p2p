@@ -2,8 +2,9 @@ import cvxpy as cvx
 import numpy as np
 
 from typing import List, Tuple
-from utils.metropolis_hastings import _metropolis_hastings
 
+
+# region Semidefinite Programming Optimization
 
 def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Tuple[float, np.ndarray]:
     """
@@ -38,7 +39,10 @@ def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Tuple[float, np.ndarr
     problem.solve(solver=cvx.MOSEK)
 
     return Aopt.value, problem.value
+# endregion
 
+
+# region Global Optimizattion
 
 def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """
@@ -72,12 +76,64 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple
 
     return Topt.value, problem.value
 
+# endregion
+
+
+# region Helpers
+
+def __metropolis_hastings(A: np.ndarray, v_: np.ndarray) -> np.ndarray:
+    shape: Tuple[int, int] = A.shape
+    size: int = A.shape[0]
+
+    rw: np.ndarray = np.zeros(shape=shape)
+    for i in range(size):
+        degree: np.int32 = np.sum(A[i, :])  # all possible states reachable from state i, including self
+        for j in range(size):
+            rw[i, j] = A[i, j] / degree
+
+    r = np.zeros(shape=shape)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        for i in range(size):
+            for j in range(size):
+                r[i, j] = (v_[j] * rw[j, i]) / (v_[i] * rw[i, j])
+
+    transition_matrix: np.ndarray = np.zeros(shape=shape)
+
+    for i in range(size):
+        for j in range(size):
+            if i != j:
+                transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
+        # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
+        transition_matrix[i, i] = __mh_summation(rw, r, i)
+
+    return transition_matrix.transpose()
+
+
+def __mh_summation(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
+    """
+    Performs summation of the m-h branch when indices of m[i, j] are the same, i.e.: when i=j
+    :param np.ndarray rw: a random_walk over an adjacency matrix
+    :param np.ndarray r: a matrix containing acceptance/rejectance probabilities for the random walk
+    :param int i: a fixed row index to simulate a simulation function
+    :returns float: pii, the probability of going from state i to j, where i = j
+    """
+    size: int = rw.shape[0]
+    pii: np.int32 = rw[i, i]
+    for k in range(size):
+        pii += rw[i, k] * (1 - min(1, r[i, k]))
+    return pii
+
+
+# endregion
+
+
+# region Main
 
 def main():
     Aunopt = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
     desired_distribution_ = np.asarray([0.1, 0.3, 0.4, 0.2])
     adj_matrix_optimized, eigenvalue = adjency_matrix_sdp_optimization(Aunopt)
-    markov_matrix = _metropolis_hastings(adj_matrix_optimized, desired_distribution_)
+    markov_matrix = __metropolis_hastings(adj_matrix_optimized, desired_distribution_)
     print("Using Semidefinite Programming techniques...")
     print(f"The optimal eigenvalue is: {eigenvalue}")
     print(f"Aopt solution is: \n{adj_matrix_optimized}")
@@ -91,4 +147,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# endregion
+
+
+
+
 

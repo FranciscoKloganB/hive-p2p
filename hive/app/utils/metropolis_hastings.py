@@ -196,7 +196,6 @@ def _mh_summation(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
     """
     size: int = rw.shape[0]
     pii: np.int32 = rw[i, i]
-    print("pii: {}".format(rw[i, i]))
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
