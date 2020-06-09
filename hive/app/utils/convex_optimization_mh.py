@@ -2,6 +2,7 @@ import cvxpy as cvx
 import numpy as np
 
 from typing import List, Tuple
+from utils.metropolis_hastings import _metropolis_hastings
 
 
 def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Tuple[float, np.ndarray]:
@@ -72,18 +73,22 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple
     return Topt.value, problem.value
 
 
-if __name__ == "__main__":
+def main():
     Aunopt = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
     desired_distribution_ = np.asarray([0.1, 0.3, 0.4, 0.2])
     adj_matrix_optimized, eigenvalue = adjency_matrix_sdp_optimization(Aunopt)
-    # markov_matrix = _metropolis_hastings(adj_matrix_optimized, desired_distribution_)
+    markov_matrix = _metropolis_hastings(adj_matrix_optimized, desired_distribution_)
     print("Using Semidefinite Programming techniques...")
     print(f"The optimal eigenvalue is: {eigenvalue}")
     print(f"Aopt solution is: \n{adj_matrix_optimized}")
-    # print(f"Resulting Markov Matrix is: \n{markov_matrix}")
+    print(f"Resulting Markov Matrix is: \n{markov_matrix}")
     print("\n########\n########\n########\n########\n")
     print("Using Global Optimization techniques...")
     markov_matrix, eigenvalue = optimal_bilevel_mh_transition_matrix(Aunopt, desired_distribution_)
     print(f"The optimal eigenvalue is: {eigenvalue}")
     print(f"Resulting Markov Matrix is: \n{markov_matrix.transpose()}")
+
+
+if __name__ == "__main__":
+    main()
 
