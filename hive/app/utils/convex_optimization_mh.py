@@ -5,7 +5,7 @@ import mosek
 from typing import List, Tuple
 
 
-def optimize_adjency_matrix(a: List[List[int]]) -> Tuple[float, np.ndarray]:
+def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Tuple[float, np.ndarray]:
     """
     Constructs an optimized adjacency matrix
     :param List[List[int]] a: any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
@@ -43,6 +43,6 @@ def optimize_adjency_matrix(a: List[List[int]]) -> Tuple[float, np.ndarray]:
 if __name__ == "__main__":
     # from utils.matrices import new_symmetric_adjency_matrix
     # optimize_adjency_matrix(new_symmetric_adjency_matrix(5))
-    adj_matrix_optimized, eigenvalue = optimize_adjency_matrix([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
+    adj_matrix_optimized, eigenvalue = adjency_matrix_sdp_optimization([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
     print(f"The optimal eigenvalue is: {eigenvalue}")
     print(f"Aopt solution is: \n{adj_matrix_optimized}")
