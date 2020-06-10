@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import domain.Hivemind as hm
 import utils.matrices as matrices
-import utils.metropolis_hastings as mh
+import utils.transition_matrices as mh
 
 from domain.Worker import Worker
 from typing import Dict, List, Any

@@ -10,7 +10,7 @@ from domain.exceptions.TransitionMatrixGenerationError import TransitionMatrixGe
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 
-# region transition matrix generators
+# region Markov Matrix Constructors
 
 def regular_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """
@@ -73,7 +73,7 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple
 # endregion
 
 
-# region optimization
+# region Optimization
 
 def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[np.ndarray, float]:
     """
@@ -115,7 +115,7 @@ def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[np.ndarray, float]
 # endregion
 
 
-# region metropolis hastings implementation
+# region Metropolis Hastings Impl.
 
 def _metropolis_hastings(A: np.ndarray, v_: np.ndarray, column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
     """
@@ -200,5 +200,17 @@ def _mh_summation(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
+
+# endregion
+
+
+# region Helpers
+
+def get_max_eigenvalue(M: np.ndarray) -> float:
+    """
+    :param np.ndarray M: A Markov Matrix, i.e., a square stochastic transition matrix.
+    :returns float: The highest eigenvalue of matrix M that is smaller than one. If returned value is 1.0 than M has transient states or absorbent nodes.
+    """
+    pass
 
 # endregion
