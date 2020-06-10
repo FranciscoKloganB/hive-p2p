@@ -6,7 +6,7 @@ from typing import List, Tuple
 
 # region Semidefinite Programming Optimization
 
-def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Tuple[float, np.ndarray]:
+def adjency_matrix_sdp_optimization(a: List[List[int]]) -> np.ndarray:
     """
     Constructs an optimized adjacency matrix
     :param List[List[int]] a: any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
@@ -38,13 +38,14 @@ def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Tuple[float, np.ndarr
     problem = cvx.Problem(objective, constraints)
     problem.solve(solver=cvx.MOSEK)
 
-    return Aopt.value, problem.value
+    return Aopt.value
+
 # endregion
 
 
 # region Global Optimizattion
 
-def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> np.ndarray:
     """
     Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
     Result is only trully optimal if cvx.norm(Topt - U, 2) is equal to the markov matrix eigenvalue.
@@ -75,7 +76,7 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple
     problem = cvx.Problem(objective, constraints)
     problem.solve(solver=cvx.MOSEK)
 
-    return Topt.value, problem.value
+    return Topt.value
 
 # endregion
 
@@ -129,18 +130,38 @@ def __mh_summation(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
 
 
 # region Main
+def first_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
+    markov_matrix = __metropolis_hastings(A, v_)
+    eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
+    mixing_rate = np.max(np.abs(eigenvalues))
+    print(f"\nPure Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
 
-def main():
-    Aunopt = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
-    desired_distribution_ = np.asarray([0.1, 0.3, 0.4, 0.2])
-    adj_matrix_optimized, eigenvalue = adjency_matrix_sdp_optimization(Aunopt)
-    markov_matrix = __metropolis_hastings(adj_matrix_optimized, desired_distribution_)
-    print(f"\nUsing Semidefinite Programming techniques... The optimal eigenvalue is: {eigenvalue}\n")
-    print(f"Aopt solution is: \n{adj_matrix_optimized}\n\nResulting Markov Matrix is: \n{markov_matrix}")
+
+def second_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
+    adj_matrix_optimized = adjency_matrix_sdp_optimization(A)
+    markov_matrix = __metropolis_hastings(adj_matrix_optimized, v_)
+    eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
+    mixing_rate = np.max(np.abs(eigenvalues))
+    print(f"\nSDP Optimization before Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
+
+
+def third_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
+    markov_matrix = optimal_bilevel_mh_transition_matrix(A, v_).transpose()
+    eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
+    mixing_rate = np.max(np.abs(eigenvalues))
+    print(f"\nGlobal Optimization generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
+
+
+def main() -> None:
+    n = 4
+    v_ = np.asarray([0.1, 0.3, 0.4, 0.2])
+    A = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
+    U = np.ones((n, n)) / n
+    first_method(A, v_, U)
     print("\n########\n########\n########\n########\n")
-    markov_matrix, eigenvalue = optimal_bilevel_mh_transition_matrix(Aunopt, desired_distribution_)
-    print(f"Using Global Optimization techniques... The matrix normal is: {eigenvalue}")
-    print(f"\nResulting Markov Matrix is: \n{markov_matrix.transpose()}")
+    second_method(A, v_, U)
+    print("\n########\n########\n########\n########\n")
+    third_method(A, v_, U)
 
 
 if __name__ == "__main__":
