@@ -26,6 +26,7 @@ class Hivemind:
     """
 
     # region Class Variables, Instance Variables and Constructors
+
     def __init__(self, simfile_name: str, sim_number: int) -> None:
         """
         Instantiates an Hivemind object
@@ -75,9 +76,11 @@ class Hivemind:
             # Distribute files before starting simulation
             for hive in self.hives.values():
                 hive.spread_files(files_spreads[hive.file.name], files_dict[hive.file.name])
+
     # endregion
 
     # region Simulation Interface
+
     def execute_simulation(self) -> None:
         """
         Runs a stochastic swarm guidance algorithm applied to a P2P network
@@ -94,9 +97,11 @@ class Hivemind:
                 print("Hive: {} terminated at epoch {}".format(hid, self.epoch))
                 self.hives.pop(hid)
             self.epoch += 1
+
     # endregion
 
     # region Keeper Interface
+
     def receive_complaint(self, suspects_name: str) -> None:
         """
         Registers a complaint on the named worker, if enough complaints are received, broadcasts proper action to all
@@ -110,9 +115,11 @@ class Hivemind:
         #    2.2. discover the files the node used to share, probably requires yet another sf_strucutre
         #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
         raise NotImplementedError()
+
     # endregion
 
     # region Peer Search and Cloud References
+
     def find_replacement_worker(self, exclusion_dict: Dict[str, Worker], quantity: int) -> Dict[str, Worker]:
         """
         Selects a worker who is at least as good as dead worker and updates FileData associated with the file
@@ -137,9 +144,11 @@ class Hivemind:
         :returns a cloud reference that can be used to persist files with more reliability
         """
         return ""
+
     # endregion
 
     # region Helpers
+
     def __new_hive(self, shared: Dict[str, Dict[str, Union[List[str], str]]], file_name: str) -> Hive:
         """
         Creates a new hive
@@ -151,4 +160,5 @@ class Hivemind:
         hive = Hive(self, file_name, hive_members, sim_number=self.sim_number, origin=self.origin)
         self.hives[hive.id] = hive
         return hive
+
     # endregion

@@ -36,6 +36,7 @@ class Hive:
     """
 
     # region Class Variables, Instance Variables and Constructors
+
     def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker], sim_number: int = 0, origin: str = "") -> None:
         """
         Instantiates an Hive abstraction
@@ -59,6 +60,7 @@ class Hive:
         self.set_recovery_epoch_sum: int = 0
         self.set_recovery_epoch_calls: int = 0
         self.create_and_bcast_new_transition_matrix()
+
     # endregion
 
     # region Routing
@@ -156,6 +158,7 @@ class Hive:
         for worker in self.members.values():
             transition_vector = transition_matrix.loc[:, worker.id]
             worker.set_file_routing(self.file.name, transition_vector)
+
     # endregion
 
     # region Simulation Interface
@@ -246,6 +249,7 @@ class Hive:
             self.file.simulation_data.try_append_to_convergence_set(self.current_epoch)
         else:
             self.file.simulation_data.save_sets_and_reset()
+
     # endregion
 
     # region Helpers
@@ -339,7 +343,6 @@ class Hive:
             if not np.allclose(test_target, target_distribution[DEFAULT_COL].values):
                 return False
         return True
-    # endregion
 
     def create_and_bcast_new_transition_matrix(self):
         tries = 0
@@ -349,3 +352,6 @@ class Hive:
                 self.broadcast_transition_matrix(result)
                 break
         self.broadcast_transition_matrix(self.new_transition_matrix())  # if after 3 validations attempts no matrix was generated, use any other one.
+
+    # endregion
+

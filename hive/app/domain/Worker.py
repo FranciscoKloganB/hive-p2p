@@ -28,6 +28,7 @@ class Worker:
     """
 
     # region Class Variables, Instance Variables and Constructors
+
     def __init__(self, worker_id: str, worker_uptime: float):
         self.id: str = worker_id
         self.uptime: float = float('inf') if worker_uptime == 1.0 else math.ceil(worker_uptime * MAX_EPOCHS)
@@ -35,9 +36,11 @@ class Worker:
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
         self.status: int = Status.ONLINE
+
     # endregion
 
     # region Recovery
+
     def init_recovery_protocol(self, file_name: str) -> SharedFilePart:
         """
         Reconstructs a file and then splits it into globals.READ_SIZE before redistributing them to the rest of the hive
@@ -45,9 +48,11 @@ class Worker:
         """
         # TODO future-iterations:
         raise NotImplementedError()
+
     # endregion
 
     # region Routing Table
+
     def set_file_routing(self, file_name: str, transition_vector: Union[pd.Series, pd.DataFrame]) -> None:
         """
         Maps file id with state transition probabilities used for routing
@@ -67,9 +72,11 @@ class Worker:
         :param str file_name: id of the shared file whose routing information is being removed from routing_table
         """
         self.files.pop(file_name)
+
     # endregion
 
     # region File Routing
+
     def send_part(self, hive: h.Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
         """
         Attempts to send a file part to another worker
@@ -140,9 +147,11 @@ class Worker:
                 self.discard_part(file_name, number, corrupt=True, hive=hive)
             elif HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
                 pass  # Keep file part for at least one more epoch
+
     # endregion
 
     # region Overrides
+
     def __hash__(self):
         # allows a worker object to be used as a dictionary key
         return hash(str(self.id))
@@ -152,9 +161,11 @@ class Worker:
 
     def __ne__(self, other):
         return not(self == other)
+
     # endregion
 
     # region Helpers
+
     def discard_part(self, name: str, number: int, corrupt: bool = False, hive: h.Hive = None) -> None:
         """
         # TODO future-iterations: refactor to work with multiple file names
@@ -199,6 +210,7 @@ class Worker:
     # endregion
 
     # region PSUtils Interface
+
     # noinspection PyIncorrectDocstring
     @staticmethod
     def get_resource_utilization(*args) -> Dict[str, Any]:
@@ -218,4 +230,5 @@ class Worker:
         for arg in args:
             results[arg] = rT.get_value(arg)
         return results
+
     # endregion
