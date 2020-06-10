@@ -70,7 +70,7 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple
     if problem.status not in OPTIMAL_STATUS:
         raise TransitionMatrixGenerationError("Bilevel optimization failed. Problem Status is not OPTIMAL nor OPTIMAL_INACCURATE")
 
-    return Topt.value, problem.value
+    return Topt.value, get_markov_matrix_fast_mixing_rate(Topt.value)
 
 # endregion
 
