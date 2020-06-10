@@ -3,14 +3,16 @@ from __future__ import annotations
 import math
 import uuid
 import traceback
+from operator import itemgetter
+
 import numpy as np
 import pandas as pd
 import domain.Hivemind as hm
 import utils.matrices as matrices
-import utils.transition_matrices as mh
+import utils.transition_matrices as tmg
 
 from domain.Worker import Worker
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 from domain.helpers.FileData import FileData
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
@@ -131,8 +133,6 @@ class Hive:
         """
         returns DataFrame: Creates a new transition matrix for the members of the Hive, to be followed independently by each of them
         """
-        desired_distribution: List[float]
-        adjancency_matrix: List[List[int]]
         member_uptimes: List[float] = []
         member_ids: List[str] = []
 
@@ -140,12 +140,12 @@ class Hive:
             member_uptimes.append(worker.uptime)
             member_ids.append(worker.id)
 
-        adjancency_matrix = matrices.new_symmetric_adjency_matrix(len(member_ids))
-        desired_distribution = self.new_desired_distribution(member_ids, member_uptimes)
+        A: np.ndarray = np.asarray(matrices.new_symmetric_adjency_matrix(len(member_ids)))
+        v_: np.ndarray = np.asarray(self.new_desired_distribution(member_ids, member_uptimes))
 
-        transition_matrix, mrate = mh.regular_mh_transition_matrix(np.asarray(adjancency_matrix), np.asarray(desired_distribution))
+        T = self.select_fastest_topology(A, v_)
 
-        return pd.DataFrame(transition_matrix, index=member_ids, columns=member_ids)
+        return pd.DataFrame(T, index=member_ids, columns=member_ids)
 
     def broadcast_transition_matrix(self, transition_matrix: pd.DataFrame) -> None:
         """
@@ -352,6 +352,20 @@ class Hive:
                 self.broadcast_transition_matrix(result)
                 break
         self.broadcast_transition_matrix(self.new_transition_matrix())  # if after 3 validations attempts no matrix was generated, use any other one.
+
+    def select_fastest_topology(self, A: np.ndarray, v_: np.ndarray) -> np.ndarray:
+        """
+        Creates three possible transition matrices and selects the one that is theoretically faster to achieve the desired distribution v_
+        :param np.ndarray A: An adjacency matrix that represents the network topology
+        :param np.ndarray v_: A desired distribution vector that defines the returned matrix steady state property.
+        :returns np.ndarray: A markov transition matrix that converges to v_
+        """
+        results: List[Tuple[np.ndarray, float]] = [
+            tmg.new_mh_transition_matrix(A, v_),
+            tmg.new_sdp_mh_transition_matrix(A, v_),
+            tmg.new_go_transition_matrix(A, v_)
+        ]
+        return min(results, key=itemgetter(1))[0]
 
     # endregion
 
