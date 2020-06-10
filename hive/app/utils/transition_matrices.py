@@ -12,7 +12,7 @@ OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 # region Markov Matrix Constructors
 
-def regular_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+def new_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
     :param np.ndarray A: Symmetric unoptimized adjency matrix.
@@ -23,7 +23,7 @@ def regular_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndar
     return T, get_markov_matrix_fast_mixing_rate(T)  # TODO: Get mixing rate of this transition matrix
 
 
-def optimal_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+def new_sdp_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
     The provided adjacency matrix A is first optimized with semi-definite programming techniques for the uniform distribution vector.
@@ -36,7 +36,7 @@ def optimal_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndar
     return T, get_markov_matrix_fast_mixing_rate(T)
 
 
-def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
     Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
