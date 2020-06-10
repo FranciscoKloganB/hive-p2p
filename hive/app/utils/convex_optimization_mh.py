@@ -134,7 +134,7 @@ def first_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
     markov_matrix = __metropolis_hastings(A, v_)
     eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
     mixing_rate = np.max(np.abs(eigenvalues))
-    print(f"\nPure Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
+    print(f"Pure Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
 
 
 def second_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
@@ -142,14 +142,14 @@ def second_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
     markov_matrix = __metropolis_hastings(adj_matrix_optimized, v_)
     eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
     mixing_rate = np.max(np.abs(eigenvalues))
-    print(f"\nSDP Optimization before Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
+    print(f"SDP Optimization before Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
 
 
 def third_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
     markov_matrix = optimal_bilevel_mh_transition_matrix(A, v_).transpose()
     eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
     mixing_rate = np.max(np.abs(eigenvalues))
-    print(f"\nGlobal Optimization generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
+    print(f"Global Optimization generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
 
 
 def main() -> None:
@@ -158,9 +158,9 @@ def main() -> None:
     A = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
     U = np.ones((n, n)) / n
     first_method(A, v_, U)
-    print("\n########\n########\n########\n########\n")
+    print("\n########\n")
     second_method(A, v_, U)
-    print("\n########\n########\n########\n########\n")
+    print("\n########\n")
     third_method(A, v_, U)
 
 
