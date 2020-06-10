@@ -31,7 +31,9 @@ def new_sdp_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndar
     :param np.ndarray v_: a stochastic desired distribution vector
     :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
-    Aopt, optimal_adj_eigenvalue = __adjency_matrix_sdp_optimization(A)
+    Aopt = __adjency_matrix_sdp_optimization(A)
+    if Aopt is None:
+        return None, float('inf')
     T = _metropolis_hastings(Aopt, v_)
     return T, get_markov_matrix_fast_mixing_rate(T)
 
@@ -67,10 +69,11 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
     problem = cvx.Problem(objective, constraints)
     problem.solve(solver=cvx.MOSEK)
 
-    if problem.status not in OPTIMAL_STATUS:
-        raise TransitionMatrixGenerationError("Bilevel optimization failed. Problem Status is not OPTIMAL nor OPTIMAL_INACCURATE")
-
-    return Topt.value, get_markov_matrix_fast_mixing_rate(Topt.value)
+    if problem.status in OPTIMAL_STATUS:
+        print(problem.status)
+        return Topt.value, get_markov_matrix_fast_mixing_rate(Topt.value)
+    else:
+        return None, float('inf')
 
 # endregion
 
@@ -109,10 +112,7 @@ def __adjency_matrix_sdp_optimization(A: np.ndarray) -> np.ndarray:
     problem = cvx.Problem(objective, constraints)
     problem.solve(solver=cvx.MOSEK)
 
-    if problem.status not in OPTIMAL_STATUS:
-        raise TransitionMatrixGenerationError("Bilevel optimization failed. Problem Status is not OPTIMAL nor OPTIMAL_INACCURATE")
-
-    return Aopt.value
+    return Aopt.value if problem.status in OPTIMAL_STATUS else None
 
 # endregion
 
