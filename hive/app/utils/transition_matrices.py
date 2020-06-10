@@ -19,7 +19,8 @@ def regular_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndar
     :param np.ndarray v_: a stochastic desired distribution vector
     :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
-    return _metropolis_hastings(A, v_), 0.0  # TODO: Get mixing rate of this transition matrix
+    T = _metropolis_hastings(A, v_)
+    return T, get_markov_matrix_fast_mixing_rate(T)  # TODO: Get mixing rate of this transition matrix
 
 
 def optimal_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
@@ -30,8 +31,9 @@ def optimal_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndar
     :param np.ndarray v_: a stochastic desired distribution vector
     :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
-    Aopt, mixing_rate = __adjency_matrix_sdp_optimization(A)
-    return _metropolis_hastings(Aopt, v_), mixing_rate
+    Aopt, optimal_adj_eigenvalue = __adjency_matrix_sdp_optimization(A)
+    T = _metropolis_hastings(Aopt, v_)
+    return T, get_markov_matrix_fast_mixing_rate(T)
 
 
 def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
@@ -75,11 +77,11 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple
 
 # region Optimization
 
-def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[np.ndarray, float]:
+def __adjency_matrix_sdp_optimization(A: np.ndarray) -> np.ndarray:
     """
     Constructs an optimized adjacency matrix
-    :param List[List[int]] A: any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
-    :returns  List[List[int]] adj_matrix_optimized: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
+    :param np.ndarray A: Any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
+    :returns np.ndarray Aopt.value: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
     """
     # Allocate python variables
     n: int = A.shape[0]
@@ -110,7 +112,7 @@ def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[np.ndarray, float]
     if problem.status not in OPTIMAL_STATUS:
         raise TransitionMatrixGenerationError("Bilevel optimization failed. Problem Status is not OPTIMAL nor OPTIMAL_INACCURATE")
 
-    return Aopt.value, problem.value
+    return Aopt.value
 
 # endregion
 
@@ -206,11 +208,19 @@ def _mh_summation(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
 
 # region Helpers
 
-def get_max_eigenvalue(M: np.ndarray) -> float:
+def get_markov_matrix_fast_mixing_rate(M: np.ndarray) -> float:
     """
+    Returns the expected fast mixing rate of matrix M, i.e., the highest eigenvalue that is smaller than one. If returned value is 1.0 than M has transient states or absorbent nodes.
     :param np.ndarray M: A Markov Matrix, i.e., a square stochastic transition matrix.
-    :returns float: The highest eigenvalue of matrix M that is smaller than one. If returned value is 1.0 than M has transient states or absorbent nodes.
+    :returns float mixing_rate: The highest eigenvalue of matrix M that is smaller than one.
     """
-    pass
+    size = M.shape[0]
+
+    if size != M.shape[1]:
+        raise MatrixNotSquareError("get_max_eigenvalue can't compute eigenvalues/vectors with non-square matrix input.")
+
+    eigenvalues, eigenvectors = np.linalg.eig(M - np.ones((size, size)) / size)
+    mixing_rate = np.max(np.abs(eigenvalues))
+    return mixing_rate.item()
 
 # endregion
