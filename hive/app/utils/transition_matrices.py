@@ -33,7 +33,7 @@ def new_sdp_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndar
     """
     problem, Aopt = __adjency_matrix_sdp_optimization(A)
     if problem.status in OPTIMAL_STATUS:
-        T = _metropolis_hastings(Aopt, v_)
+        T = _metropolis_hastings(Aopt.value, v_)
         return T, get_markov_matrix_fast_mixing_rate(T)
     else:
         print(f"Semidefinite Programming Optimization Attempt: {problem.status}")
@@ -82,7 +82,7 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
 
 # region Optimization
 
-def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[cvx.Problem, np.ndarray]:
+def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[cvx.Problem, cvx.Variable]:
     """
     Constructs an optimized adjacency matrix
     :param np.ndarray A: Any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
