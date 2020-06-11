@@ -128,6 +128,7 @@ class Worker:
                     lost_replicas -= 1
                     part.references += 1
             part.reset_epochs_to_recover(hive.current_epoch)
+
     # endregion
 
     # region Swarm Guidance Interface

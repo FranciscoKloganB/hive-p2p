@@ -31,11 +31,13 @@ def new_sdp_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndar
     :param np.ndarray v_: a stochastic desired distribution vector
     :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
-    Aopt = __adjency_matrix_sdp_optimization(A)
-    if Aopt is None:
+    problem, Aopt = __adjency_matrix_sdp_optimization(A)
+    if problem.status in OPTIMAL_STATUS:
+        T = _metropolis_hastings(Aopt, v_)
+        return T, get_markov_matrix_fast_mixing_rate(T)
+    else:
+        print(f"Semidefinite Programming Optimization: {problem.status}")
         return None, float('inf')
-    T = _metropolis_hastings(Aopt, v_)
-    return T, get_markov_matrix_fast_mixing_rate(T)
 
 
 def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
@@ -70,9 +72,9 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
     problem.solve(solver=cvx.MOSEK)
 
     if problem.status in OPTIMAL_STATUS:
-        print(problem.status)
         return Topt.value, get_markov_matrix_fast_mixing_rate(Topt.value)
     else:
+        print(f"Global Optimization: {problem.status}")
         return None, float('inf')
 
 # endregion
@@ -80,7 +82,7 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
 
 # region Optimization
 
-def __adjency_matrix_sdp_optimization(A: np.ndarray) -> np.ndarray:
+def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[cvx.Problem, np.ndarray]:
     """
     Constructs an optimized adjacency matrix
     :param np.ndarray A: Any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
@@ -112,7 +114,7 @@ def __adjency_matrix_sdp_optimization(A: np.ndarray) -> np.ndarray:
     problem = cvx.Problem(objective, constraints)
     problem.solve(solver=cvx.MOSEK)
 
-    return Aopt.value if problem.status in OPTIMAL_STATUS else None
+    return problem, Aopt
 
 # endregion
 
