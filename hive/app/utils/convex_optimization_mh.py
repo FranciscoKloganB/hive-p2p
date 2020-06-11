@@ -74,7 +74,7 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> np.nd
     # Formulate and Solve Problem
     objective = cvx.Minimize(cvx.norm(Topt - U, 2))
     problem = cvx.Problem(objective, constraints)
-    problem.solve(solver=cvx.MOSEK)
+    problem.solve()
 
     return Topt.value
 
@@ -153,18 +153,29 @@ def third_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
 
 
 def main() -> None:
-    n = 4
-    v_ = np.asarray([0.1, 0.3, 0.4, 0.2])
-    A = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
+    # n = 4
+    # v_ = np.asarray([0.1, 0.3, 0.4, 0.2])
+    # A = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
+    n = 8
+    v_ = [0.13211647, 0.23120382, 0.03172534, 0.16644937, 0.26249457, 0.09474142, 0.04476315, 0.03650587]
+    A = np.asarray([[0, 1, 1, 1, 0, 1, 1, 0],
+                    [1, 1, 1, 0, 0, 0, 1, 0],
+                    [1, 1, 0, 1, 0, 1, 0, 1],
+                    [1, 0, 1, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 1, 0, 0, 1],
+                    [1, 0, 1, 0, 0, 0, 1, 1],
+                    [1, 1, 0, 0, 0, 1, 0, 1],
+                    [0, 0, 1, 1, 1, 1, 1, 0]])
     U = np.ones((n, n)) / n
-    first_method(A, v_, U)
-    print("\n########\n")
-    second_method(A, v_, U)
-    print("\n########\n")
+    # first_method(A, v_, U)
+    # print("\n########\n")
+    # second_method(A, v_, U)
+    # print("\n########\n")
     third_method(A, v_, U)
 
 
 if __name__ == "__main__":
+    # print(cvx.installed_solvers())
     main()
 
 # endregion
