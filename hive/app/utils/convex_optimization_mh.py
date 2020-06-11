@@ -1,5 +1,6 @@
 import cvxpy as cvx
 import numpy as np
+import matlab.engine as mat
 
 from typing import List, Tuple
 
@@ -175,9 +176,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # print(cvx.installed_solvers())
-    main()
-
+    print(cvx.installed_solvers())
+    # main()
+    eng = mat.start_matlab()
 # endregion
 
 
