@@ -62,7 +62,7 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> np.nd
     U: np.ndarray = np.ones((n, n)) / n
 
     # Specificy problem variables
-    Topt: cvx.Variable = cvx.Variable((n, n), symmetric=False)
+    Topt: cvx.Variable = cvx.Variable((n, n))
 
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
@@ -75,7 +75,7 @@ def optimal_bilevel_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> np.nd
     # Formulate and Solve Problem
     objective = cvx.Minimize(cvx.norm(Topt - U, 2))
     problem = cvx.Problem(objective, constraints)
-    problem.solve()
+    problem.solve(solver=cvx.NAG)
 
     return Topt.value
 
@@ -179,8 +179,8 @@ def main() -> None:
     # print("\n########\n")
     # second_method(A, v_, U)
     # print("\n########\n")
-    # third_method(A, v_, U)
-    third_method_as_matlab(A.tolist(), v_.tolist(), U.tolist())
+    third_method(A, v_, U)
+    # third_method_as_matlab(A.tolist(), v_.tolist(), U.tolist())
 
 
 if __name__ == "__main__":
