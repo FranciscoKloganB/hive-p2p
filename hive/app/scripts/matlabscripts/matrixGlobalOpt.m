@@ -11,5 +11,8 @@ function [ToptValue, ToptValueMR] = matrixGlobalOpt(A, v_)
     optimize(F, norm(Topt - U, 2), S);
 
     ToptValue = value(Topt);
+    display(ToptValue)
+
     ToptValueMR = max(abs(eig(Topt - U)));
+    display(ToptValueMR)
 end
