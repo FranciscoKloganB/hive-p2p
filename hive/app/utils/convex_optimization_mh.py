@@ -1,6 +1,6 @@
 import cvxpy as cvx
 import numpy as np
-import matlab.engine as mat
+import matlab.engine
 
 from typing import List, Tuple
 
@@ -153,12 +153,19 @@ def third_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
     print(f"Global Optimization generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
 
 
+def third_method_as_matlab(A: List[List[int]], v_, U):
+    try:
+        eng = matlab.engine.start_matlab()
+    except matlab.engine.EngineError as exc:
+        print(f"Could not launch MatLab, do you have a valid installation, license and connection?\n[x] Reason: {str(exc)}")
+
+
 def main() -> None:
     # n = 4
     # v_ = np.asarray([0.1, 0.3, 0.4, 0.2])
     # A = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
     n = 8
-    v_ = [0.13211647, 0.23120382, 0.03172534, 0.16644937, 0.26249457, 0.09474142, 0.04476315, 0.03650587]
+    v_ = np.asarray([0.13211647, 0.23120382, 0.03172534, 0.16644937, 0.26249457, 0.09474142, 0.04476315, 0.03650587])
     A = np.asarray([[0, 1, 1, 1, 0, 1, 1, 0],
                     [1, 1, 1, 0, 0, 0, 1, 0],
                     [1, 1, 0, 1, 0, 1, 0, 1],
@@ -172,16 +179,12 @@ def main() -> None:
     # print("\n########\n")
     # second_method(A, v_, U)
     # print("\n########\n")
-    third_method(A, v_, U)
+    # third_method(A, v_, U)
+    third_method_as_matlab(A.tolist(), v_.tolist(), U.tolist())
 
 
 if __name__ == "__main__":
-    print(cvx.installed_solvers())
-    # main()
-    eng = mat.start_matlab()
+    # print(cvx.installed_solvers())
+    main()
+
 # endregion
-
-
-
-
-
