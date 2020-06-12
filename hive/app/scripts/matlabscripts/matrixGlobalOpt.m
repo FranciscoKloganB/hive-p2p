@@ -1,6 +1,9 @@
 function [ToptValue, ToptValueMR] = matrixGlobalOpt(A, v_)
-    n = length(v_)
-    U = ones(n) / n
+    n = length(v_);
+    U = ones(n) / n;
+
+    display(A)
+    display(v_)
 
     Topt = sdpvar(n, n, 'full');
     F = [Topt(:) >= 0, ...
