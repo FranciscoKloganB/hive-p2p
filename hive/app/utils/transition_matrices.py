@@ -56,7 +56,7 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
     U: np.ndarray = np.ones((n, n)) / n
 
     # Specificy problem variables
-    Topt: cvx.Variable = cvx.Variable((n, n), symmetric=False)
+    Topt: cvx.Variable = cvx.Variable((n, n))
 
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
