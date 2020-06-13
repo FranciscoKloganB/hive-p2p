@@ -7,7 +7,7 @@ function [ToptValue, ToptValueMR] = matrixGlobalOpt(A, v_)
         Topt*ones(n,1) == ones(n, 1),...
         Topt.*(ones(n)-A) == 0,...
         v_*Topt==v_];
-    S = sdpsettings('solver', 'BMIBNB');
+    S = sdpsettings('solver', 'bmibnb');
     optimize(F,norm(Topt-U,2),S);
 
     ToptValue = value(Topt);
