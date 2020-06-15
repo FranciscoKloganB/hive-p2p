@@ -44,7 +44,7 @@ def main(fname, epochs):
 
 if __name__ == "__main__":
     simfile_name_ = None
-    run_ = 30
+    run_ = 1
     try:
         options, args = getopt.getopt(sys.argv[1:], "uhs:r:", ["usage", "help", "simfile=", "runs="])
         for options, args in options:
