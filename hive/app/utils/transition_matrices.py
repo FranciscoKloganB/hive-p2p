@@ -69,7 +69,7 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
     # Formulate and Solve Problem
     objective = cvx.Minimize(cvx.norm(Topt - U, 2))
     problem = cvx.Problem(objective, constraints)
-    problem.solve(solver=cvx.MOSEK)
+    problem.solve()
 
     if problem.status in OPTIMAL_STATUS:
         return Topt.value, get_markov_matrix_fast_mixing_rate(Topt.value)
