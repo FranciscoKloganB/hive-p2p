@@ -154,9 +154,8 @@ class Hive:
         names to an equal transition matrix within each hive member, thus reducing space overhead arbitrarly, however, this would make Simulation harder. This
         note is kept for future reference. This also assumes an hive can store multiple files. For simplicity each Hive only manages one file for now.
         """
-        transition_vector: pd.DataFrame
         for worker in self.members.values():
-            transition_vector = transition_matrix.loc[:, worker.id]
+            transition_vector: pd.DataFrame = transition_matrix.loc[:, worker.id]
             worker.set_file_routing(self.file.name, transition_vector)
 
     # endregion
@@ -358,14 +357,15 @@ class Hive:
         Creates three possible transition matrices and selects the one that is theoretically faster to achieve the desired distribution v_
         :param np.ndarray A: An adjacency matrix that represents the network topology
         :param np.ndarray v_: A desired distribution vector that defines the returned matrix steady state property.
-        :returns np.ndarray: A markov transition matrix that converges to v_
+        :returns np.ndarray fastest_matrix: A markov transition matrix that converges to v_
         """
         results: List[Tuple[np.ndarray, float]] = [
             tmg.new_mh_transition_matrix(A, v_),
             tmg.new_sdp_mh_transition_matrix(A, v_),
             tmg.new_go_transition_matrix(A, v_)
         ]
-        return min(results, key=itemgetter(1))[0]
+        fastest_matrix: np.ndarray = min(results, key=itemgetter(1))[0]
+        return fastest_matrix
 
     # endregion
 
