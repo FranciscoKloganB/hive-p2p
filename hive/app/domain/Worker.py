@@ -93,7 +93,7 @@ class Worker:
             destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
             return hive.route_part(self.id, destination, part)
         except ValueError as vE:
-            print(routing_vector)
+            print(f"{routing_vector}\nStochastic?: {np.sum(member_chances)}")
             sys.exit("".join(traceback.format_exception(etype=type(vE), value=vE, tb=vE.__traceback__)))
 
     def receive_part(self, part: SharedFilePart) -> int:
