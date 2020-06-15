@@ -36,7 +36,6 @@ def new_sdp_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndar
         T = _metropolis_hastings(Aopt.value, v_)
         return T, get_markov_matrix_fast_mixing_rate(T)
     else:
-        print(f"Semidefinite Programming Optimization Attempt: {problem.status}")
         return None, float('inf')
 
 
@@ -74,7 +73,6 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
     if problem.status in OPTIMAL_STATUS:
         return Topt.value, get_markov_matrix_fast_mixing_rate(Topt.value)
     else:
-        print(f"Global Optimization Attempt: {problem.status}")
         return None, float('inf')
 
 # endregion
