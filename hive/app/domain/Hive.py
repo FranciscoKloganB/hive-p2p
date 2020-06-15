@@ -339,13 +339,14 @@ class Hive:
         column_count = t_pow.shape[1]
         for j in range(column_count):
             test_target = t_pow[:, j]  # gets array column j
-            if not np.allclose(test_target, target_distribution[DEFAULT_COL].values):
+            if not np.allclose(test_target, target_distribution[DEFAULT_COL].values, atol=1e-02):
                 return False
         return True
 
     def create_and_bcast_new_transition_matrix(self):
-        tries = 0
-        while (tries < 3):
+        tries = 1
+        while (tries <= 3):
+            print(f"validating transition matrix... atempt: {tries}")
             result = self.new_transition_matrix()
             if self.validate_transition_matrix(result, self.desired_distribution):
                 self.broadcast_transition_matrix(result)
@@ -364,8 +365,17 @@ class Hive:
             tmg.new_sdp_mh_transition_matrix(A, v_),
             tmg.new_go_transition_matrix(A, v_)
         ]
-        size = A.shape[0]
-        fastest_matrix: np.ndarray = min(results, key=itemgetter(1))[0]
+        size = len(results)
+        # fastest_matrix: np.ndarray = min(results, key=itemgetter(1))[0]
+        min_mr = float('inf')
+        fastest_matrix = None
+        for i in range(size):
+            i_mr = results[i][1]
+            if i_mr < min_mr:
+                min_mr = i_mr
+                fastest_matrix = results[i][0]  # Worse case scenario fastest matrix will be the unoptmized MH transition matrix. Null checking thus, unneeded.
+
+        size = fastest_matrix.shape[0]
         for j in range(size):
             fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
