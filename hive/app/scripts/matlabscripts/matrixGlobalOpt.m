@@ -12,9 +12,8 @@ function [ToptValue, ToptValueMR] = matrixGlobalOpt(A, v_)
 
     if diagnostics.problem == 0
         sprintf('Feasible')
-        ToptValue = cast(value(Topt), double);
+        ToptValue = cast(value(Topt), 'like', [0 1; 1 0]); % casts sdpvar type to double array (works - but python still doesn't recognize this...)
         ToptValueMR = max(abs(eig(Topt - U)));
-        display(ToptValueMR)
         return
     elseif diagnostics.problem == 1
         sprintf('Unfeasible')
