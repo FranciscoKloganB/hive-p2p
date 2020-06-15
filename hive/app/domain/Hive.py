@@ -336,7 +336,7 @@ class Hive:
         self.set_recovery_epoch_calls += 1
 
     def validate_transition_matrix(self, transition_matrix: pd.DataFrame, target_distribution: pd.DataFrame) -> bool:
-        t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 2048)
+        t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)
         column_count = t_pow.shape[1]
         for j in range(column_count):
             test_target = t_pow[:, j]  # gets array column j
