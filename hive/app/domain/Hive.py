@@ -364,7 +364,11 @@ class Hive:
             tmg.new_sdp_mh_transition_matrix(A, v_),
             tmg.new_go_transition_matrix(A, v_)
         ]
+        size = A.shape[0]
         fastest_matrix: np.ndarray = min(results, key=itemgetter(1))[0]
+        for j in range(size):
+            fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])
+            fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
 
     # endregion
