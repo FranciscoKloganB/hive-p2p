@@ -7,26 +7,22 @@ function [ToptValue, ToptValueMR] = matrixGlobalOpt(A, v_)
         Topt * ones(n,1) == ones(n, 1),...
         Topt .* (ones(n)-A) == 0,...
         v_ * Topt==v_];
-    S = sdpsettings('solver', 'bmibnb');
-
+    S = sdpsettings('verbose', 0);
     diagnostics = optimize(F, norm(Topt-U, 2), S);
 
     if diagnostics.problem == 0
         sprintf('Feasible')
-        ToptValue = value(Topt);
+        ToptValue = cast(value(Topt), double);
         ToptValueMR = max(abs(eig(Topt - U)));
-        display(class(ToptValue))
-        display(class(ToptValueMR))
+        display(ToptValueMR)
         return
     elseif diagnostics.problem == 1
         sprintf('Unfeasible')
     else
         sprintf('Something else happened (ec: %d)', diagnostics.problem)
     end
-
+    
     ToptValue = [];
     ToptValueMR = 1.0;
-    display(class(ToptValue))
-    display(class(ToptValueMR))
     return
 end

@@ -163,7 +163,7 @@ def third_method_as_matlab(A: np.ndarray, v_: np.ndarray):
         matlab_A = matlab.double(A.tolist())
         matlab_v_ = matlab.double(v_.tolist())
         Topt, mr = eng.matrixGlobalOpt(matlab_A, matlab_v_, nargout=2)
-        print(f"Type: {type(mr)}, Mixing Rate: {mr}:\nType: {type(Topt)}, Topt:\n{Topt}")
+        # print(f"Type: {type(mr)}, Mixing Rate: {mr}:\nType: {type(Topt)}, Topt:\n{Topt}")
     except matlab.engine.EngineError as error:
         print(str(error))
 
@@ -184,11 +184,11 @@ def main() -> None:
     #                 [0, 0, 1, 1, 1, 1, 1, 0]])
     U = np.ones((n, n)) / n
     # first_method(A, v_, U)
-    # print("\n########\n")
+    # print("\n----\n")
     # second_method(A, v_, U)
-    # print("\n########\n")
-    third_method(A, v_, U)
-    print("\n########\n")
+    # print("\n----\n")
+    # third_method(A, v_, U)
+    # print("\n----\n")
     third_method_as_matlab(A, v_)
 
 
