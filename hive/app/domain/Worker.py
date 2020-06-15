@@ -65,6 +65,8 @@ class Worker:
             self.routing_table[file_name] = transition_vector
         else:
             raise ValueError("Worker.set_file_routing expects a pandas.Series or pandas.DataFrame as type for transition vector parameter.")
+        # _ = [*self.routing_table[file_name].iloc[:, DEFAULT_COL]]
+        # print(f"Stochastic?: {np.sum(_)}")
 
     def remove_file_routing(self, file_name: str) -> None:
         """
