@@ -345,13 +345,14 @@ class Hive:
 
     def create_and_bcast_new_transition_matrix(self):
         tries = 1
+        result: pd.DataFrame = pd.DataFrame()
         while (tries <= 3):
             print(f"validating transition matrix... atempt: {tries}")
             result = self.new_transition_matrix()
             if self.validate_transition_matrix(result, self.desired_distribution):
                 self.broadcast_transition_matrix(result)
                 break
-        self.broadcast_transition_matrix(self.new_transition_matrix())  # if after 3 validations attempts no matrix was generated, use any other one.
+        self.broadcast_transition_matrix(result)  # if after 3 validations attempts no matrix was generated, use any other one.
 
     def select_fastest_topology(self, A: np.ndarray, v_: np.ndarray) -> np.ndarray:
         """
