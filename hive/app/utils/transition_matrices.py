@@ -71,7 +71,7 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
     problem.solve()
 
     if problem.status in OPTIMAL_STATUS:
-        return Topt.value, get_markov_matrix_fast_mixing_rate(Topt.value)
+        return Topt.value.transpose(), get_markov_matrix_fast_mixing_rate(Topt.value)
     else:
         return None, float('inf')
 
