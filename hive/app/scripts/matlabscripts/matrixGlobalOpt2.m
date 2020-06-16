@@ -28,7 +28,7 @@ function Msdp = matrixGlobalOpt(sym_topology, mu)
     networkF = [Msdp .*(ones(n)-sym_topology) == 0];
     vF = [mu*Msdp == mu];
     F = [positiveF, stochasticF, networkF, vF];
-    S = sdpsettings('solver', 'swarm');
+    S = sdpsettings('solver', 'bmibnb', 'verbose', 0, 'debug', 1);
     
     diagnostics = optimize(F, norm(Msdp-1/n*ones(n),2), S);
     isFeasible(diagnostics);
