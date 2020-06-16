@@ -9,8 +9,6 @@ mu = (1:n)./sum(1:n);
 matrixGlobalOpt(sym_topology, mu)
 
 function isFeasible(diagnostics)
-    sprintf('###########\nDIAGNOSTICS\n###########\n')
-    disp(diagnostics)
     if diagnostics.problem == 0
      sprintf('Solver thinks it is feasible')
     elseif diagnostics.problem == 1
@@ -18,7 +16,6 @@ function isFeasible(diagnostics)
     else
      sprintf('Something else happened... error code: %d', diagnostics.problem)
     end
-    sprintf('###########\nDIAGNOSTICS\n###########\n')
 end
 
 function Msdp = matrixGlobalOpt(sym_topology, mu)
