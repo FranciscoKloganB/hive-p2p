@@ -49,14 +49,12 @@ class FileData:
         if parts_in_hive == 0:
             return False
 
-        normalized_cdv = self.current_distribution.divide(parts_in_hive)
-        if DEBUG:
-            self.print_distributions(normalized_cdv)
-        # return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / parts_in_hive))
-        for i in range(len(self.current_distribution)):
-            a = self.current_distribution.iloc[DEFAULT_COL, i]
-            b = self.desired_distribution.iloc[DEFAULT_COL, i]
-            if np.abs(a - b) > self.new_tolerance(parts_in_hive):
+        size = len(self.current_distribution)
+        for i in range(size):
+            tolerance = self.new_tolerance(parts_in_hive)
+            b = np.ceil(self.desired_distribution.iloc[i, DEFAULT_COL] * parts_in_hive)
+            a = self.current_distribution.iloc[i, DEFAULT_COL]
+            if np.abs(a - b) > tolerance:
                 return False
         return True
     # endregion
@@ -145,10 +143,12 @@ class FileData:
         self.current_distribution = pd.DataFrame(data=[0] * len(desired_distribution), index=member_ids)
 
     def new_tolerance(self, parts_in_hive) -> np.float64:
+        tolerance = parts_in_hive * 0.1
         if (self.parts_in_hive == 0):
-            return np.abs(self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min())
+            tolerance = self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min() * parts_in_hive
         else:
-            return np.abs(self.desired_distribution[DEFAULT_COL].max() * parts_in_hive) / parts_in_hive
+            tolerance = self.desired_distribution[DEFAULT_COL].max() * parts_in_hive
+        return np.ceil(np.abs(tolerance))
 
     def print_distributions(self, normalized_cdv: List[float]) -> None:
         text = "Desired Distribution:\n{}\nCurrent Distribution:\n{}\n"
