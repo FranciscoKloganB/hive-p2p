@@ -215,7 +215,7 @@ class Hive:
             if epoch == MAX_EPOCHS:
                 self.running = False
         except Exception as e:
-            self.set_fail("Unexpected exception: ".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
+            self.set_fail(f"Simulation failed due to unexpected exception, reason: {str(e)}")
         self.file.simulation_data.set_delay_at_index(self.set_recovery_epoch_sum, self.set_recovery_epoch_calls, self.current_epoch)
 
     def is_running(self) -> bool:
