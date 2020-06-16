@@ -54,7 +54,9 @@ class FileData:
             self.print_distributions(normalized_cdv)
         # return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / parts_in_hive))
         for i in range(len(self.current_distribution)):
-            if np.abs(self.current_distribution[i] - self.desired_distribution) > self.new_tolerance(parts_in_hive):
+            a = self.current_distribution.iloc[DEFAULT_COL, i]
+            b = self.desired_distribution.iloc[DEFAULT_COL, i]
+            if np.abs(a - b) > self.new_tolerance(parts_in_hive):
                 return False
         return True
     # endregion
@@ -74,15 +76,20 @@ class FileData:
         if DEBUG:
             [print("* {};".format(reason)) for reason in sim_data.msg]
 
-        sim_data.corrupted_parts = sim_data.corrupted_parts[:epoch]
-        sim_data.delay = sim_data.delay[:epoch]
+        sim_data.parts_in_hive = sim_data.parts_in_hive[:epoch]
+
         sim_data.disconnected_workers = sim_data.disconnected_workers[:epoch]
-        sim_data.lost_messages = sim_data.lost_messages[:epoch]
         sim_data.lost_parts = sim_data.lost_parts[:epoch]
+
         sim_data.hive_status_before_maintenance = sim_data.hive_status_before_maintenance[:epoch]
         sim_data.hive_size_before_maintenance = sim_data.hive_size_before_maintenance[:epoch]
         sim_data.hive_size_after_maintenance = sim_data.hive_size_after_maintenance[:epoch]
+
+        sim_data.delay = sim_data.delay[:epoch]
+
         sim_data.moved_parts = sim_data.moved_parts[:epoch]
+        sim_data.corrupted_parts = sim_data.corrupted_parts[:epoch]
+        sim_data.lost_messages = sim_data.lost_messages[:epoch]
 
         extras: Dict[str, Any] = {
             "simfile_name": origin,
