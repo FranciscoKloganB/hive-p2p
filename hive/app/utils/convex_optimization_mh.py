@@ -156,8 +156,7 @@ def third_method(A: np.ndarray, v_: np.ndarray) -> None:
         mA = m.double(A.tolist())
         mv_ = m.double(v_.tolist())
         markov_matrix, mixing_rate = eng.matrixGlobalOpt(mA, mv_, nargout=2)
-        print(type(mixing_rate))
-        print(type(markov_matrix))
+        markov_matrix = np.array(markov_matrix._data).reshape(markov_matrix.size, order='F')
         print(f"Global Optimization generation with MatLab...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
     except me.EngineError as error:
         print(str(error))
@@ -170,7 +169,7 @@ def main() -> None:
                     [0, 1, 1, 1],
                     [1, 1, 1, 0],
                     [0, 1, 0, 1]])
-    U = np.ones((n, n)) / n
+    # U = np.ones((n, n)) / n
     # first_method(A, v_, U)
     # print("\n----\n")
     # second_method(A, v_, U)
