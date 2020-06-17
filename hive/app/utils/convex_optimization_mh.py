@@ -1,6 +1,6 @@
 import os
-import matlab
-import matlab.engine
+import matlab as m
+import matlab.engine as me
 import cvxpy as cvx
 import numpy as np
 
@@ -148,47 +148,34 @@ def second_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
     print(f"SDP Optimization before Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
 
 
-def third_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
-    markov_matrix = optimal_bilevel_mh_transition_matrix(A, v_).transpose()
-    eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
-    mixing_rate = np.max(np.abs(eigenvalues))
-    print(f"Global Optimization generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
-
-
-def third_method_as_matlab(A: np.ndarray, v_: np.ndarray):
+def third_method(A: np.ndarray, v_: np.ndarray) -> None:
     matlab_scripts_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'scripts', 'matlabscripts')))
     try:
-        eng = matlab.engine.start_matlab()
+        eng = me.start_matlab()
         eng.cd(matlab_scripts_dir)
-        matlab_A = matlab.double(A.tolist())
-        matlab_v_ = matlab.double(v_.tolist())
-        Topt, mr = eng.matrixGlobalOpt(matlab_A, matlab_v_, nargout=2)
-    except matlab.engine.EngineError as error:
+        mA = m.double(A.tolist())
+        mv_ = m.double(v_.tolist())
+        markov_matrix, mixing_rate = eng.matrixGlobalOpt(mA, mv_, nargout=2)
+        print(type(mixing_rate))
+        print(type(markov_matrix))
+        print(f"Global Optimization generation with MatLab...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
+    except me.EngineError as error:
         print(str(error))
 
 
 def main() -> None:
     n = 4
     v_ = np.asarray([0.1, 0.3, 0.4, 0.2])
-    A = np.asarray([[1, 0, 1, 0], [0, 1, 1, 1], [1, 1, 1, 0], [0, 1, 0, 1]])
-    # n = 8
-    # v_ = np.asarray([0.13211647, 0.23120382, 0.03172534, 0.16644937, 0.26249457, 0.09474142, 0.04476315, 0.03650587])
-    # A = np.asarray([[0, 1, 1, 1, 0, 1, 1, 0],
-    #                 [1, 1, 1, 0, 0, 0, 1, 0],
-    #                 [1, 1, 0, 1, 0, 1, 0, 1],
-    #                 [1, 0, 1, 0, 0, 0, 0, 1],
-    #                 [0, 0, 0, 0, 1, 0, 0, 1],
-    #                 [1, 0, 1, 0, 0, 0, 1, 1],
-    #                 [1, 1, 0, 0, 0, 1, 0, 1],
-    #                 [0, 0, 1, 1, 1, 1, 1, 0]])
+    A = np.asarray([[1, 0, 1, 0],
+                    [0, 1, 1, 1],
+                    [1, 1, 1, 0],
+                    [0, 1, 0, 1]])
     U = np.ones((n, n)) / n
     # first_method(A, v_, U)
     # print("\n----\n")
     # second_method(A, v_, U)
     # print("\n----\n")
-    # third_method(A, v_, U)
-    # print("\n----\n")
-    third_method_as_matlab(A, v_)
+    third_method(A, v_)
 
 
 if __name__ == "__main__":
