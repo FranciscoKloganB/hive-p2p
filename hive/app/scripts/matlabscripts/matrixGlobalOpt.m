@@ -7,21 +7,21 @@ function [Topt, MR] = matrixGlobalOpt(A, v_)
         Topt * ones(n,1) == ones(n, 1),...
         Topt .* (ones(n)-A) == 0,...
         v_ * Topt==v_];
-    S = sdpsettings('solver', 'bmibnb', 'verbose', 0);
+    S = sdpsettings('solver', 'bmibnb', 'verbose', 0, 'debug', 0);
     diagnostics = optimize(F, norm(Topt-U, 2), S);
 
     if diagnostics.problem == 0
-        sprintf('Feasible')
-        Topt = value(Topt)
+        sprintf('Feasible');
+        Topt = value(Topt);
         MR = max(abs(eig(Topt - U)));
-        return
+        return;
     elseif diagnostics.problem == 1
-        sprintf('Unfeasible')
+        sprintf('Unfeasible');
     else
-        sprintf('Something else happened (ec: %d)', diagnostics.problem)
+        sprintf('Something else happened (ec: %d)', diagnostics.problem);
     end
     
-    ToptValue = [];
-    MR = Inf
-    return
+    Topt = [];
+    MR = 1337; % Python not capable of converting Inf to float('inf'), so we return a mixing rate will never be faster than MH w/o SDP optimization
+    return;
 end
