@@ -13,6 +13,7 @@ function [Topt, MR] = matrixGlobalOpt(A, v_)
     if diagnostics.problem == 0
         sprintf('Feasible');
         Topt = value(Topt);
+        Topt = transpose(Topt);
         MR = max(abs(eig(Topt - U)));
         return;
     elseif diagnostics.problem == 1
