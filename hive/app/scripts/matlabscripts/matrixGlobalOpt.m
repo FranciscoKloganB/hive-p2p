@@ -1,4 +1,4 @@
-function [Topt, MR] = matrixGlobalOpt(A, v_)
+function Topt = matrixGlobalOpt(A, v_)
     n = length(v_);
     U = ones(n) / n;
     
@@ -13,8 +13,6 @@ function [Topt, MR] = matrixGlobalOpt(A, v_)
     if diagnostics.problem == 0
         sprintf('Feasible');
         Topt = value(Topt);
-        Topt = transpose(Topt);
-        MR = max(abs(eig(Topt - U)));
         return;
     elseif diagnostics.problem == 1
         sprintf('Unfeasible');
@@ -23,6 +21,5 @@ function [Topt, MR] = matrixGlobalOpt(A, v_)
     end
     
     Topt = [];
-    MR = 1337; % Python not capable of converting Inf to float('inf'), so we return a mixing rate will never be faster than MH w/o SDP optimization
     return;
 end
