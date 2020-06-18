@@ -1,13 +1,16 @@
+import os
 import numpy as np
 import cvxpy as cvx
+import matlab
+import matlab.engine as mleng
 
-from typing import List, Tuple
+from typing import Tuple, Union
 
 from domain.exceptions.DistributionShapeError import DistributionShapeError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
-from domain.exceptions.TransitionMatrixGenerationError import TransitionMatrixGenerationError
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
+MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'scripts', 'matlabscripts')))
 
 
 # region Markov Matrix Constructors
@@ -72,9 +75,20 @@ def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
 
     if problem.status in OPTIMAL_STATUS:
         return Topt.value.transpose(), get_markov_matrix_fast_mixing_rate(Topt.value)
-    else:
-        return None, float('inf')
 
+    return go_with_matlab_bmibnb_solver(A, v_)
+
+
+def go_with_matlab_bmibnb_solver(eng: mleng.MatlabEngine, A: np.ndarray, v_: np.ndarray) -> Tuple[Union[np.ndarray, None], float]:
+    eng = mleng.start_matlab()
+    eng.cd(MATLAB_DIR)
+    a = matlab.double(A.tolist())
+    v = matlab.double(v_.tolist())
+    result = eng.matrixGlobalOpt(a, v, nargout=1)
+    if result:
+        t = np.array(result._data).reshape(result.size, order='F').T
+        return t, get_markov_matrix_fast_mixing_rate(t)
+    return None, float('inf')
 # endregion
 
 
