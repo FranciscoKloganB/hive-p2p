@@ -1,88 +1,92 @@
-import os
-import numpy as np
-import cvxpy as cvx
 import matlab
-import matlab.engine as mleng
+import cvxpy as cvx
+import numpy as np
 
-from typing import Tuple, Union
+from typing import Tuple, Union, Any
 
 from domain.exceptions.DistributionShapeError import DistributionShapeError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
-MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'scripts', 'matlabscripts')))
 
 
 # region Markov Matrix Constructors
 
-def new_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+def new_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """
     Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
-    :param np.ndarray A: Symmetric unoptimized adjency matrix.
+    :param np.ndarray a: Symmetric unoptimized adjency matrix.
     :param np.ndarray v_: a stochastic desired distribution vector
     :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
-    T = _metropolis_hastings(A, v_)
-    return T, get_markov_matrix_fast_mixing_rate(T)  # TODO: Get mixing rate of this transition matrix
+    t = _metropolis_hastings(a, v_)
+    return t, get_markov_matrix_fast_mixing_rate(t)
 
 
-def new_sdp_mh_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+def new_sdp_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
     """
     Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
     The provided adjacency matrix A is first optimized with semi-definite programming techniques for the uniform distribution vector.
-    :param np.ndarray A: Symmetric unoptimized adjency matrix.
+    :param np.ndarray a: Symmetric unoptimized adjency matrix.
     :param np.ndarray v_: a stochastic desired distribution vector
     :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
-    problem, Aopt = __adjency_matrix_sdp_optimization(A)
+    problem, a = __adjency_matrix_sdp_optimization(a)
     if problem.status in OPTIMAL_STATUS:
-        T = _metropolis_hastings(Aopt.value, v_)
-        return T, get_markov_matrix_fast_mixing_rate(T)
+        t = _metropolis_hastings(a.value, v_)
+        return t, get_markov_matrix_fast_mixing_rate(t)
     else:
         return None, float('inf')
 
 
-def new_go_transition_matrix(A: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+def new_go_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
     """
     Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
     Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
-    :param np.ndarray A: Symmetric unoptimized adjency matrix.
+    :param np.ndarray a: Symmetric unoptimized adjency matrix.
     :param np.ndarray v_: a stochastic desired distribution vector
     :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
     # Allocate python variables
-    n: int = A.shape[0]
+    n: int = a.shape[0]
     ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
     ones_matrix: np.ndarray = np.ones((n, n))
     zeros_matrix: np.ndarray = np.zeros((n, n))
-    U: np.ndarray = np.ones((n, n)) / n
+    u: np.ndarray = np.ones((n, n)) / n
 
     # Specificy problem variables
-    Topt: cvx.Variable = cvx.Variable((n, n))
+    t: cvx.Variable = cvx.Variable((n, n))
 
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
-        Topt >= 0,  # Aopt entries must be non-negative
-        (Topt @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(Topt, ones_matrix - A) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
-        (v_ @ Topt) == v_,  # Resulting matrix must be a markov matrix.
+        t >= 0,  # Aopt entries must be non-negative
+        (t @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
+        cvx.multiply(t, ones_matrix - a) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
+        (v_ @ t) == v_,  # Resulting matrix must be a markov matrix.
     ]
 
     # Formulate and Solve Problem
-    objective = cvx.Minimize(cvx.norm(Topt - U, 2))
+    objective = cvx.Minimize(cvx.norm(t - u, 2))
     problem = cvx.Problem(objective, constraints)
     problem.solve()
 
     if problem.status in OPTIMAL_STATUS:
-        return Topt.value.transpose(), get_markov_matrix_fast_mixing_rate(Topt.value)
+        return t.value.transpose(), get_markov_matrix_fast_mixing_rate(t.value)
 
-    return go_with_matlab_bmibnb_solver(A, v_)
+    return None, float('inf')
 
 
-def go_with_matlab_bmibnb_solver(eng: mleng.MatlabEngine, A: np.ndarray, v_: np.ndarray) -> Tuple[Union[np.ndarray, None], float]:
-    eng = mleng.start_matlab()
-    eng.cd(MATLAB_DIR)
-    a = matlab.double(A.tolist())
+def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: matlab.engine.MatlabEngine) -> Tuple[Union[np.ndarray, None], float]:
+    """
+    Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
+    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
+    The code is run on a matlab engine because it provides a non-convex SDP solver BMIBNB.
+    :param np.ndarray a: Symmetric unoptimized adjency matrix.
+    :param np.ndarray v_: a stochastic desired distribution vector
+    :param mleng.MatlabEngine eng: an instance of a running matlab engine.
+    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
+    """
+    a = matlab.double(a.tolist())
     v = matlab.double(v_.tolist())
     result = eng.matrixGlobalOpt(a, v, nargout=1)
     if result:
@@ -94,31 +98,31 @@ def go_with_matlab_bmibnb_solver(eng: mleng.MatlabEngine, A: np.ndarray, v_: np.
 
 # region Optimization
 
-def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[cvx.Problem, cvx.Variable]:
+def __adjency_matrix_sdp_optimization(a: np.ndarray) -> Tuple[cvx.Problem, cvx.Variable]:
     """
     Constructs an optimized adjacency matrix
-    :param np.ndarray A: Any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
-    :returns np.ndarray Aopt.value: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
+    :param np.ndarray a: Any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
+    :returns np.ndarray a_opt.value: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
     """
     # Allocate python variables
-    n: int = A.shape[0]
+    n: int = a.shape[0]
     ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
     ones_matrix: np.ndarray = np.ones((n, n))
     zeros_matrix: np.ndarray = np.zeros((n, n))
-    U: np.ndarray = np.ones((n, n)) / n
+    u: np.ndarray = np.ones((n, n)) / n
 
     # Specificy problem variables
-    Aopt: cvx.Variable = cvx.Variable((n, n), symmetric=True)
+    a_opt: cvx.Variable = cvx.Variable((n, n), symmetric=True)
     t: cvx.Variable = cvx.Variable()
-    I: np.ndarray = np.identity(n)
+    i: np.ndarray = np.identity(n)
 
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
-        Aopt >= 0,  # Aopt entries must be non-negative
-        (Aopt @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(Aopt, ones_matrix - A) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
-        (Aopt - U) >> (-t * I),  # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
-        (Aopt - U) << (t * I)  # eigenvalue upper bound
+        a_opt >= 0,  # a_opt entries must be non-negative
+        (a_opt @ ones_vector) == ones_vector,  # a_opt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
+        cvx.multiply(a_opt, ones_matrix - a) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
+        (a_opt - u) >> (-t * i),  # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
+        (a_opt - u) << (t * i)  # eigenvalue upper bound
     ]
 
     # Formulate and Solve Problem
@@ -126,17 +130,17 @@ def __adjency_matrix_sdp_optimization(A: np.ndarray) -> Tuple[cvx.Problem, cvx.V
     problem = cvx.Problem(objective, constraints)
     problem.solve(solver=cvx.MOSEK)
 
-    return problem, Aopt
+    return problem, a_opt
 
 # endregion
 
 
 # region Metropolis Hastings Impl.
 
-def _metropolis_hastings(A: np.ndarray, v_: np.ndarray, column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
+def _metropolis_hastings(a: np.ndarray, v_: np.ndarray, column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
     """
     Constructs a transition matrix with desired distribution as steady state
-    :param np.ndarray A: any symmetric adjacency matrix
+    :param np.ndarray a: any symmetric adjacency matrix
     :param np.ndarray v_: a stochastic desired distribution vector
     :param bool column_major_in: indicates whether adj_matrix given in input is in row or column major form
     :param bool column_major_out: indicates whether to return transition_matrix output is in row or column major form
@@ -144,18 +148,18 @@ def _metropolis_hastings(A: np.ndarray, v_: np.ndarray, column_major_in: bool = 
     """
 
     # Input checking
-    if v_.shape[0] != A.shape[1]:
-        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(v_.shape, A.shape))
-    if A.shape[0] != A.shape[1]:
-        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(A.shape[0], A.shape[1]))
+    if v_.shape[0] != a.shape[1]:
+        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(v_.shape, a.shape))
+    if a.shape[0] != a.shape[1]:
+        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(a.shape[0], a.shape[1]))
 
     if column_major_in:
-        A = A.transpose()
+        a = a.transpose()
 
-    shape: Tuple[int, int] = A.shape
-    size: int = A.shape[0]
+    shape: Tuple[int, int] = a.shape
+    size: int = a.shape[0]
 
-    rw: np.ndarray = _construct_random_walk_matrix(A, shape, size)
+    rw: np.ndarray = _construct_random_walk_matrix(a, shape, size)
     r: np.ndarray = _construct_rejection_matrix(v_, rw, shape, size)
 
     transition_matrix: np.ndarray = np.zeros(shape=shape)
@@ -180,7 +184,7 @@ def _construct_random_walk_matrix(adj_matrix: np.ndarray, shape: Tuple[int, int]
     """
     rw: np.ndarray = np.zeros(shape=shape)
     for i in range(size):
-        degree: np.int32 = np.sum(adj_matrix[i, :])  # all possible states reachable from state i, including self
+        degree: Any = np.sum(adj_matrix[i, :])  # all possible states reachable from state i, including self
         for j in range(size):
             rw[i, j] = adj_matrix[i, j] / degree
     return rw
