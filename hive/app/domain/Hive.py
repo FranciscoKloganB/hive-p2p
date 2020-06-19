@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+import os
 import math
 import uuid
-import traceback
-from operator import itemgetter
 
 import numpy as np
 import pandas as pd
@@ -18,6 +17,7 @@ from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, COMMUNICATION_CHANCES, MAX_EPOCHS
 
+MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'scripts', 'matlabscripts')))
 
 class Hive:
     """
@@ -47,6 +47,9 @@ class Hive:
         :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
         :param int sim_number: optional value that can be passed to FileData to generate different .out names
         """
+        from matlab import engine as mleng
+        self.eng = mleng.start_matlab()
+        self.eng.cd(MATLAB_DIR)
         self.current_epoch: int = 0
         self.corruption_chances: List[float] = [0, 0]
         self.id: str = str(uuid.uuid4())
@@ -364,7 +367,8 @@ class Hive:
         results: List[Tuple[np.ndarray, float]] = [
             tmg.new_mh_transition_matrix(A, v_),
             tmg.new_sdp_mh_transition_matrix(A, v_),
-            tmg.new_go_transition_matrix(A, v_)
+            tmg.new_go_transition_matrix(A, v_),
+            tmg.go_with_matlab_bmibnb_solver(A, v_, self.eng)
         ]
         size = len(results)
         # fastest_matrix: np.ndarray = min(results, key=itemgetter(1))[0]
