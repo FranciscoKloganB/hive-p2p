@@ -1,4 +1,5 @@
 import matlab
+import matlab.engine as me
 import cvxpy as cvx
 import numpy as np
 
@@ -76,7 +77,7 @@ def new_go_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None,
     return None, float('inf')
 
 
-def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: matlab.engine.MatlabEngine) -> Tuple[Union[np.ndarray, None], float]:
+def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: me.MatlabEngine) -> Tuple[Union[np.ndarray, None], float]:
     """
     Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
     Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
