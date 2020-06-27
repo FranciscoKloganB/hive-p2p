@@ -15,6 +15,7 @@ from scripts.pyscripts import skewed_distribution_generator as sg, normal_distri
 
 
 # region Input Consumption and Verification
+
 def __in_initial_spread() -> str:
     """
     :returns str spread_mode: how files are distributed across the hive
@@ -164,10 +165,12 @@ def __in_file_labels(peer_uptime_dict: Dict[str, float], peer_names: List[str]) 
                           "or accidently assign an unexisting label, the missing labels are automatically chosen"
                           "for you!\n".format(peer_uptime_dict)).strip().split(" ")
     return [*filter(lambda label: label in peer_names, chosen_labels)]
+
 # endregion
 
 
 # region Generation Functions
+
 def __init_peer_uptime_dict() -> Dict[str, float]:
     """
     :return Dict[str, float] peers_uptime_dict: a dictionary the maps peers (state labels) to their machine uptimes.
@@ -257,10 +260,12 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
         # shared_dict[file_name]["members"] = __init_hive_members(n, peer_uptime_dict, peer_names)
         add_file = __in_yes_no("\nDo you want to add more files to be shared under this simulation file?")
     return shared_dict
+
 # endregion
 
 
-# region Main and Usage
+# region Helpers
+
 def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
@@ -270,6 +275,10 @@ def usage():
     print(" -------------------------------------------------------------------------\n")
     sys.exit(" ")
 
+# endregion
+
+
+# region Main
 
 def main(simfile_name: str):
     """
@@ -284,10 +293,8 @@ def main(simfile_name: str):
 
     with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
         json.dump(simfile_json, outfile, indent=4)
-# endregion
 
 
-# region terminal comsumption function __main__
 # noinspection DuplicatedCode
 if __name__ == "__main__":
     simfile_name_: str = ""
@@ -306,4 +313,5 @@ if __name__ == "__main__":
                     sys.exit("Invalid simulation file id - blank id not allowed)...")
     except getopt.GetoptError:
         usage()
+
 # endregion

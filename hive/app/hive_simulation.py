@@ -2,6 +2,8 @@ import getopt
 import json
 import os
 import sys
+from typing import List
+
 import domain.Hivemind as hm
 
 
@@ -31,14 +33,17 @@ def myhelp():
     sys.exit(" ")
 
 
-def main(fname, epochs):
+def main(fname, runs_per_input_file):
     if not fname:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
-    for name in os.listdir(SIMULATION_ROOT):
-        for i in range(epochs):
+    input_simulation_files: List[str] = os.listdir(SIMULATION_ROOT)
+    for name in input_simulation_files:
+        for i in range(runs_per_input_file):
             simulation = hm.Hivemind(simfile_name=name, sim_number=i+1)
             simulation.execute_simulation()
+    # simulation = hm.Hivemind(simfile_name=input_simulation_files[0], sim_number=1337)
+    # simulation.execute_simulation()
 # endregion
 
 

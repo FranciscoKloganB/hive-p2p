@@ -1,20 +1,23 @@
 from __future__ import annotations
 
+import os
 import math
 import uuid
-import traceback
+
 import numpy as np
 import pandas as pd
 import domain.Hivemind as hm
 import utils.matrices as matrices
-import utils.metropolis_hastings as mh
+import utils.transition_matrices as tmg
 
 from domain.Worker import Worker
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 from domain.helpers.FileData import FileData
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, COMMUNICATION_CHANCES, MAX_EPOCHS
+
+MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'app', 'scripts', 'matlabscripts')))
 
 
 class Hive:
@@ -36,6 +39,7 @@ class Hive:
     """
 
     # region Class Variables, Instance Variables and Constructors
+
     def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker], sim_number: int = 0, origin: str = "") -> None:
         """
         Instantiates an Hive abstraction
@@ -44,6 +48,9 @@ class Hive:
         :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
         :param int sim_number: optional value that can be passed to FileData to generate different .out names
         """
+        from matlab import engine as mleng
+        self.eng = mleng.start_matlab()
+        self.eng.cd(MATLAB_DIR)
         self.current_epoch: int = 0
         self.corruption_chances: List[float] = [0, 0]
         self.id: str = str(uuid.uuid4())
@@ -58,10 +65,12 @@ class Hive:
         self.running: bool = True
         self.set_recovery_epoch_sum: int = 0
         self.set_recovery_epoch_calls: int = 0
-        self.broadcast_transition_matrix(self.new_transition_matrix())  # implicitly inits self.desired_distribution within new_transition_matrix()
+        self.create_and_bcast_new_transition_matrix()
+
     # endregion
 
     # region Routing
+
     def remove_cloud_reference(self) -> None:
         """
         TODO: future-iterations
@@ -108,6 +117,7 @@ class Hive:
     # endregion
 
     # region Swarm Guidance
+
     def new_desired_distribution(self, member_ids: List[str], member_uptimes: List[float]) -> List[float]:
         """
         Normalizes inputted member uptimes and saves it on Hive.desired_distribution attribute
@@ -119,8 +129,7 @@ class Hive:
         uptimes_normalized = [member_uptime / uptime_sum for member_uptime in member_uptimes]
 
         self.desired_distribution = pd.DataFrame(data=uptimes_normalized, index=member_ids)
-        self.file.desired_distribution = self.desired_distribution
-        self.file.current_distribution = pd.DataFrame(data=[0] * len(uptimes_normalized), index=member_ids)
+        self.file.new_desired_distribution(self.desired_distribution, member_ids)
 
         return uptimes_normalized
 
@@ -128,8 +137,6 @@ class Hive:
         """
         returns DataFrame: Creates a new transition matrix for the members of the Hive, to be followed independently by each of them
         """
-        desired_distribution: List[float]
-        adjancency_matrix: List[List[int]]
         member_uptimes: List[float] = []
         member_ids: List[str] = []
 
@@ -137,11 +144,12 @@ class Hive:
             member_uptimes.append(worker.uptime)
             member_ids.append(worker.id)
 
-        adjancency_matrix = matrices.new_symmetric_adjency_matrix(len(member_ids))
-        desired_distribution = self.new_desired_distribution(member_ids, member_uptimes)
+        A: np.ndarray = np.asarray(matrices.new_symmetric_adjency_matrix(len(member_ids)))
+        v_: np.ndarray = np.asarray(self.new_desired_distribution(member_ids, member_uptimes))
 
-        transition_matrix: np.ndarray = mh.metropolis_algorithm(adjancency_matrix, desired_distribution, column_major_out=True)
-        return pd.DataFrame(transition_matrix, index=member_ids, columns=member_ids)
+        T = self.select_fastest_topology(A, v_)
+
+        return pd.DataFrame(T, index=member_ids, columns=member_ids)
 
     def broadcast_transition_matrix(self, transition_matrix: pd.DataFrame) -> None:
         """
@@ -150,13 +158,14 @@ class Hive:
         names to an equal transition matrix within each hive member, thus reducing space overhead arbitrarly, however, this would make Simulation harder. This
         note is kept for future reference. This also assumes an hive can store multiple files. For simplicity each Hive only manages one file for now.
         """
-        transition_vector: pd.DataFrame
         for worker in self.members.values():
-            transition_vector = transition_matrix.loc[:, worker.id]
+            transition_vector: pd.DataFrame = transition_matrix.loc[:, worker.id]
             worker.set_file_routing(self.file.name, transition_vector)
+
     # endregion
 
     # region Simulation Interface
+
     # noinspection DuplicatedCode
     def spread_files(self, spread_mode: str, file_parts: Dict[int, SharedFilePart]):
         """
@@ -210,7 +219,7 @@ class Hive:
             if epoch == MAX_EPOCHS:
                 self.running = False
         except Exception as e:
-            self.set_fail("Unexpected exception: ".join(traceback.format_exception(etype=type(e), value=e, tb=e.__traceback__)))
+            self.set_fail(f"Simulation failed due to unexpected exception, reason: {str(e)}")
         self.file.simulation_data.set_delay_at_index(self.set_recovery_epoch_sum, self.set_recovery_epoch_calls, self.current_epoch)
 
     def is_running(self) -> bool:
@@ -243,9 +252,11 @@ class Hive:
             self.file.simulation_data.try_append_to_convergence_set(self.current_epoch)
         else:
             self.file.simulation_data.save_sets_and_reset()
+
     # endregion
 
     # region Helpers
+
     def setup_epoch(self, epoch: int) -> None:
         self.current_epoch = epoch
         self.corruption_chances[0] = np.log10(epoch).item() / 300.0
@@ -308,7 +319,7 @@ class Hive:
 
         healed_hive_size = len(self.members)
         if damaged_hive_size != healed_hive_size:
-            self.broadcast_transition_matrix(self.new_transition_matrix())
+            self.create_and_bcast_new_transition_matrix()
 
         self.file.simulation_data.set_membership_maintenace_at_index(status_before_recovery, damaged_hive_size, healed_hive_size, self.current_epoch)
 
@@ -326,4 +337,56 @@ class Hive:
     def set_recovery_epoch(self, part: SharedFilePart) -> None:
         self.set_recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
         self.set_recovery_epoch_calls += 1
+
+    def validate_transition_matrix(self, transition_matrix: pd.DataFrame, target_distribution: pd.DataFrame) -> bool:
+        t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)
+        column_count = t_pow.shape[1]
+        for j in range(column_count):
+            test_target = t_pow[:, j]  # gets array column j
+            if not np.allclose(test_target, target_distribution[DEFAULT_COL].values, atol=1e-02):
+                return False
+        return True
+
+    def create_and_bcast_new_transition_matrix(self):
+        tries = 1
+        result: pd.DataFrame = pd.DataFrame()
+        while tries <= 3:
+            print(f"validating transition matrix... atempt: {tries}")
+            result = self.new_transition_matrix()
+            if self.validate_transition_matrix(result, self.desired_distribution):
+                self.broadcast_transition_matrix(result)
+                break
+        self.broadcast_transition_matrix(result)  # if after 3 validations attempts no matrix was generated, use any other one.
+
+    def select_fastest_topology(self, A: np.ndarray, v_: np.ndarray) -> np.ndarray:
+        """
+        Creates three possible transition matrices and selects the one that is theoretically faster to achieve the desired distribution v_
+        :param np.ndarray A: An adjacency matrix that represents the network topology
+        :param np.ndarray v_: A desired distribution vector that defines the returned matrix steady state property.
+        :returns np.ndarray fastest_matrix: A markov transition matrix that converges to v_
+        """
+        results: List[Tuple[np.ndarray, float]] = [
+            tmg.new_mh_transition_matrix(A, v_),
+            tmg.new_sdp_mh_transition_matrix(A, v_),
+            tmg.new_go_transition_matrix(A, v_),
+            tmg.go_with_matlab_bmibnb_solver(A, v_, self.eng)
+        ]
+        size = len(results)
+        # fastest_matrix: np.ndarray = min(results, key=itemgetter(1))[0]
+        min_mr = float('inf')
+        fastest_matrix = None
+        for i in range(size):
+            i_mr = results[i][1]
+            if i_mr < min_mr:
+                print(f"currently selected matrix {i}")
+                min_mr = i_mr
+                fastest_matrix = results[i][0]  # Worse case scenario fastest matrix will be the unoptmized MH transition matrix. Null checking thus, unneeded.
+
+        size = fastest_matrix.shape[0]
+        for j in range(size):
+            fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])
+            fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
+        return fastest_matrix
+
     # endregion
+

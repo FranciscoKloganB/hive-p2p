@@ -8,7 +8,7 @@ import domain.Hive as h
 
 from pathlib import Path
 from tabulate import tabulate
-from typing import Any, Union, Dict
+from typing import Any, Union, Dict, List
 
 from globals.globals import *
 from domain.helpers.SimulationData import SimulationData
@@ -38,6 +38,7 @@ class FileData:
         self.out_file: Any = open(os.path.join(
             OUTFILE_ROOT, "{}_{}{}.{}".format(Path(name).resolve().stem, Path(origin).resolve().stem, sim_number, "json")
         ), "w+")
+        self.parts_in_hive = 0
     # endregion
 
     # region Instance Methods
@@ -48,12 +49,14 @@ class FileData:
         if parts_in_hive == 0:
             return False
 
-        normalized_cdv = self.current_distribution.divide(parts_in_hive)
-        if DEBUG:
-            self.fwrite("Desired Distribution:\n{}\nCurrent Distribution:\n{}\n".format(
-                tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')
-            ))
-        return np.allclose(self.desired_distribution, normalized_cdv, rtol=R_TOL, atol=(1 / parts_in_hive))
+        size = len(self.current_distribution)
+        for i in range(size):
+            tolerance = self.new_tolerance(parts_in_hive)
+            b = np.ceil(self.desired_distribution.iloc[i, DEFAULT_COL] * parts_in_hive)
+            a = self.current_distribution.iloc[i, DEFAULT_COL]
+            if np.abs(a - b) > tolerance:
+                return False
+        return True
     # endregion
 
     # region File I/O
@@ -71,15 +74,20 @@ class FileData:
         if DEBUG:
             [print("* {};".format(reason)) for reason in sim_data.msg]
 
-        sim_data.corrupted_parts = sim_data.corrupted_parts[:epoch]
-        sim_data.delay = sim_data.delay[:epoch]
+        sim_data.parts_in_hive = sim_data.parts_in_hive[:epoch]
+
         sim_data.disconnected_workers = sim_data.disconnected_workers[:epoch]
-        sim_data.lost_messages = sim_data.lost_messages[:epoch]
         sim_data.lost_parts = sim_data.lost_parts[:epoch]
+
         sim_data.hive_status_before_maintenance = sim_data.hive_status_before_maintenance[:epoch]
         sim_data.hive_size_before_maintenance = sim_data.hive_size_before_maintenance[:epoch]
         sim_data.hive_size_after_maintenance = sim_data.hive_size_after_maintenance[:epoch]
+
+        sim_data.delay = sim_data.delay[:epoch]
+
         sim_data.moved_parts = sim_data.moved_parts[:epoch]
+        sim_data.corrupted_parts = sim_data.corrupted_parts[:epoch]
+        sim_data.lost_messages = sim_data.lost_messages[:epoch]
 
         extras: Dict[str, Any] = {
             "simfile_name": origin,
@@ -129,10 +137,28 @@ class FileData:
     # endregion
 
     # region Helpers
+
+    def new_desired_distribution(self, desired_distribution: pd.DataFrame, member_ids: List[str]) -> None:
+        self.desired_distribution = desired_distribution
+        self.current_distribution = pd.DataFrame(data=[0] * len(desired_distribution), index=member_ids)
+
+    def new_tolerance(self, parts_in_hive) -> np.float64:
+        tolerance = parts_in_hive * 0.1
+        if (self.parts_in_hive == 0):
+            tolerance = self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min() * parts_in_hive
+        else:
+            tolerance = self.desired_distribution[DEFAULT_COL].max() * parts_in_hive
+        return np.ceil(np.abs(tolerance))
+
+    def print_distributions(self, normalized_cdv: List[float]) -> None:
+        text = "Desired Distribution:\n{}\nCurrent Distribution:\n{}\n"
+        self.fwrite(text.format(tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')))
+
     def reset_convergence_data(self) -> None:
         """
         Resets the FileData instance field simulation_data by delegation to ConvergenceData instance method
         """
         self.simulation_data.save_sets_and_reset()
+
     # endregion
 
