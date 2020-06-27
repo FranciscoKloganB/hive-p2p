@@ -38,18 +38,18 @@ def main(fname, runs_per_input_file):
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
     input_simulation_files: List[str] = os.listdir(SIMULATION_ROOT)
-    # for name in input_simulation_files:
-    #     for i in range(runs_per_input_file):
-    #         simulation = hm.Hivemind(simfile_name=name, sim_number=i+1)
-    #         simulation.execute_simulation()
-    simulation = hm.Hivemind(simfile_name=input_simulation_files[0], sim_number=1337)
-    simulation.execute_simulation()
+    for name in input_simulation_files:
+        for i in range(runs_per_input_file):
+            simulation = hm.Hivemind(simfile_name=name, sim_number=i+1)
+            simulation.execute_simulation()
+    # simulation = hm.Hivemind(simfile_name=input_simulation_files[0], sim_number=1337)
+    # simulation.execute_simulation()
 # endregion
 
 
 if __name__ == "__main__":
     simfile_name_ = None
-    run_ = 1
+    run_ = 30
     try:
         options, args = getopt.getopt(sys.argv[1:], "uhs:r:", ["usage", "help", "simfile=", "runs="])
         for options, args in options:

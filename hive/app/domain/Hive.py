@@ -378,6 +378,7 @@ class Hive:
         for i in range(size):
             i_mr = results[i][1]
             if i_mr < min_mr:
+                print(f"currently selected matrix {i}")
                 min_mr = i_mr
                 fastest_matrix = results[i][0]  # Worse case scenario fastest matrix will be the unoptmized MH transition matrix. Null checking thus, unneeded.
 
