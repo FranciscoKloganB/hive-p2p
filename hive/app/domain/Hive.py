@@ -49,8 +49,10 @@ class Hive:
         :param int sim_number: optional value that can be passed to FileData to generate different .out names
         """
         from matlab import engine as mleng
+        print("Loading MatLab engine; This may take a few seconds...")
         self.eng = mleng.start_matlab()
         self.eng.cd(MATLAB_DIR)
+        print("MatLab engine initiated. Resuming simulation...;")
         self.current_epoch: int = 0
         self.corruption_chances: List[float] = [0, 0]
         self.id: str = str(uuid.uuid4())

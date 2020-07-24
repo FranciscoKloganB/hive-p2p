@@ -131,7 +131,7 @@
     },
     "shared": {
         "FBZ_0134.NEF": {
-            "hive_size": 8,
+            "hive_size": 16,
             "spread": "a"
         }
     }
