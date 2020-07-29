@@ -12,25 +12,20 @@ from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT
 
 
 def usage():
-    print(" -------------------------------------------------------------------------")
-    print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
-    print(" Run a simulation for Markov Chain Based Swarm Guidance algorithm on a P2P Network that persists files\n")
-    print(" Typical usage: python hive_simulation.py --simfile=simulationfilename.json\n")
-    print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
-    print(" -------------------------------------------------------------------------\n")
-    sys.exit(" ")
+    print("---------------------------------------------------------------\n",
+          "Run a simulation for Markov Chain Based Swarm Guidance algorithm ",
+          "on a P2P Network that persists files... Example usage:\n",
+          "python hive_simulation.py --simfile=simulationfilename.json\n"
+          "---------------------------------------------------------------\n")
+    sys.exit(0)
 
 
 def myhelp():
-    with open("{}/static/simfiles/simfile_example.json".format(os.getcwd())) as json_file:
-        print("-------------------------------------------------------------------------\n")
-        print("To create a simulation file automatically use simulation_file_generator.py script in ~/scripts/python folder.\n")
-        print("-------------------------------------------------------------------------\n")
-        print("If you wish to manually create a simulation file here is an example of its structure:\n")
-        print("-------------------------------------------------------------------------\n")
-        print(json.dumps(json.load(json_file), indent=4, sort_keys=True))
-        print(" -------------------------------------------------------------------------\n")
-    sys.exit(" ")
+    print("---------------------------------------------------------------\n",
+          "To create a simulation file automatically use the script: \n",
+          "simulation_file_generator.py script in ~/scripts/python folder.\n",
+          "---------------------------------------------------------------\n")
+    sys.exit(0)
 
 
 def main(fname, runs_per_input_file):
@@ -45,7 +40,8 @@ def main(fname, runs_per_input_file):
         for i in range(runs_per_input_file):
             simulation = hm.Hivemind(simfile_name=name, sim_number=i+1)
             simulation.execute_simulation()
-    # simulation = hm.Hivemind(simfile_name=input_simulation_files[0], sim_number=1337)
+    # simulation = hm.Hivemind(
+    #     simfile_name=input_simulation_files[0], sim_number=1337)
     # simulation.execute_simulation()
 # endregion
 
@@ -54,7 +50,9 @@ if __name__ == "__main__":
     simfile_name_ = None
     run_ = 30
     try:
-        options, args = getopt.getopt(sys.argv[1:], "uhs:r:", ["usage", "help", "simfile=", "runs="])
+        options, args = getopt.getopt(
+            sys.argv[1:], "uhs:r:", ["usage", "help", "simfile=", "runs="])
+
         for options, args in options:
             if options in ("-u", "--usage"):
                 usage()
