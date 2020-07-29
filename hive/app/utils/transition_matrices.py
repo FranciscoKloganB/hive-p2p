@@ -180,10 +180,10 @@ def _metropolis_hastings(a: np.ndarray,
             A stochastic vector that is the steady state of the resulting
             transition matrix.
         column_major_in:
-            Optional; Indicates whether adj_matrix given in input is in row
+            optional; Indicates whether adj_matrix given in input is in row
             or column major form.
         column_major_out:
-            Optional; Indicates whether to return transition_matrix output
+            optional; Indicates whether to return transition_matrix output
             is in row or column major form.
 
     Returns:
