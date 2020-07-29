@@ -249,7 +249,8 @@ class Hive:
         if not parts_in_hive:
             self.set_fail("hive has no remaining parts")
 
-        if self.file.equal_distributions(parts_in_hive):
+        self.file.parts_in_hive = parts_in_hive
+        if self.file.equal_distributions():
             self.file.simulation_data.cswc_increment(1)
             self.file.simulation_data.try_append_to_convergence_set(self.current_epoch)
         else:
