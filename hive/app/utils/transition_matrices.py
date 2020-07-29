@@ -221,7 +221,7 @@ def _metropolis_hastings(a: np.ndarray,
             if i != j:
                 transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
         # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
-        transition_matrix[i, i] = _mh_summation(rw, r, i)
+        transition_matrix[i, i] = __get_diagonal_entry_probability(rw, r, i)
 
     if column_major_out:
         return transition_matrix.transpose()
@@ -272,13 +272,26 @@ def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
     return r
 
 
-def _mh_summation(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
-    """
-    Performs summation of the m-h branch when indices of m[i, j] are the same, i.e.: when i=j
-    :param np.ndarray rw: a random_walk over an adjacency matrix
-    :param np.ndarray r: a matrix containing acceptance/rejectance probabilities for the random walk
-    :param int i: a fixed row index to simulate a simulation function
-    :returns float: pii, the probability of going from state i to j, where i = j
+def __get_diagonal_entry_probability(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
+    """ Helper function used by _metropolis_hastings function.
+
+    Calculates the value that should be assigned to the entry (i, i) of the
+    transition matrix being calculated by the metropolis hastings algorithm
+    by considering the rejection probability over the random walk that was
+    performed on an adjacency matrix.
+
+    Args:
+        rw:
+            A random_walk over an adjacency matrix.
+        r:
+            A matrix whose entries contain acceptance probabilities for rw.
+        i:
+            The diagonal-index of the random walk where summation needs to
+            be performed on.
+
+    Returns:
+        A probability to be inserted at entry (i, i) of the transition matrix
+        outputed by the _metropolis_hastings function.
     """
     size: int = rw.shape[0]
     pii: np.int32 = rw[i, i]
