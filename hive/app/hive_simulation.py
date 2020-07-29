@@ -33,13 +33,13 @@ def main(fname, runs_per_input_file):
         os.makedirs(OUTFILE_ROOT)
 
     input_simulation_files: List[str] = os.listdir(SIMULATION_ROOT)
-    for name in input_simulation_files:
-        for i in range(runs_per_input_file):
-            simulation = hm.Hivemind(simfile_name=name, sim_number=i+1)
-            simulation.execute_simulation()
-    # simulation = hm.Hivemind(
-    #     simfile_name=input_simulation_files[0], sim_number=1337)
-    # simulation.execute_simulation()
+    # for name in input_simulation_files:
+    #     for i in range(runs_per_input_file):
+    #         simulation = hm.Hivemind(simfile_name=name, sim_number=i+1)
+    #         simulation.execute_simulation()
+    simulation = hm.Hivemind(
+        simfile_name=input_simulation_files[0], sim_number=1337)
+    simulation.execute_simulation()
 # endregion
 
 
