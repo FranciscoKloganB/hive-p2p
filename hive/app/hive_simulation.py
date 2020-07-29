@@ -8,7 +8,7 @@ import domain.Hivemind as hm
 
 
 # region Usage, Help and Main
-from globals.globals import SIMULATION_ROOT
+from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT
 
 
 def usage():
@@ -36,6 +36,9 @@ def myhelp():
 def main(fname, runs_per_input_file):
     if not fname:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
+
+    if not os.path.exists(OUTFILE_ROOT):
+        os.makedirs(OUTFILE_ROOT)
 
     input_simulation_files: List[str] = os.listdir(SIMULATION_ROOT)
     for name in input_simulation_files:
