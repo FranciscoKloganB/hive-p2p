@@ -62,12 +62,13 @@ class Hivemind:
                     part_number: int = 0
                     file_parts = {}
                     files_spreads[file_name] = shared[file_name]['spread']
-                    hive = self.__new_hive(shared, file_name)  # Among other things, assigns initial Hive members to the instance, implicitly set routing tables
+                    hive = self.__new_hive(shared, file_name)
                     while True:
                         read_buffer = file.read(READ_SIZE)
                         if read_buffer:
                             part_number = part_number + 1
-                            file_parts[part_number] = SharedFilePart(hive.id, file_name, part_number, read_buffer)
+                            file_parts[part_number] = SharedFilePart(
+                                hive.id, file_name, part_number, read_buffer)
                         else:
                             files_dict[file_name] = file_parts
                             break
