@@ -8,7 +8,7 @@ import domain.Hive as h
 
 from pathlib import Path
 from tabulate import tabulate
-from typing import Any, Union, Dict, List, Optional
+from typing import Any, Union, Dict, List, Optional, IO
 
 from globals.globals import *
 from domain.helpers.SimulationData import SimulationData
@@ -27,15 +27,16 @@ class FileData:
         parts_in_hive (int):
             The number of file parts including replicas that exist for the
             named file that exist in the simulation. Updated every epoch.
-        desired_distribution (pd.DataFrame):
+        desired_distribution (pandas DataFrame):
             Density distribution hive members must achieve with independent
             realizations for ideal persistence of the file.
-        current_distribution (pd.DataFrame):
+        current_distribution (pandas DataFrame):
             Tracks the file current density distribution, updated at each epoch.
-        simulation_data (domain.helpers.SimulationData):
+        simulation_data (SimulationData):
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
-            has graphs and figures.
+            has graphs and figures. See :py:class:`SimulationData
+            <domain.helpers.SimulationData.SimulationData`
         out_file (str/bytes/int):
             File output stream to where captured data is written in append mode.
     """
@@ -61,7 +62,7 @@ class FileData:
         self.desired_distribution: Optional[pd.DataFrame] = None
         self.current_distribution: Optional[pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
-        self.out_file: Union[str, bytes, int] = open(
+        self.out_file: IO = open(
             os.path.join(
                 OUTFILE_ROOT, "{}_{}{}.{}".format(
                     Path(name).resolve().stem,
@@ -74,14 +75,19 @@ class FileData:
     def equal_distributions(self) -> bool:
         """Infers if desired_distribution and current_distribution are equal.
 
-        Equalility is calculated with a tolerance value given
+        Equalility is calculated given a tolerance value calculated by
+        FileData method defined at :py:method:`~new_tolerance() <FileData.new_tolerance>`.
+
+        Returns:
+            True if distributions are close enough to be considered equal,
+            otherwise, it returns False.
         """
         if self.parts_in_hive == 0:
             return False
 
         size = len(self.current_distribution)
         for i in range(size):
-            tolerance = self.new_tolerance(self.parts_in_hive)
+            tolerance = self.new_tolerance()
             a = self.current_distribution.iloc[i, DEFAULT_COL]
             b = self.desired_distribution.iloc[i, DEFAULT_COL] * self.parts_in_hive
             if np.abs(a - np.ceil(b)) > tolerance:
