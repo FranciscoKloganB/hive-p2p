@@ -28,7 +28,6 @@ matlabengineforpython===R2020a
 matplotlib==3.2.1
 metakernel==0.24.4
 Mosek==9.2.10
-naginterfaces==27.0.2.0
 numpy==1.18.5
 osqp==0.6.1
 packaging==20.4
