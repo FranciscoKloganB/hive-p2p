@@ -3,7 +3,7 @@ import matlab.engine as me
 import cvxpy as cvx
 import numpy as np
 
-from typing import Tuple, Union, Any
+from typing import Tuple, Union, Any, Optional
 
 from domain.exceptions.DistributionShapeError import DistributionShapeError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
@@ -14,11 +14,21 @@ OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 # region Markov Matrix Constructors
 
 def new_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
-    """
-    Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
-    :param np.ndarray a: Symmetric unoptimized adjency matrix.
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
+    """ Constructs a transition matrix using metropolis-hastings algorithm for the distribution vector.
+
+    Note:
+        The input Matrix hould have no transient states/absorbent nodes,
+        but this is not enforced or verified.
+
+    Args:
+        a:
+            Symmetric unoptimized adjency matrix.
+        v_:
+            Transition Markov Matrix for the desired, possibly non-uniform,
+            distribution vector ddv and respective mixing rate.
+
+    Returns:
+        A tuple with the transition matrix and the respective mixing rate.
     """
     t = _metropolis_hastings(a, v_)
     return t, get_markov_matrix_fast_mixing_rate(t)
@@ -32,7 +42,7 @@ def new_sdp_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[N
     :param np.ndarray v_: a stochastic desired distribution vector
     :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
     """
-    problem, a = __adjency_matrix_sdp_optimization(a)
+    problem, a = _adjency_matrix_sdp_optimization(a)
     if problem.status in OPTIMAL_STATUS:
         t = _metropolis_hastings(a.value, v_)
         return t, get_markov_matrix_fast_mixing_rate(t)
@@ -99,12 +109,27 @@ def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: me.MatlabEn
 
 # region Optimization
 
-def __adjency_matrix_sdp_optimization(a: np.ndarray) -> Tuple[cvx.Problem, cvx.Variable]:
+def _adjency_matrix_sdp_optimization(
+        a: np.ndarray
+) -> Optional[Tuple[cvx.Problem, cvx.Variable]]:
+    """Optimizes a symmetric adjacency matrix using Semidefinite Programming.
+
+    The optimization is done with respect to the uniform stochastic vector
+    with the the same length as the inputed symmetric matrix.
+
+    Note:
+        1. This function only works if you have a valid MOSEK license.
+        2. The input Matrix hould have no transient states/absorbent nodes, but
+        this is not enforced or verified.
+
+    Args:
+        a:
+            Any symmetric adjacency matrix.
+
+    Returns:
+        The optimal matrix or None if the problem is unfeasible.
     """
-    Constructs an optimized adjacency matrix
-    :param np.ndarray a: Any symmetric adjacency matrix. Matrix a should have no transient states/absorbent nodes, but this is not enforced or verified.
-    :returns np.ndarray a_opt.value: an optimized adjacency matrix for the uniform distribution vector u, whose entries have value 1/n, where n is shape of a.
-    """
+
     # Allocate python variables
     n: int = a.shape[0]
     ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
@@ -138,21 +163,47 @@ def __adjency_matrix_sdp_optimization(a: np.ndarray) -> Tuple[cvx.Problem, cvx.V
 
 # region Metropolis Hastings Impl.
 
-def _metropolis_hastings(a: np.ndarray, v_: np.ndarray, column_major_in: bool = False, column_major_out: bool = True) -> np.ndarray:
-    """
-    Constructs a transition matrix with desired distribution as steady state
-    :param np.ndarray a: any symmetric adjacency matrix
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :param bool column_major_in: indicates whether adj_matrix given in input is in row or column major form
-    :param bool column_major_out: indicates whether to return transition_matrix output is in row or column major form
-    :returns np.ndarray transition_matrix: unlabeled transition matrix
-    """
+def _metropolis_hastings(a: np.ndarray,
+                         v_: np.ndarray,
+                         column_major_in: bool = False,
+                         column_major_out: bool = True) -> np.ndarray:
+    """ Constructs a transition matrix using metropolis-hastings algorithm.
 
+    Note:
+        The input Matrix hould have no transient states/absorbent nodes,
+        but this is not enforced or verified.
+
+    Args:
+        a:
+            A symmetric adjency matrix.
+        v_:
+            A stochastic vector that is the steady state of the resulting
+            transition matrix.
+        column_major_in:
+            Optional; Indicates whether adj_matrix given in input is in row
+            or column major form.
+        column_major_out:
+            Optional; Indicates whether to return transition_matrix output
+            is in row or column major form.
+
+    Returns:
+        An unlabeled transition matrix with steady state v_.
+
+    Raises:
+        DistributionShapeError:
+            When the length of v_ is not the same as the matrix a.
+        MatrixNotSquareError:
+            When matrix a is not a square matrix.
+    """
     # Input checking
     if v_.shape[0] != a.shape[1]:
-        raise DistributionShapeError("distribution shape: {}, proposal matrix shape: {}".format(v_.shape, a.shape))
+        raise DistributionShapeError(
+            "distribution shape: {}, proposal matrix shape: {}".format(
+                v_.shape, a.shape))
     if a.shape[0] != a.shape[1]:
-        raise MatrixNotSquareError("rows: {}, columns: {}, expected square matrix".format(a.shape[0], a.shape[1]))
+        raise MatrixNotSquareError(
+            "rows: {}, columns: {}, expected square matrix".format(
+                a.shape[0], a.shape[1]))
 
     if column_major_in:
         a = a.transpose()
@@ -160,7 +211,7 @@ def _metropolis_hastings(a: np.ndarray, v_: np.ndarray, column_major_in: bool = 
     shape: Tuple[int, int] = a.shape
     size: int = a.shape[0]
 
-    rw: np.ndarray = _construct_random_walk_matrix(a, shape, size)
+    rw: np.ndarray = _construct_random_walk_matrix(a)
     r: np.ndarray = _construct_rejection_matrix(v_, rw, shape, size)
 
     transition_matrix: np.ndarray = np.zeros(shape=shape)
@@ -172,22 +223,29 @@ def _metropolis_hastings(a: np.ndarray, v_: np.ndarray, column_major_in: bool = 
         # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
         transition_matrix[i, i] = _mh_summation(rw, r, i)
 
-    return transition_matrix.transpose() if column_major_out else transition_matrix
+    if column_major_out:
+        return transition_matrix.transpose()
+    return transition_matrix
 
 
-def _construct_random_walk_matrix(adj_matrix: np.ndarray, shape: Tuple[int, int], size: int) -> np.ndarray:
+def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     """
-    Constructs a random walk over the adjacency matrix
-    :param np.ndarray adj_matrix: any adjacency matrix
-    :param Tuple[int, int] shape: size of adj_matrix #(lines, columns)
-    :param int size: the number of lines/columns matrix has. These should match the tuple values.
-    :returns np.ndarray rw: a random_walk over the adjacency matrix with uniform distribution
+    Builds a random walk matrix over the given adjacency matrix
+
+    Args:
+        a:
+            Any adjacency matrix.
+
+    Returns:
+        A matrix representing the performed random walk.
     """
+    shape = a.shape
+    size = shape[0]
     rw: np.ndarray = np.zeros(shape=shape)
     for i in range(size):
-        degree: Any = np.sum(adj_matrix[i, :])  # all possible states reachable from state i, including self
+        degree: Any = np.sum(a[i, :])  # all possible states reachable from state i, including self
         for j in range(size):
-            rw[i, j] = adj_matrix[i, j] / degree
+            rw[i, j] = a[i, j] / degree
     return rw
 
 

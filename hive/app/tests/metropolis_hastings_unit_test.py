@@ -28,7 +28,7 @@ def matrix_converges_to_known_ddv_test():
 def construct_random_walk_test():
     target = np.asarray([[0.25, 0.25, 0.25, 0.25], [0.5, 0, 0.5, 0], [0.25, 0.25, 0.25, 0.25], [0, 0.5, 0.5, 0]])
     adj_matrix = np.asarray([[1, 1, 1, 1], [1, 0, 1, 0], [1, 1, 1, 1], [0, 1, 1, 0]])
-    random_walk = mH._construct_random_walk_matrix(adj_matrix, adj_matrix.shape, adj_matrix.shape[0])
+    random_walk = mH._construct_random_walk_matrix(adj_matrix)
     print(target)
     print(random_walk)
     return print_test("construct_random_walk_test", target, random_walk, np.array_equal(target, random_walk))
@@ -39,7 +39,7 @@ def construct_rejection_matrix_div_by_zero_error_exist_test():
     try:
         ddv = np.asarray([0.1, 0.4, 0.3, 0.2])
         adj_matrix = np.asarray([[1, 1, 1, 1], [1, 0, 1, 0], [1, 1, 1, 1], [0, 1, 1, 0]])
-        random_walk = mH._construct_random_walk_matrix(adj_matrix, adj_matrix.shape, adj_matrix.shape[0])
+        random_walk = mH._construct_random_walk_matrix(adj_matrix)
         mH._construct_rejection_matrix(ddv, random_walk, adj_matrix.shape, adj_matrix.shape[0])
         return print_test("construct_rejection_matrix_div_by_zero_error_exist_test", "no excpetion", "no exception", True)
     except ZeroDivisionError:
