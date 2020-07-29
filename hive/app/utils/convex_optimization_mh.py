@@ -6,8 +6,10 @@ import numpy as np
 
 from typing import List, Tuple, Optional
 
+# region Functions Under Testing
 
-def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Optional[np.ndarray]:
+
+def __adjency_matrix_sdp_optimization(a: List[List[int]]) -> Optional[np.ndarray]:
     """Optimizes a symmetric adjacency matrix using Semidefinite Programming.
 
     The optimization is done with respect to the uniform stochastic vector
@@ -55,7 +57,7 @@ def adjency_matrix_sdp_optimization(a: List[List[int]]) -> Optional[np.ndarray]:
     return Aopt.value
 
 
-def optimal_bilevel_mh_transition_matrix(
+def __optimal_bilevel_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray
 ) -> np.ndarray:
     """Constructs an optimized adjacency matrix using Semidefinite Programming.
@@ -106,8 +108,6 @@ def optimal_bilevel_mh_transition_matrix(
 
     return Topt.value
 
-
-# region Helpers
 
 def __metropolis_hastings(a: np.ndarray, v_: np.ndarray) -> np.ndarray:
     """ Constructs a transition matrix using metropolis-hastings algorithm.
@@ -193,7 +193,7 @@ def first_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
 
 
 def second_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
-    adj_matrix_optimized = adjency_matrix_sdp_optimization(A)
+    adj_matrix_optimized = __adjency_matrix_sdp_optimization(A)
     markov_matrix = __metropolis_hastings(adj_matrix_optimized, v_)
     eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
     mixing_rate = np.max(np.abs(eigenvalues))
@@ -208,6 +208,7 @@ def third_method(A: np.ndarray, v_: np.ndarray) -> None:
         mA = m.double(A.tolist())
         mv_ = m.double(v_.tolist())
         markov_matrix, mixing_rate = eng.matrixGlobalOpt(mA, mv_, nargout=2)
+        # noinspection PyProtectedMember
         markov_matrix = np.array(markov_matrix._data).reshape(markov_matrix.size, order='F')
         print(f"Global Optimization generation with MatLab...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
     except me.EngineError as error:
@@ -221,16 +222,11 @@ def main() -> None:
                     [0, 1, 1, 1],
                     [1, 1, 1, 0],
                     [0, 1, 0, 1]])
-    # U = np.ones((n, n)) / n
-    # first_method(A, v_, U)
-    # print("\n----\n")
-    # second_method(A, v_, U)
-    # print("\n----\n")
     third_method(A, v_)
 
 
 if __name__ == "__main__":
-    # print(cvx.installed_solvers())
+    print(f"installed solvers: {cvx.installed_solvers()}")
     main()
 
 # endregion
