@@ -11,7 +11,7 @@ import utils.matrices as matrices
 import utils.transition_matrices as tmg
 
 from domain.Worker import Worker
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 from domain.helpers.FileData import FileData
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
@@ -42,6 +42,13 @@ class Hive:
 
     def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker], sim_number: int = 0, origin: str = "") -> None:
         """
+        Attributes:
+            desired_distribution (pandas DataFrame):
+                Density distribution hive members must achieve with independent
+                realizations for ideal persistence of the file.
+            current_distribution (pandas DataFrame):
+                Tracks the file current density distribution, updated at each epoch.
+
         Instantiates an Hive abstraction
         :param Hivemind hivemind: Hivemand instance object which leads the simulation
         :param str file_name: name of the file this Hive is responsible for
@@ -53,13 +60,14 @@ class Hive:
         self.eng = mleng.start_matlab()
         self.eng.cd(MATLAB_DIR)
         print("MatLab engine initiated. Resuming simulation...;")
-        self.current_epoch: int = 0
-        self.corruption_chances: List[float] = [0, 0]
         self.id: str = str(uuid.uuid4())
+        self.current_epoch: int = 0
+        self.current_distribution: pd.DataFrame = pd.DataFrame()
+        self.desired_distribution: pd.DataFrame = pd.DataFrame()
+        self.corruption_chances: List[float] = [0, 0]
         self.hivemind = hivemind
         self.members: Dict[str, Worker] = members
-        self.file: FileData = FileData(file_name, sim_number=sim_number, origin=origin)
-        self.desired_distribution: pd.DataFrame = pd.DataFrame()
+        self.file: FileData = FileData(file_name, sim_id=sim_number, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
         self.original_size: int = len(members)
@@ -128,10 +136,13 @@ class Hive:
         :returns List[float] desired_distribution: uptimes represent 'reliability', thus, desired distribution is the normalization of the members' uptimes
         """
         uptime_sum = sum(member_uptimes)
-        uptimes_normalized = [member_uptime / uptime_sum for member_uptime in member_uptimes]
+        uptimes_normalized = \
+            [member_uptime / uptime_sum for member_uptime in member_uptimes]
 
-        self.desired_distribution = pd.DataFrame(data=uptimes_normalized, index=member_ids)
-        self.file.new_desired_distribution(self.desired_distribution, member_ids)
+        v_ = pd.DataFrame(data=uptimes_normalized, index=member_ids)
+        self.desired_distribution = v_
+        cv_ = pd.DataFrame(data=[0] * len(v_), index=member_ids)
+        self.current_distribution = cv_
 
         return uptimes_normalized
 
@@ -146,8 +157,10 @@ class Hive:
             member_uptimes.append(worker.uptime)
             member_ids.append(worker.id)
 
-        A: np.ndarray = np.asarray(matrices.new_symmetric_adjency_matrix(len(member_ids)))
-        v_: np.ndarray = np.asarray(self.new_desired_distribution(member_ids, member_uptimes))
+        A: np.ndarray = np.asarray(
+            matrices.new_symmetric_adjency_matrix(len(member_ids)))
+        v_: np.ndarray = np.asarray(
+            self.new_desired_distribution(member_ids, member_uptimes))
 
         T = self.select_fastest_topology(A, v_)
 
@@ -239,10 +252,10 @@ class Hive:
         for worker in self.members.values():
             if worker.status == Status.ONLINE:
                 worker_parts_count = worker.get_file_parts_count(self.file.name)
-                self.file.current_distribution.at[worker.id, DEFAULT_COL] = worker_parts_count
+                self.current_distribution.at[worker.id, DEFAULT_COL] = worker_parts_count
                 parts_in_hive += worker_parts_count
             else:
-                self.file.current_distribution.at[worker.id, DEFAULT_COL] = 0
+                self.current_distribution.at[worker.id, DEFAULT_COL] = 0
 
         self.file.simulation_data.set_parts_at_index(parts_in_hive, self.current_epoch)
 
@@ -250,7 +263,7 @@ class Hive:
             self.set_fail("hive has no remaining parts")
 
         self.file.parts_in_hive = parts_in_hive
-        if self.file.equal_distributions():
+        if self.equal_distributions():
             self.file.simulation_data.cswc_increment(1)
             self.file.simulation_data.try_append_to_convergence_set(self.current_epoch)
         else:
@@ -259,6 +272,42 @@ class Hive:
     # endregion
 
     # region Helpers
+
+    def equal_distributions(self) -> bool:
+        """Infers if desired_distribution and current_distribution are equal.
+
+        Equalility is calculated given a tolerance value calculated by
+        FileData method defined at :py:method:`~new_tolerance() <FileData.new_tolerance>`.
+
+        Returns:
+            True if distributions are close enough to be considered equal,
+            otherwise, it returns False.
+        """
+        if self.file.parts_in_hive == 0:
+            return False
+
+        size = len(self.current_distribution)
+        tolerance = self.new_tolerance()
+        for i in range(size):
+            a = self.current_distribution.iloc[i, DEFAULT_COL]
+            b = self.desired_distribution.iloc[i, DEFAULT_COL] * self.file.parts_in_hive
+            if np.abs(a - np.ceil(b)) > tolerance:
+                return False
+        return True
+
+    def new_tolerance(self) -> np.float64:
+        """Calculates a tolerance value for the current epoch of the simulation.
+
+        The tolerance is given by the maximum value in the desired
+        distribution minus the minimum value times the numbers of parts,
+        including replicas.
+
+        Returns:
+            The tolerance for the current epoch.
+        """
+        max_value = self.desired_distribution[DEFAULT_COL].max()
+        min_value = self.desired_distribution[DEFAULT_COL].min()
+        return np.ceil(np.abs(max_value - min_value)) * self.file.parts_in_hive
 
     def setup_epoch(self, epoch: int) -> None:
         self.current_epoch = epoch
