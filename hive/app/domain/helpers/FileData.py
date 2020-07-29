@@ -1,25 +1,20 @@
 from __future__ import annotations
 
 import json
-
-import numpy as np
-import pandas as pd
-import domain.Hive as h
-
 from pathlib import Path
-from tabulate import tabulate
-from typing import Any, Union, Dict, List, Optional, IO
+from typing import Any, Dict, IO
 
-from globals.globals import *
+import domain.Hive as h
 from domain.helpers.SimulationData import SimulationData
+from globals.globals import *
 
 
 class FileData:
     """Holds essential simulation data concerning files being persisted.
 
-    FileData is a helper class that tracks of how many parts exist of a file,
-    the number of file parts expected to be within the long-term highest
-    density node among other information.
+    FileData is a helper class which has responsabilities such as tracking
+    how many parts including replicas exist of the named file and managing
+    the persistence of logged simulation data to disk.
 
     Attributes:
         name (str):
@@ -27,11 +22,6 @@ class FileData:
         parts_in_hive (int):
             The number of file parts including replicas that exist for the
             named file that exist in the simulation. Updated every epoch.
-        desired_distribution (pandas DataFrame):
-            Density distribution hive members must achieve with independent
-            realizations for ideal persistence of the file.
-        current_distribution (pandas DataFrame):
-            Tracks the file current density distribution, updated at each epoch.
         simulation_data (SimulationData):
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
@@ -41,15 +31,13 @@ class FileData:
             File output stream to where captured data is written in append mode.
     """
 
-    def __init__(
-            self, name: str, sim_number: int = 0, origin: str = ""
-    ) -> None:
+    def __init__(self, name: str, sim_id: int = 0, origin: str = "") -> None:
         """Creates an instance of FileData
 
         Args:
             name:
                 Name of the file to be referenced by the FileData object.
-            sim_number:
+            sim_id:
                 optional; Identifier that generates unique output file names,
                 thus guaranteeing that different simulation instances do not
                 overwrite previous out files.
@@ -59,51 +47,46 @@ class FileData:
         """
         self.name: str = name
         self.parts_in_hive = 0
-        self.desired_distribution: Optional[pd.DataFrame] = None
-        self.current_distribution: Optional[pd.DataFrame] = None
         self.simulation_data: SimulationData = SimulationData()
         self.out_file: IO = open(
             os.path.join(
                 OUTFILE_ROOT, "{}_{}{}.{}".format(
                     Path(name).resolve().stem,
                     Path(origin).resolve().stem,
-                    sim_number,
+                    sim_id,
                     "json")
             ), "w+")
 
-    # region Instance Methods
-    def equal_distributions(self) -> bool:
-        """Infers if desired_distribution and current_distribution are equal.
+    def fwrite(self, msg: str) -> None:
+        """Writes a message to the output file referenced by the FileData object.
 
-        Equalility is calculated given a tolerance value calculated by
-        FileData method defined at :py:method:`~new_tolerance() <FileData.new_tolerance>`.
+        The method fwrite automatically adds a new line to the inputted message.
 
-        Returns:
-            True if distributions are close enough to be considered equal,
-            otherwise, it returns False.
+        Args:
+            msg:
+                The message to be logged on the output file.
         """
-        if self.parts_in_hive == 0:
-            return False
+        self.out_file.write(msg + "\n")
 
-        size = len(self.current_distribution)
-        for i in range(size):
-            tolerance = self.new_tolerance()
-            a = self.current_distribution.iloc[i, DEFAULT_COL]
-            b = self.desired_distribution.iloc[i, DEFAULT_COL] * self.parts_in_hive
-            if np.abs(a - np.ceil(b)) > tolerance:
-                return False
-        return True
-    # endregion
+    def jwrite(self, hive: h.Hive, origin: str, epoch: int) -> None:
+        """Writes a JSON string of the SimulationData instance to the output file.
 
-    # region File I/O
-    def fwrite(self, string: str) -> None:
+        The logged data is defined by the attributes of the
+        :py:class:`SimulationData <domain.helpers.SimulationData.SimulationData`
+         class.
+
+        Args:
+            hive:
+                The :py:class:`Hive <domain.Hive.Hive>` object that manages
+                the simulated persistence of the referenced file.
+            origin:
+                The name of the simulation file that started the simulation
+                process.
+            epoch:
+                The epoch at which the SimulationData was logged into the
+                output file.
+
         """
-        Writes to the out_file referenced by the FileData's instance out_file field in append mode
-        :param str string: a message to write to file
-        """
-        self.out_file.write(string + "\n")
-
-    def jwrite(self, hive: h.Hive, origin: str, epoch: int):
         sim_data: SimulationData = self.simulation_data
         if not sim_data.msg:
             sim_data.msg.append("completed simulation successfully")
@@ -148,59 +131,43 @@ class FileData:
         json_string = json.dumps(sim_data_dict, indent=4, sort_keys=True, ensure_ascii=False)
         self.fwrite(json_string)
 
-    def fclose(self, string: str = None) -> None:
+    def fclose(self, msg: str = None) -> None:
+        """Closes the output file controlled by the FileData instance.
+
+        Args:
+             msg:
+                optional; If filled, a termination message is logged into the
+                output file that is being closed.
         """
-        Closes the out_file referenced by the FileData's instance out_file field
-        :param str string: if filled, a message is written in append mode before closing the out_file
-        """
-        if string:
-            self.fwrite(string)
+        if msg:
+            self.fwrite(msg)
         self.out_file.close()
-    # endregion
 
     # region Overrides
+
     def __hash__(self):
-        # allows a worker object to be used as a dictionary key
+        """Override to allows a network node object to be used as a dict key
+
+        Returns:
+            The hash of value of the referenced file :py:attr:`~name`.
+        """
         return hash(str(self.name))
 
     def __eq__(self, other):
+        """Compares if two instances of FileData are equal.
+
+        Equality is based on name equality.
+
+        Returns:
+            True if the name attribute of both instances is the same,
+            otherwise False.
+        """
         if not isinstance(other, FileData):
             return False
         return self.name == other.name
 
     def __ne__(self, other):
+        """Compares if two instances of FileData are not equal."""
         return not(self == other)
-    # endregion
-
-    # region Helpers
-
-    def new_desired_distribution(self, desired_distribution: pd.DataFrame, member_ids: List[str]) -> None:
-        self.desired_distribution = desired_distribution
-        self.current_distribution = pd.DataFrame(data=[0] * len(desired_distribution), index=member_ids)
-
-    def new_tolerance(self) -> np.float64:
-        """Calculates a tolerance value for the current epoch of the simulation.
-
-        The tolerance is given by the maximum value in the desired
-        distribution minus the minimum value times the numbers of parts,
-        including replicas.
-
-        Returns:
-            The tolerance for the current epoch.
-        """
-        max_value = self.desired_distribution[DEFAULT_COL].max()
-        min_value = self.desired_distribution[DEFAULT_COL].min()
-        return np.ceil(np.abs(max_value - min_value)) * self.parts_in_hive
-
-    def print_distributions(self, normalized_cdv: List[float]) -> None:
-        text = "Desired Distribution:\n{}\nCurrent Distribution:\n{}\n"
-        self.fwrite(text.format(tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')))
-
-    def reset_convergence_data(self) -> None:
-        """
-        Resets the FileData instance field simulation_data by delegation to ConvergenceData instance method
-        """
-        self.simulation_data.save_sets_and_reset()
 
     # endregion
-
