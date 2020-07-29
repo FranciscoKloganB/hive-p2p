@@ -212,7 +212,7 @@ def _metropolis_hastings(a: np.ndarray,
     size: int = a.shape[0]
 
     rw: np.ndarray = _construct_random_walk_matrix(a)
-    r: np.ndarray = _construct_rejection_matrix(v_, rw)
+    r: np.ndarray = _construct_rejection_matrix(rw, v_)
 
     transition_matrix: np.ndarray = np.zeros(shape=shape)
 
@@ -249,7 +249,7 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     return rw
 
 
-def _construct_rejection_matrix(v_: np.array, rw: np.ndarray) -> np.ndarray:
+def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
     """
     Builds a rejection matrix for a given rejection matrix rw and vector v_.
 
