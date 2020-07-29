@@ -1,12 +1,9 @@
 import getopt
-import json
 import os
 import sys
 from typing import List
 
 import domain.Hivemind as hm
-
-
 # region Usage, Help and Main
 from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT
 
