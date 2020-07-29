@@ -22,7 +22,7 @@ MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'app',
 
 class Hive:
     """
-    :ivar int current_epoch: tracks the epoch at which the Hive is currently at
+    :ivar int epoch: tracks the epoch at which the Hive is currently at
     :ivar List[float, float] corruption_chances: used to simulate file corruption on behalf of the workers, to avoid keeping independant distributions for each part and each replica
     :ivar str id: unique identifier in str format
     :ivar Hivemind hivemind: reference to the master server, which in this case is just a simulator program
@@ -332,7 +332,7 @@ class Hive:
                 offline_workers.append(worker)
                 for part in lost_parts.values():
                     self.set_recovery_epoch(part)
-                    if part.decrease_and_get_references() == 0:
+                    if part.decrement_and_get_references() == 0:
                         self.set_fail("lost all replicas of file part with id: {}".format(part.id))
         if len(offline_workers) >= len(self.members):
             self.set_fail("all hive members disconnected simultaneously")

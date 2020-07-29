@@ -124,10 +124,15 @@ class Worker:
             for member_id in sorted_member_view:
                 if lost_replicas == 0:
                     break
-                elif hive.route_part(self.id, member_id, part, fresh_replica=True) == HttpCodes.OK:
+
+                route_result = hive.route_part(
+                    self.id, member_id, part, fresh_replica=True)
+
+                if route_result == HttpCodes.OK:
                     lost_replicas -= 1
                     part.references += 1
-            part.reset_epochs_to_recover(hive.current_epoch)
+            # replication level may have not been completely restored
+            part.update_epochs_to_recover(hive.current_epoch)
 
     # endregion
 
@@ -178,7 +183,7 @@ class Worker:
         """
         part: SharedFilePart = self.files.get(name, {}).pop(number, None)
         if part and corrupt:
-            if part.decrease_and_get_references() == 0:
+            if part.decrement_and_get_references() == 0:
                 hive.set_fail("lost all replicas of file part with id: {}, and last loss was due to corruption".format(part.id))
             else:
                 hive.set_recovery_epoch(part)

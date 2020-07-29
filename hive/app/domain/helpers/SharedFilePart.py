@@ -94,8 +94,13 @@ class SharedFilePart:
             self.recovery_epoch = new_proposed_epoch
         return 0 if self.recovery_epoch == float('inf') else self.recovery_epoch - float(epoch)
 
-    def reset_epochs_to_recover(self, epoch: int) -> None:
-        """Resets `recovery_epoch`
+    def update_epochs_to_recover(self, epoch: int) -> None:
+        """Update the `recovery_epoch` after a recovery attempt was carried out.
+
+        If the recovery attempt performed by some network node successfully
+        managed to restore the replication levels to the original target, then,
+        `recovery_epoch` is set to positive infinity, otherwise, another
+        attempt will be done in the next epoch.
 
         Args:
             epoch:
@@ -103,26 +108,47 @@ class SharedFilePart:
         """
         self.recovery_epoch = float('inf') if self.references == REPLICATION_LEVEL else float(epoch + 1)
 
-    def can_replicate(self, current_epoch: int) -> int:
-        """
-        :param int current_epoch: current simulation's epoch
-        :returns int: how many times the caller should replicate the SharedFilePart instance, if such action is possible
+    def can_replicate(self, epoch: int) -> int:
+        """Informs the calling network node if file block needs replication.
+
+        Args:
+            epoch:
+                Simulation's current epoch.
+
+        Returns:
+            How many times the caller should replicate the block. The network
+            node knows how many replicas he needs to create and distribute if
+            returned value is bigger than zero.
         """
         if self.recovery_epoch == float('inf'):
             return 0
-        elif 0 < self.references < REPLICATION_LEVEL and self.recovery_epoch - float(current_epoch) <= 0.0:
+
+        if 0 < self.references < REPLICATION_LEVEL and self.recovery_epoch - float(epoch) <= 0.0:
             return REPLICATION_LEVEL - self.references
-        else:
-            return 0
+
+        return 0
     # endregion
 
     # region Overrides
     def __str__(self):
+        """Overrides default string representation of SharedFilePart instances.
+
+        Returns:
+            A dictionary representation of the object.
+        """
         return "part_name: {},\npart_number: {},\npart_id: {},\npart_data: {},\nsha256: {}\n".format(self.name, self.number, self.id, self.data, self.sha256)
     # endregionss
 
     # region Helpers
-    def decrease_and_get_references(self):
+
+    def decrement_and_get_references(self):
+        """Decreases by one and gets the number of file block references
+
+        Returns:
+            The number of file block references existing in the simulation
+            environment.
+        """
         self.references -= 1
         return self.references
+    
     # endregion
