@@ -25,7 +25,7 @@ def new_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
             Symmetric unoptimized adjency matrix.
         v_:
             Transition Markov Matrix for the desired, possibly non-uniform,
-            distribution vector ddv and respective mixing rate.
+            distribution vector v_ and respective mixing rate.
 
     Returns:
         A tuple with the transition matrix and the respective mixing rate.
@@ -40,7 +40,7 @@ def new_sdp_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[N
     The provided adjacency matrix A is first optimized with semi-definite programming techniques for the uniform distribution vector.
     :param np.ndarray a: Symmetric unoptimized adjency matrix.
     :param np.ndarray v_: a stochastic desired distribution vector
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
+    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
     """
     problem, a = _adjency_matrix_sdp_optimization(a)
     if problem.status in OPTIMAL_STATUS:
@@ -56,7 +56,7 @@ def new_go_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None,
     Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
     :param np.ndarray a: Symmetric unoptimized adjency matrix.
     :param np.ndarray v_: a stochastic desired distribution vector
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
+    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
     """
     # Allocate python variables
     n: int = a.shape[0]
@@ -95,7 +95,7 @@ def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: me.MatlabEn
     :param np.ndarray a: Symmetric unoptimized adjency matrix.
     :param np.ndarray v_: a stochastic desired distribution vector
     :param mleng.MatlabEngine eng: an instance of a running matlab engine.
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector ddv and respective mixing rate
+    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
     """
     a = matlab.double(a.tolist())
     v = matlab.double(v_.tolist())
@@ -212,7 +212,7 @@ def _metropolis_hastings(a: np.ndarray,
     size: int = a.shape[0]
 
     rw: np.ndarray = _construct_random_walk_matrix(a)
-    r: np.ndarray = _construct_rejection_matrix(v_, rw, shape, size)
+    r: np.ndarray = _construct_rejection_matrix(v_, rw)
 
     transition_matrix: np.ndarray = np.zeros(shape=shape)
 
@@ -249,20 +249,26 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     return rw
 
 
-def _construct_rejection_matrix(ddv: np.array, rw: np.ndarray, shape: Tuple[int, int], size: int) -> np.ndarray:
+def _construct_rejection_matrix(v_: np.array, rw: np.ndarray) -> np.ndarray:
     """
-    Constructs a rejection matrix for the random walk
-    :param np.ndarray ddv: a stochastic desired distribution vector
-    :param np.ndarray rw: a random_walk over an adjacency matrix
-    :param Tuple[int, int] shape: size of adj_matrix #(lines, columns)
-    :param int size: #lines or #columns, for effeciency
-    :returns np.ndarray r: a matrix containing acceptance/rejectance probabilities for the random walk
+    Builds a rejection matrix for a given rejection matrix rw and vector v_.
+
+    Args:
+        v_:
+            a stochastic desired distribution vector
+        rw:
+            a random_walk over an adjacency matrix
+
+    Returns:
+        A matrix whose entries are acceptance probabilities for the random walk.
     """
+    shape = rw.shape
+    size = shape[0]
     r = np.zeros(shape=shape)
     with np.errstate(divide='ignore', invalid='ignore'):
         for i in range(size):
             for j in range(size):
-                r[i, j] = (ddv[j] * rw[j, i]) / (ddv[i] * rw[i, j])
+                r[i, j] = (v_[j] * rw[j, i]) / (v_[i] * rw[i, j])
     return r
 
 

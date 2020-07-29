@@ -40,7 +40,7 @@ def construct_rejection_matrix_div_by_zero_error_exist_test():
         ddv = np.asarray([0.1, 0.4, 0.3, 0.2])
         adj_matrix = np.asarray([[1, 1, 1, 1], [1, 0, 1, 0], [1, 1, 1, 1], [0, 1, 1, 0]])
         random_walk = mH._construct_random_walk_matrix(adj_matrix)
-        mH._construct_rejection_matrix(ddv, random_walk, adj_matrix.shape, adj_matrix.shape[0])
+        mH._construct_rejection_matrix(ddv, random_walk)
         return print_test("construct_rejection_matrix_div_by_zero_error_exist_test", "no excpetion", "no exception", True)
     except ZeroDivisionError:
         return print_test("construct_rejection_matrix_div_by_zero_error_exist_test", "no excpetion", "ZeroDivisionError", False)
