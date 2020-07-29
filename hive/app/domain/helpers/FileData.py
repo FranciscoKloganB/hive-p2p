@@ -8,53 +8,83 @@ import domain.Hive as h
 
 from pathlib import Path
 from tabulate import tabulate
-from typing import Any, Union, Dict, List
+from typing import Any, Union, Dict, List, Optional
 
 from globals.globals import *
 from domain.helpers.SimulationData import SimulationData
 
 
 class FileData:
-    """
-    Helper class for domain.Hivemind to keep track of how many parts exist of a file, the number of file parts expected
-    to be within the long-term highest density node among other information.
-    :ivar str name: the name of the original file
-    :ivar int parts_count: the total number of parts the original file was split into, excluding replicas
-    :ivar pd.DataFrame desired_distribution: file density distribution hive members must achieve with independent realizations for ideal persistence of the file
-    :ivar pd.DataFrame current_distribution: tracks current of file distribution, updated at each epoch
-    :ivar ConvergenceData simulation_data: instance object with general information w.r.t. the simulation
+    """Holds essential simulation data concerning files being persisted.
+
+    FileData is a helper class that tracks of how many parts exist of a file,
+    the number of file parts expected to be within the long-term highest
+    density node among other information.
+
+    Attributes:
+        name (str):
+            The name of the original file.
+        parts_in_hive (int):
+            The number of file parts including replicas that exist for the
+            named file that exist in the simulation. Updated every epoch.
+        desired_distribution (pd.DataFrame):
+            Density distribution hive members must achieve with independent
+            realizations for ideal persistence of the file.
+        current_distribution (pd.DataFrame):
+            Tracks the file current density distribution, updated at each epoch.
+        simulation_data (domain.helpers.SimulationData):
+            Object that stores captured simulation data. Stored data can be
+            post-processed using user defined scripts to create items such
+            has graphs and figures.
+        out_file (str/bytes/int):
+            File output stream to where captured data is written in append mode.
     """
 
-    # region Class Variables, Instance Variables and Constructors
-    def __init__(self, name: str, sim_number: int = 0, origin: str = ""):
-        """
-        :param str name: name of the file referenced by this data class instance
-        :param int sim_number: optional value that can be passed to FileData to generate different .out names
+    def __init__(
+            self, name: str, sim_number: int = 0, origin: str = ""
+    ) -> None:
+        """Creates an instance of FileData
+
+        Args:
+            name:
+                Name of the file to be referenced by the FileData object.
+            sim_number:
+                optional; Identifier that generates unique output file names,
+                thus guaranteeing that different simulation instances do not
+                overwrite previous out files.
+            origin:
+                optional; The name of the simulation file name that started
+                the simulation process.
         """
         self.name: str = name
-        self.desired_distribution: Union[None, pd.DataFrame] = None
-        self.current_distribution: Union[None, pd.DataFrame] = None
-        self.simulation_data: SimulationData = SimulationData()
-        self.out_file: Any = open(os.path.join(
-            OUTFILE_ROOT, "{}_{}{}.{}".format(Path(name).resolve().stem, Path(origin).resolve().stem, sim_number, "json")
-        ), "w+")
         self.parts_in_hive = 0
-    # endregion
+        self.desired_distribution: Optional[pd.DataFrame] = None
+        self.current_distribution: Optional[pd.DataFrame] = None
+        self.simulation_data: SimulationData = SimulationData()
+        self.out_file: Union[str, bytes, int] = open(
+            os.path.join(
+                OUTFILE_ROOT, "{}_{}{}.{}".format(
+                    Path(name).resolve().stem,
+                    Path(origin).resolve().stem,
+                    sim_number,
+                    "json")
+            ), "w+")
 
     # region Instance Methods
-    def equal_distributions(self, parts_in_hive: int) -> bool:
+    def equal_distributions(self) -> bool:
+        """Infers if desired_distribution and current_distribution are equal.
+
+        Equalility is calculated with a tolerance value given
         """
-        Delegates distribution comparison to ConvergenceData.equal_distributions static method
-        """
-        if parts_in_hive == 0:
+        if self.parts_in_hive == 0:
             return False
 
         size = len(self.current_distribution)
         for i in range(size):
-            tolerance = self.new_tolerance(parts_in_hive)
-            b = np.ceil(self.desired_distribution.iloc[i, DEFAULT_COL] * parts_in_hive)
+            tolerance = self.new_tolerance(self.parts_in_hive)
             a = self.current_distribution.iloc[i, DEFAULT_COL]
-            if np.abs(a - b) > tolerance:
+            b = self.desired_distribution.iloc[i, DEFAULT_COL] * self.parts_in_hive
+            if np.abs(a - np.ceil(b)) > tolerance:
                 return False
         return True
     # endregion
@@ -142,13 +172,19 @@ class FileData:
         self.desired_distribution = desired_distribution
         self.current_distribution = pd.DataFrame(data=[0] * len(desired_distribution), index=member_ids)
 
-    def new_tolerance(self, parts_in_hive) -> np.float64:
-        tolerance = parts_in_hive * 0.1
-        if (self.parts_in_hive == 0):
-            tolerance = self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min() * parts_in_hive
-        else:
-            tolerance = self.desired_distribution[DEFAULT_COL].max() * parts_in_hive
-        return np.ceil(np.abs(tolerance))
+    def new_tolerance(self) -> np.float64:
+        """Calculates a tolerance value for the current epoch of the simulation.
+
+        The tolerance is given by the maximum value in the desired
+        distribution minus the minimum value times the numbers of parts,
+        including replicas.
+
+        Returns:
+            The tolerance for the current epoch.
+        """
+        max_value = self.desired_distribution[DEFAULT_COL].max()
+        min_value = self.desired_distribution[DEFAULT_COL].min()
+        return np.ceil(np.abs(max_value - min_value)) * self.parts_in_hive
 
     def print_distributions(self, normalized_cdv: List[float]) -> None:
         text = "Desired Distribution:\n{}\nCurrent Distribution:\n{}\n"
