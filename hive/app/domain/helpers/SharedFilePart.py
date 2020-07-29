@@ -6,42 +6,88 @@ from globals.globals import REPLICATION_LEVEL, MIN_DETECTION_DELAY, MAX_DETECTIO
 
 
 class SharedFilePart:
-    """
-    Represents a simulation over the P2P Network that tries to persist a file using stochastic swarm guidance
-    :ivar str id: concatenation of part_name | part_number
-    :ivar str hive_id: uniquely identifies the hive that manages the shared file part instance
-    :ivar str name: original name of the file this part belongs to
-    :ivar int number: unique identifier for this file on the P2P network
-    :ivar int references: indicates how many references exist for this SharedFilePart
-    :ivar float recovery_epoch: indicates when recovery of this file will occur during
-    :ivar str data: base64 string corresponding to the actual contents of this file part
-    :ivar str sha256: hash value resultant of applying sha256 hash function over part_data param
+    """Wrapping class for the contents of a file block.
+
+    Among other responsabilities SharedFilePart helps managing simulation
+    parameters, e.g., replica control such or file block integrity.
+
+    Attributes:
+        hive_id:
+            Unique identifier of the hive that manages the shared file part.
+        name:
+            The name of the file the file block belongs to.
+        number:
+            The number that uniquely identifies the file block.
+        id:
+            Concatenation the the `name` and `number`.
+        references:
+            Tracks how many references exist to the file block in the
+            simulation environment. When it reaches 0 the file block ceases
+            to exist and the simulation fails.
+        recovery_epoch:
+            When a reference to the file block is lost, i.e., decremented,
+            a recovery_epoch that simulates failure detection and recovery
+            delay is assigned to this attribute. Until a loss occurs and
+            after a loss is recovered, `recovery_epoch` is set to positive
+            infinity.
+        data:
+            A base64-encoded string representation of the file block bytes.
+        sha256:
+            The hash value of data resulting from a SHA256 digest.
     """
 
-    # region Class Variables, Instance Variables and Constructors
-    def __init__(self, hive_id: str, name: str, number: int, data: bytes):
+    def __init__(
+            self, hive_id: str, name: str, number: int, data: bytes
+    ) -> None:
+        """Creates an instance of SharedFilePart
+
+        Args:
+            hive_id:
+                Unique identifier of the hive that manages the shared file part.
+            name:
+                The name of the file the file block belongs to.
+            number:
+                The number that uniquely identifies the file block.
+            data:
+                Actual file block data as a sequence of bytes.
         """
-        Instantiates a SharedFilePart object
-        :param str name: original name of the file this part belongs to
-        :param int number: number that uniquely identifies this file part
-        :param bytes data: Up to 2KB blocks of raw data that can be either strings or bytes
-        """
-        self.id: str = name + "_#_" + str(number)
         self.hive_id = hive_id
         self.name: str = name
         self.number: int = number
+        self.id: str = name + "_#_" + str(number)
         self.references: int = 0
         self.recovery_epoch: float = float('inf')
         self.data: str = convertions.bytes_to_base64_string(data)
         self.sha256: str = crypto.sha256(self.data)
-    # endregion
 
     # region Simulation Interface
     def set_recovery_epoch(self, epoch: int) -> int:
-        """
-        Assigns a value to the instance's recovery_epoch attribute that indicates when a Worker who posses a reference to it, can replicate the part.
-        :param int epoch: current simulation's epoch
-        :returns int: expected delay
+        """Sets the epoch in which replication levels should be restored.
+
+        This method tries to assign a new epoch, in the future, at which
+        recovery should be performed. If the proposition is sooner than the
+        previous proposition then assignment is accepted, else, it's rejected.
+
+        Note:
+            This method of calculating the `recovery_epoch` may seem
+            controversial, but the justification lies in the assumption that
+            if there are more network nodes monitoring file parts,
+            than failure detections should be in theory, faster, unless
+            complex consensus algorithms are being used between volatile
+            peers, which is not our case. We assume peers only report their
+            suspicions to a small number of trusted of monitors who then
+            decide if the reported network node is disconnected, consequently
+            losing the instance of SharedFilePart and possibly others.
+
+        Args:
+            epoch:
+                Simulation's current epoch.
+
+        Returns:
+            Zero if the current `recovery_epoch` is positive infinity,
+            otherwise the expected delay is returned. This value can be
+            used to log, for example, the average recovery delay in the
+            Hive simulation.
         """
         new_proposed_epoch = float(epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY))
         if new_proposed_epoch < self.recovery_epoch:
@@ -49,9 +95,11 @@ class SharedFilePart:
         return 0 if self.recovery_epoch == float('inf') else self.recovery_epoch - float(epoch)
 
     def reset_epochs_to_recover(self, epoch: int) -> None:
-        """
-        Resets self.recovery_epoch attribute back to the default value of -1
-        :param int epoch: current simulation's epoch
+        """Resets `recovery_epoch`
+
+        Args:
+            epoch:
+                Simulation's current epoch.
         """
         self.recovery_epoch = float('inf') if self.references == REPLICATION_LEVEL else float(epoch + 1)
 
