@@ -169,7 +169,7 @@ class Hive:
             part:
                 The file block replica send to specified destination.
             fresh_replica:
-                optional; Prevents recently created replicas from being 
+                optional; Prevents recently created replicas from being
                 corrupted, since they are not likely to be corrupted in disk.
                 This argument facilitates simulation. (default: False)
 
@@ -254,11 +254,16 @@ class Hive:
 
         return pd.DataFrame(T, index=member_ids, columns=member_ids)
 
-    def broadcast_transition_matrix(self, transition_matrix: pd.DataFrame) -> None:
+    def broadcast_transition_matrix(self, m: pd.DataFrame) -> None:
         """Slices a transition matrix and delivers them to respective network nodes.
 
         Gives each member his respective slice (vector column) of the
         transition matrix the Hive is currently executing.
+
+        Args:
+            m:
+                A transition matrix to be broadcasted to the network nodes
+                belonging who are currently members of the Hive instance.
 
         Note:
             An optimization could be made that configures a transition matrix
@@ -270,7 +275,7 @@ class Hive:
             each Hive only manages one file for now.
         """
         for worker in self.members.values():
-            transition_vector: pd.DataFrame = transition_matrix.loc[:, worker.id]
+            transition_vector: pd.DataFrame = m.loc[:, worker.id]
             worker.set_file_routing(self.file.name, transition_vector)
 
     # endregion
@@ -278,9 +283,10 @@ class Hive:
     # region Simulation Interface
 
     # noinspection DuplicatedCode
-    def spread_files(self, spread_mode: str, file_parts: Dict[int, SharedFilePart]):
-        """
-        Spreads files over the initial members of the Hive
+    def spread_files(
+            self, spread_mode: str, file_parts: Dict[int, SharedFilePart]
+    ) -> None:
+        """Spreads files over the initial members of the Hive
         :param str spread_mode: 'u' for uniform distribution, 'a' one* peer receives all or 'i' to distribute according to the desired steady state distribution
         :param Dict[int, SharedFilePart] file_parts: file parts to distribute over the members
         """
