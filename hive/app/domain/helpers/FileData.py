@@ -88,10 +88,10 @@ class FileData:
 
         """
         sim_data: SimulationData = self.simulation_data
-        if not sim_data.msg:
-            sim_data.msg.append("completed simulation successfully")
+        if not sim_data.messages:
+            sim_data.messages.append("completed simulation successfully")
         if DEBUG:
-            [print("* {};".format(reason)) for reason in sim_data.msg]
+            [print("* {};".format(reason)) for reason in sim_data.messages]
 
         sim_data.parts_in_hive = sim_data.parts_in_hive[:epoch]
 

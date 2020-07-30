@@ -264,8 +264,7 @@ class Hive:
 
         self.file.parts_in_hive = parts_in_hive
         if self.equal_distributions():
-            self.file.simulation_data.cswc_increment(1)
-            self.file.simulation_data.try_append_to_convergence_set(self.current_epoch)
+            self.file.simulation_data.register_convergence(self.current_epoch)
         else:
             self.file.simulation_data.save_sets_and_reset()
 
