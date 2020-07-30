@@ -38,7 +38,7 @@ def main(fname, runs_per_input_file):
     #         simulation = hm.Hivemind(simfile_name=name, sim_id=i+1)
     #         simulation.execute_simulation()
     simulation = hm.Hivemind(
-        simfile_name=input_simulation_files[0], sim_number=1337)
+        simfile_name=input_simulation_files[0], sim_id=1337)
     simulation.execute_simulation()
 # endregion
 
