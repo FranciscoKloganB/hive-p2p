@@ -147,19 +147,13 @@ class SimulationData:
     # region Helpers
 
     def set_delay_at_index(self, delay: int, calls: int, i: int) -> None:
-        """
-        :param int delay: the delay sum
-        :param int calls: number of times a delay was generated
-        :param int i: index of epoch i in SimulationData.delay list
+        """Sets the expected delay at epoch e
+        Args:
+            delay: the delay sum
+            calls: number of times a delay was generated
+            i: index poch i in SimulationData.delay list
         """
         self.delay[i-1] = 0 if calls == 0 else delay / calls
-
-    def set_disconnected_and_losses(self, disconnected=0, lost=0, i=0):
-        """
-        Delegates to Hive.set_moved_parts_at_index, Hive.set_failed_workers_at_index, Hive.set_lost_parts_at_index
-        """
-        self.set_disconnected_workers_at_index(disconnected, i)
-        self.set_lost_parts_at_index(lost, i)
 
     def set_moved_parts_at_index(self, n: int, i: int) -> None:
         """

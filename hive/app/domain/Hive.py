@@ -15,6 +15,7 @@ from typing import Dict, List, Any, Tuple, Optional
 from domain.helpers.FileData import FileData
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
+from domain.helpers.SimulationData import SimulationData
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, COMMUNICATION_CHANCES, MAX_EPOCHS
 
 MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'app', 'scripts', 'matlabscripts')))
@@ -335,7 +336,12 @@ class Hive:
                         self.set_fail("lost all replicas of file part with id: {}".format(part.id))
         if len(offline_workers) >= len(self.members):
             self.set_fail("all hive members disconnected simultaneously")
-        self.file.simulation_data.set_disconnected_and_losses(len(offline_workers), lost_parts_count, self.current_epoch)
+
+        e: int = self.current_epoch
+        sf: SimulationData = self.file.simulation_data
+        sf.set_disconnected_workers_at_index(len(offline_workers), e)
+        sf.set_lost_parts_at_index(lost_parts_count, e)
+        
         return offline_workers
 
     def membership_maintenance(self, offline_workers: List[Worker]) -> None:
