@@ -12,27 +12,27 @@ class SharedFilePart:
     parameters, e.g., replica control such or file block integrity.
 
     Attributes:
-        hive_id:
+        hive_id (str):
             Unique identifier of the hive that manages the shared file part.
-        name:
+        name (str):
             The name of the file the file block belongs to.
-        number:
+        number (int):
             The number that uniquely identifies the file block.
-        id:
+        id (str):
             Concatenation the the `name` and `number`.
-        references:
+        references (int):
             Tracks how many references exist to the file block in the
             simulation environment. When it reaches 0 the file block ceases
             to exist and the simulation fails.
-        recovery_epoch:
+        recovery_epoch (float):
             When a reference to the file block is lost, i.e., decremented,
             a recovery_epoch that simulates failure detection and recovery
             delay is assigned to this attribute. Until a loss occurs and
             after a loss is recovered, `recovery_epoch` is set to positive
             infinity.
-        data:
+        data (str):
             A base64-encoded string representation of the file block bytes.
-        sha256:
+        sha256 (str):
             The hash value of data resulting from a SHA256 digest.
     """
 
