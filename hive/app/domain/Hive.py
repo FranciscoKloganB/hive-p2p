@@ -22,39 +22,86 @@ MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'app',
 
 
 class Hive:
+    """Represents a group of network nodes persisting a file.
+
+    Notes:
+        If you do not have a valid MatLab license you should comment
+        all :py:attr:`~eng` related calls.
+        
+    Attributes:
+        id:
+            An uuid that uniquely identifies the Hive. Usefull for when
+            there are multiple Hive instances in a simulation environment.
+        current_epoch:
+            The simulation's current epoch.
+        corruption_chances:
+            A two-element list containing the probability of file block replica
+            being corrupted and not being corrupted, respectively. See
+            :py:meth:`setup_epoch() <domain.Hive.Hive.setup_epoch>` for
+            corruption chance configuration.
+        desired_distribution (pandas DataFrame):
+            Density distribution hive members must achieve with independent
+            realizations for ideal persistence of the file.
+        current_distribution (pandas DataFrame):
+            Tracks the file current density distribution, updated at each epoch.
+        hivemind:
+            A reference to :py:class:`~domain.Hivemind.Hivemind` that
+            coordinates this Hive instance.
+        members:
+            A collection of network nodes that belong to the Hive instance.
+            See also :py:class:`~domain.domain.Worker`.
+        file:
+            A reference to :py:class:`~domain.helpers.FileData` object that
+            represents the file being persisted by the Hive instance.
+        critical_size:
+            Minimum number of network nodes plus required to exist in the
+            Hive to assure the target replication level.
+        sufficient_size:
+             Sum of :py:attr:`critical_size` and the number of nodes
+             expected to fail between two successive recovery phases.
+        original_size:
+            The initial and optimal Hive size.
+        redundant_size:
+            Application-specific parameter, which indicates that membership
+            of the Hive must be pruned.
+        running:
+            Indicates if the Hive instance is active. This attribute is
+            used by :py:class:`~domain.Hivemind.Hivemind` to manage the
+            simulation process.
+        _recovery_epoch_sum:
+            Helper attribute that facilitates the storage of the sum of the
+            values returned by all :py:meth:`~SharedFilePart.set_recovery_epoch`
+            method calls. Important for logging purposes.
+        _recovery_epoch_calls:
+            Helper attribute that facilitates the storage of the sum of the
+            values returned by all :py:meth:`~SharedFilePart.set_recovery_epoch`
+            method calls throughout the :py:attr:`~current_epoch`.
     """
-    :ivar int epoch: tracks the epoch at which the Hive is currently at
-    :ivar List[float, float] corruption_chances: used to simulate file corruption on behalf of the workers, to avoid keeping independant distributions for each part and each replica
-    :ivar str id: unique identifier in str format
-    :ivar Hivemind hivemind: reference to the master server, which in this case is just a simulator program
-    :ivar Dict[str, Worker] members: Workers that belong to this P2P Hive, key is worker.id, value is the respective Worker instance
-    :ivar FileData file: instance of class FileData which contains information regarding the file persisted by this hive
-    :ivar DataFrame desired_distribution: distribution hive members are seeking to achieve for each the files they persist together.
-    :ivar int critical_size: minimum number of replicas required for data recovery plus the number of peer faults the system must support during replication.
-    :ivar int sufficient_size: depends on churn-rate and equals critical_size plus the number of peers expected to fail between two successive recovery phases
-    :ivar int original_size: stores the initial hive size
-    :ivar int redundant_size: application-specific system parameter, but basically represents that the hive is to big
-    :ivar int set_recovery_epoch_sum: stores the sum of the values returned by all SharedFilePart.set_recovery_epoch calls - used for simulation output purposes
-    :ivar int set_recovery_epoch_calls: stores how many times SharedFilePart.set_recovery_epoch calls was called  during the current epoch
-    :ivar bool running: indicates if the hive has terminated - used for simulation purposes
-    """
 
-    # region Class Variables, Instance Variables and Constructors
+    def __init__(self, hivemind: hm.Hivemind,
+                 file_name: str,
+                 members: Dict[str, Worker],
+                 sim_id: int = 0,
+                 origin: str = "") -> None:
+        """Instantiates an Hive object
 
-    def __init__(self, hivemind: hm.Hivemind, file_name: str, members: Dict[str, Worker], sim_number: int = 0, origin: str = "") -> None:
-        """
-        Attributes:
-            desired_distribution (pandas DataFrame):
-                Density distribution hive members must achieve with independent
-                realizations for ideal persistence of the file.
-            current_distribution (pandas DataFrame):
-                Tracks the file current density distribution, updated at each epoch.
-
-        Instantiates an Hive abstraction
-        :param Hivemind hivemind: Hivemand instance object which leads the simulation
-        :param str file_name: name of the file this Hive is responsible for
-        :param Dict[str, Worker] members: collection mapping names of the Hive's initial workers' to their Worker instances
-        :param int sim_number: optional value that can be passed to FileData to generate different .out names
+        Args:
+            hivemind:
+                A reference to an :py:class:`~domain.Hivemind.Hivemind`
+                object that manages the Hive being initialized.
+            file_name:
+                The name of the file this Hive is responsible for persisting.
+            members:
+                A dictionary mapping unique identifiers to of the Hive's
+                initial network nodes (:py:class:`~domain.domain.Worker`.)
+                to their instance objects.
+            sim_id:
+                optional; Identifier that generates unique output file names,
+                thus guaranteeing that different simulation instances do not
+                overwrite previous out files.
+            origin:
+                optional; The name of the simulation file name that started
+                the simulation process.
         """
         from matlab import engine as mleng
         print("Loading MatLab engine; This may take a few seconds...")
@@ -68,14 +115,14 @@ class Hive:
         self.corruption_chances: List[float] = [0, 0]
         self.hivemind = hivemind
         self.members: Dict[str, Worker] = members
-        self.file: FileData = FileData(file_name, sim_id=sim_number, origin=origin)
+        self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
         self.running: bool = True
-        self.set_recovery_epoch_sum: int = 0
-        self.set_recovery_epoch_calls: int = 0
+        self._recovery_epoch_sum: int = 0
+        self._recovery_epoch_calls: int = 0
         self.create_and_bcast_new_transition_matrix()
 
     # endregion
@@ -228,6 +275,7 @@ class Hive:
         :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
         """
         self.setup_epoch(epoch)
+
         try:
             offline_workers: List[Worker] = self.workers_execute_epoch()
             self.evaluate_hive_convergence()
@@ -235,8 +283,11 @@ class Hive:
             if epoch == MAX_EPOCHS:
                 self.running = False
         except Exception as e:
-            self.set_fail(f"Simulation failed due to unexpected exception, reason: {str(e)}")
-        self.file.simulation_data.set_delay_at_index(self.set_recovery_epoch_sum, self.set_recovery_epoch_calls, self.current_epoch)
+            self.set_fail(f"Exception caused simulation termination: {str(e)}")
+
+        self.file.simulation_data.set_delay_at_index(self._recovery_epoch_sum,
+                                                     self._recovery_epoch_calls,
+                                                     self.current_epoch)
 
     def is_running(self) -> bool:
         return self.running
@@ -313,8 +364,8 @@ class Hive:
         self.current_epoch = epoch
         self.corruption_chances[0] = np.log10(epoch).item() / 300.0
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
-        self.set_recovery_epoch_sum = 0
-        self.set_recovery_epoch_calls = 0
+        self._recovery_epoch_sum = 0
+        self._recovery_epoch_calls = 0
 
     def workers_execute_epoch(self, lost_parts_count: int = 0) -> List[Worker]:
         """
@@ -392,8 +443,8 @@ class Hive:
         self.file.jwrite(self, origin, epoch)
 
     def set_recovery_epoch(self, part: SharedFilePart) -> None:
-        self.set_recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
-        self.set_recovery_epoch_calls += 1
+        self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
+        self._recovery_epoch_calls += 1
 
     def validate_transition_matrix(self, transition_matrix: pd.DataFrame, target_distribution: pd.DataFrame) -> bool:
         t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)

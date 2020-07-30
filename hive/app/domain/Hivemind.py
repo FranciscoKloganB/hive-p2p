@@ -22,7 +22,7 @@ class Hivemind:
     :ivar Dict[Union[Worker, str], int] workers_status: maps workers or their names to their connectivity status
     :ivar Dict[str, List[FileData]] workers_hives: maps workers' names to hives they are known to belong to
     :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
-    :ivar int sim_number: allows different simulation executions to be distinguishable from each other
+    :ivar int sim_id: allows different simulation executions to be distinguishable from each other
     """
 
     # region Class Variables, Instance Variables and Constructors
@@ -158,7 +158,7 @@ class Hivemind:
         initial_members: np.array = np.random.choice(a=[*self.workers.keys()], size=shared[file_name]['hive_size'], replace=False)
         for member_id in initial_members:
             hive_members[member_id] = self.workers[member_id]
-        hive = Hive(self, file_name, hive_members, sim_number=self.sim_number, origin=self.origin)
+        hive = Hive(self, file_name, hive_members, sim_id=self.sim_number, origin=self.origin)
         self.hives[hive.id] = hive
         return hive
 
