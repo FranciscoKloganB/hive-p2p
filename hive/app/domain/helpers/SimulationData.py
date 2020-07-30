@@ -1,8 +1,6 @@
-import numpy as np
-import pandas as pd
+from typing import List, Any
 
-from typing import Union, List, Any
-from globals.globals import MIN_CONVERGENCE_THRESHOLD, R_TOL, A_TOL, MAX_EPOCHS, MAX_EPOCHS_PLUS
+from globals.globals import MIN_CONVERGENCE_THRESHOLD, MAX_EPOCHS, MAX_EPOCHS_PLUS
 
 
 class SimulationData:
@@ -243,7 +241,11 @@ class SimulationData:
         self.successfull = False
         self.messages.append(message)
 
-    def set_membership_maintenace_at_index(self, status: str, size_before: int, size_after: int, epoch: int) -> None:
+    def set_membership_maintenace_at_index(self,
+                                           status: str,
+                                           size_before: int,
+                                           size_after: int,
+                                           epoch: int) -> None:
         """Logs hive membership status and size at an epoch.
 
         Args:
