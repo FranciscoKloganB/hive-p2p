@@ -140,9 +140,17 @@ class Hivemind:
         return selected_workers
 
     def get_cloud_reference(self) -> str:
-        """
-        TODO: future-iteration
-        :returns a cloud reference that can be used to persist files with more reliability
+        """Use to obtain a reference to 3rd party cloud storage provider
+
+        The cloud storage provider can be used to temporarely host files
+        belonging to Hives in bad status, thus increasing file durability
+        in the system.
+
+        Note:
+            TODO: This method requires implementation at the user descretion.
+
+        Returns:
+            A pointer to thhe cloud server, e.g., an IP Address.
         """
         return ""
 

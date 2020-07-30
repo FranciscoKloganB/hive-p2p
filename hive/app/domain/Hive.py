@@ -27,7 +27,7 @@ class Hive:
     Notes:
         If you do not have a valid MatLab license you should comment
         all :py:attr:`~eng` related calls.
-        
+
     Attributes:
         id:
             An uuid that uniquely identifies the Hive. Usefull for when
@@ -130,28 +130,51 @@ class Hive:
     # region Routing
 
     def remove_cloud_reference(self) -> None:
-        """
-        TODO: future-iterations
-        Remove cloud references and delete files within it
+        """Remove cloud references and delete files within it
+
+        Notes:
+            TODO: This method requires implementation at the user descretion.
         """
         pass
 
     def add_cloud_reference(self) -> None:
+        """Adds a cloud server reference to the membership.
+
+        This method is used when Hive membership size becomes compromised
+        and a backup solution using cloud approaches is desired. The idea
+        is that surviving members upload their replicas to the cloud server,
+        e.g., an Amazon S3 instance. See Hivemind method
+        :py:meth:`~domain.Hivemind.Hivemind.get_cloud_reference` for more
+        details.
+
+        Notes:
+            TODO: This method requires implementation at the user descretion.
         """
-        TODO: future-iterations
-        Remaining hive members upload all data they have to a cloud server
-        """
+        pass
         # noinspection PyUnusedLocal
         cloud_ref: str = self.hivemind.get_cloud_reference()
 
-    def route_part(self, sender: str, destination: str, part: SharedFilePart, fresh_replica: bool = False) -> Any:
-        """
-        Receives a shared file part and sends it to the given destination
-        :param str sender: id of the worker sending the message
-        :param str destination: destination worker's id
-        :param SharedFilePart part: the file part to send to specified worker
-        :param bool fresh_replica: stops recently created replicas from being corrupted, since they are not likely to be corrupted in disk
-        :returns int: http codes based status of destination worker
+    def route_part(self,
+                   sender: str,
+                   destination: str,
+                   part: SharedFilePart,
+                   fresh_replica: bool = False) -> Any:
+        """Sends one file block replica to some other network node.
+
+        Args:
+            sender:
+                An identifier of the network node who is sending the message.
+            destination:
+                The destination network node identifier.
+            part:
+                The file block replica send to specified destination.
+            fresh_replica:
+                optional; Prevents recently created replicas from being 
+                corrupted, since they are not likely to be corrupted in disk.
+                This argument facilitates simulation. (default: False)
+
+        Returns:
+            An HTTP code sent by destination network node.
         """
         if sender == destination:
             return HttpCodes.DUMMY
@@ -176,12 +199,26 @@ class Hive:
 
     # region Swarm Guidance
 
-    def new_desired_distribution(self, member_ids: List[str], member_uptimes: List[float]) -> List[float]:
-        """
-        Normalizes inputted member uptimes and saves it on Hive.desired_distribution attribute
-        :param List[str] member_ids: list of member ids representing the current hive membership
-        :param List[float] member_uptimes: list of member uptimes to be normalized
-        :returns List[float] desired_distribution: uptimes represent 'reliability', thus, desired distribution is the normalization of the members' uptimes
+    def new_desired_distribution(self,
+                                 member_ids: List[str],
+                                 member_uptimes: List[float]) -> List[float]:
+        """Sets a new desired distribution for the Hive instance.
+
+        Normalizes the received uptimes to create a stochastic representation
+        of the desired distribution, which can be used by the different
+        transition matrix generation strategies.
+
+        Args:
+            member_ids:
+                A list of network node identifiers currently belonging
+                to the Hive membership.
+            member_uptimes:
+                A list in which each index contains the uptime of the network
+                node with the same index in `member_ids`.
+
+        Returns:
+            A list of floats with normalized uptimes which represent the
+            'reliability' of network nodes.
         """
         uptime_sum = sum(member_uptimes)
         uptimes_normalized = \
@@ -195,8 +232,11 @@ class Hive:
         return uptimes_normalized
 
     def new_transition_matrix(self) -> pd.DataFrame:
-        """
-        returns DataFrame: Creates a new transition matrix for the members of the Hive, to be followed independently by each of them
+        """Creates a new transition matrix to be distributed among hive members.
+
+        Returns:
+            The labeled matrix that has the fastests mixing rate from all
+            the pondered strategies.
         """
         member_uptimes: List[float] = []
         member_ids: List[str] = []
@@ -215,11 +255,19 @@ class Hive:
         return pd.DataFrame(T, index=member_ids, columns=member_ids)
 
     def broadcast_transition_matrix(self, transition_matrix: pd.DataFrame) -> None:
-        """
-        Gives each member his respective slice (vector column) of the transition matrix the Hive is currently executing.
-        post-scriptum: we could make an optimization that sets a transition matrix for the hive, ignoring the file names, instead of mapping different file
-        names to an equal transition matrix within each hive member, thus reducing space overhead arbitrarly, however, this would make Simulation harder. This
-        note is kept for future reference. This also assumes an hive can store multiple files. For simplicity each Hive only manages one file for now.
+        """Slices a transition matrix and delivers them to respective network nodes.
+
+        Gives each member his respective slice (vector column) of the
+        transition matrix the Hive is currently executing.
+
+        Note:
+            An optimization could be made that configures a transition matrix
+            for the hive, independent of of file names, i.e., turn Hive
+            groups into groups persisting multiple files instead of only one,
+            thus reducing simulation spaceoverheads and in real-life
+            scenarios, decreasing the load done to metadata servers, through
+            queries and matrix calculations. For simplicity of implementation
+            each Hive only manages one file for now.
         """
         for worker in self.members.values():
             transition_vector: pd.DataFrame = transition_matrix.loc[:, worker.id]
