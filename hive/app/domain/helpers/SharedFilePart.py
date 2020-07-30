@@ -39,7 +39,7 @@ class SharedFilePart:
     def __init__(
             self, hive_id: str, name: str, number: int, data: bytes
     ) -> None:
-        """Creates an instance of SharedFilePart
+        """Creates an instance of SharedFilePart.
 
         Args:
             hive_id:
@@ -127,9 +127,11 @@ class SharedFilePart:
             return REPLICATION_LEVEL - self.references
 
         return 0
+
     # endregion
 
     # region Overrides
+
     def __str__(self):
         """Overrides default string representation of SharedFilePart instances.
 
@@ -137,12 +139,13 @@ class SharedFilePart:
             A dictionary representation of the object.
         """
         return "part_name: {},\npart_number: {},\npart_id: {},\npart_data: {},\nsha256: {}\n".format(self.name, self.number, self.id, self.data, self.sha256)
+
     # endregionss
 
     # region Helpers
 
     def decrement_and_get_references(self):
-        """Decreases by one and gets the number of file block references
+        """Decreases by one and gets the number of file block references.
 
         Returns:
             The number of file block references existing in the simulation
