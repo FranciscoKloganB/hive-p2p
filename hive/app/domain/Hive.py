@@ -546,7 +546,7 @@ class Hive:
             self.members, self.original_size - len(self.members))
 
     def set_fail(self, message: str) -> None:
-        """Ends the Hive instance simulation
+        """Ends the Hive instance simulation.
 
         Sets :py:attr:`running` to False and instructs
         :py:class:`~domain.helpers.FileData.FileData` to persist
@@ -561,10 +561,28 @@ class Hive:
         self.file.simulation_data.set_fail(self.current_epoch, message)
 
     def set_recovery_epoch(self, part: SharedFilePart) -> None:
+        """Delegates to :py:meth:`~domain.helpers.SharedFilePart.SharedFilePart.set_recovery_epoch`
+
+        Args:
+            part: A :py:class:`~domain.helpers.SharedFilePart.SharedFilePart`
+            instance that represents a file block replica that was lost.
+        """
         self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
         self._recovery_epoch_calls += 1
 
-    def validate_transition_matrix(self, transition_matrix: pd.DataFrame, target_distribution: pd.DataFrame) -> bool:
+    def _validate_transition_matrix(self,
+                                    transition_matrix: pd.DataFrame,
+                                    target_distribution: pd.DataFrame) -> bool:
+        """Verifies that a selected transition matrix is a Markov Matrix.
+
+        Verification is done by raising the matrix to the power of 4096
+        (just a large number) and checking if all column vectors are equal
+        to the :py:attr:`~desired_distribution`.
+
+        Returns:
+            True if the matrix can converge to the desired steady state,
+            otherwise False.
+        """
         t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)
         column_count = t_pow.shape[1]
         for j in range(column_count):
@@ -573,29 +591,50 @@ class Hive:
                 return False
         return True
 
-    def create_and_bcast_new_transition_matrix(self):
+    def create_and_bcast_new_transition_matrix(self) -> None:
+        """Tries to create a valid transition matrix and distributes between members of the Hive.
+
+        After creating a transition matrix it ensures that the matrix is a
+        markov matrix by invoking :py:meth:`~_validate_transition_matrix`.
+        If this validation fails three times, simulation is resumed with an
+        invalid matrix until the Hive membership is changed again for any
+        reason.
+        """
         tries = 1
         result: pd.DataFrame = pd.DataFrame()
         while tries <= 3:
             print(f"validating transition matrix... atempt: {tries}")
             result = self.new_transition_matrix()
-            if self.validate_transition_matrix(result, self.desired_distribution):
+            if self._validate_transition_matrix(result, self.desired_distribution):
                 self.broadcast_transition_matrix(result)
                 break
         self.broadcast_transition_matrix(result)  # if after 3 validations attempts no matrix was generated, use any other one.
 
-    def select_fastest_topology(self, A: np.ndarray, v_: np.ndarray) -> np.ndarray:
-        """
-        Creates three possible transition matrices and selects the one that is theoretically faster to achieve the desired distribution v_
-        :param np.ndarray A: An adjacency matrix that represents the network topology
-        :param np.ndarray v_: A desired distribution vector that defines the returned matrix steady state property.
-        :returns np.ndarray fastest_matrix: A markov transition matrix that converges to v_
+    def select_fastest_topology(
+            self, a: np.ndarray, v_: np.ndarray
+    ) -> np.ndarray:
+        """Creates multiple transition matrices and selects the fastest.
+
+        The fastest of the created transition matrices corresponds to the one
+        with a faster mixing rate.
+
+        Args:
+            a:
+                An adjacency matrix that represents the network topology.
+            v_:
+                A desired distribution vector that defines the returned
+                matrix steady state property.
+
+        Returns:
+            A transition matrix that is likely to be a markov matrix whose
+            steady state is `v_`, but is not yet validated. See
+            :py:meth:`~_validate_transition_matrix`.
         """
         results: List[Tuple[np.ndarray, float]] = [
-            tmg.new_mh_transition_matrix(A, v_),
-            tmg.new_sdp_mh_transition_matrix(A, v_),
-            tmg.new_go_transition_matrix(A, v_),
-            tmg.go_with_matlab_bmibnb_solver(A, v_, self.eng)
+            tmg.new_mh_transition_matrix(a, v_),
+            tmg.new_sdp_mh_transition_matrix(a, v_),
+            tmg.new_go_transition_matrix(a, v_),
+            tmg.go_with_matlab_bmibnb_solver(a, v_, self.eng)
         ]
         size = len(results)
         # fastest_matrix: np.ndarray = min(results, key=itemgetter(1))[0]
