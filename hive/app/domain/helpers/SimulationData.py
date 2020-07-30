@@ -94,7 +94,7 @@ class SimulationData:
 
         Args:
             epoch:
-                The simulation's current epoch.
+                The A simulation epoch index.
         """
         self.cswc += 1
         if self.cswc >= MIN_CONVERGENCE_THRESHOLD:
@@ -146,78 +146,120 @@ class SimulationData:
 
     # region Helpers
 
-    def set_delay_at_index(self, delay: int, calls: int, i: int) -> None:
-        """Sets the expected delay at epoch e
+    def set_delay_at_index(self, delay: int, calls: int, epoch: int) -> None:
+        """Logs the expected delay at epoch at an epoch.
+
         Args:
-            delay: the delay sum
-            calls: number of times a delay was generated
-            i: index poch i in SimulationData.delay list
+            delay:
+                The delay sum.
+            calls:
+                Number of times a delay was generated.
+            epoch:
+                A simulation epoch index.
         """
-        self.delay[i-1] = 0 if calls == 0 else delay / calls
+        self.delay[epoch-1] = 0 if calls == 0 else delay / calls
 
-    def set_moved_parts_at_index(self, n: int, i: int) -> None:
-        """
-        :param int n: the quantity of parts moved at epoch i
-        :param int i: index of epoch i in SimulationData.moved_parts list
-        """
-        self.moved_parts[i-1] += n
+    def set_moved_parts_at_index(self, n: int, epoch: int) -> None:
+        """Logs the amount of moved file blocks moved at an epoch.
 
-    def set_parts_at_index(self, n: int, i: int) -> None:
+        Args:
+            n:
+                Number of parts moved at epoch.
+            epoch:
+                A simulation epoch index.
         """
-        :param int n: the quantity of parts moved at epoch i
-        :param int i: index of epoch i in SimulationData.parts_in_hive list
-        """
-        self.parts_in_hive[i-1] += n
+        self.moved_parts[epoch-1] += n
 
-    def set_disconnected_workers_at_index(self, n: int, i: int) -> None:
-        """
-        :param int n: the quantity of disconnected workers at epoch i
-        :param int i: index of epoch i in SimulationData.disconnected_workers list
-        """
-        self.disconnected_workers[i-1] += n
+    def set_parts_at_index(self, n: int, epoch: int) -> None:
+        """Logs the amount of existing file blocks in the simulation environment at an epoch.
 
-    def set_lost_parts_at_index(self, n: int, i: int) -> None:
+        Args:
+            n:
+                Number of file blocks in the system.
+            epoch:
+                A simulation epoch index.
         """
-        :param int n: the quantity of lost parts at epoch i
-        :param int i: index of epoch i in SimulationData.lost_parts list
-        """
-        self.lost_parts[i-1] += n
+        self.parts_in_hive[epoch-1] += n
 
-    def set_lost_messages_at_index(self, n: int, i: int) -> None:
-        """
-        :param int n: the quantity of loss messages at epoch i
-        :param int i: index of epoch i in SimulationData.lost_messages list
-        """
-        self.lost_messages[i-1] += n
+    def set_disconnected_workers_at_index(self, n: int, epoch: int) -> None:
+        """Logs the amount of disconnected workers at an epoch.
 
-    def set_corrupt_files_at_index(self, n: int, i: int) -> None:
+        Args:
+            n:
+                Number of disconnected workers in the system.
+            epoch:
+                A simulation epoch index.
         """
-        :param int n: the quantity of corrupted parts at epoch i
-        :param int i: index of epoch i in SimulationData.corrupted_parts list
-        """
-        self.corrupted_parts[i-1] += n
+        self.disconnected_workers[epoch-1] += n
 
-    def set_fail(self, i: int, msg: str = "") -> None:
+    def set_lost_parts_at_index(self, n: int, epoch: int) -> None:
+        """Logs the amount of permanently lost file block replicas at an epoch.
+
+        Args:
+            n:
+                Number of replicas that were lost.
+            epoch:
+                A simulation epoch index.
         """
-        Records the epoch at which the Hive terminated, should only be called if it finished early.
-        Default, Hive.terminated = MAX_EPOCHS and Hive.successfull = True.
-        :param int i: epoch at which Hive terminated
-        :param str msg: a message
+        self.lost_parts[epoch-1] += n
+
+    def set_lost_messages_at_index(self, n: int, epoch: int) -> None:
+        """Logs the amount of failed message transmissions at an epoch.
+
+        Args:
+            n:
+                Number of lost messages.
+            epoch:
+                A simulation epoch index.
         """
-        self.terminated = i
+        self.lost_messages[epoch-1] += n
+
+    def set_corrupt_files_at_index(self, n: int, epoch: int) -> None:
+        """Logs the amount of corrupted file block replicas at an epoch.
+
+        Args:
+            n:
+                Number of corrupted blocks
+            epoch:
+                A simulation epoch index.
+        """
+        self.corrupted_parts[epoch-1] += n
+
+    def set_fail(self, epoch: int, message: str = "") -> None:
+        """Logs the epoch at which a simulation terminated due to a failure.
+
+        Note:
+            This method should only be called when simulation terminates due
+            to a failure such as a the loss of all replicas of a file block
+            or the simultaneous disconnection of all network nodes in the hive.
+
+        Args:
+            message:
+                optional; A log error message (default is blank)
+            epoch:
+                A simulation epoch at which termination occurred.
+        """
+        self.terminated = epoch
         self.successfull = False
-        self.messages.append(msg)
+        self.messages.append(message)
 
-    def set_membership_maintenace_at_index(self, status: str, size_before: int, size_after: int, i: int) -> None:
+    def set_membership_maintenace_at_index(self, status: str, size_before: int, size_after: int, epoch: int) -> None:
+        """Logs hive membership status and size at an epoch.
+
+        Args:
+            status:
+                A string that describes the status of the hive after
+                maintenance.
+            size_before:
+                The number of network nodes in the hive before maintenance.
+            size_after:
+                The number of network nodes in the hive after maintenance.
+            epoch:
+                A simulation epoch at which termination occurred.
         """
-        :param string status: status of the hive before maintenance
-        :param int size_before: size of the hive before maintenance
-        :param int size_after: size of the hive after maintenace
-        :param int i: index of epoch i in SimulationData.delay list
-        """
-        self.hive_status_before_maintenance[i-1] = status
-        self.hive_size_before_maintenance[i-1] = size_before
-        self.hive_size_after_maintenance[i-1] = size_after
+        self.hive_status_before_maintenance[epoch-1] = status
+        self.hive_size_before_maintenance[epoch-1] = size_before
+        self.hive_size_after_maintenance[epoch-1] = size_after
 
     # endregion
 
