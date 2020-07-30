@@ -341,7 +341,7 @@ class Hive:
         sf: SimulationData = self.file.simulation_data
         sf.set_disconnected_workers_at_index(len(offline_workers), e)
         sf.set_lost_parts_at_index(lost_parts_count, e)
-        
+
         return offline_workers
 
     def membership_maintenance(self, offline_workers: List[Worker]) -> None:
