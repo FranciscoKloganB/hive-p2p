@@ -83,17 +83,15 @@ class Hivemind:
     # region Simulation Interface
 
     def execute_simulation(self) -> None:
-        """
-        Runs a stochastic swarm guidance algorithm applied to a P2P network
-        """
+        """Runs a stochastic swarm guidance algorithm applied to a P2P network"""
         while self.epoch < MAX_EPOCHS_PLUS and self.hives:
             print("epoch: {}".format(self.epoch))
             terminated_hives: List[str] = []
             for hive in self.hives.values():
                 hive.execute_epoch(self.epoch)
-                if not hive.is_running():
+                if not hive.running:
                     terminated_hives.append(hive.id)
-                    hive.tear_down(self.origin, self.epoch)
+                    hive.file.jwrite(hive, self.origin, self.epoch)
             for hid in terminated_hives:
                 print("Hive: {} terminated at epoch {}".format(hid, self.epoch))
                 self.hives.pop(hid)

@@ -197,7 +197,7 @@ class Hive:
 
     # endregion
 
-    # region Swarm Guidance
+    # region Swarm Guidance - Data Structure Management Only
 
     def new_desired_distribution(self,
                                  member_ids: List[str],
@@ -284,15 +284,31 @@ class Hive:
 
     # noinspection DuplicatedCode
     def spread_files(
-            self, spread_mode: str, file_parts: Dict[int, SharedFilePart]
+            self, strategy: str, file_parts: Dict[int, SharedFilePart]
     ) -> None:
-        """Spreads files over the initial members of the Hive
-        :param str spread_mode: 'u' for uniform distribution, 'a' one* peer receives all or 'i' to distribute according to the desired steady state distribution
-        :param Dict[int, SharedFilePart] file_parts: file parts to distribute over the members
-        """
-        self.file.simulation_data.initial_spread = spread_mode
+        """Batch distributes files to Hive members.
 
-        if spread_mode == "a":
+        This method is used at the start of a simulation to give all file
+        blocks including the replicas to members of the hive. Different
+        distribution options can be used depending on the selected `strategy`.
+
+        Args:
+            strategy:
+                `u` - Distributed uniformly across network;
+                `a` - Give all file block replicas to N different network
+                nodes, where N is equal to :py:const:`~<globals.globals.REPLICATION_LEVEL>`;
+                `i` - Distribute all file block replicas following such
+                that the simulation starts with all file blocks and their
+                replicas distributed with a bias towards the ideal steady
+                state distribution;
+            file_parts:
+                A collection of file blocks, without replication, to be
+                distributed between the Hive members according to
+                the desired `strategy`.
+        """
+        self.file.simulation_data.initial_spread = strategy
+
+        if strategy == "a":
             choices: List[Worker] = [*self.members.values()]
             workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
             for worker in workers:
@@ -300,7 +316,7 @@ class Hive:
                     part.references += 1
                     worker.receive_part(part)
 
-        elif spread_mode == "u":
+        elif strategy == "u":
             for part in file_parts.values():
                 choices: List[Worker] = [*self.members.values()]
                 workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
@@ -308,7 +324,7 @@ class Hive:
                     part.references += 1
                     worker.receive_part(part)
 
-        elif spread_mode == 'i':
+        elif strategy == 'i':
             choices = [*self.members.values()]
             desired_distribution: List[float] = []
             for member_id in choices:
@@ -322,18 +338,29 @@ class Hive:
                     worker.receive_part(part)
 
     def execute_epoch(self, epoch: int) -> None:
+        """Orders all network node members to execute their epoch
+
+        Note:
+            If the Hive terminates early, i.e., if it terminates before
+            reaching :py:code:`~globals.globals.MAX_EPOCHS`, no logging
+            should be done in :py:class:`~domain.helpers.SimulationData.SimulationData`
+            the received `epoch` to avoid skewing previously collected results.
+
+        Args:
+            epoch:
+                The epoch the Hive should currently be in, according to it's
+                managing Hivemind.
+
+        Returns:
+            False if Hive failed to persist the file it was responsible for,
+            otherwise True.
         """
-        Orders all members to execute their epoch, i.e., perform stochastic swarm guidance for every file they hold
-        If the Hive terminates early, the epoch's data is not added to FileData.SimulationData to avoid skewing previous results, when epoch causes failure early
-        :param int epoch: simulation's current epoch
-        :returns bool: false if Hive disconnected to persist the file it was responsible for, otherwise true is returned.
-        """
-        self.setup_epoch(epoch)
+        self._setup_epoch(epoch)
 
         try:
-            offline_workers: List[Worker] = self.workers_execute_epoch()
+            offline_workers: List[Worker] = self._workers_execute_epoch()
             self.evaluate_hive_convergence()
-            self.membership_maintenance(offline_workers)
+            self._membership_maintenance(offline_workers)
             if epoch == MAX_EPOCHS:
                 self.running = False
         except Exception as e:
@@ -343,13 +370,13 @@ class Hive:
                                                      self._recovery_epoch_calls,
                                                      self.current_epoch)
 
-    def is_running(self) -> bool:
-        return self.running
+    def evaluate_hive_convergence(self) -> None:
+        """Verifies file block distribution and hive health status.
 
-    def evaluate_hive_convergence(self):
-        """
-        Updates this epoch's distribution vector and compares it to the desired distribution vector to see if file distribution between members is near ideal
-        and records epoch data accordingly.
+        This method is invoked by every Hive instance at every epoch time.
+        Among other things it compares the current file block distribution
+        to the desired distribution, evicts and recruits new network nodes
+        for the Hive and, performs logging invocations.
         """
         if not self.members:
             self.set_fail("hive has no remaining members")
@@ -414,19 +441,36 @@ class Hive:
         min_value = self.desired_distribution[DEFAULT_COL].min()
         return np.ceil(np.abs(max_value - min_value)) * self.file.parts_in_hive
 
-    def setup_epoch(self, epoch: int) -> None:
+    def _setup_epoch(self, epoch: int) -> None:
+        """Initializes some attributes of the Hive during its initialization.
+
+        The helper method is used to isolate the initialization of some
+        simulation related attributes for eaasier comprehension.
+
+        Args:
+            epoch:
+                The simulation's current epoch.
+        """
         self.current_epoch = epoch
         self.corruption_chances[0] = np.log10(epoch).item() / 300.0
         self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
 
-    def workers_execute_epoch(self, lost_parts_count: int = 0) -> List[Worker]:
+    def _workers_execute_epoch(self) -> List[Worker]:
+        """Queries all network node members execute the epoch.
+
+        This method logs the amount of lost parts throughout the current
+        epoch according to the members who went offline and the file blocks
+        they posssed and is responsible for setting up a recovery epoch those
+        lost replicas (:py:meth:`domain.Hive.Hive.set_recovery_epoch`).
+        Similarly it logs the number of members who disconnected.
+
+        Returns:
+             A collection of members who disconnected during the current
+             epoch. See :py:meth:`~domain.Worker.Worker.get_epoch_status`.
         """
-        Orders all members of the hive to execute their epoch and updates some fields within SimulationData output file accordingly
-        :param int lost_parts_count: zero
-        :returns List[Worker] offline_workers: a populated list of offline workers.
-        """
+        lost_parts_count: int = 0
         offline_workers: List[Worker] = []
         for worker in self.members.values():
             if worker.get_epoch_status() == Status.ONLINE:
@@ -439,6 +483,7 @@ class Hive:
                     self.set_recovery_epoch(part)
                     if part.decrement_and_get_references() == 0:
                         self.set_fail("lost all replicas of file part with id: {}".format(part.id))
+
         if len(offline_workers) >= len(self.members):
             self.set_fail("all hive members disconnected simultaneously")
 
@@ -449,10 +494,15 @@ class Hive:
 
         return offline_workers
 
-    def membership_maintenance(self, offline_workers: List[Worker]) -> None:
-        """
-        Used to ensure hive stability and proper swarm guidance behavior. No maintenance is needed if there are no disconnected workers in the inputed list.
-        :param List[Worker] offline_workers: collection of members who disconnected during this epoch
+    def _membership_maintenance(self, offline_workers: List[Worker]) -> None:
+        """Evicts disconnected workers from the Hive and attempts to recruit new ones.
+
+        It implicitly creates a new `transition matrix` and `desired_distribution`.
+
+        Args:
+            offline_workers:
+                The collection of members who disconnected during the
+                current epoch.
         """
         # remove all disconnected workers from the hive
         for member in offline_workers:
@@ -468,13 +518,13 @@ class Hive:
             status_before_recovery = "stable"
         elif self.sufficient_size <= damaged_hive_size < self.original_size:
             status_before_recovery = "sufficient"
-            self.members.update(self.__get_new_members())
+            self.members.update(self.__get_new_members__())
         elif self.critical_size < damaged_hive_size < self.sufficient_size:
             status_before_recovery = "unstable"
-            self.members.update(self.__get_new_members())
+            self.members.update(self.__get_new_members__())
         elif 0 < damaged_hive_size <= self.critical_size:
             status_before_recovery = "critical"
-            self.members.update(self.__get_new_members())
+            self.members.update(self.__get_new_members__())
             self.add_cloud_reference()
         else:
             status_before_recovery = "dead"
@@ -485,16 +535,30 @@ class Hive:
 
         self.file.simulation_data.set_membership_maintenace_at_index(status_before_recovery, damaged_hive_size, healed_hive_size, self.current_epoch)
 
-    def __get_new_members(self) -> Dict[str, Worker]:
-        return self.hivemind.find_replacement_worker(self.members, self.original_size - len(self.members))
+    def __get_new_members__(self) -> Dict[str, Worker]:
+        """Helper method that gets adds network nodes, if possible, to the Hive.
 
-    def set_fail(self, msg: str) -> None:
+        Returns:
+            A dictionary mapping network node identifiers and their instance
+            objects (:py:class:`~domain.Worker.Worker`).
+        """
+        return self.hivemind.find_replacement_worker(
+            self.members, self.original_size - len(self.members))
+
+    def set_fail(self, message: str) -> None:
+        """Ends the Hive instance simulation
+
+        Sets :py:attr:`running` to False and instructs
+        :py:class:`~domain.helpers.FileData.FileData` to persist
+        :py:class:`~domain.helpers.SimulationData.SimulationData` to disk and
+        close its IO stream (py:attr:`~domain.helpers.FileData.out_file`).
+
+        Args:
+            message:
+                A short explanation of why the Hive suffered early termination.
+        """
         self.running = False
-        self.file.simulation_data.set_fail(self.current_epoch, msg)
-
-    def tear_down(self, origin: str, epoch: int) -> None:
-        # self.hivemind.append_epoch_results(self.id, self.file.simulation_data.__repr__()) TODO: future-iterations where Hivemind has multiple hives
-        self.file.jwrite(self, origin, epoch)
+        self.file.simulation_data.set_fail(self.current_epoch, message)
 
     def set_recovery_epoch(self, part: SharedFilePart) -> None:
         self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
