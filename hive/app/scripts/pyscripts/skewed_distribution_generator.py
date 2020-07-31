@@ -31,10 +31,15 @@ def generate_skewed_samples(
 
     :return np.array samples: drawn from skewed normal distribution
     """
-    results = skewnorm.rvs(a=skewness, size=sample_count)  # Skew norm function
-    results = results - min(results)  # Shift the set so the minimum value is equal to zero
-    results = results / max(results)  # Normalize all the values to be between 0 and 1.
-    results = results * 100.0         # Multiply the standardized values by the maximum value.
+    # Skew norm function
+    results = skewnorm.rvs(a=skewness, size=sample_count)
+    # Shift the set so the minimum value is equal to zero
+    results = results - min(results)
+    # Normalize all the values to be between 0 and 1.
+    results = results / max(results)
+    # Multiply the standardized values by the maximum value.
+    results = results * 100.0
+
     return results
 
 
@@ -80,7 +85,9 @@ def generate_skewed_samples_extended(bin_count: int = 7001,
         total_probability += bin_probability[i]
 
     if total_probability != 1.0:
-        logging.warning("probability_compensation: " + str(1.0 - total_probability))
+        compensation = str(1.0 - total_probability)
+        logging.warning(f"Bin probability is missing to be equal to one: "
+                        f"{compensation}.")
 
     return results, bin_probability
 
@@ -109,7 +116,9 @@ def plot_uptime_distribution(
 
 
 if __name__ == "__main__":
-    samples: np.array = generate_skewed_samples(skewness=float(input("input skewness: ")))
+    samples: np.array = generate_skewed_samples(
+        skewness=float(input("input skewness: ")))
+
     plt.hist(samples, 'auto', density=True)
     plt.title("Peer Uptime Distribution")
     plt.xlabel("Time Spent Online")
