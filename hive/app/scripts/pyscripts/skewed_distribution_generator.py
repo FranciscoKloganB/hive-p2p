@@ -28,8 +28,6 @@ def generate_skewed_samples(
 
     Returns:
         The sampled bins.
-
-    :return np.array samples: drawn from skewed normal distribution
     """
     # Skew norm function
     results = skewnorm.rvs(a=skewness, size=sample_count)
@@ -66,6 +64,7 @@ def generate_skewed_samples_extended(bin_count: int = 7001,
             optional; Where peak density will be found. Negative values make
              the plot left skewed, positive values make it right skewed (
              default is -90.0).
+
     Returns:
         The sampled bins and respective frequencies.
     """
@@ -99,8 +98,8 @@ def plot_uptime_distribution(
     Args:
         bin_count:
             optional; The number of bins the plot should have (default is
-            'auto'), i.e., matplotlib.pyplot module chooses what it thinks
-            is adequate bin count.
+            'auto'), i.e., matplotlib.pyplot module's functions chooses
+            a probably adequate bin count.
         skewness:
              optional; Where peak density will be found. Negative values make
              the plot left skewed, positive values make it right skewed (

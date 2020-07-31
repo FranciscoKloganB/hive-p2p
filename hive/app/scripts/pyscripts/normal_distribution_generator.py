@@ -6,17 +6,32 @@ import matplotlib.pyplot as plt
 from typing import Tuple, Union
 
 
-def generate_samples(surveys: int = 10, sample_count: int = 10000, mean: float = 34, std: float = 30) -> np.array:
-    """
-    Generates samples from a skewed normal distribution.
+def generate_samples(surveys: int = 10,
+                     sample_count: int = 10000,
+                     mean: float = 34,
+                     std: float = 30
+                     ) -> np.array:
+    """Generates samples from a skewed normal distribution.
+
     Note:
-     If you use this sample generation, simply select pick up the elements and assign them to a label in sequence.
-     In this case sample_count is just the number of samples I wish to take. See difference w.r.t extended version
-    :param int surveys: the number of studies performed
-    :param int sample_count: the number of answers in each study
-    :param float mean: where the mean of the distribution is
-    :param float std: standard deviation
-    :return np.array samples: drawn from skewed normal distribution
+        If you use this sample generation, simply select pick up the elements
+        and assign them to a label in sequence. In this case sample_count is
+        just the number of samples I wish to take. See also
+        :py:func:`~generate_samples_extended`.
+
+    Args:
+        surveys:
+            optional; The number of studies to be performed (default is 10).
+        sample_count:
+            optional; The number of answers in each study. (default is 10000).
+        mean:
+             optional; Where peak density will be found (default is 34.0).
+        std:
+            optional; The standard deviation for the plotted normal
+            distribution (default is 30.0).
+
+    Returns:
+        The sampled bins.
     """
     results = np.zeros((sample_count, surveys))
     for i in range(results.shape[0]):
@@ -25,18 +40,27 @@ def generate_samples(surveys: int = 10, sample_count: int = 10000, mean: float =
     return results
 
 
-def generate_samples_extended(bin_count: int = 7001, sample_count: int = 7001) -> Tuple[np.array, np.array]:
-    """
-    Generates samples from a skewed normal distribution.
-     surveys at 7001 represents all values between [30.00, 100.00] with 0.01 step
-     surveys at 800001 would represents all values between [20.0000, 100.000] with 0.0001 step, and so on...
-     To let matplotlib.skewnorm module define an automatic number of bins use surveys='auto'
-     Keeping bins_count = sample_count is just an hack to facilitate np.random.choice(bins_count, sample_count)
-     Because we are using bin_counts here, it is advised not to draw to many samples, as the function will be
-     exponentially slower
-    :param int bin_count: the number of bins to be created in the matplotlib.pyplot.hist.bins
-    :param int sample_count: the number of skewed samples to be drawn
-    :returns Tuple[np.array, np.array] samples, bin_probability: sample and respective probability of occurring
+def generate_samples_extended(bin_count: int = 7001,
+                              sample_count: int = 7001
+                              ) -> Tuple[np.array, np.array]:
+    """Generates samples from a normal distribution.
+
+    Notes:
+        A `bin_count` of 7001 represents all values between [30.00, 100.00]
+        with 0.01 step, whereas a `bin_count` of 800001 would represents all
+        values between [20.0000, 100.000] with 0.0001 step. To let
+        matplotlib.skewnorm module define an automatic number of bins use
+        bin_count='auto'.
+
+    Args:
+        bin_count:
+            optional; (default is 7001).
+        sample_count:
+            optional; The number of skewed results to be drawn. (default is
+            10000).
+
+    Returns:
+        The sampled bins and respective frequencies.
     """
     results: np.array = generate_samples(sample_count)
     bin_density, bins, patches = plt.hist(results, bins=bin_count, density=True)
@@ -59,7 +83,22 @@ def generate_samples_extended(bin_count: int = 7001, sample_count: int = 7001) -
     return results, bin_probability
 
 
-def plot_uptime_distribution(bin_count: Union[int, str] = 'auto', mean: float = 34.0, std: float = 33.0) -> None:
+def plot_uptime_distribution(bin_count: Union[int, str] = 'auto',
+                             mean: float = 34.0,
+                             std: float = 30.0) -> None:
+    """Creates and draws a plot of the generated distribution
+
+    Args:
+        bin_count:
+            optional; The number of bins the plot should have (default is
+            'auto'), i.e., matplotlib.pyplot module's functions chooses
+            a probably adequate bin count.
+        mean:
+             optional; Where peak density will be found (default is 34.0).
+        std:
+            optional; The standard deviation for the plotted normal
+            distribution (default is 30.0).
+    """
     results: np.array = generate_samples(mean=mean, std=std)
     plt.hist(results, bin_count, density=True)
     plt.title("Peer Uptime Distribution")
