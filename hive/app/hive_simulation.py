@@ -17,7 +17,6 @@
 import getopt
 import os
 import sys
-from typing import List
 
 import domain.Hivemind as hm
 from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
