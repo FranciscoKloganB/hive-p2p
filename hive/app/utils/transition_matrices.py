@@ -1,9 +1,9 @@
+from typing import Tuple, Union, Any, Optional
+
+import cvxpy as cvx
 import matlab
 import matlab.engine as me
-import cvxpy as cvx
 import numpy as np
-
-from typing import Tuple, Union, Any, Optional
 
 from domain.exceptions.DistributionShapeError import DistributionShapeError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError

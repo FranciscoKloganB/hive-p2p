@@ -1,22 +1,23 @@
 from __future__ import annotations
 
-import os
 import math
+import os
 import uuid
+from typing import Dict, List, Any, Tuple
 
 import numpy as np
 import pandas as pd
+
 import domain.Hivemind as hm
 import utils.matrices as matrices
 import utils.transition_matrices as tmg
-
 from domain.Worker import Worker
-from typing import Dict, List, Any, Tuple, Optional
-from domain.helpers.FileData import FileData
 from domain.helpers.Enums import Status, HttpCodes
+from domain.helpers.FileData import FileData
 from domain.helpers.SharedFilePart import SharedFilePart
 from domain.helpers.SimulationData import SimulationData
-from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, COMMUNICATION_CHANCES, MAX_EPOCHS
+from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, \
+    COMMUNICATION_CHANCES, MAX_EPOCHS
 
 MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'app', 'scripts', 'matlabscripts')))
 

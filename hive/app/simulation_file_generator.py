@@ -1,17 +1,18 @@
+import copy
+import getopt
+import itertools
+import json
+import logging
 import os
 import sys
-import copy
-import json
-import getopt
-import logging
-import itertools
+from pathlib import Path
+from typing import List, Dict, Any
 
 import numpy as np
 
-from pathlib import Path
-from typing import List, Dict, Any
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT
-from scripts.pyscripts import skewed_distribution_generator as sg, normal_distribution_generator as ng, label_generator as cg
+from scripts.pyscripts import normal_distribution_generator as ng, \
+    label_generator as cg
 
 
 # region Input Consumption and Verification

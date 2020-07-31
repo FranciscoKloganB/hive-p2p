@@ -1,7 +1,8 @@
 import random
+from typing import List
+
 import numpy as np
 
-from typing import List
 from utils.randoms import random_index
 
 

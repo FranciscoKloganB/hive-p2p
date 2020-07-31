@@ -1,7 +1,8 @@
 import sys
-import numpy as np
-import utils.transition_matrices as mH
 
+import numpy as np
+
+import utils.transition_matrices as mH
 from utils.printers import print_test, print_pow
 
 

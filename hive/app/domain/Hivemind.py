@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-import os
 import json
+import os
+from typing import List, Union, Dict, Any
+
 import numpy as np
 
 from domain.Hive import Hive
-from domain.helpers.Enums import Status
 from domain.Worker import Worker
-from typing import List, Union, Dict, Any
+from domain.helpers.Enums import Status
 from domain.helpers.SharedFilePart import SharedFilePart
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, MAX_EPOCHS_PLUS
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
+    MAX_EPOCHS_PLUS
 
 
 class Hivemind:
