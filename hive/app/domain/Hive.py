@@ -507,6 +507,7 @@ class Hive:
         # remove all disconnected workers from the hive
         for member in offline_workers:
             self.members.pop(member.id, None)
+            member.remove_file_routing(self.file.name)
 
         damaged_hive_size = len(self.members)
         if damaged_hive_size >= self.sufficient_size:
