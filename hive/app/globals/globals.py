@@ -65,22 +65,22 @@ MIN_DETECTION_DELAY: int = 1
 MAX_DETECTION_DELAY: int = 4
 REPLICATION_LEVEL: int = 3
 MIN_CONVERGENCE_THRESHOLD: int = 2
-LOSS_CHANCE: float = 0.04  # Each sent file as a 4% chance of timing out due to message being lost in travel
-
+LOSS_CHANCE: float = 0.04
 
 # endregion
 
-# region Integer Constants - DO NOT ALTER THESE
-
-TRUE_FALSE = [True, False]
-DEFAULT_COL: int = 0
-MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
-DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
-COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
+# region DO NOT ALTER THESE
 
 # path constants
 SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
+
+# Others
+TRUE_FALSE = [True, False]
+DEFAULT_COL: int = 0
+MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
+DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
+COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 
 # endregion
