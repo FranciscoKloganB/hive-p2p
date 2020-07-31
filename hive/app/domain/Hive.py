@@ -439,6 +439,8 @@ class Hive:
         """
         max_value = self.desired_distribution[DEFAULT_COL].max()
         min_value = self.desired_distribution[DEFAULT_COL].min()
+        # print(f"max:{max_value} - min:{min_value} = {max_value - min_value}")
+        # print(f"parts in hive = {self.file.parts_in_hive}")
         return np.ceil(np.abs(max_value - min_value)) * self.file.parts_in_hive
 
     def _setup_epoch(self, epoch: int) -> None:
