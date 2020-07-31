@@ -3,7 +3,7 @@ import string
 
 
 def yield_label() -> str:
-    """Used to generate an arbrirary number of unique labels.
+    """Used to generate an arbrirary numbers of unique labels.
     Yields:
         The next string label in the sequence.
 
