@@ -10,8 +10,14 @@
 
     Notes:
         For the simulation to run without errors you must ensurue that::
+            1. The specified simulation file exists in
+            :py:const:`~globals.globals.SIMULATION_ROOT`.
 
-            1. You have a specified simulation
+            2. Any file used by the simulation, e.g., a picture or a .pptx
+            document is accessible in :py:const:`~globals.globals.SHARED_ROOT`.
+
+            3. An output file directory exists with default path being:
+            :py:const:`~globals.globals.OUTFILE_ROOT`.
 """
 
 import getopt
