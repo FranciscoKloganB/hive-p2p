@@ -1,10 +1,11 @@
 import os
+from typing import List, Tuple, Optional
+
+import cvxpy as cvx
 import matlab as m
 import matlab.engine as me
-import cvxpy as cvx
 import numpy as np
 
-from typing import List, Tuple, Optional
 
 # region Functions Under Testing
 

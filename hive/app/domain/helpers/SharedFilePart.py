@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from random import randint
+
+from globals.globals import REPLICATION_LEVEL, MIN_DETECTION_DELAY, \
+    MAX_DETECTION_DELAY
 from utils import convertions, crypto
-from globals.globals import REPLICATION_LEVEL, MIN_DETECTION_DELAY, MAX_DETECTION_DELAY
 
 
 class SharedFilePart:

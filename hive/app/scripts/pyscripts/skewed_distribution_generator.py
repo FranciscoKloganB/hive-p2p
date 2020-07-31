@@ -1,9 +1,8 @@
 import logging
-
-import numpy as np
-import matplotlib.pyplot as plt
-
 from typing import Tuple, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
 from scipy.stats import skewnorm
 
 

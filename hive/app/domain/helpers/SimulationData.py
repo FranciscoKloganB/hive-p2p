@@ -1,6 +1,7 @@
 from typing import List, Any
 
-from globals.globals import MIN_CONVERGENCE_THRESHOLD, MAX_EPOCHS, MAX_EPOCHS_PLUS
+from globals.globals import MIN_CONVERGENCE_THRESHOLD, MAX_EPOCHS, \
+    MAX_EPOCHS_PLUS
 
 
 class SimulationData:

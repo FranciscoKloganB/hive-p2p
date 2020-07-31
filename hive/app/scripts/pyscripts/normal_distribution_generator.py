@@ -1,9 +1,8 @@
 import logging
-
-import numpy as np
-import matplotlib.pyplot as plt
-
 from typing import Tuple, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def generate_samples(surveys: int = 10,
