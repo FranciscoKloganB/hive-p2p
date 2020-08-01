@@ -1,4 +1,5 @@
-import os.path
+from __future__ import annotations
+
 import matlab.engine
 
 from globals.globals import MATLAB_DIR
@@ -19,10 +20,10 @@ class MatlabEngineContainer:
             the multithreaded mode to speed up simulations.
     """
 
-    __instance = None
+    __instance: MatlabEngineContainer = None
 
     @staticmethod
-    def getInstance():
+    def getInstance() -> MatlabEngineContainer:
         """Used to obtain a singleton instance of :py:class:`MatlabEngineContainer`
 
         If one instance already exists that instance is returned,
