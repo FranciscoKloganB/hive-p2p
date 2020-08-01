@@ -34,6 +34,7 @@ import os
 import sys
 
 import domain.Hivemind as hm
+from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
 from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
 
 err_message = ("Invalid arguments. You must specify -f or -d options, e.g.:\n"
@@ -117,6 +118,8 @@ def main(multithread: bool, sdir: bool, sname: str, iters: int) -> None:
         iters:
             The number of times the same simulation file should be executed.
     """
+    MatlabEngineContainer.getInstance()
+
     if multithread:
         multi_threaded_main(sdir, sname, iters)
     else:
