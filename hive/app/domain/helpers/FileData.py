@@ -87,26 +87,27 @@ class FileData:
                 output file.
 
         """
-        sim_data: SimulationData = self.simulation_data
-        if not sim_data.messages:
-            sim_data.messages.append("completed simulation successfully")
-        if DEBUG:
-            [print("* {};".format(reason)) for reason in sim_data.messages]
+        sd: SimulationData = self.simulation_data
 
-        sim_data.parts_in_hive = sim_data.parts_in_hive[:epoch]
+        sd.save_sets_and_reset()
 
-        sim_data.disconnected_workers = sim_data.disconnected_workers[:epoch]
-        sim_data.lost_parts = sim_data.lost_parts[:epoch]
+        if not sd.messages:
+            sd.messages.append("completed simulation successfully")
 
-        sim_data.hive_status_before_maintenance = sim_data.hive_status_before_maintenance[:epoch]
-        sim_data.hive_size_before_maintenance = sim_data.hive_size_before_maintenance[:epoch]
-        sim_data.hive_size_after_maintenance = sim_data.hive_size_after_maintenance[:epoch]
+        sd.parts_in_hive = sd.parts_in_hive[:epoch]
 
-        sim_data.delay = sim_data.delay[:epoch]
+        sd.disconnected_workers = sd.disconnected_workers[:epoch]
+        sd.lost_parts = sd.lost_parts[:epoch]
 
-        sim_data.moved_parts = sim_data.moved_parts[:epoch]
-        sim_data.corrupted_parts = sim_data.corrupted_parts[:epoch]
-        sim_data.lost_messages = sim_data.lost_messages[:epoch]
+        sd.hive_status_before_maintenance = sd.hive_status_before_maintenance[:epoch]
+        sd.hive_size_before_maintenance = sd.hive_size_before_maintenance[:epoch]
+        sd.hive_size_after_maintenance = sd.hive_size_after_maintenance[:epoch]
+
+        sd.delay = sd.delay[:epoch]
+
+        sd.moved_parts = sd.moved_parts[:epoch]
+        sd.corrupted_parts = sd.corrupted_parts[:epoch]
+        sd.lost_messages = sd.lost_messages[:epoch]
 
         extras: Dict[str, Any] = {
             "simfile_name": origin,
@@ -126,9 +127,11 @@ class FileData:
             "corruption_chance_tod": hive.corruption_chances[0]
         }
 
-        sim_data_dict = sim_data.__dict__
+        sim_data_dict = sd.__dict__
         sim_data_dict.update(extras)
-        json_string = json.dumps(sim_data_dict, indent=4, sort_keys=True, ensure_ascii=False)
+        json_string = json.dumps(
+            sim_data_dict, indent=4, sort_keys=True, ensure_ascii=False)
+
         self.fwrite(json_string)
 
     def fclose(self, msg: str = None) -> None:
