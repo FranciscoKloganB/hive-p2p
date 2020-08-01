@@ -23,7 +23,7 @@ class MatlabEngineContainer:
             the multithreaded mode to speed up simulations.
     """
 
-    __lock = threading.Lock()
+    __lock = threading.RLock()
     __instance: MatlabEngineContainer = None
 
     @staticmethod
@@ -83,5 +83,4 @@ class MatlabEngineContainer:
         with MatlabEngineContainer.__lock:
             ma = matlab.double(a.tolist())
             mv_ = matlab.double(v_.tolist())
-            matlab_result = self.eng.matrixGlobalOpt(ma, mv_, nargout=1)
-        return matlab_result
+            return self.eng.matrixGlobalOpt(ma, mv_, nargout=1)
