@@ -106,14 +106,13 @@ class SimulationData:
         :py:attr:`~convergence_sets` when :py:attr:`~convergence_set`
         is not an empty list.
         """
-        self.cswc = 0
-        if len(self.convergence_set) > 0:
-            # check if current convergence set is the biggest so far
-            set_len = len(self.convergence_set)
-            if set_len > self.largest_convergence_window:
-                self.largest_convergence_window = set_len
+        set_len = len(self.convergence_set)
+        if set_len > 0:
             self.convergence_sets.append(self.convergence_set)
             self.convergence_set = []
+            if set_len > self.largest_convergence_window:
+                self.largest_convergence_window = set_len
+        self.cswc = 0
 
     def _recursive_len(self, item: Any) -> int:
         """Recusively sums the length of all lists in :py:attr:`~convergence_sets`.
