@@ -28,10 +28,10 @@
             3. An output file simdirectory exists with default path being:
             :py:const:`~globals.globals.OUTFILE_ROOT`.
 """
-
 import getopt
 import os
 import sys
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import domain.Hivemind as hm
 from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
@@ -76,15 +76,16 @@ def __execute_simulation(sname: str, sid: int) -> None:
 
 
 def multi_threaded_main(sdir: bool, sname: str, iters: int) -> None:
-    if sdir:
-        snames = os.listdir(SIMULATION_ROOT)
-        for sn in snames:
+    with ThreadPoolExecutor(max_workers=30) as executor:
+        if sdir:
+            snames = os.listdir(SIMULATION_ROOT)
+            for sn in snames:
+                for i in range(iters):
+                    executor.map(__execute_simulation, sn, i)
+        else:
+            __can_exec_simfile(sname)
             for i in range(iters):
-                __execute_simulation(sn, i)
-    else:
-        __can_exec_simfile(sname)
-        for i in range(iters):
-            __execute_simulation(sname, i)
+                executor.map(__execute_simulation, sname, i)
 
 
 def single_threaded_main(sdir, sname, iters):
