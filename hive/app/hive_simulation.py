@@ -1,8 +1,17 @@
-"""This functionality offered by this module is used to start simulations.
+"""The functionality offered by this module is used to start simulations.
 
-    You can start simulations by executing the following command::
+    You can start a simulation by executing the following command::
 
-        $ python hive_simulation.py --file=filename.json --iters=30
+        $ python hive_simulation.py --file=a_simulation_file_name.json --iters=30
+
+    You can also execute all simulation file that exist in
+    :py:const:`~globals.globals.SIMULATION_ROOT` by instead executing:
+
+        $ python hive_simulation.py -d --iters=24
+
+    If you wish to execute multiple simulations in parallel (to save time) you
+    can use the -t or --threading flag in either of the previously specified
+    commands.
 
     If you don't have a simulation file yet, run the following instead::
 
@@ -10,7 +19,7 @@
 
     Notes:
         For the simulation to run without errors you must ensurue that::
-            1. The specified simulation file exists in
+            1. The specified simulation files exist in
             :py:const:`~globals.globals.SIMULATION_ROOT`.
 
             2. Any file used by the simulation, e.g., a picture or a .pptx
