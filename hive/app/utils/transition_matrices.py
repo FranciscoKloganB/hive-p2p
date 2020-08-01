@@ -152,8 +152,8 @@ def go_with_matlab_bmibnb_solver(
     """
     a = matlab.double(a.tolist())
     v = matlab.double(v_.tolist())
-    engine = MatlabEngineContainer.getInstance()
-    result = engine.matrixGlobalOpt(a, v, nargout=1)
+    matlab_container = MatlabEngineContainer.getInstance()
+    result = matlab_container.eng.matrixGlobalOpt(a, v, nargout=1)
     if result:
         t = np.array(result._data).reshape(result.size, order='F').T
         return t, get_markov_matrix_fast_mixing_rate(t)
