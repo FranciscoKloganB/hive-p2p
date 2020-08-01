@@ -1,3 +1,10 @@
+"""This module is used by :py:class:`~domain.Hive.Hive to create transition matrices for the simulation.
+
+You should implement your own metropolis-hastings or alternative algorithms
+as well as any steady-state or transition matrix optimization algorithms in
+this module.
+"""
+
 from typing import Tuple, Union, Any, Optional
 
 import cvxpy as cvx
