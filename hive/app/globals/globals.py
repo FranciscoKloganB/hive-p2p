@@ -59,7 +59,7 @@ DEBUG: bool = False
 # region Simulation Settings
 
 READ_SIZE: int = 131072
-MAX_EPOCHS = 20
+MAX_EPOCHS = 360
 
 MIN_DETECTION_DELAY: int = 1
 MAX_DETECTION_DELAY: int = 4
