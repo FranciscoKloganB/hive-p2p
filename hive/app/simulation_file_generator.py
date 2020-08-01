@@ -3,7 +3,7 @@
     You can create a simulation file by following the instructions that
     appear in your terminal when running the following command::
 
-        $ python simulation_file_generator.py --simfile=filename.json
+        $ python simulation_file_generator.py --file=filename.json
 
     Notes:
         Simulation files are placed in:
@@ -302,12 +302,12 @@ if __name__ == "__main__":
 
     try:
         options, args = getopt.getopt(
-            sys.argv[1:], "ps:", ["plotuptimedistr", "simfile="])
+            sys.argv[1:], "pf:", ["plotuptimedistr", "file="])
 
         for options, args in options:
             if options in ("-p", "--plotuptimedistr"):
                 ng.plot_uptime_distribution()
-            if options in ("-s", "--simfile"):
+            if options in ("-f", "--file"):
                 simfile_name_ = str(args).strip()
                 if simfile_name_:
                     main(simfile_name_)
@@ -316,6 +316,6 @@ if __name__ == "__main__":
 
     except getopt.GetoptError:
         print("Usage: python simulation_file_generator.py "
-              "--simfile=filename.json")
+              "--file=filename.json")
 
 # endregion
