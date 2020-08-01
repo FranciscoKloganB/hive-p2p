@@ -42,7 +42,7 @@ err_message = ("Invalid arguments. You must specify -f or -d options, e.g.:\n"
                "    $ python hive_simulation.py -d")
 
 
-# region Module Private Functions
+# region Module private functions (helpers)
 def __makedirs() -> None:
     """Creates required simulation working directories if they do not exist."""
     if not os.path.exists(SHARED_ROOT):
@@ -72,11 +72,10 @@ def __execute_simulation(sname: str, sid: int) -> None:
             A sequence number that identifies the simulation execution instance.
     """
     hm.Hivemind(sname, sid).execute_simulation()
-# endregion
 
 
-def multi_threaded_main(sdir: bool, sname: str, iters: int) -> None:
-    with ThreadPoolExecutor(max_workers=30) as executor:
+def __multi_threaded_main(sdir: bool, sname: str, iters: int) -> None:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         if sdir:
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
@@ -88,7 +87,7 @@ def multi_threaded_main(sdir: bool, sname: str, iters: int) -> None:
                 executor.map(__execute_simulation, sname, i)
 
 
-def single_threaded_main(sdir, sname, iters):
+def __single_threaded_main(sdir, sname, iters):
     if sdir:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
@@ -98,6 +97,7 @@ def single_threaded_main(sdir, sname, iters):
         __can_exec_simfile(sname)
         for i in range(iters):
             __execute_simulation(sname, i)
+# endregion
 
 
 def main(multithread: bool, sdir: bool, sname: str, iters: int) -> None:
@@ -122,9 +122,9 @@ def main(multithread: bool, sdir: bool, sname: str, iters: int) -> None:
     MatlabEngineContainer.get_instance()
 
     if multithread:
-        multi_threaded_main(sdir, sname, iters)
+        __multi_threaded_main(sdir, sname, iters)
     else:
-        single_threaded_main(sdir, sname, iters)
+        __single_threaded_main(sdir, sname, iters)
 
 
 if __name__ == "__main__":
