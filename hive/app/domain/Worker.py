@@ -130,8 +130,8 @@ class Worker:
                 Id of the shared file whose routing information is being
                 removed from routing_table.
         """
-        self.routing_table.pop(fid)
-        self.files.pop(fid)
+        self.routing_table.pop(fid, None)
+        self.files.pop(fid, None)
 
     # endregion
 
