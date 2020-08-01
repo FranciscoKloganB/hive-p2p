@@ -107,11 +107,11 @@ class Hive:
                 optional; The name of the simulation file name that started
                 the simulation process.
         """
-        from matlab import engine as mleng
-        print("Loading MatLab engine; This may take a few seconds...")
-        self.eng = mleng.start_matlab()
-        self.eng.cd(MATLAB_DIR)
-        print("MatLab engine initiated. Resuming simulation...;")
+        # from matlab import engine as me
+        # print("Loading MatLab engine; This may take a few seconds...")
+        # self.eng = me.start_matlab()
+        # self.eng.cd(MATLAB_DIR)
+        # print("MatLab engine initiated. Resuming simulation...;")
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
         self.cv_: pd.DataFrame = pd.DataFrame()
