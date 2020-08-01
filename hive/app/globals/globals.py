@@ -13,7 +13,7 @@ Note:
     file using :py:mod:`simulation_file_generator` and follow its
     instructions. To run that modules functionality use::
 
-        $ python simulation_file_generator.py --simfile=filename.json
+        $ python simulation_file_generator.py --file=filename.json
 
     It is also strongly recommended that the user does not alter any
     undocumented attributes or module variables unless they are absolutely
