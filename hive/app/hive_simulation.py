@@ -36,9 +36,9 @@ import sys
 import domain.Hivemind as hm
 from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
 
-err_message = ("Invalid arguments. You must specify -f or -d running options\n",
-               "$ python hive_simulation.py -f simfilename.json\nor\n",
-               "$ python hive_simulation.py -d")
+err_message = ("Invalid arguments. You must specify -f or -d options, e.g.:\n"
+               "    $ python hive_simulation.py -f simfilename.json\n"
+               "    $ python hive_simulation.py -d")
 
 
 # region Module Private Functions
