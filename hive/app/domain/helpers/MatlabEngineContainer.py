@@ -80,6 +80,8 @@ class MatlabEngineContainer:
             Markov Matrix with `v_` as steady state distribution and the
             respective mixing rate or None.
         """
-        ma = matlab.double(a.tolist())
-        mv_ = matlab.double(v_.tolist())
-        return self.eng.matrixGlobalOpt(ma, mv_, nargout=1)
+        with MatlabEngineContainer.__lock:
+            ma = matlab.double(a.tolist())
+            mv_ = matlab.double(v_.tolist())
+            matlab_result = self.eng.matrixGlobalOpt(ma, mv_, nargout=1)
+        return matlab_result
