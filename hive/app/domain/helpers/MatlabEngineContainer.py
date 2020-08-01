@@ -35,11 +35,11 @@ class MatlabEngineContainer:
         """Instantiates a new MatlabEngineContainer object."""
         if MatlabEngineContainer.__instance is None:
             MatlabEngineContainer.__instance = self
-            print("Loading MatLab engine; This may take a few seconds...")
+            print("Loading matlab engine; This may take a few seconds...")
             self.__eng = me.start_matlab()
             self.__eng.cd(MATLAB_DIR)
-            print("MatLab engine initiated. Resuming simulation...;")
+            print("Matlab engine started. Resuming simulation...;")
             return
-        raise RuntimeError("MatlabEngineContainer is a singleton. Use "
+        raise RuntimeError("MatlabEngineContainer is a Singleton. Use "
                            "MatlabEngineContainer.getInstance() to get a "
                            "reference to it.")
