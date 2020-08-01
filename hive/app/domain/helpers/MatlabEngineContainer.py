@@ -9,12 +9,14 @@ class MatlabEngineContainer:
 
 
     Attrs:
-        __eng:
+        eng:
             A matlab engine instance object used for matrix and vector
             optimization operations throughout the simulations.
             Do not access this directly. MatlabEngine objects are not
             officially thread safe, thus it is recommended that you utilize
-            the wrapped function.
+            the wrapped function, unless you are not running the
+            :py:mod:`hive_simulation` with -t flag, i.e., you are not using
+            the multithreaded mode to speed up simulations.
     """
 
     __instance = None
@@ -37,8 +39,8 @@ class MatlabEngineContainer:
         """Instantiates a new MatlabEngineContainer object."""
         if MatlabEngineContainer.__instance is None:
             print("Loading matlab engine... this can take a while.")
-            self.__eng = matlab.engine.start_matlab()
-            self.__eng.cd(MATLAB_DIR)
+            self.eng = matlab.engine.start_matlab()
+            self.eng.cd(MATLAB_DIR)
             MatlabEngineContainer.__instance = self
         else:
             raise RuntimeError("MatlabEngineContainer is a Singleton. Use "
