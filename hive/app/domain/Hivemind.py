@@ -105,7 +105,7 @@ class Hivemind:
     def execute_simulation(self) -> None:
         """Runs a stochastic swarm guidance algorithm applied to a P2P network"""
         while self.epoch < MAX_EPOCHS_PLUS and self.hives:
-            print("epoch: {}".format(self.epoch))
+            # print("epoch: {}".format(self.epoch))
             terminated_hives: List[str] = []
             for hive in self.hives.values():
                 hive.execute_epoch(self.epoch)
