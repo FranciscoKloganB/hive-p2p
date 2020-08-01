@@ -21,7 +21,7 @@ class Hivemind:
         origin:
             The name of the simulation file name that started the simulation
             process.
-        sim_id:
+        sid:
             Identifier that generates unique output file names,
             thus guaranteeing that different simulation instances do not
             overwrite previous out files.
@@ -42,19 +42,19 @@ class Hivemind:
 
     # region Class Variables, Instance Variables and Constructors
 
-    def __init__(self, simfile_name: str, sim_id: int) -> None:
+    def __init__(self, simfile_name: str, sid: int) -> None:
         """Instantiates an Hivemind object.
 
         Args:
             simfile_name:
                 A path to the simulation file to be run by the simulator.
-            sim_id:
+            sid:
                 Identifier that generates unique output file names,
                 thus guaranteeing that different simulation instances do not
                 overwrite previous out files.
         """
         self.origin = simfile_name
-        self.sim_id = sim_id
+        self.sim_id = sid
         self.epoch = 1
 
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
