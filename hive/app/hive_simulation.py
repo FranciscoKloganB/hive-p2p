@@ -100,7 +100,7 @@ def __single_threaded_main(sdir, sname, iters):
 # endregion
 
 
-def main(multithread: bool, sdir: bool, sname: str, iters: int) -> None:
+def main(multithread: int, sdir: bool, sname: str, iters: int) -> None:
     """Receives user input and initializes the simulation process.
 
     Args:
@@ -130,14 +130,14 @@ def main(multithread: bool, sdir: bool, sname: str, iters: int) -> None:
 if __name__ == "__main__":
     __makedirs()
 
-    threading = False
+    threading = 0
     simdirectory = False
     simfile = None
     iterations = 30
 
     try:
-        short_opts = "tdf:i:"
-        long_opts = ["threading", "directory", "file=", "iters="]
+        short_opts = "df:i:t:"
+        long_opts = ["directory", "file=", "threading=", "iters="]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
