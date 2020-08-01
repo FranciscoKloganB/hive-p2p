@@ -43,10 +43,10 @@ class Hive:
             being corrupted and not being corrupted, respectively. See
             :py:meth:`setup_epoch() <domain.Hive.Hive.setup_epoch>` for
             corruption chance configuration.
-        desired_distribution (pandas DataFrame):
+        v_ (pandas DataFrame):
             Density distribution hive members must achieve with independent
             realizations for ideal persistence of the file.
-        current_distribution (pandas DataFrame):
+        cv_ (pandas DataFrame):
             Tracks the file current density distribution, updated at each epoch.
         hivemind:
             A reference to :py:class:`~domain.Hivemind.Hivemind` that
@@ -114,8 +114,8 @@ class Hive:
         print("MatLab engine initiated. Resuming simulation...;")
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-        self.current_distribution: pd.DataFrame = pd.DataFrame()
-        self.desired_distribution: pd.DataFrame = pd.DataFrame()
+        self.cv_: pd.DataFrame = pd.DataFrame()
+        self.v_: pd.DataFrame = pd.DataFrame()
         self.corruption_chances: List[float] = [0, 0]
         self.hivemind = hivemind
         self.members: Dict[str, Worker] = members
@@ -267,9 +267,9 @@ class Hive:
             [member_uptime / uptime_sum for member_uptime in member_uptimes]
 
         v_ = pd.DataFrame(data=uptimes_normalized, index=member_ids)
-        self.desired_distribution = v_
+        self.v_ = v_
         cv_ = pd.DataFrame(data=[0] * len(v_), index=member_ids)
-        self.current_distribution = cv_
+        self.cv_ = cv_
 
         return uptimes_normalized
 
@@ -370,7 +370,7 @@ class Hive:
             choices = [*self.members.values()]
             desired_distribution: List[float] = []
             for member_id in choices:
-                desired_distribution.append(self.desired_distribution.loc[member_id, DEFAULT_COL].item())
+                desired_distribution.append(self.v_.loc[member_id, DEFAULT_COL].item())
 
             for part in file_parts.values():
                 choices: List[Worker] = choices.copy()
@@ -427,10 +427,10 @@ class Hive:
         for worker in self.members.values():
             if worker.status == Status.ONLINE:
                 worker_parts_count = worker.get_file_parts_count(self.file.name)
-                self.current_distribution.at[worker.id, DEFAULT_COL] = worker_parts_count
+                self.cv_.at[worker.id, DEFAULT_COL] = worker_parts_count
                 parts_in_hive += worker_parts_count
             else:
-                self.current_distribution.at[worker.id, DEFAULT_COL] = 0
+                self.cv_.at[worker.id, DEFAULT_COL] = 0
 
         self.file.simulation_data.set_parts_at_index(parts_in_hive, self.current_epoch)
 
@@ -448,7 +448,7 @@ class Hive:
     # region Helpers
 
     def equal_distributions(self) -> bool:
-        """Infers if desired_distribution and current_distribution are equal.
+        """Infers if v_ and cv_ are equal.
 
         Equalility is calculated given a tolerance value calculated by
         FileData method defined at :py:method:`~new_tolerance() <FileData.new_tolerance>`.
@@ -460,11 +460,11 @@ class Hive:
         if self.file.parts_in_hive == 0:
             return False
 
-        size = len(self.current_distribution)
+        size = len(self.cv_)
         tolerance = self.new_tolerance()
         for i in range(size):
-            a = self.current_distribution.iloc[i, DEFAULT_COL]
-            b = self.desired_distribution.iloc[i, DEFAULT_COL] * self.file.parts_in_hive
+            a = self.cv_.iloc[i, DEFAULT_COL]
+            b = self.v_.iloc[i, DEFAULT_COL] * self.file.parts_in_hive
             if np.abs(a - np.ceil(b)) > tolerance:
                 return False
         return True
@@ -479,8 +479,8 @@ class Hive:
         Returns:
             The tolerance for the current epoch.
         """
-        max_value = self.desired_distribution[DEFAULT_COL].max()
-        min_value = self.desired_distribution[DEFAULT_COL].min()
+        max_value = self.v_[DEFAULT_COL].max()
+        min_value = self.v_[DEFAULT_COL].min()
         # print(f"max:{max_value} - min:{min_value} = {max_value - min_value}")
         # print(f"parts in hive = {self.file.parts_in_hive}")
         return np.ceil(np.abs(max_value - min_value)) * self.file.parts_in_hive
@@ -541,7 +541,7 @@ class Hive:
     def _membership_maintenance(self, offline_workers: List[Worker]) -> None:
         """Evicts disconnected workers from the Hive and attempts to recruit new ones.
 
-        It implicitly creates a new `transition matrix` and `desired_distribution`.
+        It implicitly creates a new `transition matrix` and `v_`.
 
         Args:
             offline_workers:
@@ -622,7 +622,7 @@ class Hive:
 
         Verification is done by raising the matrix to the power of 4096
         (just a large number) and checking if all column vectors are equal
-        to the :py:attr:`~desired_distribution`.
+        to the :py:attr:`~v_`.
 
         Returns:
             True if the matrix can converge to the desired steady state,
@@ -650,7 +650,7 @@ class Hive:
         while tries <= 3:
             print(f"validating transition matrix... atempt: {tries}")
             result = self.new_transition_matrix()
-            if self._validate_transition_matrix(result, self.desired_distribution):
+            if self._validate_transition_matrix(result, self.v_):
                 self.broadcast_transition_matrix(result)
                 break
         self.broadcast_transition_matrix(result)  # if after 3 validations attempts no matrix was generated, use any other one.

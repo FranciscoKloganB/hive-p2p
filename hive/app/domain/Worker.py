@@ -27,7 +27,7 @@ class Worker:
     every worker in the Hive shares their blocks with other members by
     following their respective vector then eventually, the whole Hive will
     reach the desired steady state distribution of file block replicas
-    (:py:attr:`~domain.Hive.Hive.desired_distribution`).
+    (:py:attr:`~domain.Hive.Hive.v_`).
 
     Attrs:
         id:
@@ -217,7 +217,7 @@ class Worker:
         lost_replicas: int = part.can_replicate(hive.current_epoch)
         if lost_replicas > 0:
 
-            sorted_members: List[str] = [*hive.desired_distribution.sort_values(
+            sorted_members: List[str] = [*hive.v_.sort_values(
                 DEFAULT_COL, ascending=False).index]
 
             for member_id in sorted_members:
