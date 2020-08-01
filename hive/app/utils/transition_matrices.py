@@ -13,7 +13,8 @@ OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 # region Markov Matrix Constructors
 
-def new_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+def new_mh_transition_matrix(
+        a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """ Constructs a transition matrix using metropolis-hastings algorithm for the distribution vector.
 
     Note:
@@ -34,7 +35,8 @@ def new_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray,
     return t, get_markov_matrix_fast_mixing_rate(t)
 
 
-def new_sdp_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
+def new_sdp_mh_transition_matrix(
+        a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
     """
     Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
     The provided adjacency matrix A is first optimized with semi-definite programming techniques for the uniform distribution vector.
@@ -50,7 +52,9 @@ def new_sdp_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[N
         return None, float('inf')
 
 
-def new_go_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
+def new_go_transition_matrix(
+        a: np.ndarray, v_: np.ndarray
+) -> Tuple[Union[None, np.ndarray], float]:
     """
     Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
     Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
@@ -87,7 +91,9 @@ def new_go_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None,
     return None, float('inf')
 
 
-def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: me.MatlabEngine) -> Tuple[Union[np.ndarray, None], float]:
+def go_with_matlab_bmibnb_solver(
+        a: np.ndarray, v_: np.ndarray, eng: me.MatlabEngine
+) -> Tuple[Union[np.ndarray, None], float]:
     """
     Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
     Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
@@ -110,8 +116,7 @@ def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: me.MatlabEn
 # region Optimization
 
 def _adjency_matrix_sdp_optimization(
-        a: np.ndarray
-) -> Optional[Tuple[cvx.Problem, cvx.Variable]]:
+        a: np.ndarray) -> Optional[Tuple[cvx.Problem, cvx.Variable]]:
     """Optimizes a symmetric adjacency matrix using Semidefinite Programming.
 
     The optimization is done with respect to the uniform stochastic vector
@@ -229,8 +234,7 @@ def _metropolis_hastings(a: np.ndarray,
 
 
 def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
-    """
-    Builds a random walk matrix over the given adjacency matrix
+    """Builds a random walk matrix over the given adjacency matrix
 
     Args:
         a:
@@ -250,8 +254,7 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
 
 
 def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
-    """
-    Builds a rejection matrix for a given rejection matrix rw and vector v_.
+    """Builds a rejection matrix for a given rejection matrix rw and vector v_.
 
     Args:
         v_:
@@ -272,8 +275,9 @@ def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
     return r
 
 
-def __get_diagonal_entry_probability(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
-    """ Helper function used by _metropolis_hastings function.
+def __get_diagonal_entry_probability(
+        rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
+    """Helper function used by _metropolis_hastings function.
 
     Calculates the value that should be assigned to the entry (i, i) of the
     transition matrix being calculated by the metropolis hastings algorithm
@@ -304,18 +308,26 @@ def __get_diagonal_entry_probability(rw: np.ndarray, r: np.ndarray, i: int) -> n
 
 # region Helpers
 
-def get_markov_matrix_fast_mixing_rate(M: np.ndarray) -> float:
-    """
-    Returns the expected fast mixing rate of matrix M, i.e., the highest eigenvalue that is smaller than one. If returned value is 1.0 than M has transient states or absorbent nodes.
-    :param np.ndarray M: A Markov Matrix, i.e., a square stochastic transition matrix.
-    :returns float mixing_rate: The highest eigenvalue of matrix M that is smaller than one.
-    """
-    size = M.shape[0]
+def get_markov_matrix_fast_mixing_rate(m: np.ndarray) -> float:
+    """Calculats the fast mixing rate the input matrix.
 
-    if size != M.shape[1]:
+    The fast mixing rate of matrix M is the highest eigenvalue that is
+    smaller than one. If returned value is 1.0 than the matrix has transient
+    states or absorbent nodes.
+
+    Args:
+        m:
+            A matrix.
+
+    Returns:
+        The highest eigenvalue of `m` that is smaller than one or one.
+    """
+    size = m.shape[0]
+
+    if size != m.shape[1]:
         raise MatrixNotSquareError("get_max_eigenvalue can't compute eigenvalues/vectors with non-square matrix input.")
 
-    eigenvalues, eigenvectors = np.linalg.eig(M - np.ones((size, size)) / size)
+    eigenvalues, eigenvectors = np.linalg.eig(m - np.ones((size, size)) / size)
     mixing_rate = np.max(np.abs(eigenvalues))
     return mixing_rate.item()
 
