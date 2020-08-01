@@ -1,3 +1,11 @@
+"""Utility module that includes confidentiality, integrity and authentication functions.
+
+Note:
+    As of current release this module only includes one function
+    :py:func:`~sha256`, but if you need to test a swarm guidance algorithm
+    that does not assume the communication channels to be secure or
+    trustworthy you should implement the crypto related functions here.
+"""
 import hashlib
 from typing import Any
 

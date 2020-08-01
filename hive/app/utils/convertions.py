@@ -1,3 +1,9 @@
+"""This module includes various data-type convertion utilities.
+
+Some functions include representing a string or sequence of bytes
+as base64-encoded strings or serialization objects into JSON strings.
+"""
+
 import base64
 from typing import Union, Optional, Any
 

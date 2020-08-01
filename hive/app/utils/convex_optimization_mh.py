@@ -1,6 +1,8 @@
-"""This module is used to quickly prototype functions related convex
-optimization before inserting them in the actual simulation's test bed.
-Use and modify as you see fit."""
+"""This is a non-essential module used for convex optimization prototyping.
+
+You can modify, extend or delete the module without consequences. Use as you
+see fit.
+"""
 
 import os
 from typing import List, Tuple, Optional
