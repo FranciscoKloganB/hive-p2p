@@ -9,11 +9,11 @@ from typing import Tuple, Union, Any, Optional
 
 import cvxpy as cvx
 import matlab
-import matlab.engine as me
 import numpy as np
 
 from domain.exceptions.DistributionShapeError import DistributionShapeError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
+from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
@@ -46,7 +46,7 @@ def new_mh_transition_matrix(
 
 
 def new_sdp_mh_transition_matrix(
-        a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
+        a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
     """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
 
     Constructs a transition matrix using metropolis-hastings algorithm  for
@@ -76,8 +76,7 @@ def new_sdp_mh_transition_matrix(
 
 
 def new_go_transition_matrix(
-        a: np.ndarray, v_: np.ndarray
-) -> Tuple[Union[None, np.ndarray], float]:
+        a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
     """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
 
     Constructs an optimized markov matrix using linear programming relaxations
@@ -128,8 +127,7 @@ def new_go_transition_matrix(
 
 
 def go_with_matlab_bmibnb_solver(
-        a: np.ndarray, v_: np.ndarray, eng: me.MatlabEngine
-) -> Tuple[Union[np.ndarray, None], float]:
+        a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
     """Constructs an optimized transition matrix using the matlab engine.
 
     Constructs an optimized transition matrix using linear programming
@@ -147,8 +145,6 @@ def go_with_matlab_bmibnb_solver(
             A non-optimized symmetric adjency matrix.
         v_:
             A stochastic steady state distribution vector.
-        eng:
-            A reference to a running MatLab engine.
 
     Returns:
         Markov Matrix with `v_` as steady state distribution and the
@@ -156,7 +152,8 @@ def go_with_matlab_bmibnb_solver(
     """
     a = matlab.double(a.tolist())
     v = matlab.double(v_.tolist())
-    result = eng.matrixGlobalOpt(a, v, nargout=1)
+    engine = MatlabEngineContainer.getInstance()
+    result = engine.matrixGlobalOpt(a, v, nargout=1)
     if result:
         t = np.array(result._data).reshape(result.size, order='F').T
         return t, get_markov_matrix_fast_mixing_rate(t)
