@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from typing import Any
+
 import matlab.engine
+import numpy as np
 
 from globals.globals import MATLAB_DIR
 
@@ -47,3 +50,28 @@ class MatlabEngineContainer:
             raise RuntimeError("MatlabEngineContainer is a Singleton. Use "
                                "MatlabEngineContainer.getInstance() to get a "
                                "reference to it.")
+
+    def matrix_global_opt(self, a: np.ndarray, v_: np.ndarray) -> Any:
+        """Constructs an optimized transition matrix using the matlab engine.
+
+        Constructs an optimized transition matrix using linear programming
+        relaxations and convex envelope approximations for the specified steady
+        state `v`, this is done by invoke the matlabscript matrixGlobalOpt
+        in the project folder name matlabscripts.
+
+        Note:
+            This function can only be invoked if you have a valid matlab license.
+
+        Args:
+            a:
+                A non-optimized symmetric adjency matrix.
+            v_:
+                A stochastic steady state distribution vector.
+
+        Returns:
+            Markov Matrix with `v_` as steady state distribution and the
+            respective mixing rate or None.
+        """
+        ma = matlab.double(a.tolist())
+        mv_ = matlab.double(v_.tolist())
+        return self.eng.matrixGlobalOpt(ma, mv_, nargout=1)

@@ -126,7 +126,7 @@ def new_go_transition_matrix(
     return None, float('inf')
 
 
-def go_with_matlab_bmibnb_solver(
+def new_mgo_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
     """Constructs an optimized transition matrix using the matlab engine.
 
@@ -150,10 +150,8 @@ def go_with_matlab_bmibnb_solver(
         Markov Matrix with `v_` as steady state distribution and the
         respective mixing rate.
     """
-    a = matlab.double(a.tolist())
-    v = matlab.double(v_.tolist())
     matlab_container = MatlabEngineContainer.getInstance()
-    result = matlab_container.eng.matrixGlobalOpt(a, v, nargout=1)
+    result = matlab_container.matrix_global_opt(a, v_)
     if result:
         t = np.array(result._data).reshape(result.size, order='F').T
         return t, get_markov_matrix_fast_mixing_rate(t)

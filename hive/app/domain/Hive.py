@@ -668,7 +668,7 @@ class Hive:
             tmg.new_mh_transition_matrix(a, v_),
             tmg.new_sdp_mh_transition_matrix(a, v_),
             tmg.new_go_transition_matrix(a, v_),
-            tmg.go_with_matlab_bmibnb_solver(a, v_)
+            tmg.new_mgo_transition_matrix(a, v_)
         ]
 
         size = len(results)
