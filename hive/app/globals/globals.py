@@ -59,7 +59,7 @@ DEBUG: bool = False
 # region Simulation Settings
 
 READ_SIZE: int = 131072
-MAX_EPOCHS = 360
+MAX_EPOCHS = 20
 
 MIN_DETECTION_DELAY: int = 1
 MAX_DETECTION_DELAY: int = 4
@@ -75,6 +75,7 @@ LOSS_CHANCE: float = 0.04
 SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
+MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlabscripts')
 
 # Others
 TRUE_FALSE = [True, False]

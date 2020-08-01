@@ -1,6 +1,7 @@
-from matlab import engine as me
+import os.path
+import matlab.engine
 
-from domain.Hive import MATLAB_DIR
+from globals.globals import MATLAB_DIR
 
 
 class MatlabEngineContainer:
@@ -15,6 +16,7 @@ class MatlabEngineContainer:
             officially thread safe, thus it is recommended that you utilize
             the wrapped function.
     """
+
     __instance = None
 
     @staticmethod
@@ -34,12 +36,11 @@ class MatlabEngineContainer:
     def __init__(self) -> None:
         """Instantiates a new MatlabEngineContainer object."""
         if MatlabEngineContainer.__instance is None:
-            MatlabEngineContainer.__instance = self
-            print("Loading matlab engine; This may take a few seconds...")
-            self.__eng = me.start_matlab()
+            print("Loading matlab engine... this can take a while.")
+            self.__eng = matlab.engine.start_matlab()
             self.__eng.cd(MATLAB_DIR)
-            print("Matlab engine started. Resuming simulation...;")
-            return
-        raise RuntimeError("MatlabEngineContainer is a Singleton. Use "
-                           "MatlabEngineContainer.getInstance() to get a "
-                           "reference to it.")
+            MatlabEngineContainer.__instance = self
+        else:
+            raise RuntimeError("MatlabEngineContainer is a Singleton. Use "
+                               "MatlabEngineContainer.getInstance() to get a "
+                               "reference to it.")

@@ -20,10 +20,6 @@ from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, MAX_EPOCHS
 from utils.randoms import random_index
 
-MATLAB_DIR = os.path.join(
-    os.path.abspath(
-        os.path.join(os.getcwd(), '..', 'app', 'scripts', 'matlabscripts')))
-
 
 class Hive:
     """Represents a group of network nodes persisting a file.
