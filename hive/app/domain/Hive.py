@@ -4,7 +4,7 @@ import math
 import os
 import random
 import uuid
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 
 import numpy as np
 import pandas as pd
@@ -107,11 +107,6 @@ class Hive:
                 optional; The name of the simulation file name that started
                 the simulation process.
         """
-        # from matlab import engine as me
-        # print("Loading MatLab engine; This may take a few seconds...")
-        # self.eng = me.start_matlab()
-        # self.eng.cd(MATLAB_DIR)
-        # print("MatLab engine initiated. Resuming simulation...;")
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
         self.cv_: pd.DataFrame = pd.DataFrame()
@@ -673,12 +668,13 @@ class Hive:
             steady state is `v_`, but is not yet validated. See
             :py:meth:`~_validate_transition_matrix`.
         """
-        results: List[Tuple[np.ndarray, float]] = [
+        results: List[Tuple[Optional[np.ndarray], float]] = [
             tmg.new_mh_transition_matrix(a, v_),
             tmg.new_sdp_mh_transition_matrix(a, v_),
             tmg.new_go_transition_matrix(a, v_),
-            tmg.go_with_matlab_bmibnb_solver(a, v_, self.eng)
+            tmg.go_with_matlab_bmibnb_solver(a, v_)
         ]
+
         size = len(results)
         min_mr = float('inf')
         fastest_matrix = None
