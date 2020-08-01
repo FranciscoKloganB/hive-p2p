@@ -80,11 +80,11 @@ def __multi_threaded_main(sdir: bool, sname: str, iters: int) -> None:
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
                 for i in range(iters):
-                    executor.map(__execute_simulation, sn, i)
+                    executor.submit(__execute_simulation, sn, i)
         else:
             __can_exec_simfile(sname)
             for i in range(iters):
-                executor.map(__execute_simulation, sname, i)
+                executor.submit(__execute_simulation, sname, i)
 
 
 def __single_threaded_main(sdir, sname, iters):
