@@ -2,7 +2,7 @@
 
     You can start simulations by executing the following command::
 
-        $ python hive_simulation.py --simfile=filename.json --runs=30
+        $ python hive_simulation.py --simfile=filename.json --iters=30
 
     If you don't have a simulation file yet, run the following instead::
 
@@ -31,7 +31,13 @@ err_message = ("Invalid arguments. At least simfile arg must be specified.\n",
                "$ python hive_simulation.py --simfile=simulationfilename.json")
 
 
-def main(fid, runs):
+def multithreaded_main(fid, iters):
+    for run in range(iters):
+        simulation = hm.Hivemind(simfile_name=fid, sim_id=run)
+        simulation.execute_simulation()
+
+
+def main(fid, iters, multithread):
     if not fid:
         sys.exit("Invalid simulation file name - blank name not allowed)...")
 
@@ -44,33 +50,40 @@ def main(fid, runs):
     if not os.path.exists(OUTFILE_ROOT):
         os.makedirs(OUTFILE_ROOT)
 
-    for run in range(runs):
-        simulation = hm.Hivemind(simfile_name=fid, sim_id=run)
-        simulation.execute_simulation()
+    if multithread:
+        multithreaded_main(fid, iters)
+        return
+    else:
+        for i in range(iters):
+            simulation = hm.Hivemind(simfile_name=fid, sim_id=i)
+            simulation.execute_simulation()
 
-    # input_simulation_files: List[str] = os.listdir(SIMULATION_ROOT)
-    # for name in input_simulation_files:
-    #     for i in range(runs):
-    #         simulation = hm.Hivemind(simfile_name=name, sim_id=i+1)
-    #         simulation.execute_simulation()
+        # input_simulation_files: List[str] = os.listdir(SIMULATION_ROOT)
+        # for name in input_simulation_files:
+        #     for i in range(iters):
+        #         simulation = hm.Hivemind(simfile_name=name, sim_id=i+1)
+        #         simulation.execute_simulation()
 
 
 if __name__ == "__main__":
-    simfile_name_ = None
-    run_ = 30
+    simfile = None
+    threading = False
+    iterations = 30
 
     try:
         options, args = getopt.getopt(
-            sys.argv[1:], "s:r:", ["simfile=", "runs="])
+            sys.argv[1:], "ts:r:", ["threading", "simfile=", "iters="])
 
         for options, args in options:
             if options in ("-s", "--simfile"):
-                simfile_name_ = str(args).strip()
-            if options in ("-r", "--runs"):
-                run_ = int(str(args).strip())
+                simfile = str(args).strip()
+            if options in ("-i", "--iters"):
+                iterations = int(str(args).strip())
+            if options in ("-t", "--threading"):
+                threading = True
 
-        if simfile_name_ and run_:
-            main(simfile_name_, run_)
+        if simfile and iterations:
+            main(simfile, iterations, threading)
         else:
             print(err_message)
 
