@@ -15,21 +15,24 @@ OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 def new_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
-    """ Constructs a transition matrix using metropolis-hastings algorithm for the distribution vector.
+    """ Constructs a transition matrix using metropolis-hastings.
+
+    Constructs a transition matrix using metropolis-hastings algorithm  for
+    the specified steady state `v`.
 
     Note:
-        The input Matrix hould have no transient states/absorbent nodes,
+        The input Matrix hould have no transient states or absorbent nodes,
         but this is not enforced or verified.
 
     Args:
         a:
-            Symmetric unoptimized adjency matrix.
+            A symmetric adjency matrix.
         v_:
-            Transition Markov Matrix for the desired, possibly non-uniform,
-            distribution vector v_ and respective mixing rate.
+            A stochastic steady state distribution vector.
 
     Returns:
-        A tuple with the transition matrix and the respective mixing rate.
+        Markov Matrix with `v_` as steady state distribution and the
+        respective mixing rate.
     """
     t = _metropolis_hastings(a, v_)
     return t, get_markov_matrix_fast_mixing_rate(t)
@@ -37,12 +40,25 @@ def new_mh_transition_matrix(
 
 def new_sdp_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
-    """
-    Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
-    The provided adjacency matrix A is first optimized with semi-definite programming techniques for the uniform distribution vector.
-    :param np.ndarray a: Symmetric unoptimized adjency matrix.
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
+    """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
+
+    Constructs a transition matrix using metropolis-hastings algorithm  for
+    the specified steady state `v`. The provided adjacency matrix A is first
+    optimized with semi-definite programming techniques for the uniform
+    distribution vector.
+
+    Note:
+        This function only works if you have a valid MOSEK license.
+
+    Args:
+        a:
+            A non-optimized symmetric adjency matrix.
+        v_:
+            A stochastic steady state distribution vector.
+
+    Returns:
+        Markov Matrix with `v_` as steady state distribution and the
+        respective mixing rate.
     """
     problem, a = _adjency_matrix_sdp_optimization(a)
     if problem.status in OPTIMAL_STATUS:
@@ -55,12 +71,25 @@ def new_sdp_mh_transition_matrix(
 def new_go_transition_matrix(
         a: np.ndarray, v_: np.ndarray
 ) -> Tuple[Union[None, np.ndarray], float]:
-    """
-    Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
-    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
-    :param np.ndarray a: Symmetric unoptimized adjency matrix.
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
+    """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
+
+    Constructs an optimized markov matrix using linear programming relaxations
+    and convex envelope approximations for the specified steady state `v`.
+    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform
+    Matrix, 2) is equal to the markov matrix eigenvalue.
+
+    Note:
+        This function only works if you have a valid MOSEK license.
+
+    Args:
+        a:
+            A non-optimized symmetric adjency matrix.
+        v_:
+            A stochastic steady state distribution vector.
+
+    Returns:
+        Markov Matrix with `v_` as steady state distribution and the
+        respective mixing rate.
     """
     # Allocate python variables
     n: int = a.shape[0]
@@ -94,14 +123,29 @@ def new_go_transition_matrix(
 def go_with_matlab_bmibnb_solver(
         a: np.ndarray, v_: np.ndarray, eng: me.MatlabEngine
 ) -> Tuple[Union[np.ndarray, None], float]:
-    """
-    Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
-    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
-    The code is run on a matlab engine because it provides a non-convex SDP solver BMIBNB.
-    :param np.ndarray a: Symmetric unoptimized adjency matrix.
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :param mleng.MatlabEngine eng: an instance of a running matlab engine.
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
+    """Constructs an optimized transition matrix using the matlab engine.
+
+    Constructs an optimized transition matrix using linear programming
+    relaxations and convex envelope approximations for the specified steady
+    state `v`. Result is only trully optimal if normal(Tranistion Matrix Opt
+    - Uniform Matrix, 2) is equal to the markov matrix eigenvalue. The code
+    is run on a matlab engine because it provides a non-convex SDP solver ç
+    BMIBNB.
+
+    Note:
+        This function can only be invoked if you have a valid matlab license.
+
+    Args:
+        a:
+            A non-optimized symmetric adjency matrix.
+        v_:
+            A stochastic steady state distribution vector.
+        eng:
+            A reference to a running MatLab engine.
+
+    Returns:
+        Markov Matrix with `v_` as steady state distribution and the
+        respective mixing rate.
     """
     a = matlab.double(a.tolist())
     v = matlab.double(v_.tolist())
