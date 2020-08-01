@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import os
+import random
 import uuid
 from typing import Dict, List, Any, Tuple
 
@@ -9,7 +10,6 @@ import numpy as np
 import pandas as pd
 
 import domain.Hivemind as hm
-import utils.matrices as matrices
 import utils.transition_matrices as tmg
 from domain.Worker import Worker
 from domain.helpers.Enums import Status, HttpCodes
@@ -18,8 +18,11 @@ from domain.helpers.SharedFilePart import SharedFilePart
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, MAX_EPOCHS
+from utils.randoms import random_index
 
-MATLAB_DIR = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'app', 'scripts', 'matlabscripts')))
+MATLAB_DIR = os.path.join(
+    os.path.abspath(
+        os.path.join(os.getcwd(), '..', 'app', 'scripts', 'matlabscripts')))
 
 
 class Hive:
@@ -199,6 +202,44 @@ class Hive:
     # endregion
 
     # region Swarm Guidance - Data Structure Management Only
+    def new_symmetric_adjency_matrix(self, size: int):
+        """Generates a random symmetric matrix
+
+         The generated adjacency matrix does not have transient state sets or
+         absorbent nodes and can effectively represent a network topology
+         with bidirectional connections between network nodes.
+
+         Args:
+             size:
+                The number of network nodes the Hive will have.
+
+        Returns:
+            The adjency matrix representing the connections between a
+            groups of network nodes.
+        """
+        secure_random = random.SystemRandom()
+        adj_matrix: List[List[int]] = [[0] * size for _ in range(size)]
+        choices: List[int] = [0, 1]
+
+        for i in range(size):
+            for j in range(i, size):
+                probability = secure_random.uniform(0.0, 1.0)
+                edge_val = np.random.choice(a=choices, p=[probability,
+                                                          1 - probability]).item()  # converts numpy.int32 to int
+                adj_matrix[i][j] = adj_matrix[j][i] = edge_val
+
+        # Use guilty until proven innocent approach for both checks
+        for i in range(size):
+            is_absorbent_or_transient: bool = True
+            for j in range(size):
+                # Ensure state i can reach and be reached by some other state j, where i != j
+                if adj_matrix[i][j] == 1 and i != j:
+                    is_absorbent_or_transient = False
+                    break
+            if is_absorbent_or_transient:
+                j = random_index(i, size)
+                adj_matrix[i][j] = adj_matrix[j][i] = 1
+        return adj_matrix
 
     def new_desired_distribution(self,
                                  member_ids: List[str],
@@ -247,7 +288,7 @@ class Hive:
             member_ids.append(worker.id)
 
         A: np.ndarray = np.asarray(
-            matrices.new_symmetric_adjency_matrix(len(member_ids)))
+            self.new_symmetric_adjency_matrix(len(member_ids)))
         v_: np.ndarray = np.asarray(
             self.new_desired_distribution(member_ids, member_uptimes))
 
