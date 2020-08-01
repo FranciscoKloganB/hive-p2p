@@ -464,8 +464,8 @@ class Hive:
         tolerance = self.new_tolerance()
         for i in range(size):
             a = self.cv_.iloc[i, DEFAULT_COL]
-            b = self.v_.iloc[i, DEFAULT_COL] * self.file.parts_in_hive
-            if np.abs(a - np.ceil(b)) > tolerance:
+            b = np.ceil(self.v_.iloc[i, DEFAULT_COL] * self.file.parts_in_hive)
+            if np.abs(a - b) > tolerance:
                 return False
         return True
 
@@ -481,9 +481,7 @@ class Hive:
         """
         max_value = self.v_[DEFAULT_COL].max()
         min_value = self.v_[DEFAULT_COL].min()
-        # print(f"max:{max_value} - min:{min_value} = {max_value - min_value}")
-        # print(f"parts in hive = {self.file.parts_in_hive}")
-        return np.ceil(np.abs(max_value - min_value)) * self.file.parts_in_hive
+        return np.abs(max_value - min_value) * self.file.parts_in_hive
 
     def _setup_epoch(self, epoch: int) -> None:
         """Initializes some attributes of the Hive during its initialization.
@@ -648,7 +646,7 @@ class Hive:
         tries = 1
         result: pd.DataFrame = pd.DataFrame()
         while tries <= 3:
-            print(f"validating transition matrix... atempt: {tries}")
+            # print(f"validating transition matrix... attempt: {tries}")
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
                 self.broadcast_transition_matrix(result)
@@ -682,15 +680,15 @@ class Hive:
             tmg.go_with_matlab_bmibnb_solver(a, v_, self.eng)
         ]
         size = len(results)
-        # fastest_matrix: np.ndarray = min(results, key=itemgetter(1))[0]
         min_mr = float('inf')
         fastest_matrix = None
         for i in range(size):
             i_mr = results[i][1]
             if i_mr < min_mr:
-                print(f"currently selected matrix {i}")
+                # print(f"currently selected matrix {i}")
                 min_mr = i_mr
-                fastest_matrix = results[i][0]  # Worse case scenario fastest matrix will be the unoptmized MH transition matrix. Null checking thus, unneeded.
+                # Worse case scenario fastest matrix will be the unoptmized MH.
+                fastest_matrix = results[i][0]
 
         size = fastest_matrix.shape[0]
         for j in range(size):
