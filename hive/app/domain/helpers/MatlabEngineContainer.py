@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from typing import Any
 
 import matlab.engine
@@ -10,7 +11,6 @@ from globals.globals import MATLAB_DIR
 
 class MatlabEngineContainer:
     """Singleton class wrapper containing thread safe access to a MatlabEngine.
-
 
     Attrs:
         eng:
@@ -23,10 +23,11 @@ class MatlabEngineContainer:
             the multithreaded mode to speed up simulations.
     """
 
+    __lock = threading.Lock()
     __instance: MatlabEngineContainer = None
 
     @staticmethod
-    def getInstance() -> MatlabEngineContainer:
+    def get_instance() -> MatlabEngineContainer:
         """Used to obtain a singleton instance of :py:class:`MatlabEngineContainer`
 
         If one instance already exists that instance is returned,
@@ -36,11 +37,18 @@ class MatlabEngineContainer:
             A reference to the existing MatlabEngineContainer instance.
         """
         if MatlabEngineContainer.__instance is None:
-            MatlabEngineContainer()
+            with MatlabEngineContainer.__lock:
+                if MatlabEngineContainer.__instance is None:
+                    MatlabEngineContainer()
         return MatlabEngineContainer.__instance
 
     def __init__(self) -> None:
-        """Instantiates a new MatlabEngineContainer object."""
+        """Instantiates a new MatlabEngineContainer object.
+
+        Note:
+            Do not directly invoke this constructor, use
+            :py:method:`getInstance` instead.
+        """
         if MatlabEngineContainer.__instance is None:
             print("Loading matlab engine... this can take a while.")
             self.eng = matlab.engine.start_matlab()
@@ -49,7 +57,7 @@ class MatlabEngineContainer:
         else:
             raise RuntimeError("MatlabEngineContainer is a Singleton. Use "
                                "MatlabEngineContainer.getInstance() to get a "
-                               "reference to it.")
+                               "reference to a MatlabEngineContainer object.")
 
     def matrix_global_opt(self, a: np.ndarray, v_: np.ndarray) -> Any:
         """Constructs an optimized transition matrix using the matlab engine.

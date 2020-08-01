@@ -118,7 +118,7 @@ def main(multithread: bool, sdir: bool, sname: str, iters: int) -> None:
         iters:
             The number of times the same simulation file should be executed.
     """
-    MatlabEngineContainer.getInstance()
+    MatlabEngineContainer.get_instance()
 
     if multithread:
         multi_threaded_main(sdir, sname, iters)

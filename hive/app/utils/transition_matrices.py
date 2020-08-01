@@ -150,7 +150,7 @@ def new_mgo_transition_matrix(
         Markov Matrix with `v_` as steady state distribution and the
         respective mixing rate.
     """
-    matlab_container = MatlabEngineContainer.getInstance()
+    matlab_container = MatlabEngineContainer.get_instance()
     result = matlab_container.matrix_global_opt(a, v_)
     if result:
         t = np.array(result._data).reshape(result.size, order='F').T
