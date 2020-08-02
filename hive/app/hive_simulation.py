@@ -139,10 +139,8 @@ def main(
     __change_max_epochs__(epochs)
 
     if threads_count != 0:
-        print("hello multi")
         __parallel_main(numpy.abs(threads_count).item(), sdir, sname, iters)
     else:
-        print("hello slow")
         __single_main(sdir, sname, iters)
 
 
