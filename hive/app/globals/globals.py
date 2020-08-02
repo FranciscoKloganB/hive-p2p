@@ -50,6 +50,17 @@ Attributes:
     LOSS_CHANCE:
         Defines the probability of a message not being delivered to a
         destination due to network link problems, in the simulation environment.
+    ABS_TOLERANCE:
+        Defines the maximum amount of absolute positive or negative deviation
+        that a current distribution :py:func:`~domain.Hive.Hive.cv_` can have
+        from the desired steady state :py:func:`~domain.Hive.Hive.v_`,
+        in order for the distributions to be considered equal and thus
+        marking the epoch as being in convergence in
+        :py:attr:`~domain.helpers.SimulationData.SimulationData
+        .convergence_set`. This constant will be used by
+        :py:meth:`~domain.Hive.Hive.equal_distributions` along with a
+        relative tolerance that is the minimum value in
+        :py:func:`~domain.Hive.Hive.v_`.
 """
 
 import os
