@@ -39,7 +39,8 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 import domain.Hivemind as hm
 from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
-from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
+from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT, \
+    __change_max_epochs__
 
 __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
@@ -161,6 +162,7 @@ if __name__ == "__main__":
                 iterations = int(str(args).strip())
             if options in ("-e", "--epochs"):
                 epochs = int(str(args).strip())
+                __change_max_epochs__(epochs)
 
         if simfile or simdirectory:
             main(threading, simdirectory, simfile, iterations)

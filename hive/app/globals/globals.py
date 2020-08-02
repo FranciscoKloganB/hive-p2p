@@ -93,4 +93,17 @@ MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
 COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 
+
+def __change_max_epochs__(n: int) -> None:
+    """Changes the maximum number of epochs a simulation Hivemind will run.
+
+    Args:
+        n:
+            The new maximum.
+    """
+    global MAX_EPOCHS
+    global MAX_EPOCHS_PLUS
+    MAX_EPOCHS = n
+    MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
+
 # endregion
