@@ -11,7 +11,7 @@ import pandas as pd
 import domain.Hive as h
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
-from globals.globals import DEFAULT_COL, MAX_EPOCHS
+from globals.globals import MAX_EPOCHS
 from utils import crypto
 
 
@@ -156,7 +156,7 @@ class Worker:
         """
         routing_vector: pd.DataFrame = self.routing_table[part.name]
         hive_members: List[str] = [*routing_vector.index]
-        member_chances: List[float] = [*routing_vector.iloc[:, DEFAULT_COL]]
+        member_chances: List[float] = [*routing_vector.iloc[:, 0]]
         try:
             destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
             return hive.route_part(self.id, destination, part)
@@ -217,8 +217,7 @@ class Worker:
         lost_replicas: int = part.can_replicate(hive.current_epoch)
         if lost_replicas > 0:
 
-            sorted_members: List[str] = [*hive.v_.sort_values(
-                DEFAULT_COL, ascending=False).index]
+            sorted_members = [*hive.v_.sort_values(0, ascending=False).index]
 
             for member_id in sorted_members:
                 if lost_replicas == 0:
