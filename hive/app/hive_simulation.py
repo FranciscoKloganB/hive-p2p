@@ -41,9 +41,9 @@ import domain.Hivemind as hm
 from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
 from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
 
-err_message = ("Invalid arguments. You must specify -f or -d options, e.g.:\n"
-               "    $ python hive_simulation.py -f simfilename.json\n"
-               "    $ python hive_simulation.py -d")
+__err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
+                   "    $ python hive_simulation.py -f simfilename.json\n"
+                   "    $ python hive_simulation.py -d")
 
 
 # region Module private functions (helpers)
@@ -141,10 +141,11 @@ if __name__ == "__main__":
     simdirectory = False
     simfile = None
     iterations = 30
+    epochs = 720
 
     try:
-        short_opts = "df:i:t:"
-        long_opts = ["directory", "file=", "iters=", "threading="]
+        short_opts = "df:i:t:e:"
+        long_opts = ["directory", "file=", "iters=", "threading=", "epochs="]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
@@ -158,17 +159,20 @@ if __name__ == "__main__":
                     sys.exit("Simulation file name can not be blank.")
             if options in ("-i", "--iters"):
                 iterations = int(str(args).strip())
+            if options in ("-e", "--epochs"):
+                epochs = int(str(args).strip())
 
         if simfile or simdirectory:
             main(threading, simdirectory, simfile, iterations)
         else:
-            sys.exit(err_message)
+            sys.exit(__err_message__)
 
     except getopt.GetoptError:
-        sys.exit(err_message)
+        sys.exit(__err_message__)
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "--iterations -i (int)\n"
+                 "--epochs -e (int)\n"
                  "--threading -t (int)\n"
                  "--directory -d (void)\n"
                  "--file -f (str)")
