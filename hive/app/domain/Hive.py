@@ -16,7 +16,7 @@ from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.FileData import FileData
 from domain.helpers.SharedFilePart import SharedFilePart
 from domain.helpers.SimulationData import SimulationData
-from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, \
+from globals.globals import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, MAX_EPOCHS, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
 
@@ -361,7 +361,7 @@ class Hive:
             choices = [*self.members.values()]
             desired_distribution: List[float] = []
             for member_id in choices:
-                desired_distribution.append(self.v_.loc[member_id, DEFAULT_COL].item())
+                desired_distribution.append(self.v_.loc[member_id, 0].item())
 
             for part in file_parts.values():
                 choices: List[Worker] = choices.copy()
@@ -418,10 +418,10 @@ class Hive:
         for worker in self.members.values():
             if worker.status == Status.ONLINE:
                 worker_parts_count = worker.get_file_parts_count(self.file.name)
-                self.cv_.at[worker.id, DEFAULT_COL] = worker_parts_count
+                self.cv_.at[worker.id, 0] = worker_parts_count
                 parts_in_hive += worker_parts_count
             else:
-                self.cv_.at[worker.id, DEFAULT_COL] = 0
+                self.cv_.at[worker.id, 0] = 0
 
         self.file.simulation_data.set_parts_at_index(parts_in_hive, self.current_epoch)
 
@@ -453,13 +453,18 @@ class Hive:
         pcount = self.file.parts_in_hive
 
         target = self.v_.multiply(pcount)
-        rtol = self.v_[DEFAULT_COL].min()
+        rtol = self.v_[0].min()
         atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
 
         if DEBUG:
-            tv_ = tabulate(target, headers='keys', tablefmt='psql')
-            tcv_ = tabulate(self.cv_, headers='keys', tablefmt='psql')
-            print(f"v_:\n   {tv_}\ncv_:\n   {tcv_}\n")
+            df = pd.DataFrame()
+            df['cv_'] = self.cv_[0].values
+            df['v_'] = target[0].values
+            df['(cv_ - v_)'] = (self.cv_.subtract(target))[0].values
+
+            v_list = [*target[0]]
+            rtol_times_cv_ = [x * rtol for x in v_list]
+            print(tabulate(df, headers='keys', tablefmt='psql'))
 
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
@@ -610,7 +615,7 @@ class Hive:
         column_count = t_pow.shape[1]
         for j in range(column_count):
             test_target = t_pow[:, j]  # gets array column j
-            if not np.allclose(test_target, target_distribution[DEFAULT_COL].values, atol=1e-02):
+            if not np.allclose(test_target, target_distribution[0].values, atol=1e-02):
                 return False
         return True
 
