@@ -10,8 +10,8 @@ from domain.Hive import Hive
 from domain.Worker import Worker
 from domain.helpers.Enums import Status
 from domain.helpers.SharedFilePart import SharedFilePart
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
-    MAX_EPOCHS_PLUS
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
+from hive_simulation import MAX_EPOCHS_PLUS
 
 
 class Hivemind:
