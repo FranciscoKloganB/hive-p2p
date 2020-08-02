@@ -10,8 +10,7 @@ from domain.Hive import Hive
 from domain.Worker import Worker
 from domain.helpers.Enums import Status
 from domain.helpers.SharedFilePart import SharedFilePart
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
-    MAX_EPOCHS_PLUS
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
 
 
 class Hivemind:
@@ -38,11 +37,17 @@ class Hivemind:
             the latter is only a subset of `workers`, which includes all
             network nodes of the distributed backup system. Regardless of
             their participation on any Hive.
+        MAX_EPOCHS:
+            The number of time steps a simulation should have (default is 720).
+            On a 24 hour day, 720 means one epoch should occur every two minutes.
+        MAX_EPOCHS_PLUS_ONE:
+            do not alter; (default is MAX_EPOCHS + 1).
     """
 
-    # region Class Variables, Instance Variables and Constructors
+    MAX_EPOCHS = None
+    MAX_EPOCHS_PLUS = None
 
-    def __init__(self, simfile_name: str, sid: int) -> None:
+    def __init__(self, simfile_name: str, sid: int, epochs: int) -> None:
         """Instantiates an Hivemind object.
 
         Args:
@@ -53,6 +58,9 @@ class Hivemind:
                 thus guaranteeing that different simulation instances do not
                 overwrite previous out files.
         """
+        Hivemind.MAX_EPOCHS = epochs
+        Hivemind.MAX_EPOCHS_PLUS_ONE = epochs + 1
+
         self.origin = simfile_name
         self.sim_id = sid
         self.epoch = 1
