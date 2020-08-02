@@ -64,7 +64,7 @@ Attributes:
 
 import os
 
-DEBUG: bool = True
+DEBUG: bool = False
 
 # region Simulation Settings
 
