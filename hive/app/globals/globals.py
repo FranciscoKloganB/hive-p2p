@@ -54,7 +54,7 @@ Attributes:
 
 import os
 
-DEBUG: bool = False
+DEBUG: bool = True
 
 # region Simulation Settings
 
@@ -66,7 +66,7 @@ MAX_DETECTION_DELAY: int = 4
 REPLICATION_LEVEL: int = 3
 MIN_CONVERGENCE_THRESHOLD: int = 2
 LOSS_CHANCE: float = 0.04
-
+ABS_TOLERANCE: float = 0.05
 # endregion
 
 # region DO NOT ALTER THESE
