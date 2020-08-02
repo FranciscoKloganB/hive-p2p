@@ -1,7 +1,7 @@
-from typing import List, Any
+import domain.Hivemind as hm
 
-from globals.globals import MIN_CONVERGENCE_THRESHOLD, MAX_EPOCHS, \
-    MAX_EPOCHS_PLUS
+from typing import List, Any
+from globals.globals import MIN_CONVERGENCE_THRESHOLD
 
 
 class SimulationData:
@@ -10,7 +10,8 @@ class SimulationData:
     Notes:
         Most attributes of this class are not documented in docstrings,
         but they are straight forward to understand. They are mostly lists of
-        length :py:const:`MAX_EPOCHS <globals.globals.MAX_EPOCHS>` that
+        length :py:const:`hm.Hivemind.MAX_EPOCHS
+        <globals.globals.hm.Hivemind.MAX_EPOCHS>` that
         contain data concerning the current state of simulation at the
         respective epoch times. For example, :py:attr:`~lost_parts` keeps
         a integers that represent how many file blocks were lost at each
@@ -42,7 +43,9 @@ class SimulationData:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
             to persist the file throughout
-            :py:const:`MAX_EPOCHS <globals.globals.MAX_EPOCHS>` time steps.
+            :py:const:`hm.Hivemind.MAX_EPOCHS
+            <globals.globals.hm.Hivemind.MAX_EPOCHS>` time
+            steps.
         messages (list of str):
             Set of at least one error message that led to the failure
             of the simulation or one success message, at termination epoch
@@ -53,28 +56,33 @@ class SimulationData:
     # region Class Variables, Instance Variables and Constructors
     def __init__(self) -> None:
         """Instanciates a SimulationData object for simulation event logging."""
+
+        max_epochs = hm.Hivemind.MAX_EPOCHS
+        max_epochs_plus_one = hm.Hivemind.MAX_EPOCHS_PLUS_ONE
+
         ###############################
         # Do not alter these
         self.cswc: int = 0
         self.largest_convergence_window: int = 0
         self.convergence_set: List[int] = []
         self.convergence_sets: List[List[int]] = []
-        self.terminated: int = MAX_EPOCHS
+        self.terminated: int = max_epochs
         self.successfull: bool = True
         self.messages = []
         ###############################
+
         ###############################
-        # Alter these
-        self.disconnected_workers: List[int] = [0] * MAX_EPOCHS
-        self.lost_parts: List[int] = [0] * MAX_EPOCHS_PLUS
-        self.hive_status_before_maintenance: List[str] = [""] * MAX_EPOCHS
-        self.hive_size_before_maintenance: List[int] = [0] * MAX_EPOCHS
-        self.hive_size_after_maintenance: List[int] = [0] * MAX_EPOCHS
-        self.delay: List[float] = [0.0] * MAX_EPOCHS_PLUS
-        self.moved_parts: List[int] = [0] * MAX_EPOCHS
-        self.corrupted_parts: List[int] = [0] * MAX_EPOCHS
-        self.lost_messages: List[int] = [0] * MAX_EPOCHS
-        self.parts_in_hive: List[int] = [0] * MAX_EPOCHS
+        # Alter these at will
+        self.disconnected_workers: List[int] = [0] * max_epochs
+        self.lost_parts: List[int] = [0] * max_epochs_plus_one
+        self.hive_status_before_maintenance: List[str] = [""] * max_epochs
+        self.hive_size_before_maintenance: List[int] = [0] * max_epochs
+        self.hive_size_after_maintenance: List[int] = [0] * max_epochs
+        self.delay: List[float] = [0.0] * max_epochs_plus_one
+        self.moved_parts: List[int] = [0] * max_epochs
+        self.corrupted_parts: List[int] = [0] * max_epochs
+        self.lost_messages: List[int] = [0] * max_epochs
+        self.parts_in_hive: List[int] = [0] * max_epochs
         self.initial_spread = ""
         ###############################
 

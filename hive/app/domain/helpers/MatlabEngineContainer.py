@@ -12,7 +12,7 @@ from globals.globals import MATLAB_DIR
 class MatlabEngineContainer:
     """Singleton class wrapper containing thread safe access to a MatlabEngine.
 
-    Attrs:
+    Attributes:
         eng:
             A matlab engine instance object used for matrix and vector
             optimization operations throughout the simulations.

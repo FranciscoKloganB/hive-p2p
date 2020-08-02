@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Any, Dict, IO
 
 import domain.Hive as h
+import domain.Hivemind as hm
+
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import *
 
@@ -118,7 +120,7 @@ class FileData:
             "sufficient_size_threshold": hive.sufficient_size,
             "original_hive_size": hive.original_size,
             "redundant_size": hive.redundant_size,
-            "max_epochs": MAX_EPOCHS,
+            "max_epochs": hm.Hivemind.MAX_EPOCHS,
             "min_recovery_delay": MIN_DETECTION_DELAY,
             "max_recovery_delay": MAX_DETECTION_DELAY,
             "replication_level": REPLICATION_LEVEL,

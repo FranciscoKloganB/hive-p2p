@@ -41,9 +41,9 @@ import domain.Hivemind as hm
 from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
 from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
 
-err_message = ("Invalid arguments. You must specify -f or -d options, e.g.:\n"
-               "    $ python hive_simulation.py -f simfilename.json\n"
-               "    $ python hive_simulation.py -d")
+__err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
+                   "    $ python hive_simulation.py -f simfilename.json\n"
+                   "    $ python hive_simulation.py -d")
 
 
 # region Module private functions (helpers)
@@ -66,7 +66,7 @@ def __can_exec_simfile(sname: str) -> None:
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
 
 
-def __execute_simulation(sname: str, sid: int) -> None:
+def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
     """Executes one instance of the simulation
 
     Args:
@@ -74,64 +74,76 @@ def __execute_simulation(sname: str, sid: int) -> None:
             The name of the simulation file to be executed.
         sid:
             A sequence number that identifies the simulation execution instance.
+        epochs:
+            The number of discrete time steps the simulation lasts.
     """
-    hm.Hivemind(sname, sid).execute_simulation()
+    hm.Hivemind(sname, sid, epochs).execute_simulation()
 
 
 def __parallel_main(
-        threads_count: int, sdir: bool, sname: str, iters: int) -> None:
+        threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
+) -> None:
+    """Helper method that initializes a multi-threaded simulation."""
     with ThreadPoolExecutor(max_workers=threads_count) as executor:
         if sdir:
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
                 for i in range(iters):
-                    executor.submit(__execute_simulation, sn, i)
+                    executor.submit(__execute_simulation, sn, i, epochs)
         else:
             __can_exec_simfile(sname)
             for i in range(iters):
-                executor.submit(__execute_simulation, sname, i)
+                executor.submit(__execute_simulation, sname, i, epochs)
 
 
-def __single_main(sdir, sname, iters):
+def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
+    """Helper function that initializes a single-threaded simulation."""
     if sdir:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
             for i in range(iters):
-                __execute_simulation(sn, i)
+                __execute_simulation(sn, i, epochs)
     else:
         __can_exec_simfile(sname)
         for i in range(iters):
-            __execute_simulation(sname, i)
+            __execute_simulation(sname, i, epochs)
 # endregion
 
 
-def main(threads_count: int, sdir: bool, sname: str, iters: int) -> None:
+def main(
+        threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
+) -> None:
     """Receives user input and initializes the simulation process.
 
     Args:
         threads_count:
-            Indicates if multiple simulation instances should run in parallel.
+            Indicates if multiple simulation instances should run in parallel
+            (default is 0, this results in running the simulation in a
+            single thread).
         sdir:
             Indicates if the user wishes to execute all simulation files
             that exist in :py:const:`~globals.globals.SIMULATION_ROOT` or
             if he wishes to run one single simulation file, which must be
-            explicitly specified in `sname`.
+            explicitly specified in `sname` (default is False).
         sname:
             When `sdir` is set to False, `sname` needs to be specified as a
             non blank string containing the name of the simulation file to
             be executed. The named file must exist in
             :py:const:`~globals.globals.SIMULATION_ROOT`.
         iters:
-            The number of times the same simulation file should be executed.
+            The number of times the same simulation file should be executed (
+            default is 30).
+        epochs:
+            The number of discrete time steps each iteration of each instance
+            of a simulation lasts.
     """
     MatlabEngineContainer.get_instance()
 
     if threads_count != 0:
-        print("hello multi")
-        __parallel_main(numpy.abs(threads_count).item(), sdir, sname, iters)
+        __parallel_main(
+            numpy.abs(threads_count).item(), sdir, sname, iters, epochs)
     else:
-        print("hello slow")
-        __single_main(sdir, sname, iters)
+        __single_main(sdir, sname, iters, epochs)
 
 
 if __name__ == "__main__":
@@ -141,10 +153,11 @@ if __name__ == "__main__":
     simdirectory = False
     simfile = None
     iterations = 30
+    duration = 720
 
     try:
-        short_opts = "df:i:t:"
-        long_opts = ["directory", "file=", "iters=", "threading="]
+        short_opts = "df:i:t:e:"
+        long_opts = ["directory", "file=", "iters=", "threading=", "epochs="]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
@@ -158,17 +171,20 @@ if __name__ == "__main__":
                     sys.exit("Simulation file name can not be blank.")
             if options in ("-i", "--iters"):
                 iterations = int(str(args).strip())
+            if options in ("-e", "--epochs"):
+                duration = int(str(args).strip())
 
         if simfile or simdirectory:
-            main(threading, simdirectory, simfile, iterations)
+            main(threading, simdirectory, simfile, iterations, duration)
         else:
-            sys.exit(err_message)
+            sys.exit(__err_message__)
 
     except getopt.GetoptError:
-        sys.exit(err_message)
+        sys.exit(__err_message__)
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "--iterations -i (int)\n"
+                 "--epochs -e (int)\n"
                  "--threading -t (int)\n"
                  "--directory -d (void)\n"
                  "--file -f (str)")

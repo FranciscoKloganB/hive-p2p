@@ -17,7 +17,7 @@ from domain.helpers.FileData import FileData
 from domain.helpers.SharedFilePart import SharedFilePart
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import REPLICATION_LEVEL, TRUE_FALSE, \
-    COMMUNICATION_CHANCES, MAX_EPOCHS, DEBUG, ABS_TOLERANCE
+    COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
 
 
@@ -394,7 +394,7 @@ class Hive:
             offline_workers: List[Worker] = self._workers_execute_epoch()
             self.evaluate_hive_convergence()
             self._membership_maintenance(offline_workers)
-            if epoch == MAX_EPOCHS:
+            if epoch == hm.Hivemind.MAX_EPOCHS:
                 self.running = False
         except Exception as e:
             self.set_fail(f"Exception caused simulation termination: {str(e)}")

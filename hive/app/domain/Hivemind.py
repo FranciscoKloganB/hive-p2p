@@ -10,12 +10,18 @@ from domain.Hive import Hive
 from domain.Worker import Worker
 from domain.helpers.Enums import Status
 from domain.helpers.SharedFilePart import SharedFilePart
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
-    MAX_EPOCHS_PLUS
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
 
 
 class Hivemind:
     """Simulation manager class. Plays the role of a master server for all Hives of the distributed backup system.
+
+    Class Attributes:
+        MAX_EPOCHS:
+            The number of time steps a simulation should have (default is 720).
+            On a 24 hour day, 720 means one epoch should occur every two minutes.
+        MAX_EPOCHS_PLUS_ONE:
+            do not alter; (default is MAX_EPOCHS + 1).
 
     Attributes:
         origin:
@@ -40,9 +46,10 @@ class Hivemind:
             their participation on any Hive.
     """
 
-    # region Class Variables, Instance Variables and Constructors
+    MAX_EPOCHS = None
+    MAX_EPOCHS_PLUS_ONE = None
 
-    def __init__(self, simfile_name: str, sid: int) -> None:
+    def __init__(self, simfile_name: str, sid: int, epochs: int) -> None:
         """Instantiates an Hivemind object.
 
         Args:
@@ -52,7 +59,12 @@ class Hivemind:
                 Identifier that generates unique output file names,
                 thus guaranteeing that different simulation instances do not
                 overwrite previous out files.
+            epochs:
+                The number of discrete time steps the simulation lasts.
         """
+        Hivemind.MAX_EPOCHS = epochs
+        Hivemind.MAX_EPOCHS_PLUS_ONE = epochs + 1
+
         self.origin = simfile_name
         self.sim_id = sid
         self.epoch = 1
@@ -104,7 +116,7 @@ class Hivemind:
 
     def execute_simulation(self) -> None:
         """Runs a stochastic swarm guidance algorithm applied to a P2P network"""
-        while self.epoch < MAX_EPOCHS_PLUS and self.hives:
+        while self.epoch < Hivemind.MAX_EPOCHS_PLUS_ONE and self.hives:
             # print("epoch: {}".format(self.epoch))
             terminated_hives: List[str] = []
             for hive in self.hives.values():
