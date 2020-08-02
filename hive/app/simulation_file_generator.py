@@ -1,17 +1,32 @@
+"""This module's functions are used to create a simulation file for the user.
+
+    You can create a simulation file by following the instructions that
+    appear in your terminal when running the following command::
+
+        $ python simulation_file_generator.py --file=filename.json
+
+    Notes:
+        Simulation files are placed in:
+        :py:const:`~globals.globals.SIMULATION_ROOT`.
+
+        Any file used to simulate persistance must be in:
+        :py:const:`~globals.globals.SHARED_ROOT`.
+"""
+import copy
+import getopt
+import itertools
+import json
+import logging
 import os
 import sys
-import copy
-import json
-import getopt
-import logging
-import itertools
+from pathlib import Path
+from typing import List, Dict, Any
 
 import numpy as np
 
-from pathlib import Path
-from typing import List, Dict, Any
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT
-from scripts.pyscripts import skewed_distribution_generator as sg, normal_distribution_generator as ng, label_generator as cg
+from scripts.pyscripts import normal_distribution_generator as ng, \
+    label_generator as cg
 
 
 # region Input Consumption and Verification
@@ -264,20 +279,6 @@ def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
 # endregion
 
 
-# region Helpers
-
-def usage():
-    print(" -------------------------------------------------------------------------")
-    print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
-    print(" Generates a simulation file that can be used as input to an HIVE simulation\n")
-    print(" Typical usage: python simulation_file_generator.py --simfile=filename.json\n")
-    print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
-    print(" -------------------------------------------------------------------------\n")
-    sys.exit(" ")
-
-# endregion
-
-
 # region Main
 
 def main(simfile_name: str):
@@ -298,20 +299,23 @@ def main(simfile_name: str):
 # noinspection DuplicatedCode
 if __name__ == "__main__":
     simfile_name_: str = ""
+
     try:
-        options, args = getopt.getopt(sys.argv[1:], "ups:", ["usage", "plotuptimedistr", "simfile="])
+        options, args = getopt.getopt(
+            sys.argv[1:], "pf:", ["plotuptimedistr", "file="])
+
         for options, args in options:
-            if options in ("-u", "--usage"):
-                usage()
             if options in ("-p", "--plotuptimedistr"):
                 ng.plot_uptime_distribution()
-            if options in ("-s", "--simfile"):
+            if options in ("-f", "--file"):
                 simfile_name_ = str(args).strip()
                 if simfile_name_:
                     main(simfile_name_)
                 else:
-                    sys.exit("Invalid simulation file id - blank id not allowed)...")
+                    sys.exit("Invalid simulation file - blank id not allowed")
+
     except getopt.GetoptError:
-        usage()
+        print("Usage: python simulation_file_generator.py "
+              "--file=filename.json")
 
 # endregion

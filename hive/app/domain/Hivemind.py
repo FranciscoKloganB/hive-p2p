@@ -1,40 +1,60 @@
 from __future__ import annotations
 
-import os
 import json
+import os
+from typing import List, Union, Dict, Any
+
 import numpy as np
 
 from domain.Hive import Hive
-from domain.helpers.Enums import Status
 from domain.Worker import Worker
-from typing import List, Union, Dict, Any
+from domain.helpers.Enums import Status
 from domain.helpers.SharedFilePart import SharedFilePart
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, MAX_EPOCHS_PLUS
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
+    MAX_EPOCHS_PLUS
 
 
 class Hivemind:
-    """
-    Representation of the P2P Network super node managing one or more hives ---- Simulator is piggybacked
-    :ivar int max_epochs: number of stages the hive has to converge to the ddv before simulation is considered disconnected
-    :ivar Dict[str, Hive] hives: collection mapping hives' uuid (attribute Hive.id) to the Hive instances
-    :ivar Dict[str, Worker] workers: collection mapping workers' names to their Worker instances
-    :ivar Dict[str, FileData] files_data: collection mapping file names on the system and their FileData instance
-    :ivar Dict[Union[Worker, str], int] workers_status: maps workers or their names to their connectivity status
-    :ivar Dict[str, List[FileData]] workers_hives: maps workers' names to hives they are known to belong to
-    :ivar Dict[str, float] workers_uptime: maps workers' names to their expected uptime
-    :ivar int sim_number: allows different simulation executions to be distinguishable from each other
+    """Simulation manager class. Plays the role of a master server for all Hives of the distributed backup system.
+
+    Attributes:
+        origin:
+            The name of the simulation file name that started the simulation
+            process.
+        sid:
+            Identifier that generates unique output file names,
+            thus guaranteeing that different simulation instances do not
+            overwrite previous out files.
+        epoch:
+            The simulation's current epoch.
+        hives:
+            A collection of :py:class:`~domain.Hive.Hive` instances managed
+            by the Hivemind.
+        workers:
+            A dictionary mapping network node identifiers names to their
+            object instances (:py:class:`~domain.Worker.Worker`). This
+            collection differs from the :py:class:`~domain.Hive.Hive`s'
+            attribute :py:attr:`~domain.Hive.Hive.members` in the sense that
+            the latter is only a subset of `workers`, which includes all
+            network nodes of the distributed backup system. Regardless of
+            their participation on any Hive.
     """
 
     # region Class Variables, Instance Variables and Constructors
 
-    def __init__(self, simfile_name: str, sim_number: int) -> None:
-        """
-        Instantiates an Hivemind object
-        :param str simfile_name: path to json file containing the parameters this simulation should execute with
-        :param int sim_number: allows different simulation executions to be distinguishable from each other
+    def __init__(self, simfile_name: str, sid: int) -> None:
+        """Instantiates an Hivemind object.
+
+        Args:
+            simfile_name:
+                A path to the simulation file to be run by the simulator.
+            sid:
+                Identifier that generates unique output file names,
+                thus guaranteeing that different simulation instances do not
+                overwrite previous out files.
         """
         self.origin = simfile_name
-        self.sim_number = sim_number
+        self.sim_id = sid
         self.epoch = 1
 
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
@@ -62,12 +82,13 @@ class Hivemind:
                     part_number: int = 0
                     file_parts = {}
                     files_spreads[file_name] = shared[file_name]['spread']
-                    hive = self.__new_hive(shared, file_name)  # Among other things, assigns initial Hive members to the instance, implicitly set routing tables
+                    hive = self.__new_hive(shared, file_name)
                     while True:
                         read_buffer = file.read(READ_SIZE)
                         if read_buffer:
                             part_number = part_number + 1
-                            file_parts[part_number] = SharedFilePart(hive.id, file_name, part_number, read_buffer)
+                            file_parts[part_number] = SharedFilePart(
+                                hive.id, file_name, part_number, read_buffer)
                         else:
                             files_dict[file_name] = file_parts
                             break
@@ -82,17 +103,15 @@ class Hivemind:
     # region Simulation Interface
 
     def execute_simulation(self) -> None:
-        """
-        Runs a stochastic swarm guidance algorithm applied to a P2P network
-        """
+        """Runs a stochastic swarm guidance algorithm applied to a P2P network"""
         while self.epoch < MAX_EPOCHS_PLUS and self.hives:
-            print("epoch: {}".format(self.epoch))
+            # print("epoch: {}".format(self.epoch))
             terminated_hives: List[str] = []
             for hive in self.hives.values():
                 hive.execute_epoch(self.epoch)
-                if not hive.is_running():
+                if not hive.running:
                     terminated_hives.append(hive.id)
-                    hive.tear_down(self.origin, self.epoch)
+                    hive.file.jwrite(hive, self.origin, self.epoch)
             for hid in terminated_hives:
                 print("Hive: {} terminated at epoch {}".format(hid, self.epoch))
                 self.hives.pop(hid)
@@ -103,10 +122,14 @@ class Hivemind:
     # region Keeper Interface
 
     def receive_complaint(self, suspects_name: str) -> None:
-        """
-        Registers a complaint on the named worker, if enough complaints are received, broadcasts proper action to all
-        hives' workers to which the suspect belonged to.
-        :param suspects_name: id of the worker which regards the complaint
+        """Registers a complain against a network node, if enough complaints are received, target is evicted from the complainters Hive.
+
+        Note:
+            This method needs implementation at the user descretion.
+
+        Args:
+            suspects_name:
+                A unique identifier of the suspicious network node.
         """
         # TODO future-iterations:
         #  1. register complaint
@@ -120,17 +143,25 @@ class Hivemind:
 
     # region Peer Search and Cloud References
 
-    def find_replacement_worker(self, exclusion_dict: Dict[str, Worker], quantity: int) -> Dict[str, Worker]:
-        """
-        Selects a worker who is at least as good as dead worker and updates FileData associated with the file
-        :param Dict[str, Worker] exclusion_dict: collection of worker ids that the calling hive haves no interest in, for any reason
-        :param int quantity: how many replacements the calling hive desires.
-        :returns Dict[str, Worker] selected_workers: a collection of replacements a hive can use w/o guarantees that enough, if at all, replacements are found
+    def find_replacement_worker(self, exclusion_dict: Dict[str, Worker], n: int) -> Dict[str, Worker]:
+        """Finds a collection of online network nodes that can be used to replace offline ones in an Hive.
+
+        Args:
+            exclusion_dict:
+                A dictionary of network nodes identifiers and their object
+                instances (:py:class:`~domain.Worker.Worker`),
+                which represent the nodes the Hive is not interested in,
+                i.e., this argument is a blacklist.
+            n:
+                How many replacements the calling Hive desires to find.
+
+        Returns:
+            A collection of replacements which is smaller or equal than `n`.
         """
         selected_workers: Dict[str, Worker] = {}
         workers_view = self.workers.copy().values()
         for worker in workers_view:
-            if len(selected_workers) == quantity:
+            if len(selected_workers) == n:
                 return selected_workers
             elif worker.status != Status.ONLINE:
                 self.workers.pop(worker.id, None)
@@ -139,9 +170,17 @@ class Hivemind:
         return selected_workers
 
     def get_cloud_reference(self) -> str:
-        """
-        TODO: future-iteration
-        :returns a cloud reference that can be used to persist files with more reliability
+        """Use to obtain a reference to 3rd party cloud storage provider
+
+        The cloud storage provider can be used to temporarely host files
+        belonging to Hives in bad status, thus increasing file durability
+        in the system.
+
+        Note:
+            TODO: This method requires implementation at the user descretion.
+
+        Returns:
+            A pointer to thhe cloud server, e.g., an IP Address.
         """
         return ""
 
@@ -149,15 +188,21 @@ class Hivemind:
 
     # region Helpers
 
-    def __new_hive(self, shared: Dict[str, Dict[str, Union[List[str], str]]], file_name: str) -> Hive:
+    def __new_hive(self,
+                   shared: Dict[str, Dict[str, Union[List[str], str]]],
+                   file_name: str) -> Hive:
         """
-        Creates a new hive
+        Helper method that initializes a new hive.
         """
         hive_members: Dict[str, Worker] = {}
-        initial_members: np.array = np.random.choice(a=[*self.workers.keys()], size=shared[file_name]['hive_size'], replace=False)
+        size = shared[file_name]['hive_size']
+        initial_members: np.array = np.random.choice(a=[*self.workers.keys()],
+                                                     size=size,
+                                                     replace=False)
         for member_id in initial_members:
             hive_members[member_id] = self.workers[member_id]
-        hive = Hive(self, file_name, hive_members, sim_number=self.sim_number, origin=self.origin)
+        hive = Hive(self, file_name, hive_members,
+                    sim_id=self.sim_id, origin=self.origin)
         self.hives[hive.id] = hive
         return hive
 

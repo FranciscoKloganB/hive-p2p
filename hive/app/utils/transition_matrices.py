@@ -1,46 +1,71 @@
-import matlab
-import matlab.engine as me
-import cvxpy as cvx
-import numpy as np
+"""This module is used by :py:class:`~domain.Hive.Hive to create transition matrices for the simulation.
+
+You should implement your own metropolis-hastings or alternative algorithms
+as well as any steady-state or transition matrix optimization algorithms in
+this module.
+"""
 
 from typing import Tuple, Union, Any, Optional
 
+import cvxpy as cvx
+import matlab
+import numpy as np
+
 from domain.exceptions.DistributionShapeError import DistributionShapeError
 from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
+from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 
 # region Markov Matrix Constructors
 
-def new_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
-    """ Constructs a transition matrix using metropolis-hastings algorithm for the distribution vector.
+def new_mh_transition_matrix(
+        a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
+    """ Constructs a transition matrix using metropolis-hastings.
+
+    Constructs a transition matrix using metropolis-hastings algorithm  for
+    the specified steady state `v`.
 
     Note:
-        The input Matrix hould have no transient states/absorbent nodes,
+        The input Matrix hould have no transient states or absorbent nodes,
         but this is not enforced or verified.
 
     Args:
         a:
-            Symmetric unoptimized adjency matrix.
+            A symmetric adjency matrix.
         v_:
-            Transition Markov Matrix for the desired, possibly non-uniform,
-            distribution vector v_ and respective mixing rate.
+            A stochastic steady state distribution vector.
 
     Returns:
-        A tuple with the transition matrix and the respective mixing rate.
+        Markov Matrix with `v_` as steady state distribution and the
+        respective mixing rate.
     """
     t = _metropolis_hastings(a, v_)
     return t, get_markov_matrix_fast_mixing_rate(t)
 
 
-def new_sdp_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
-    """
-    Constructs a transition matrix using metropolis-hastings algorithm for the desired distribution vector.
-    The provided adjacency matrix A is first optimized with semi-definite programming techniques for the uniform distribution vector.
-    :param np.ndarray a: Symmetric unoptimized adjency matrix.
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
+def new_sdp_mh_transition_matrix(
+        a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
+    """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
+
+    Constructs a transition matrix using metropolis-hastings algorithm  for
+    the specified steady state `v`. The provided adjacency matrix A is first
+    optimized with semi-definite programming techniques for the uniform
+    distribution vector.
+
+    Note:
+        This function only works if you have a valid MOSEK license.
+
+    Args:
+        a:
+            A non-optimized symmetric adjency matrix.
+        v_:
+            A stochastic steady state distribution vector.
+
+    Returns:
+        Markov Matrix with `v_` as steady state distribution and the
+        respective mixing rate.
     """
     problem, a = _adjency_matrix_sdp_optimization(a)
     if problem.status in OPTIMAL_STATUS:
@@ -50,13 +75,27 @@ def new_sdp_mh_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[N
         return None, float('inf')
 
 
-def new_go_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None, np.ndarray], float]:
-    """
-    Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
-    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
-    :param np.ndarray a: Symmetric unoptimized adjency matrix.
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
+def new_go_transition_matrix(
+        a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
+    """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
+
+    Constructs an optimized markov matrix using linear programming relaxations
+    and convex envelope approximations for the specified steady state `v`.
+    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform
+    Matrix, 2) is equal to the markov matrix eigenvalue.
+
+    Note:
+        This function only works if you have a valid MOSEK license.
+
+    Args:
+        a:
+            A non-optimized symmetric adjency matrix.
+        v_:
+            A stochastic steady state distribution vector.
+
+    Returns:
+        Markov Matrix with `v_` as steady state distribution and the
+        respective mixing rate.
     """
     # Allocate python variables
     n: int = a.shape[0]
@@ -87,19 +126,32 @@ def new_go_transition_matrix(a: np.ndarray, v_: np.ndarray) -> Tuple[Union[None,
     return None, float('inf')
 
 
-def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: me.MatlabEngine) -> Tuple[Union[np.ndarray, None], float]:
+def new_mgo_transition_matrix(
+        a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
+    """Constructs an optimized transition matrix using the matlab engine.
+
+    Constructs an optimized transition matrix using linear programming
+    relaxations and convex envelope approximations for the specified steady
+    state `v`. Result is only trully optimal if normal(Tranistion Matrix Opt
+    - Uniform Matrix, 2) is equal to the markov matrix eigenvalue. The code
+    is run on a matlab engine because it provides a non-convex SDP solver ç
+    BMIBNB.
+
+    Note:
+        This function can only be invoked if you have a valid matlab license.
+
+    Args:
+        a:
+            A non-optimized symmetric adjency matrix.
+        v_:
+            A stochastic steady state distribution vector.
+
+    Returns:
+        Markov Matrix with `v_` as steady state distribution and the
+        respective mixing rate.
     """
-    Constructs a transition matrix using linear programming relaxations and convex envelope approximations for the desired distribution vector.
-    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform Matrix, 2) is equal to the markov matrix eigenvalue.
-    The code is run on a matlab engine because it provides a non-convex SDP solver BMIBNB.
-    :param np.ndarray a: Symmetric unoptimized adjency matrix.
-    :param np.ndarray v_: a stochastic desired distribution vector
-    :param mleng.MatlabEngine eng: an instance of a running matlab engine.
-    :returns Tuple[np.ndarray, float] (T, mrate): Transition Markov Matrix for the desired, possibly non-uniform, distribution vector v_ and respective mixing rate
-    """
-    a = matlab.double(a.tolist())
-    v = matlab.double(v_.tolist())
-    result = eng.matrixGlobalOpt(a, v, nargout=1)
+    matlab_container = MatlabEngineContainer.get_instance()
+    result = matlab_container.matrix_global_opt(a, v_)
     if result:
         t = np.array(result._data).reshape(result.size, order='F').T
         return t, get_markov_matrix_fast_mixing_rate(t)
@@ -110,8 +162,7 @@ def go_with_matlab_bmibnb_solver(a: np.ndarray, v_: np.ndarray, eng: me.MatlabEn
 # region Optimization
 
 def _adjency_matrix_sdp_optimization(
-        a: np.ndarray
-) -> Optional[Tuple[cvx.Problem, cvx.Variable]]:
+        a: np.ndarray) -> Optional[Tuple[cvx.Problem, cvx.Variable]]:
     """Optimizes a symmetric adjacency matrix using Semidefinite Programming.
 
     The optimization is done with respect to the uniform stochastic vector
@@ -180,10 +231,10 @@ def _metropolis_hastings(a: np.ndarray,
             A stochastic vector that is the steady state of the resulting
             transition matrix.
         column_major_in:
-            Optional; Indicates whether adj_matrix given in input is in row
+            optional; Indicates whether adj_matrix given in input is in row
             or column major form.
         column_major_out:
-            Optional; Indicates whether to return transition_matrix output
+            optional; Indicates whether to return transition_matrix output
             is in row or column major form.
 
     Returns:
@@ -229,8 +280,7 @@ def _metropolis_hastings(a: np.ndarray,
 
 
 def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
-    """
-    Builds a random walk matrix over the given adjacency matrix
+    """Builds a random walk matrix over the given adjacency matrix
 
     Args:
         a:
@@ -250,8 +300,7 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
 
 
 def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
-    """
-    Builds a rejection matrix for a given rejection matrix rw and vector v_.
+    """Builds a rejection matrix for a given rejection matrix rw and vector v_.
 
     Args:
         v_:
@@ -272,8 +321,9 @@ def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
     return r
 
 
-def __get_diagonal_entry_probability(rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
-    """ Helper function used by _metropolis_hastings function.
+def __get_diagonal_entry_probability(
+        rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
+    """Helper function used by _metropolis_hastings function.
 
     Calculates the value that should be assigned to the entry (i, i) of the
     transition matrix being calculated by the metropolis hastings algorithm
@@ -304,18 +354,26 @@ def __get_diagonal_entry_probability(rw: np.ndarray, r: np.ndarray, i: int) -> n
 
 # region Helpers
 
-def get_markov_matrix_fast_mixing_rate(M: np.ndarray) -> float:
-    """
-    Returns the expected fast mixing rate of matrix M, i.e., the highest eigenvalue that is smaller than one. If returned value is 1.0 than M has transient states or absorbent nodes.
-    :param np.ndarray M: A Markov Matrix, i.e., a square stochastic transition matrix.
-    :returns float mixing_rate: The highest eigenvalue of matrix M that is smaller than one.
-    """
-    size = M.shape[0]
+def get_markov_matrix_fast_mixing_rate(m: np.ndarray) -> float:
+    """Calculats the fast mixing rate the input matrix.
 
-    if size != M.shape[1]:
+    The fast mixing rate of matrix M is the highest eigenvalue that is
+    smaller than one. If returned value is 1.0 than the matrix has transient
+    states or absorbent nodes.
+
+    Args:
+        m:
+            A matrix.
+
+    Returns:
+        The highest eigenvalue of `m` that is smaller than one or one.
+    """
+    size = m.shape[0]
+
+    if size != m.shape[1]:
         raise MatrixNotSquareError("get_max_eigenvalue can't compute eigenvalues/vectors with non-square matrix input.")
 
-    eigenvalues, eigenvectors = np.linalg.eig(M - np.ones((size, size)) / size)
+    eigenvalues, eigenvectors = np.linalg.eig(m - np.ones((size, size)) / size)
     mixing_rate = np.max(np.abs(eigenvalues))
     return mixing_rate.item()
 

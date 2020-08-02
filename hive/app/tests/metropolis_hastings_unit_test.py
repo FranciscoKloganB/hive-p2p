@@ -1,8 +1,17 @@
 import sys
+
 import numpy as np
+
 import utils.transition_matrices as mH
 
-from utils.printers import print_test, print_pow
+
+def print_test(name, expect, result, accept):
+    print(f"{name}\nexpect: \n{expect}\ngot: \n{result}\naccept: {accept}\n")
+    return accept
+
+
+def print_pow(matrix):
+    print(f"---------------------------------\npowered matrix:{matrix}")
 
 
 # region unit tests

@@ -5,12 +5,10 @@ import getopt
 import json
 import os
 import sys
-from itertools import zip_longest
-from typing import List, Dict, Tuple
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.font_manager import FontProperties
 
 
 def usage():

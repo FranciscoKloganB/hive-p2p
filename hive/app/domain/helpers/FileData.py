@@ -1,93 +1,113 @@
 from __future__ import annotations
 
 import json
-
-import numpy as np
-import pandas as pd
-import domain.Hive as h
-
 from pathlib import Path
-from tabulate import tabulate
-from typing import Any, Union, Dict, List
+from typing import Any, Dict, IO
 
-from globals.globals import *
+import domain.Hive as h
 from domain.helpers.SimulationData import SimulationData
+from globals.globals import *
 
 
 class FileData:
-    """
-    Helper class for domain.Hivemind to keep track of how many parts exist of a file, the number of file parts expected
-    to be within the long-term highest density node among other information.
-    :ivar str name: the name of the original file
-    :ivar int parts_count: the total number of parts the original file was split into, excluding replicas
-    :ivar pd.DataFrame desired_distribution: file density distribution hive members must achieve with independent realizations for ideal persistence of the file
-    :ivar pd.DataFrame current_distribution: tracks current of file distribution, updated at each epoch
-    :ivar ConvergenceData simulation_data: instance object with general information w.r.t. the simulation
+    """Holds essential simulation data concerning files being persisted.
+
+    FileData is a helper class which has responsabilities such as tracking
+    how many parts including replicas exist of the named file and managing
+    the persistence of logged simulation data to disk.
+
+    Attributes:
+        name (str):
+            The name of the original file.
+        parts_in_hive (int):
+            The number of file parts including replicas that exist for the
+            named file that exist in the simulation. Updated every epoch.
+        simulation_data (SimulationData):
+            Object that stores captured simulation data. Stored data can be
+            post-processed using user defined scripts to create items such
+            has graphs and figures. See :py:class:`SimulationData
+            <domain.helpers.SimulationData.SimulationData`
+        out_file (str/bytes/int):
+            File output stream to where captured data is written in append mode.
     """
 
-    # region Class Variables, Instance Variables and Constructors
-    def __init__(self, name: str, sim_number: int = 0, origin: str = ""):
-        """
-        :param str name: name of the file referenced by this data class instance
-        :param int sim_number: optional value that can be passed to FileData to generate different .out names
+    def __init__(self, name: str, sim_id: int = 0, origin: str = "") -> None:
+        """Creates an instance of FileData
+
+        Args:
+            name:
+                Name of the file to be referenced by the FileData object.
+            sim_id:
+                optional; Identifier that generates unique output file names,
+                thus guaranteeing that different simulation instances do not
+                overwrite previous out files.
+            origin:
+                optional; The name of the simulation file name that started
+                the simulation process.
         """
         self.name: str = name
-        self.desired_distribution: Union[None, pd.DataFrame] = None
-        self.current_distribution: Union[None, pd.DataFrame] = None
-        self.simulation_data: SimulationData = SimulationData()
-        self.out_file: Any = open(os.path.join(
-            OUTFILE_ROOT, "{}_{}{}.{}".format(Path(name).resolve().stem, Path(origin).resolve().stem, sim_number, "json")
-        ), "w+")
         self.parts_in_hive = 0
-    # endregion
+        self.simulation_data: SimulationData = SimulationData()
+        self.out_file: IO = open(
+            os.path.join(
+                OUTFILE_ROOT, "{}_{}{}.{}".format(
+                    Path(name).resolve().stem,
+                    Path(origin).resolve().stem,
+                    sim_id,
+                    "json")
+            ), "w+")
 
-    # region Instance Methods
-    def equal_distributions(self, parts_in_hive: int) -> bool:
+    def fwrite(self, msg: str) -> None:
+        """Writes a message to the output file referenced by the FileData object.
+
+        The method fwrite automatically adds a new line to the inputted message.
+
+        Args:
+            msg:
+                The message to be logged on the output file.
         """
-        Delegates distribution comparison to ConvergenceData.equal_distributions static method
+        self.out_file.write(msg + "\n")
+
+    def jwrite(self, hive: h.Hive, origin: str, epoch: int) -> None:
+        """Writes a JSON string of the SimulationData instance to the output file.
+
+        The logged data is defined by the attributes of the
+        :py:class:`SimulationData <domain.helpers.SimulationData.SimulationData`
+         class.
+
+        Args:
+            hive:
+                The :py:class:`Hive <domain.Hive.Hive>` object that manages
+                the simulated persistence of the referenced file.
+            origin:
+                The name of the simulation file that started the simulation
+                process.
+            epoch:
+                The epoch at which the SimulationData was logged into the
+                output file.
+
         """
-        if parts_in_hive == 0:
-            return False
+        sd: SimulationData = self.simulation_data
 
-        size = len(self.current_distribution)
-        for i in range(size):
-            tolerance = self.new_tolerance(parts_in_hive)
-            b = np.ceil(self.desired_distribution.iloc[i, DEFAULT_COL] * parts_in_hive)
-            a = self.current_distribution.iloc[i, DEFAULT_COL]
-            if np.abs(a - b) > tolerance:
-                return False
-        return True
-    # endregion
+        sd.save_sets_and_reset()
 
-    # region File I/O
-    def fwrite(self, string: str) -> None:
-        """
-        Writes to the out_file referenced by the FileData's instance out_file field in append mode
-        :param str string: a message to write to file
-        """
-        self.out_file.write(string + "\n")
+        if not sd.messages:
+            sd.messages.append("completed simulation successfully")
 
-    def jwrite(self, hive: h.Hive, origin: str, epoch: int):
-        sim_data: SimulationData = self.simulation_data
-        if not sim_data.msg:
-            sim_data.msg.append("completed simulation successfully")
-        if DEBUG:
-            [print("* {};".format(reason)) for reason in sim_data.msg]
+        sd.parts_in_hive = sd.parts_in_hive[:epoch]
 
-        sim_data.parts_in_hive = sim_data.parts_in_hive[:epoch]
+        sd.disconnected_workers = sd.disconnected_workers[:epoch]
+        sd.lost_parts = sd.lost_parts[:epoch]
 
-        sim_data.disconnected_workers = sim_data.disconnected_workers[:epoch]
-        sim_data.lost_parts = sim_data.lost_parts[:epoch]
+        sd.hive_status_before_maintenance = sd.hive_status_before_maintenance[:epoch]
+        sd.hive_size_before_maintenance = sd.hive_size_before_maintenance[:epoch]
+        sd.hive_size_after_maintenance = sd.hive_size_after_maintenance[:epoch]
 
-        sim_data.hive_status_before_maintenance = sim_data.hive_status_before_maintenance[:epoch]
-        sim_data.hive_size_before_maintenance = sim_data.hive_size_before_maintenance[:epoch]
-        sim_data.hive_size_after_maintenance = sim_data.hive_size_after_maintenance[:epoch]
+        sd.delay = sd.delay[:epoch]
 
-        sim_data.delay = sim_data.delay[:epoch]
-
-        sim_data.moved_parts = sim_data.moved_parts[:epoch]
-        sim_data.corrupted_parts = sim_data.corrupted_parts[:epoch]
-        sim_data.lost_messages = sim_data.lost_messages[:epoch]
+        sd.moved_parts = sd.moved_parts[:epoch]
+        sd.corrupted_parts = sd.corrupted_parts[:epoch]
+        sd.lost_messages = sd.lost_messages[:epoch]
 
         extras: Dict[str, Any] = {
             "simfile_name": origin,
@@ -107,58 +127,50 @@ class FileData:
             "corruption_chance_tod": hive.corruption_chances[0]
         }
 
-        sim_data_dict = sim_data.__dict__
+        sim_data_dict = sd.__dict__
         sim_data_dict.update(extras)
-        json_string = json.dumps(sim_data_dict, indent=4, sort_keys=True, ensure_ascii=False)
+        json_string = json.dumps(
+            sim_data_dict, indent=4, sort_keys=True, ensure_ascii=False)
+
         self.fwrite(json_string)
 
-    def fclose(self, string: str = None) -> None:
+    def fclose(self, msg: str = None) -> None:
+        """Closes the output file controlled by the FileData instance.
+
+        Args:
+             msg:
+                optional; If filled, a termination message is logged into the
+                output file that is being closed.
         """
-        Closes the out_file referenced by the FileData's instance out_file field
-        :param str string: if filled, a message is written in append mode before closing the out_file
-        """
-        if string:
-            self.fwrite(string)
+        if msg:
+            self.fwrite(msg)
         self.out_file.close()
-    # endregion
 
     # region Overrides
+
     def __hash__(self):
-        # allows a worker object to be used as a dictionary key
+        """Override to allows a network node object to be used as a dict key
+
+        Returns:
+            The hash of value of the referenced file :py:attr:`~name`.
+        """
         return hash(str(self.name))
 
     def __eq__(self, other):
+        """Compares if two instances of FileData are equal.
+
+        Equality is based on name equality.
+
+        Returns:
+            True if the name attribute of both instances is the same,
+            otherwise False.
+        """
         if not isinstance(other, FileData):
             return False
         return self.name == other.name
 
     def __ne__(self, other):
+        """Compares if two instances of FileData are not equal."""
         return not(self == other)
-    # endregion
-
-    # region Helpers
-
-    def new_desired_distribution(self, desired_distribution: pd.DataFrame, member_ids: List[str]) -> None:
-        self.desired_distribution = desired_distribution
-        self.current_distribution = pd.DataFrame(data=[0] * len(desired_distribution), index=member_ids)
-
-    def new_tolerance(self, parts_in_hive) -> np.float64:
-        tolerance = parts_in_hive * 0.1
-        if (self.parts_in_hive == 0):
-            tolerance = self.desired_distribution[DEFAULT_COL].max() - self.desired_distribution[DEFAULT_COL].min() * parts_in_hive
-        else:
-            tolerance = self.desired_distribution[DEFAULT_COL].max() * parts_in_hive
-        return np.ceil(np.abs(tolerance))
-
-    def print_distributions(self, normalized_cdv: List[float]) -> None:
-        text = "Desired Distribution:\n{}\nCurrent Distribution:\n{}\n"
-        self.fwrite(text.format(tabulate(self.desired_distribution, headers='keys', tablefmt='psql'), tabulate(normalized_cdv, headers='keys', tablefmt='psql')))
-
-    def reset_convergence_data(self) -> None:
-        """
-        Resets the FileData instance field simulation_data by delegation to ConvergenceData instance method
-        """
-        self.simulation_data.save_sets_and_reset()
 
     # endregion
-

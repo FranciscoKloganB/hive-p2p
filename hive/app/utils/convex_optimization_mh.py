@@ -1,12 +1,19 @@
-import os
-import matlab as m
-import matlab.engine as me
-import cvxpy as cvx
-import numpy as np
+"""This is a non-essential module used for convex optimization prototyping.
 
+You can modify, extend or delete the module without consequences. Use as you
+see fit.
+"""
+
+import os
 from typing import List, Tuple, Optional
 
-# region Functions Under Testing
+import cvxpy as cvx
+import matlab as m
+import matlab.engine as me
+import numpy as np
+
+
+# region Module Private Functions
 
 
 def __adjency_matrix_sdp_optimization(a: List[List[int]]) -> Optional[np.ndarray]:
@@ -184,15 +191,15 @@ def __get_diagonal_entry_probability(rw: np.ndarray, r: np.ndarray, i: int) -> n
 
 # endregion
 
-# region Main
-def first_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
+# region Magic Methods
+def __first_method__(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
     markov_matrix = __metropolis_hastings(A, v_)
     eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
     mixing_rate = np.max(np.abs(eigenvalues))
     print(f"Pure Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
 
 
-def second_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
+def __second_method__(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
     adj_matrix_optimized = __adjency_matrix_sdp_optimization(A)
     markov_matrix = __metropolis_hastings(adj_matrix_optimized, v_)
     eigenvalues, eigenvectors = np.linalg.eig(markov_matrix - U)
@@ -200,7 +207,7 @@ def second_method(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
     print(f"SDP Optimization before Metropolis-Hastings generation...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
 
 
-def third_method(A: np.ndarray, v_: np.ndarray) -> None:
+def __third_method__(A: np.ndarray, v_: np.ndarray) -> None:
     matlab_scripts_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'scripts', 'matlabscripts')))
     try:
         eng = me.start_matlab()
@@ -213,20 +220,20 @@ def third_method(A: np.ndarray, v_: np.ndarray) -> None:
         print(f"Global Optimization generation with MatLab...\nMixing rate: {mixing_rate}\nResulting Markov Matrix is: \n{markov_matrix}")
     except me.EngineError as error:
         print(str(error))
+# endregion
 
 
-def main() -> None:
+if __name__ == "__main__":
+    print(f"installed solvers: {cvx.installed_solvers()}")
+    # setup testing variables
     n = 4
     v_ = np.asarray([0.1, 0.3, 0.4, 0.2])
     A = np.asarray([[1, 0, 1, 0],
                     [0, 1, 1, 1],
                     [1, 1, 1, 0],
                     [0, 1, 0, 1]])
-    third_method(A, v_)
-
-
-if __name__ == "__main__":
-    print(f"installed solvers: {cvx.installed_solvers()}")
-    main()
-
-# endregion
+    U = np.asarray(np.ones(n)) / n
+    # test module's functions
+    __first_method__(A, v_, U)
+    __second_method__(A, v_, U)
+    __third_method__(A, v_)
