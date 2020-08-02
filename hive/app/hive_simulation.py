@@ -39,8 +39,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 import domain.Hivemind as hm
 from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
-from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT, \
-    __change_max_epochs__
+from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
 
 __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
@@ -106,9 +105,7 @@ def __single_main(sdir, sname, iters):
 # endregion
 
 
-def main(
-        threads_count: int, sdir: bool, sname: str, iters: int, time: int
-) -> None:
+def main(threads_count: int, sdir: bool, sname: str, iters: int) -> None:
     """Receives user input and initializes the simulation process.
 
     Args:
@@ -129,14 +126,8 @@ def main(
         iters:
             The number of times the same simulation file should be executed (
             default is 30).
-        time:
-            The time in discrete time steps, i.e., the number of epochs each
-            iteration of each instance of a simulation will last (default is
-            720).
     """
     MatlabEngineContainer.get_instance()
-
-    __change_max_epochs__(epochs)
 
     if threads_count != 0:
         __parallel_main(numpy.abs(threads_count).item(), sdir, sname, iters)
@@ -173,7 +164,7 @@ if __name__ == "__main__":
                 epochs = int(str(args).strip())
 
         if simfile or simdirectory:
-            main(threading, simdirectory, simfile, iterations, epochs)
+            main(threading, simdirectory, simfile, iterations)
         else:
             sys.exit(__err_message__)
 
