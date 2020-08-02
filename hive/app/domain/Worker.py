@@ -9,9 +9,10 @@ import numpy as np
 import pandas as pd
 
 import domain.Hive as h
+import domain.Hivemind as hm
+
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
-from globals.globals import MAX_EPOCHS
 from utils import crypto
 
 
@@ -80,7 +81,7 @@ class Worker:
         if uptime == 1.0:
             uptime = float('inf')
         else:
-            uptime = math.floor(uptime * MAX_EPOCHS)
+            uptime = math.floor(uptime * hm.Hivemind.MAX_EPOCHS)
 
         self.id: str = uid
         self.uptime: float = uptime

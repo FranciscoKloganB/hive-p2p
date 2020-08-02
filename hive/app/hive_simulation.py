@@ -66,7 +66,7 @@ def __can_exec_simfile(sname: str) -> None:
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
 
 
-def __execute_simulation(sname: str, sid: int) -> None:
+def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
     """Executes one instance of the simulation
 
     Args:
@@ -74,38 +74,45 @@ def __execute_simulation(sname: str, sid: int) -> None:
             The name of the simulation file to be executed.
         sid:
             A sequence number that identifies the simulation execution instance.
+        epochs:
+            The number of discrete time steps the simulation lasts.
     """
-    hm.Hivemind(sname, sid).execute_simulation()
+    hm.Hivemind(sname, sid, epochs).execute_simulation()
 
 
 def __parallel_main(
-        threads_count: int, sdir: bool, sname: str, iters: int) -> None:
+        threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
+) -> None:
+    """Helper method that initializes a multi-threaded simulation."""
     with ThreadPoolExecutor(max_workers=threads_count) as executor:
         if sdir:
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
                 for i in range(iters):
-                    executor.submit(__execute_simulation, sn, i)
+                    executor.submit(__execute_simulation, sn, i, epochs)
         else:
             __can_exec_simfile(sname)
             for i in range(iters):
-                executor.submit(__execute_simulation, sname, i)
+                executor.submit(__execute_simulation, sname, i, epochs)
 
 
-def __single_main(sdir, sname, iters):
+def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
+    """Helper function that initializes a single-threaded simulation."""
     if sdir:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
             for i in range(iters):
-                __execute_simulation(sn, i)
+                __execute_simulation(sn, i, epochs)
     else:
         __can_exec_simfile(sname)
         for i in range(iters):
-            __execute_simulation(sname, i)
+            __execute_simulation(sname, i, epochs)
 # endregion
 
 
-def main(threads_count: int, sdir: bool, sname: str, iters: int) -> None:
+def main(
+        threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
+) -> None:
     """Receives user input and initializes the simulation process.
 
     Args:
@@ -126,13 +133,17 @@ def main(threads_count: int, sdir: bool, sname: str, iters: int) -> None:
         iters:
             The number of times the same simulation file should be executed (
             default is 30).
+        epochs:
+            The number of discrete time steps each iteration of each instance
+            of a simulation lasts.
     """
     MatlabEngineContainer.get_instance()
 
     if threads_count != 0:
-        __parallel_main(numpy.abs(threads_count).item(), sdir, sname, iters)
+        __parallel_main(
+            numpy.abs(threads_count).item(), sdir, sname, iters, epochs)
     else:
-        __single_main(sdir, sname, iters)
+        __single_main(sdir, sname, iters, epochs)
 
 
 if __name__ == "__main__":
@@ -142,7 +153,7 @@ if __name__ == "__main__":
     simdirectory = False
     simfile = None
     iterations = 30
-    epochs = 720
+    duration = 720
 
     try:
         short_opts = "df:i:t:e:"
@@ -161,10 +172,10 @@ if __name__ == "__main__":
             if options in ("-i", "--iters"):
                 iterations = int(str(args).strip())
             if options in ("-e", "--epochs"):
-                epochs = int(str(args).strip())
+                duration = int(str(args).strip())
 
         if simfile or simdirectory:
-            main(threading, simdirectory, simfile, iterations)
+            main(threading, simdirectory, simfile, iterations, duration)
         else:
             sys.exit(__err_message__)
 
