@@ -30,20 +30,32 @@
 
             3. An output file simdirectory exists with default path being:
             :py:const:`~globals.globals.OUTFILE_ROOT`.
+
+    Attributes:
+        MAX_EPOCHS:
+            The number of time steps a simulation should have (default is 720).
+            On a 24 hour day, 720 means one epoch should occur every two minutes.
+        MAX_EPOCHS_PLUS:
+            do not alter; (default is MAX_EPOCHS + 1).
 """
+import getopt
 import os
 import sys
-import numpy
-import getopt
 from concurrent.futures.thread import ThreadPoolExecutor
+
+import numpy
 
 import domain.Hivemind as hm
 from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
-from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
 
-err_message = ("Invalid arguments. You must specify -f or -d options, e.g.:\n"
-               "    $ python hive_simulation.py -f simfilename.json\n"
-               "    $ python hive_simulation.py -d")
+__err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
+                   "    $ python hive_simulation.py -f simfilename.json\n"
+                   "    $ python hive_simulation.py -d")
+
+from globals.globals import SHARED_ROOT, SIMULATION_ROOT, OUTFILE_ROOT
+
+MAX_EPOCHS = 720
+MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 
 
 # region Module private functions (helpers)
@@ -127,10 +139,8 @@ def main(threads_count: int, sdir: bool, sname: str, iters: int) -> None:
     MatlabEngineContainer.get_instance()
 
     if threads_count != 0:
-        print("hello multi")
         __parallel_main(numpy.abs(threads_count).item(), sdir, sname, iters)
     else:
-        print("hello slow")
         __single_main(sdir, sname, iters)
 
 
@@ -143,8 +153,8 @@ if __name__ == "__main__":
     iterations = 30
 
     try:
-        short_opts = "df:i:t:"
-        long_opts = ["directory", "file=", "iters=", "threading="]
+        short_opts = "df:i:t:e:"
+        long_opts = ["directory", "file=", "iters=", "threading=", "epochs="]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
@@ -158,17 +168,19 @@ if __name__ == "__main__":
                     sys.exit("Simulation file name can not be blank.")
             if options in ("-i", "--iters"):
                 iterations = int(str(args).strip())
-
+            if options in ("-e", "--epochs"):
+                MAX_EPOCHS = int(str(args).strip())
         if simfile or simdirectory:
             main(threading, simdirectory, simfile, iterations)
         else:
-            sys.exit(err_message)
+            sys.exit(__err_message__)
 
     except getopt.GetoptError:
-        sys.exit(err_message)
+        sys.exit(__err_message__)
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "--iterations -i (int)\n"
+                 "--epochs -e (int)"
                  "--threading -t (int)\n"
                  "--directory -d (void)\n"
                  "--file -f (str)")
