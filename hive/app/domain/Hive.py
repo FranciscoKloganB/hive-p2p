@@ -412,7 +412,7 @@ class Hive:
         for the Hive and, performs logging invocations.
         """
         if not self.members:
-            self.set_fail("hive has no remaining members")
+            self.set_fail("Hive has no remaining members.")
 
         parts_in_hive: int = 0
         for worker in self.members.values():
@@ -426,7 +426,7 @@ class Hive:
         self.file.simulation_data.set_parts_at_index(parts_in_hive, self.current_epoch)
 
         if not parts_in_hive:
-            self.set_fail("hive has no remaining parts")
+            self.set_fail("Hive has no remaining parts.")
 
         self.file.parts_in_hive = parts_in_hive
         if self.equal_distributions():
