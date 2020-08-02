@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import math
-import os
 import random
 import uuid
 from typing import Dict, List, Any, Tuple, Optional
 
 import numpy as np
 import pandas as pd
+from tabulate import tabulate
 
 import domain.Hivemind as hm
 import utils.transition_matrices as tmg
@@ -17,7 +17,7 @@ from domain.helpers.FileData import FileData
 from domain.helpers.SharedFilePart import SharedFilePart
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import REPLICATION_LEVEL, DEFAULT_COL, TRUE_FALSE, \
-    COMMUNICATION_CHANCES, MAX_EPOCHS
+    COMMUNICATION_CHANCES, MAX_EPOCHS, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
 
 
@@ -425,7 +425,7 @@ class Hive:
 
         self.file.simulation_data.set_parts_at_index(parts_in_hive, self.current_epoch)
 
-        if not parts_in_hive:
+        if parts_in_hive <= 0:
             self.set_fail("Hive has no remaining parts.")
 
         self.file.parts_in_hive = parts_in_hive
@@ -441,38 +441,27 @@ class Hive:
     def equal_distributions(self) -> bool:
         """Infers if v_ and cv_ are equal.
 
-        Equalility is calculated given a tolerance value calculated by
-        FileData method defined at :py:method:`~new_tolerance() <FileData.new_tolerance>`.
+        Equalility is calculated using numpy allclose function which has the
+        following formula::
+
+            $ absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
 
         Returns:
             True if distributions are close enough to be considered equal,
             otherwise, it returns False.
         """
-        if self.file.parts_in_hive == 0:
-            return False
+        pcount = self.file.parts_in_hive
 
-        size = len(self.cv_)
-        tolerance = self.new_tolerance()
-        for i in range(size):
-            a = self.cv_.iloc[i, DEFAULT_COL]
-            b = np.ceil(self.v_.iloc[i, DEFAULT_COL] * self.file.parts_in_hive)
-            if np.abs(a - b) > tolerance:
-                return False
-        return True
+        target = self.v_.multiply(pcount)
+        rtol = self.v_[DEFAULT_COL].min()
+        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
 
-    def new_tolerance(self) -> np.float64:
-        """Calculates a tolerance value for the current epoch of the simulation.
+        if DEBUG:
+            tv_ = tabulate(target, headers='keys', tablefmt='psql')
+            tcv_ = tabulate(self.cv_, headers='keys', tablefmt='psql')
+            print(f"v_:\n   {tv_}\ncv_:\n   {tcv_}\n")
 
-        The tolerance is given by the maximum value in the desired
-        distribution minus the minimum value times the numbers of parts,
-        including replicas.
-
-        Returns:
-            The tolerance for the current epoch.
-        """
-        max_value = self.v_[DEFAULT_COL].max()
-        min_value = self.v_[DEFAULT_COL].min()
-        return np.abs(max_value - min_value) * self.file.parts_in_hive
+        return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
     def _setup_epoch(self, epoch: int) -> None:
         """Initializes some attributes of the Hive during its initialization.
