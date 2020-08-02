@@ -2,16 +2,19 @@
 
     You can start a simulation by executing the following command::
 
-        $ python hive_simulation.py --file=a_simulation_file_name.json --iters=30
+        $ python hive_simulation.py --file=a_simulation_name.json --iters=30
 
     You can also execute all simulation file that exist in
     :py:const:`~globals.globals.SIMULATION_ROOT` by instead executing:
 
-        $ python hive_simulation.py -d --iters=24
+        $ python hive_simulation.py -d -i 24
 
     If you wish to execute multiple simulations in parallel (to save time) you
     can use the -t or --threading flag in either of the previously specified
-    commands.
+    commands. The threading flag expects an integer that specifies the max
+    working threads. E.g.::
+
+        $ python hive_simulation.py -d --iters=1 --threading=12
 
     If you don't have a simulation file yet, run the following instead::
 
@@ -28,9 +31,10 @@
             3. An output file simdirectory exists with default path being:
             :py:const:`~globals.globals.OUTFILE_ROOT`.
 """
-import getopt
 import os
 import sys
+import numpy
+import getopt
 from concurrent.futures.thread import ThreadPoolExecutor
 
 import domain.Hivemind as hm
@@ -74,8 +78,9 @@ def __execute_simulation(sname: str, sid: int) -> None:
     hm.Hivemind(sname, sid).execute_simulation()
 
 
-def __multi_threaded_main(sdir: bool, sname: str, iters: int) -> None:
-    with ThreadPoolExecutor(max_workers=10) as executor:
+def __parallel_main(
+        threads_count: int, sdir: bool, sname: str, iters: int) -> None:
+    with ThreadPoolExecutor(max_workers=threads_count) as executor:
         if sdir:
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
@@ -87,7 +92,7 @@ def __multi_threaded_main(sdir: bool, sname: str, iters: int) -> None:
                 executor.submit(__execute_simulation, sname, i)
 
 
-def __single_threaded_main(sdir, sname, iters):
+def __single_main(sdir, sname, iters):
     if sdir:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
@@ -100,11 +105,11 @@ def __single_threaded_main(sdir, sname, iters):
 # endregion
 
 
-def main(multithread: int, sdir: bool, sname: str, iters: int) -> None:
+def main(threads_count: int, sdir: bool, sname: str, iters: int) -> None:
     """Receives user input and initializes the simulation process.
 
     Args:
-        multithread:
+        threads_count:
             Indicates if multiple simulation instances should run in parallel.
         sdir:
             Indicates if the user wishes to execute all simulation files
@@ -121,10 +126,12 @@ def main(multithread: int, sdir: bool, sname: str, iters: int) -> None:
     """
     MatlabEngineContainer.get_instance()
 
-    if multithread:
-        __multi_threaded_main(sdir, sname, iters)
+    if threads_count != 0:
+        print("hello multi")
+        __parallel_main(numpy.abs(threads_count).item(), sdir, sname, iters)
     else:
-        __single_threaded_main(sdir, sname, iters)
+        print("hello slow")
+        __single_main(sdir, sname, iters)
 
 
 if __name__ == "__main__":
@@ -137,12 +144,12 @@ if __name__ == "__main__":
 
     try:
         short_opts = "df:i:t:"
-        long_opts = ["directory", "file=", "threading=", "iters="]
+        long_opts = ["directory", "file=", "iters=", "threading="]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
             if options in ("-t", "--threading"):
-                threading = True
+                threading = int(str(args).strip())
             if options in ("-d", "--directory"):
                 simdirectory = True
             elif options in ("-f", "--file"):
@@ -159,3 +166,9 @@ if __name__ == "__main__":
 
     except getopt.GetoptError:
         sys.exit(err_message)
+    except ValueError:
+        sys.exit("Execution arguments should have the following data types:\n"
+                 "--iterations -i (int)\n"
+                 "--threading -t (int)\n"
+                 "--directory -d (void)\n"
+                 "--file -f (str)")
