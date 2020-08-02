@@ -3,11 +3,11 @@ from __future__ import annotations
 import math
 import random
 import uuid
-from typing import Dict, List, Any, Tuple, Optional
+from typing import Dict, List, Any, Tuple, Optional, Union
 
 import numpy as np
 import pandas as pd
-from tabulate import tabulate
+from tabulate import tabulate, JupyterHTMLStr
 
 import domain.Hivemind as hm
 import utils.transition_matrices as tmg
@@ -451,20 +451,12 @@ class Hive:
             otherwise, it returns False.
         """
         pcount = self.file.parts_in_hive
-
         target = self.v_.multiply(pcount)
         rtol = self.v_[0].min()
         atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
 
         if DEBUG:
-            df = pd.DataFrame()
-            df['cv_'] = self.cv_[0].values
-            df['v_'] = target[0].values
-            df['(cv_ - v_)'] = (self.cv_.subtract(target))[0].values
-
-            v_list = [*target[0]]
-            rtol_times_cv_ = [x * rtol for x in v_list]
-            print(tabulate(df, headers='keys', tablefmt='psql'))
+            print(self.__vector_comparison_table__(target, atol, rtol))
 
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
@@ -683,4 +675,17 @@ class Hive:
         return fastest_matrix
 
     # endregion
+    def __vector_comparison_table__(
+            self, target: pd.DataFrame, atol: float, rtol: float
+    ) -> Union[JupyterHTMLStr, str]:
+        """Pretty prints a PSQL formatted table for visual vector comparison."""
+        df = pd.DataFrame()
+        df['cv_'] = self.cv_[0].values
+        df['v_'] = target[0].values
+        df['(cv_ - v_)'] = (self.cv_.subtract(target))[0].values
+        df['tolerance'] = [(atol + np.abs(rtol) * x) for x in [*target[0]]]
+        zipped = zip(df['(cv_ - v_)'].to_list(), df['tolerance'].to_list())
+        df['is_close'] = [x < y for x, y in zipped]
+        return tabulate(df, headers='keys', tablefmt='psql')
+
 
