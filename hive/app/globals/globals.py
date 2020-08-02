@@ -18,8 +18,7 @@ Note:
     It is also strongly recommended that the user does not alter any
     undocumented attributes or module variables unless they are absolutely
     sure of what they do and the consequence of their changes. These include
-    variables such as `SHARED_ROOT` and `SIMULATION_ROOT` as well as
-    `DEFAULT_COL`.
+    variables such as `SHARED_ROOT` and `SIMULATION_ROOT`.
 
 Attributes:
     DEBUG:
@@ -90,7 +89,6 @@ MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlabscripts')
 
 # Others
 TRUE_FALSE = [True, False]
-DEFAULT_COL: int = 0
 MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
 COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
