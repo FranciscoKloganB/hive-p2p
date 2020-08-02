@@ -17,9 +17,7 @@ from domain.helpers.FileData import FileData
 from domain.helpers.SharedFilePart import SharedFilePart
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import REPLICATION_LEVEL, TRUE_FALSE, \
-    COMMUNICATION_CHANCES, \
-    DEBUG, ABS_TOLERANCE
-from hive_simulation import MAX_EPOCHS
+    COMMUNICATION_CHANCES, MAX_EPOCHS, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
 
 

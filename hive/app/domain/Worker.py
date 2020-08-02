@@ -11,7 +11,7 @@ import pandas as pd
 import domain.Hive as h
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart
-from hive_simulation import MAX_EPOCHS
+from globals.globals import MAX_EPOCHS
 from utils import crypto
 
 

@@ -7,7 +7,6 @@ from typing import Any, Dict, IO
 import domain.Hive as h
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import *
-from hive_simulation import MAX_EPOCHS
 
 
 class FileData:

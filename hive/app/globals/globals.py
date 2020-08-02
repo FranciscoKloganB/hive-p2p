@@ -29,6 +29,9 @@ Attributes:
         :py:class:`~domain.helpers.SharedFilePart.SharedFilePart` instance
         object (default is 131072). Example values: 32KB = 32768b;
         128KB = 131072b; 512KB = 524288b; 20MB = 20971520b.
+    MAX_EPOCHS:
+        The number of time steps a simulation should have (default is 720).
+        On a 24 hour day, 720 means one epoch should occur every two minutes.
     MIN_DETECTION_DELAY:
         The minimum amount of epoch time steps replica file block replicas
         take to be regenerated after their are lost (default is 1)
@@ -66,6 +69,7 @@ DEBUG: bool = False
 # region Simulation Settings
 
 READ_SIZE: int = 131072
+MAX_EPOCHS = 720
 
 MIN_DETECTION_DELAY: int = 1
 MAX_DETECTION_DELAY: int = 4
@@ -85,6 +89,7 @@ MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlabscripts')
 
 # Others
 TRUE_FALSE = [True, False]
+MAX_EPOCHS_PLUS = MAX_EPOCHS + 1
 DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
 COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 

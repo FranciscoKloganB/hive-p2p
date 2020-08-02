@@ -5,9 +5,10 @@ as well as any steady-state or transition matrix optimization algorithms in
 this module.
 """
 
-from typing import Tuple, Any, Optional
+from typing import Tuple, Union, Any, Optional
 
 import cvxpy as cvx
+import matlab
 import numpy as np
 
 from domain.exceptions.DistributionShapeError import DistributionShapeError
