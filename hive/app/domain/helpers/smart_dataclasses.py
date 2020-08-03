@@ -26,7 +26,7 @@ class FileData:
         parts_in_hive (int):
             The number of file parts including replicas that exist for the
             named file that exist in the simulation. Updated every epoch.
-        simulation_data (LoggingData):
+        logger (LoggingData):
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
             has graphs and figures. See
@@ -51,7 +51,7 @@ class FileData:
         """
         self.name: str = name
         self.parts_in_hive = 0
-        self.simulation_data: LoggingData = LoggingData()
+        self.logger: LoggingData = LoggingData()
         self.out_file: IO = open(
             os.path.join(
                 OUTFILE_ROOT, "{}_{}{}.{}".format(
@@ -91,7 +91,7 @@ class FileData:
                 output file.
 
         """
-        sd: LoggingData = self.simulation_data
+        sd: LoggingData = self.logger
 
         sd.save_sets_and_reset()
 
