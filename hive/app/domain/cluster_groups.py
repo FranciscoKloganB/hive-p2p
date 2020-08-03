@@ -741,6 +741,7 @@ class Hive(BaseHive):
         super().__init__(hivemind, file_name, members, sim_id, origin)
         self.complaint_threshold: float = len(members) * 0.5
         self.nodes_complaints: Dict[str, 0] = {}
+        self.epoch_complaints: set = set()
         for node_id in members.keys():
             self.nodes_complaints[node_id] = 0
 
@@ -760,7 +761,7 @@ class Hive(BaseHive):
                 self.running = False
         except Exception as e:
             self.set_fail(f"Exception caused simulation termination: {str(e)}")
-
+        self.epoch_complaints.clear()
         self.file.logger.log_recovery_delay(self._recovery_epoch_sum,
                                             self._recovery_epoch_calls,
                                             self.current_epoch)
@@ -778,6 +779,8 @@ class Hive(BaseHive):
              A collection of members who disconnected during the current
              epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
+        # TODO:
+        #  In order for nodes to execute, we first need to implement new nodes
         lost_parts_count: int = 0
         offline_workers: List[Worker] = []
         for worker in self.members.values():
@@ -860,3 +863,22 @@ class Hive(BaseHive):
         super().membership_maintenance()
 
         self.complaint_threshold = len(self.members) * 0.5
+
+    def complain(self, complainter: str, complainee: str) -> None:
+        """Registers a complaint against a possibly offline node.
+
+        Args:
+            complainter:
+                The identifier of the complaining :py:mod:`Network Node
+                <domain.network_nodes>`.
+            complainee:
+                The identifier of the :py:mod:`Network Node
+                <domain.network_nodes>` being complained about.
+        """
+        complaint_id = f"{complainter}|{complainee}"
+        if complaint_id not in self.epoch_complaints:
+            self.epoch_complaints.add(complaint_id)
+            if complainee in self.nodes_complaints:
+                self.nodes_complaints[complainee] += 1
+            else:
+                self.nodes_complaints[complainee] = 1
