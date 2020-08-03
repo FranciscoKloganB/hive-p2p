@@ -222,7 +222,7 @@ def __init_nodes_uptime() -> Dict[str, float]:
 
 
 def __init_shared_dict() -> Dict[str, Any]:
-    """Creates the "shared" key of simulation file.
+    """Creates the "persisting" key of simulation file.
 
     Returns:
         A dictionary containing data respecting files to be shared in the system
@@ -251,7 +251,7 @@ def __init_shared_dict() -> Dict[str, Any]:
 
         shared_dict[file_name] = {}
         shared_dict[file_name]["spread"] = option_choice.lower()
-        shared_dict[file_name]["hive_size"] = __input_bounded_integer(
+        shared_dict[file_name]["cluster_size"] = __input_bounded_integer(
             "Number of nodes that should be sharing the next file: \n")
 
         add_file = __in_yes_no(
@@ -276,7 +276,7 @@ def main(simfile_name: str) -> None:
     """
     simfile_json: Dict[str, Any] = {
         "peers_uptime": __init_nodes_uptime(),
-        "shared": __init_shared_dict()
+        "persisting": __init_shared_dict()
     }
 
     with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
