@@ -274,10 +274,9 @@ def main(simfile_name: str) -> None:
         simfile_name:
             Name to be assigned to JSON file in the user's file system.
     """
-    nodes_uptime: Dict[str, float] = __init_nodes_uptime()
     simfile_json: Dict[str, Any] = {
-        "peers_uptime": nodes_uptime,
-        "shared": __init_shared_dict(nodes_uptime)
+        "peers_uptime": __init_nodes_uptime(),
+        "shared": __init_shared_dict()
     }
 
     with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
