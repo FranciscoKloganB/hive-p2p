@@ -1,53 +1,190 @@
-import getopt
-import json
+"""The functionality offered by this module is used to start simulations.
+
+    You can start a simulation by executing the following command::
+
+        $ python hive_simulation.py --file=a_simulation_name.json --iters=30
+
+    You can also execute all simulation file that exist in
+    :py:const:`~globals.globals.SIMULATION_ROOT` by instead executing:
+
+        $ python hive_simulation.py -d -i 24
+
+    If you wish to execute multiple simulations in parallel (to save time) you
+    can use the -t or --threading flag in either of the previously specified
+    commands. The threading flag expects an integer that specifies the max
+    working threads. E.g.::
+
+        $ python hive_simulation.py -d --iters=1 --threading=12
+
+    If you don't have a simulation file yet, run the following instead::
+
+        $ python simulation_file_generator.py --file=filename.json
+
+    Notes:
+        For the simulation to run without errors you must ensurue that::
+            1. The specified simulation files exist in
+            :py:const:`~globals.globals.SIMULATION_ROOT`.
+
+            2. Any file used by the simulation, e.g., a picture or a .pptx
+            document is accessible in :py:const:`~globals.globals.SHARED_ROOT`.
+
+            3. An output file simdirectory exists with default path being:
+            :py:const:`~globals.globals.OUTFILE_ROOT`.
+"""
 import os
 import sys
+import numpy
+import getopt
+from concurrent.futures.thread import ThreadPoolExecutor
+
 import domain.Hivemind as hm
+from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
+from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
+
+__err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
+                   "    $ python hive_simulation.py -f simfilename.json\n"
+                   "    $ python hive_simulation.py -d")
 
 
-# region Usage, Help and Main
-def usage():
-    print(" -------------------------------------------------------------------------")
-    print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
-    print(" Run a simulation for Markov Chain Based Swarm Guidance algorithm on a P2P Network that persists files\n")
-    print(" Typical usage: python hive_simulation.py --simfile=simulationfilename.json\n")
-    print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
-    print(" -------------------------------------------------------------------------\n")
-    sys.exit(" ")
+# region Module private functions (helpers)
+def __makedirs() -> None:
+    """Creates required simulation working directories if they do not exist."""
+    if not os.path.exists(SHARED_ROOT):
+        os.makedirs(SHARED_ROOT)
+
+    if not os.path.exists(SIMULATION_ROOT):
+        os.makedirs(SIMULATION_ROOT)
+
+    if not os.path.exists(OUTFILE_ROOT):
+        os.makedirs(OUTFILE_ROOT)
 
 
-def myhelp():
-    with open("{}/static/simfiles/simfile_example.json".format(os.getcwd())) as json_file:
-        print("-------------------------------------------------------------------------\n")
-        print("To create a simulation file automatically use simulation_file_generator.py script in ~/scripts/python folder.\n")
-        print("-------------------------------------------------------------------------\n")
-        print("If you wish to manually create a simulation file here is an example of its structure:\n")
-        print("-------------------------------------------------------------------------\n")
-        print(json.dumps(json.load(json_file), indent=4, sort_keys=True))
-        print(" -------------------------------------------------------------------------\n")
-    sys.exit(" ")
+def __can_exec_simfile(sname: str) -> None:
+    """Verifies if input simulation file name exists in ~/*/SIMULATION_ROOT"""
+    spath = os.path.join(SIMULATION_ROOT, sname)
+    if not os.path.exists(spath):
+        sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
 
 
-def main(simfile_name):
-    if not simfile_name:
-        sys.exit("Invalid simulation file name - blank name not allowed)...")
+def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
+    """Executes one instance of the simulation
 
-    simulation = hm.Hivemind(simfile_name)
-    simulation.execute_simulation()
+    Args:
+        sname:
+            The name of the simulation file to be executed.
+        sid:
+            A sequence number that identifies the simulation execution instance.
+        epochs:
+            The number of discrete time steps the simulation lasts.
+    """
+    hm.Hivemind(sname, sid, epochs).execute_simulation()
+
+
+def __parallel_main(
+        threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
+) -> None:
+    """Helper method that initializes a multi-threaded simulation."""
+    with ThreadPoolExecutor(max_workers=threads_count) as executor:
+        if sdir:
+            snames = os.listdir(SIMULATION_ROOT)
+            for sn in snames:
+                for i in range(iters):
+                    executor.submit(__execute_simulation, sn, i, epochs)
+        else:
+            __can_exec_simfile(sname)
+            for i in range(iters):
+                executor.submit(__execute_simulation, sname, i, epochs)
+
+
+def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
+    """Helper function that initializes a single-threaded simulation."""
+    if sdir:
+        snames = os.listdir(SIMULATION_ROOT)
+        for sn in snames:
+            for i in range(iters):
+                __execute_simulation(sn, i, epochs)
+    else:
+        __can_exec_simfile(sname)
+        for i in range(iters):
+            __execute_simulation(sname, i, epochs)
 # endregion
 
 
+def main(
+        threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
+) -> None:
+    """Receives user input and initializes the simulation process.
+
+    Args:
+        threads_count:
+            Indicates if multiple simulation instances should run in parallel
+            (default is 0, this results in running the simulation in a
+            single thread).
+        sdir:
+            Indicates if the user wishes to execute all simulation files
+            that exist in :py:const:`~globals.globals.SIMULATION_ROOT` or
+            if he wishes to run one single simulation file, which must be
+            explicitly specified in `sname` (default is False).
+        sname:
+            When `sdir` is set to False, `sname` needs to be specified as a
+            non blank string containing the name of the simulation file to
+            be executed. The named file must exist in
+            :py:const:`~globals.globals.SIMULATION_ROOT`.
+        iters:
+            The number of times the same simulation file should be executed (
+            default is 30).
+        epochs:
+            The number of discrete time steps each iteration of each instance
+            of a simulation lasts.
+    """
+    MatlabEngineContainer.get_instance()
+
+    if threads_count != 0:
+        __parallel_main(
+            numpy.abs(threads_count).item(), sdir, sname, iters, epochs)
+    else:
+        __single_main(sdir, sname, iters, epochs)
+
+
 if __name__ == "__main__":
-    simfile_name_ = None
+    __makedirs()
+
+    threading = 0
+    simdirectory = False
+    simfile = None
+    iterations = 30
+    duration = 720
+
     try:
-        options, args = getopt.getopt(sys.argv[1:], "uhs:", ["usage", "help", "simfile="])
+        short_opts = "df:i:t:e:"
+        long_opts = ["directory", "file=", "iters=", "threading=", "epochs="]
+        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+
         for options, args in options:
-            if options in ("-u", "--usage"):
-                usage()
-            if options in ("-h", "--help"):
-                myhelp()
-            if options in ("-s", "--simfile"):
-                simfile_name_ = str(args).strip()
-                main(simfile_name_)
+            if options in ("-t", "--threading"):
+                threading = int(str(args).strip())
+            if options in ("-d", "--directory"):
+                simdirectory = True
+            elif options in ("-f", "--file"):
+                simfile = str(args).strip()
+                if simfile == "":
+                    sys.exit("Simulation file name can not be blank.")
+            if options in ("-i", "--iters"):
+                iterations = int(str(args).strip())
+            if options in ("-e", "--epochs"):
+                duration = int(str(args).strip())
+
+        if simfile or simdirectory:
+            main(threading, simdirectory, simfile, iterations, duration)
+        else:
+            sys.exit(__err_message__)
+
     except getopt.GetoptError:
-        usage()
+        sys.exit(__err_message__)
+    except ValueError:
+        sys.exit("Execution arguments should have the following data types:\n"
+                 "--iterations -i (int)\n"
+                 "--epochs -e (int)\n"
+                 "--threading -t (int)\n"
+                 "--directory -d (void)\n"
+                 "--file -f (str)")

@@ -4,8 +4,12 @@ from enum import Enum
 
 
 class Status(Enum):
-    """
-    Enumerator class used to represent if a given Worker or super node is online, offline among other possible status
+    """Enumerator that defines connectivity status of a network node
+
+    The following status exist:
+        * SUSPECT: Network node may be offline;
+        * OFFLINE: Network node is offline;
+        * ONLINE: Network node is online;
     """
     SUSPECT: int = 1
     OFFLINE: int = 2
@@ -13,14 +17,22 @@ class Status(Enum):
 
 
 class HttpCodes(Enum):
-    """
-    Enumerator class used to represent HTTP response codes
+    """Enumerator class used to represent HTTP response codes
+
+    The following codes are considered:
+        * DUMMY: Dummy value. Use when no valid HTTP code exists;
+        * OK: Callee accepts the sent file;
+        * BAD_REQUEST: Callee refuses the integrity of sent file;
+        * NOT_FOUND: Callee is not a member of the network;
+        * NOT_ACCEPTABLE: Callee already has a file with same Id;
+        * TIME_OUT: Message lost in translation;
+        *  SERVER_DOWN: Metadata server is offline;
     """
     DUMMY: int = -1
-    OK: int = 200  # used when destination accepts the sent file
-    BAD_REQUEST: int = 400  # used when destination considers the sent file incorrect integrity wise
-    NOT_FOUND: int = 404  # used when destination is not in the hive
-    NOT_ACCEPTABLE: int = 406  # used when destination already has the part that was sent by sender
-    TIME_OUT: int = 408  # used when a message is lost in translation
+    OK: int = 200
+    BAD_REQUEST: int = 400
+    NOT_FOUND: int = 404
+    NOT_ACCEPTABLE: int = 406
+    TIME_OUT: int = 408
     SERVER_DOWN: int = 521
 

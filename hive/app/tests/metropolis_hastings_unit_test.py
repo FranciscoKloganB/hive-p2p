@@ -1,8 +1,17 @@
 import sys
-import numpy as np
-import utils.metropolis_hastings as mH
 
-from utils.printers import print_test, print_pow
+import numpy as np
+
+import utils.transition_matrices as mH
+
+
+def print_test(name, expect, result, accept):
+    print(f"{name}\nexpect: \n{expect}\ngot: \n{result}\naccept: {accept}\n")
+    return accept
+
+
+def print_pow(matrix):
+    print(f"---------------------------------\npowered matrix:{matrix}")
 
 
 # region unit tests
@@ -28,7 +37,7 @@ def matrix_converges_to_known_ddv_test():
 def construct_random_walk_test():
     target = np.asarray([[0.25, 0.25, 0.25, 0.25], [0.5, 0, 0.5, 0], [0.25, 0.25, 0.25, 0.25], [0, 0.5, 0.5, 0]])
     adj_matrix = np.asarray([[1, 1, 1, 1], [1, 0, 1, 0], [1, 1, 1, 1], [0, 1, 1, 0]])
-    random_walk = mH._construct_random_walk_matrix(adj_matrix, adj_matrix.shape, adj_matrix.shape[0])
+    random_walk = mH._construct_random_walk_matrix(adj_matrix)
     print(target)
     print(random_walk)
     return print_test("construct_random_walk_test", target, random_walk, np.array_equal(target, random_walk))
@@ -37,19 +46,19 @@ def construct_random_walk_test():
 # noinspection PyProtectedMember
 def construct_rejection_matrix_div_by_zero_error_exist_test():
     try:
-        ddv = [0.1, 0.4, 0.3, 0.2]
+        ddv = np.asarray([0.1, 0.4, 0.3, 0.2])
         adj_matrix = np.asarray([[1, 1, 1, 1], [1, 0, 1, 0], [1, 1, 1, 1], [0, 1, 1, 0]])
-        random_walk = mH._construct_random_walk_matrix(adj_matrix, adj_matrix.shape, adj_matrix.shape[0])
-        mH._construct_rejection_matrix(ddv, random_walk, adj_matrix.shape, adj_matrix.shape[0])
+        random_walk = mH._construct_random_walk_matrix(adj_matrix)
+        mH._construct_rejection_matrix(random_walk, ddv)
         return print_test("construct_rejection_matrix_div_by_zero_error_exist_test", "no excpetion", "no exception", True)
     except ZeroDivisionError:
         return print_test("construct_rejection_matrix_div_by_zero_error_exist_test", "no excpetion", "ZeroDivisionError", False)
 
 
 def arbitrary_matrix_converges_to_ddv_1():
-    target = [0.2, 0.3, 0.5, 0]
+    target = np.asarray([0.2, 0.3, 0.5, 0])
     adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
-    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh = mH._metropolis_hastings(adj, target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 50)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
@@ -59,9 +68,9 @@ def arbitrary_matrix_converges_to_ddv_1():
 
 
 def arbitrary_matrix_converges_to_ddv_2():
-    target = [0.2, 0.3, 0.2, 0.3]
+    target = np.asarray([0.2, 0.3, 0.2, 0.3])
     adj = np.asarray([[1, 1, 0, 0], [1, 1, 1, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
-    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh = mH._metropolis_hastings(adj, target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
@@ -71,9 +80,9 @@ def arbitrary_matrix_converges_to_ddv_2():
 
 
 def arbitrary_matrix_converges_to_ddv_3():
-    target = [0.2, 0.3, 0.5, 0]
+    target = np.asarray([0.2, 0.3, 0.5, 0])
     adj = np.asarray([[1, 1, 1, 1], [1, 1, 1, 1], [0, 1, 1, 1], [1, 1, 1, 1]])
-    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh = mH._metropolis_hastings(adj, target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
@@ -83,9 +92,9 @@ def arbitrary_matrix_converges_to_ddv_3():
 
 
 def arbitrary_matrix_converges_to_ddv_4():
-    target = [0.0, 0.1, 0.1, 0.8]
+    target = np.asarray([0.0, 0.1, 0.1, 0.8])
     adj = np.asarray([[1, 1, 0, 0], [1, 0, 0, 1], [0, 1, 1, 1], [0, 1, 1, 1]])
-    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh = mH._metropolis_hastings(adj, target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
@@ -95,9 +104,9 @@ def arbitrary_matrix_converges_to_ddv_4():
 
 
 def arbitrary_matrix_converges_to_ddv_5():
-    target = [0.2, 0.3, 0.5, 0.0]
+    target = np.asarray([0.2, 0.3, 0.5, 0.0])
     adj = np.asarray([[1, 1, 0, 0], [1, 0, 1, 0], [0, 1, 1, 0], [0, 1, 1, 0]])
-    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh = mH._metropolis_hastings(adj, target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
@@ -107,9 +116,9 @@ def arbitrary_matrix_converges_to_ddv_5():
 
 
 def arbitrary_matrix_converges_to_ddv_6():
-    target = [1, 0, 0, 0]
+    target = np.asarray([1, 0, 0, 0])
     adj = np.asarray([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [1, 0, 0, 0]])
-    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh = mH._metropolis_hastings(adj, target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
@@ -119,9 +128,9 @@ def arbitrary_matrix_converges_to_ddv_6():
 
 
 def arbitrary_matrix_does_not_converges_to_ddv_1():
-    target = [1, 0, 0, 0]
+    target = np.asarray([1, 0, 0, 0])
     adj = np.asarray([[0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [1, 0, 0, 0]])
-    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh = mH._metropolis_hastings(adj, target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1000)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
@@ -133,9 +142,9 @@ def arbitrary_matrix_does_not_converges_to_ddv_1():
 
 
 def arbitrary_matrix_does_not_converges_to_ddv_2():
-    target = [0.2, 0, 0.8, 0]
+    target = np.asarray([0.2, 0, 0.8, 0])
     adj = np.asarray([[0, 1, 0, 0], [0, 1, 1, 0], [1, 0, 0, 1], [1, 1, 0, 0]])
-    mh = mH.metropolis_algorithm(adj, ddv=target, column_major_in=False, column_major_out=True)
+    mh = mH._metropolis_hastings(adj, target, column_major_in=False, column_major_out=True)
     mh_pow = np.linalg.matrix_power(mh, 1500)
     print_pow(mh_pow)
     for j in range(mh_pow.shape[1]):
