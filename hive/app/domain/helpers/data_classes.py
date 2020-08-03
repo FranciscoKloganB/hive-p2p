@@ -1,4 +1,4 @@
-"""Module with classes that helpt to avoid domain class polution by
+"""Module with classes that help to avoid domain class polution by
 encapsulating attribute and method behaviour."""
 from __future__ import annotations
 
