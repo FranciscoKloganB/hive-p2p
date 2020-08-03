@@ -1,4 +1,4 @@
-import domain.Hivemind as hm
+import domain.master_servers as hm
 
 from typing import List, Any
 from globals.globals import MIN_CONVERGENCE_THRESHOLD

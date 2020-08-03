@@ -9,11 +9,11 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate, JupyterHTMLStr
 
-import domain.Hivemind as hm
+import domain.master_servers as hm
 import utils.transition_matrices as tmg
-from domain.Worker import Worker
+from domain.network_nodes import Worker
 from domain.helpers.Enums import Status, HttpCodes
-from domain.helpers.FileData import FileData
+from domain.helpers.data_classes import FileData
 from domain.helpers.SharedFilePart import SharedFilePart
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import REPLICATION_LEVEL, TRUE_FALSE, \

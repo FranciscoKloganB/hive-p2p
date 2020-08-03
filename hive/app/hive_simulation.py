@@ -37,8 +37,8 @@ import numpy
 import getopt
 from concurrent.futures.thread import ThreadPoolExecutor
 
-import domain.Hivemind as hm
-from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
+import domain.master_servers as hm
+from domain.helpers.matlab_utils import MatlabEngineContainer
 from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
 
 __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"

@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 from typing import Any, Dict, IO
 
-import domain.Hive as h
-import domain.Hivemind as hm
+import domain.cluster_groups as h
+import domain.master_servers as hm
 
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import *

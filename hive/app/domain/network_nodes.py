@@ -8,8 +8,8 @@ from typing import Union, Dict, List
 import numpy as np
 import pandas as pd
 
-import domain.Hive as h
-import domain.Hivemind as hm
+import domain.cluster_groups as h
+import domain.master_servers as hm
 
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.SharedFilePart import SharedFilePart

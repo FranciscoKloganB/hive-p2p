@@ -6,8 +6,8 @@ from typing import List, Union, Dict, Any
 
 import numpy as np
 
-from domain.Hive import Hive
-from domain.Worker import Worker
+from domain.cluster_groups import Hive
+from domain.network_nodes import Worker
 from domain.helpers.Enums import Status
 from domain.helpers.SharedFilePart import SharedFilePart
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
