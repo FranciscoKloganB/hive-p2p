@@ -48,7 +48,7 @@ class Worker:
             the time the worker has been online is not considered. Thus,
             if a Worker belongs to only one Hive he is guaranteed to remain
             online for exactly `uptime` *
-            :py:attr:`~globals.globals.MAX_EPOCHS`. If he belongs to
+            :py:attr:`~environment_settings.MAX_EPOCHS`. If he belongs to
             multiple Hives in the simulation, than there is a possibility
             that he may go offline earlier.
         hives:

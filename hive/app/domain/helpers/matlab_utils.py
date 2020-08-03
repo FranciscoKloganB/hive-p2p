@@ -7,7 +7,7 @@ from typing import Any
 import matlab.engine
 import numpy as np
 
-from globals.globals import MATLAB_DIR
+from environment_settings import MATLAB_DIR
 
 
 class MatlabEngineContainer:

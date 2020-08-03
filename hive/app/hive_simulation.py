@@ -5,7 +5,7 @@
         $ python hive_simulation.py --file=a_simulation_name.json --iters=30
 
     You can also execute all simulation file that exist in
-    :py:const:`~globals.globals.SIMULATION_ROOT` by instead executing:
+    :py:const:`~environment_settings.SIMULATION_ROOT` by instead executing:
 
         $ python hive_simulation.py -d -i 24
 
@@ -23,13 +23,13 @@
     Notes:
         For the simulation to run without errors you must ensurue that::
             1. The specified simulation files exist in
-            :py:const:`~globals.globals.SIMULATION_ROOT`.
+            :py:const:`~environment_settings.SIMULATION_ROOT`.
 
             2. Any file used by the simulation, e.g., a picture or a .pptx
-            document is accessible in :py:const:`~globals.globals.SHARED_ROOT`.
+            document is accessible in :py:const:`~environment_settings.SHARED_ROOT`.
 
             3. An output file simdirectory exists with default path being:
-            :py:const:`~globals.globals.OUTFILE_ROOT`.
+            :py:const:`~environment_settings.OUTFILE_ROOT`.
 """
 import os
 import sys
@@ -39,7 +39,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 import domain.master_servers as ms
 from domain.helpers.matlab_utils import MatlabEngineContainer
-from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
+from environment_settings import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
 
 __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
@@ -122,14 +122,14 @@ def main(
             single thread).
         sdir:
             Indicates if the user wishes to execute all simulation files
-            that exist in :py:const:`~globals.globals.SIMULATION_ROOT` or
+            that exist in :py:const:`~environment_settings.SIMULATION_ROOT` or
             if he wishes to run one single simulation file, which must be
             explicitly specified in `sname` (default is False).
         sname:
             When `sdir` is set to False, `sname` needs to be specified as a
             non blank string containing the name of the simulation file to
             be executed. The named file must exist in
-            :py:const:`~globals.globals.SIMULATION_ROOT`.
+            :py:const:`~environment_settings.SIMULATION_ROOT`.
         iters:
             The number of times the same simulation file should be executed (
             default is 30).

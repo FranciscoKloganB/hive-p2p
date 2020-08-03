@@ -7,10 +7,10 @@
 
     Notes:
         Simulation files are placed in:
-        :py:const:`~globals.globals.SIMULATION_ROOT`.
+        :py:const:`~environment_settings.SIMULATION_ROOT`.
 
         Any file used to simulate persistance must be in:
-        :py:const:`~globals.globals.SHARED_ROOT`.
+        :py:const:`~environment_settings.SHARED_ROOT`.
 """
 import copy
 import getopt
@@ -24,7 +24,7 @@ from typing import List, Dict, Any
 
 import numpy as np
 
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT
+from environment_settings import SHARED_ROOT, SIMULATION_ROOT
 from scripts.pyscripts import normal_distribution_generator as ng, \
     label_generator as cg
 

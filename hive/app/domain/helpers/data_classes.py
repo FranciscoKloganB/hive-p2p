@@ -10,7 +10,7 @@ from typing import Any, Dict, IO, List
 import domain.cluster_groups as cg
 import domain.master_servers as ms
 
-from globals.globals import *
+from environment_settings import *
 from utils import convertions, crypto
 
 
@@ -340,7 +340,7 @@ class LoggingData:
         Most attributes of this class are not documented in docstrings,
         but they are straight forward to understand. They are mostly lists of
         length :py:const:`ms.Hivemind.MAX_EPOCHS
-        <globals.globals.ms.Hivemind.MAX_EPOCHS>` that
+        <environment_settings.ms.Hivemind.MAX_EPOCHS>` that
         contain data concerning the current state of simulation at the
         respective epoch times. For example, :py:attr:`~lost_parts` keeps
         a integers that represent how many file blocks were lost at each
@@ -373,7 +373,7 @@ class LoggingData:
             no errors or failures occurred, i.e., if the simulation managed
             to persist the file throughout
             :py:const:`ms.Hivemind.MAX_EPOCHS
-            <globals.globals.ms.Hivemind.MAX_EPOCHS>` time
+            <environment_settings.ms.Hivemind.MAX_EPOCHS>` time
             steps.
         messages (list of str):
             Set of at least one error message that led to the failure
@@ -424,7 +424,7 @@ class LoggingData:
 
         Checks if the counter for consecutive epoch convergence is bigger
         than the minimum threshold for verified convergence (see
-        :py:const:`MIN_CONVERGENCE_THRESHOLD <globals.globals.MIN_CONVERGENCE_THRESHOLD>`
+        :py:const:`MIN_CONVERGENCE_THRESHOLD <environment_settings.MIN_CONVERGENCE_THRESHOLD>`
         and if it is, it marks the epoch as part of the current
         :py:attr:`~convergence_set`.
 

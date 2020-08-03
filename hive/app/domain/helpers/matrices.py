@@ -11,8 +11,8 @@ from typing import Tuple, Union, Any, Optional
 import cvxpy as cvx
 import numpy as np
 
-from domain.exceptions import DistributionShapeError
-from domain.exceptions import MatrixNotSquareError
+from domain.helpers.exceptions import DistributionShapeError
+from domain.helpers.exceptions import MatrixNotSquareError
 from domain.helpers.matlab_utils import MatlabEngineContainer
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}

@@ -1,4 +1,4 @@
-"""Global Simulation Settings.
+"""Module with simulation and project related variables.
 
 This module demonstrates holds multiple constant variables that are used
 through out the simulation's lifetime including initialization and execution.

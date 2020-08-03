@@ -12,7 +12,7 @@ from domain.cluster_groups import Hive
 from domain.network_nodes import Worker
 from domain.helpers.enums import Status
 from domain.helpers.data_classes import FileBlockData
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
+from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
 
 
 class Hivemind:

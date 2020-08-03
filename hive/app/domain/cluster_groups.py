@@ -34,7 +34,7 @@ import domain.helpers.matrices as mm
 from domain.network_nodes import Worker
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.data_classes import FileData, FileBlockData, LoggingData
-from globals.globals import REPLICATION_LEVEL, TRUE_FALSE, \
+from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
 
@@ -347,7 +347,7 @@ class Hive:
             strategy:
                 `u` - Distributed uniformly across network;
                 `a` - Give all file block replicas to N different network
-                nodes, where N is equal to :py:const:`~<globals.globals.REPLICATION_LEVEL>`;
+                nodes, where N is equal to :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
                 `i` - Distribute all file block replicas following such
                 that the simulation starts with all file blocks and their
                 replicas distributed with a bias towards the ideal steady
@@ -393,7 +393,7 @@ class Hive:
 
         Note:
             If the Hive terminates early, i.e., if it terminates before
-            reaching :py:code:`~globals.globals.MAX_EPOCHS`, no logging
+            reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
             should be done in :py:class:`~domain.helpers.data_classes.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
