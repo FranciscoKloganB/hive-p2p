@@ -41,7 +41,7 @@ Attributes:
         The number of consecutive epoch time steps that an
         :py:class:`~domain.Hive.Hive` must converge before epochs start being
         marked with verified convergence in
-        :py:attr:`~domain.helpers.SimulationData.SimulationData.convergence_set`
+        :py:attr:`~domain.helpers.data_classes.LoggingData.convergence_set`
          (default is 2).
     LOSS_CHANCE:
         Defines the probability of a message not being delivered to a
@@ -52,7 +52,7 @@ Attributes:
         from the desired steady state :py:func:`~domain.Hive.Hive.v_`,
         in order for the distributions to be considered equal and thus
         marking the epoch as being in convergence in
-        :py:attr:`~domain.helpers.SimulationData.SimulationData
+        :py:attr:`~domain.helpers.data_classes.LoggingData
         .convergence_set`. This constant will be used by
         :py:meth:`~domain.Hive.Hive.equal_distributions` along with a
         relative tolerance that is the minimum value in

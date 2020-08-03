@@ -11,8 +11,8 @@ import pandas as pd
 import domain.cluster_groups as h
 import domain.master_servers as hm
 
-from domain.helpers.Enums import Status, HttpCodes
-from domain.helpers.FileBlockData import FileBlockData
+from domain.helpers.enums import Status, HttpCodes
+from domain.helpers.data_classes import FileBlockData
 from utils import crypto
 
 

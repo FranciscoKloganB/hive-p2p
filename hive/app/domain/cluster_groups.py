@@ -12,10 +12,8 @@ from tabulate import tabulate, JupyterHTMLStr
 import domain.master_servers as hm
 import utils.transition_matrices as tmg
 from domain.network_nodes import Worker
-from domain.helpers.Enums import Status, HttpCodes
-from domain.helpers.data_classes import FileData
-from domain.helpers.FileBlockData import FileBlockData
-from domain.helpers.SimulationData import SimulationData
+from domain.helpers.enums import Status, HttpCodes
+from domain.helpers.data_classes import FileData, FileBlockData, LoggingData
 from globals.globals import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
@@ -376,7 +374,7 @@ class Hive:
         Note:
             If the Hive terminates early, i.e., if it terminates before
             reaching :py:code:`~globals.globals.MAX_EPOCHS`, no logging
-            should be done in :py:class:`~domain.helpers.SimulationData.SimulationData`
+            should be done in :py:class:`~domain.helpers.data_classes.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
         Args:
@@ -507,7 +505,7 @@ class Hive:
             self.set_fail("all hive members disconnected simultaneously")
 
         e: int = self.current_epoch
-        sf: SimulationData = self.file.simulation_data
+        sf: LoggingData = self.file.simulation_data
         sf.set_disconnected_workers_at_index(len(offline_workers), e)
         sf.set_lost_parts_at_index(lost_parts_count, e)
 
@@ -570,7 +568,7 @@ class Hive:
 
         Sets :py:attr:`running` to False and instructs
         :py:class:`~domain.helpers.FileData.FileData` to persist
-        :py:class:`~domain.helpers.SimulationData.SimulationData` to disk and
+        :py:class:`~domain.helpers.data_classes.LoggingData` to disk and
         close its IO stream (py:attr:`~domain.helpers.FileData.out_file`).
 
         Args:
