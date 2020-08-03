@@ -353,6 +353,10 @@ codegen/
 *.autosave
 
 # Simulink cache files
+
+
+# Hives: Simulator Files
+convex_optimization_mh.py
 *.slxc
 
 # Octave session info
