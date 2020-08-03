@@ -135,23 +135,28 @@ def __input_filename(message: str) -> str:
         return file_name
 
 
-def __in_yes_no(msg: str) -> bool:
+def __in_yes_no(message: str) -> bool:
+    """Asks the user to reply with yes or no to a message.
+
+    Args:
+        message:
+            The message to be printed to the user upon first input request.
+
+    Returns:
+        True if user presses yes, otherwise False.
     """
-    :param str msg: message to be printed to the user upon first input request
-    :returns bool
-    """
-    char = input(msg + " y/n: ").lower()
+    char = input(f"{message}; y/n: ").lower()
     while True:
         if char == 'y':
             return True
         elif char == 'n':
             return False
         else:
-            char = input("Answer should be 'y' for yes or 'n' for no... Try again: ")
+            char = input("Press 'y' for yes or 'n' for no. Try again: ")
 # endregion
 
 
-# region Generation Functions
+# region Helpers
 def __truncate_float_value(f: float, d: int) -> float:
     """Truncates a float value without rounding.
 
