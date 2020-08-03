@@ -27,7 +27,7 @@ Attributes:
         should be performed (default is False)
     READ_SIZE:
         Defines the raw size of each file block before it's wrapped in a
-        :py:class:`~domain.helpers.structs.FileBlockData` instance
+        :py:class:`~domain.helpers.smart_dataclasses.FileBlockData` instance
         object (default is 131072). Example values: 32KB = 32768b;
         128KB = 131072b; 512KB = 524288b; 20MB = 20971520b.
     MIN_DETECTION_DELAY:
@@ -42,7 +42,7 @@ Attributes:
         The number of consecutive epoch time steps that an
         :py:class:`~domain.cluster_groups.Hive` must converge before epochs
         start being marked with verified convergence in
-        :py:attr:`~domain.helpers.structs.LoggingData.convergence_set`
+        :py:attr:`~domain.helpers.smart_dataclasses.LoggingData.convergence_set`
          (default is 2).
     LOSS_CHANCE:
         Defines the probability of a message not being delivered to a
@@ -54,7 +54,7 @@ Attributes:
         :py:func:`~domain.cluster_groups.Hive.v_`, in order for the
         distributions to be considered equal and thus marking the epoch as
         being in convergence in
-        :py:attr:`~domain.helpers.structs.LoggingData.convergence_set`.
+        :py:attr:`~domain.helpers.smart_dataclasses.LoggingData.convergence_set`.
         This constant will be used by
         :py:meth:`~domain.cluster_groups.Hive.equal_distributions` along with a
         relative tolerance that is the minimum value in
