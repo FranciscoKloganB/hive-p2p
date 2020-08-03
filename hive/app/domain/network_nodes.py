@@ -126,7 +126,7 @@ class Worker:
 
         Args:
             fid:
-                Id of the shared file whose routing information is being
+                Id of the file whose routing information is being
                 removed from routing_table.
         """
         self.routing_table.pop(fid, None)

@@ -90,13 +90,13 @@ class Hivemind:
             files_dict: Dict[str, Dict[int, FileBlockData]] = {}
             file_parts: Dict[int, FileBlockData]
 
-            shared: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['shared']
-            for file_name in shared:
+            persisting: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['persisting']
+            for file_name in persisting:
                 with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
                     part_number: int = 0
                     file_parts = {}
-                    files_spreads[file_name] = shared[file_name]['spread']
-                    hive = self.__new_hive(shared, file_name)
+                    files_spreads[file_name] = persisting[file_name]['spread']
+                    hive = self.__new_hive(persisting, file_name)
                     while True:
                         read_buffer = file.read(READ_SIZE)
                         if read_buffer:
@@ -203,13 +203,13 @@ class Hivemind:
     # region Helpers
 
     def __new_hive(self,
-                   shared: Dict[str, Dict[str, Union[List[str], str]]],
+                   persisting: Dict[str, Dict[str, Union[List[str], str]]],
                    file_name: str) -> Hive:
         """
         Helper method that initializes a new hive.
         """
         hive_members: Dict[str, Worker] = {}
-        size = shared[file_name]['hive_size']
+        size = persisting[file_name]['cluster_size']
         initial_members: np.array = np.random.choice(a=[*self.workers.keys()],
                                                      size=size,
                                                      replace=False)

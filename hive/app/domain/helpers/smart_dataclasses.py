@@ -189,7 +189,7 @@ class FileBlockData:
 
     Attributes:
         hive_id (str):
-            Unique identifier of the hive that manages the shared file part.
+            Unique identifier of the hive that manages the file block.
         name (str):
             The name of the file the file block belongs to.
         number (int):
@@ -219,7 +219,7 @@ class FileBlockData:
 
         Args:
             hive_id:
-                Unique identifier of the hive that manages the shared file part.
+                Unique identifier of the hive that manages the file block.
             name:
                 The name of the file the file block belongs to.
             number:

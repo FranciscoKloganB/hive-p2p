@@ -129,9 +129,9 @@
         "dw": 0.2867137430529383,
         "dx": 0.4004919673905733
     },
-    "shared": {
+    "persisting": {
         "FBZ_0134.NEF": {
-            "hive_size": 8,
+            "cluster_size": 8,
             "spread": "a"
         }
     }
