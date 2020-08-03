@@ -27,7 +27,7 @@ Attributes:
         should be performed (default is False)
     READ_SIZE:
         Defines the raw size of each file block before it's wrapped in a
-        :py:class:`~domain.helpers.FileBlockData.FileBlockData` instance
+        :py:class:`~domain.helpers.data_classes.FileBlockData` instance
         object (default is 131072). Example values: 32KB = 32768b;
         128KB = 131072b; 512KB = 524288b; 20MB = 20971520b.
     MIN_DETECTION_DELAY:

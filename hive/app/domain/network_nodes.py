@@ -64,7 +64,7 @@ class Worker:
         status:
             Indicates the Worker instance is online or offline. In later
             releases this could also contain a 'suspect' status. See
-            :py:class:`~domain.helpers.Enums.Status`
+            :py:class:`~domain.helpers.enums.Status`
     """
 
     def __init__(self, uid: str, uptime: float) -> None:
@@ -86,7 +86,7 @@ class Worker:
 
         self.id: str = uid
         self.uptime: float = uptime
-        self.hives: Dict[str, h.Hive] = {}
+        self.hives: Dict[str, cg.Hive] = {}
         self.files: Dict[str, Dict[int, FileBlockData]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
         self.status: int = Status.ONLINE
@@ -136,7 +136,7 @@ class Worker:
     # region File Routing and Swarm Guidance Implementation
 
     def send_part(
-            self, hive: h.Hive, part: FileBlockData) -> Union[int, HttpCodes]:
+            self, hive: cg.Hive, part: FileBlockData) -> Union[int, HttpCodes]:
         """Attempts to send a file block replica to another Worker instance.
 
         Args:
@@ -149,7 +149,7 @@ class Worker:
                 The file block container to be sent to some other worker.
         Returns:
              An HTTP code defined in
-             :py:class:`~domain.helpers.Enums.HttpCodes`.
+             :py:class:`~domain.helpers.enums.HttpCodes`.
         """
         routing_vector: pd.DataFrame = self.routing_table[part.name]
         hive_members: List[str] = [*routing_vector.index]
@@ -174,7 +174,7 @@ class Worker:
 
         Returns:
              An HTTP code defined in
-             :py:class:`~domain.helpers.Enums.HttpCodes`. If upon integrity
+             :py:class:`~domain.helpers.enums.HttpCodes`. If upon integrity
              verification the sha256 hashvalue differs from the expected,
              the worker replies with a BAD_REQUEST code. If the Worker already
              owns a replica with the same number identifier it
@@ -196,7 +196,7 @@ class Worker:
                      fid: str,
                      number: int,
                      corrupt: bool = False,
-                     hive: h.Hive = None) -> None:
+                     hive: cg.Hive = None) -> None:
         """Safely deletes a part from the Worker instance's disk.
 
         Args:
@@ -220,7 +220,7 @@ class Worker:
             else:
                 hive.set_recovery_epoch(part)
 
-    def replicate_part(self, hive: h.Hive, part: FileBlockData) -> None:
+    def replicate_part(self, hive: cg.Hive, part: FileBlockData) -> None:
         """Equal to :py:meth:`~send_part` but with different delivery semantics.
 
         The file block replica is sent selectively in descending order to the
@@ -257,7 +257,7 @@ class Worker:
             # replication level may have not been completely restored
             part.update_epochs_to_recover(hive.current_epoch)
 
-    def execute_epoch(self, hive: h.Hive, fid: str) -> None:
+    def execute_epoch(self, hive: cg.Hive, fid: str) -> None:
         """Instructs the Worker instance to execute the epoch.
         
         The method iterates all file block replicas in :py:attr:`~files` and 
@@ -272,7 +272,7 @@ class Worker:
         replies with a BAD_REQUEST the replica is discarded and the worker
         starts a recovery process in the Hive. Any other code response resuts
         in the Worker instance keeping replica in his disk for at least one
-        more epoch times. See :py:class:`~domain.helpers.Enums.HttpCodes`
+        more epoch times. See :py:class:`~domain.helpers.enums.HttpCodes`
         for more information on possible HTTP Codes.
 
         Args:
@@ -330,7 +330,7 @@ class Worker:
 
         Returns:
             The status of the worker. See
-            :py:class:`~domain.helpers.Enums.Status`.
+            :py:class:`~domain.helpers.enums.Status`.
         """
         if self.status == Status.ONLINE:
             self.uptime -= 1

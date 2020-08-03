@@ -587,9 +587,10 @@ class Hive:
         """Ends the Hive instance simulation.
 
         Sets :py:attr:`running` to False and instructs
-        :py:class:`~domain.helpers.FileData.FileData` to persist
+        :py:class:`~domain.helpers.data_classes.FileData` to persist
         :py:class:`~domain.helpers.data_classes.LoggingData` to disk and
-        close its IO stream (py:attr:`~domain.helpers.FileData.out_file`).
+        close its IO stream (py:attr:`~domain.helpers.data_classes.FileData
+        .out_file`).
 
         Args:
             message:
@@ -599,10 +600,10 @@ class Hive:
         self.file.simulation_data.set_fail(self.current_epoch, message)
 
     def set_recovery_epoch(self, part: FileBlockData) -> None:
-        """Delegates to :py:meth:`~domain.helpers.FileBlockData.FileBlockData.set_recovery_epoch`
+        """Delegates to :py:meth:`~domain.helpers.data_classes.FileBlockData.set_recovery_epoch`
 
         Args:
-            part: A :py:class:`~domain.helpers.FileBlockData.FileBlockData`
+            part: A :py:class:`~domain.helpers.data_classes.FileBlockData`
             instance that represents a file block replica that was lost.
         """
         self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
@@ -692,7 +693,6 @@ class Hive:
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
 
-    # endregion
     def __vector_comparison_table__(
             self, target: pd.DataFrame, atol: float, rtol: float
     ) -> Union[JupyterHTMLStr, str]:
@@ -705,5 +705,4 @@ class Hive:
         zipped = zip(df['(cv_ - v_)'].to_list(), df['tolerance'].to_list())
         df['is_close'] = [x < y for x, y in zipped]
         return tabulate(df, headers='keys', tablefmt='psql')
-
-
+    # endregion
