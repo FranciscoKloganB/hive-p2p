@@ -1,3 +1,5 @@
+"""This module contains domain specific classes that coordinate all
+:py:mod:`~domain.cluster_groups` of a simulation instance."""
 from __future__ import annotations
 
 import json
