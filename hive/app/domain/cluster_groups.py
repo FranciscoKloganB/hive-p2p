@@ -1,3 +1,23 @@
+"""This module contains domain specific classes that represent groups of
+storage nodes.
+
+Classes:
+    BaseHive:
+        A group of P2P nodes working together to ensure the durability of a
+        file using stochastic swarm guidance.
+    Hive:
+        A group of P2P nodes working together to ensure the durability of a
+        file using stochastic swarm guidance. Differs from `BaseHive` in the
+        sense that member eviction is based on the received complaints
+        from other P2P member nodes within the Hive rather than having the
+        BaseHive detecting the disconnection fault, i.e., Hive role in the
+        simulation is more coordinative and less informative to nodes.
+    Cluster:
+        A group of reliable servers that ensure the durability of a file
+        following a client-server model as seen in Google File System or
+        Hadoop Distributed File System.
+"""
+
 from __future__ import annotations
 
 import math
@@ -9,14 +29,13 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate, JupyterHTMLStr
 
-import domain.Hivemind as hm
-import utils.transition_matrices as tmg
-from domain.Worker import Worker
-from domain.helpers.Enums import Status, HttpCodes
-from domain.helpers.FileData import FileData
-from domain.helpers.SharedFilePart import SharedFilePart
-from domain.helpers.SimulationData import SimulationData
-from globals.globals import REPLICATION_LEVEL, TRUE_FALSE, \
+import domain.helpers.matrices as mm
+import domain.master_servers as ms
+from domain.helpers.enums import Status, HttpCodes
+from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
+    LoggingData
+from domain.network_nodes import Worker
+from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
 
@@ -37,7 +56,7 @@ class Hive:
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`setup_epoch() <domain.Hive.Hive.setup_epoch>` for
+            :py:meth:`setup_epoch() <domain.cluster_groups.Hive.setup_epoch>` for
             corruption chance configuration.
         v_ (pandas DataFrame):
             Density distribution hive members must achieve with independent
@@ -45,7 +64,7 @@ class Hive:
         cv_ (pandas DataFrame):
             Tracks the file current density distribution, updated at each epoch.
         hivemind:
-            A reference to :py:class:`~domain.Hivemind.Hivemind` that
+            A reference to :py:class:`~domain.master_servers.Hivemind` that
             coordinates this Hive instance.
         members:
             A collection of network nodes that belong to the Hive instance.
@@ -66,19 +85,19 @@ class Hive:
             of the Hive must be pruned.
         running:
             Indicates if the Hive instance is active. This attribute is
-            used by :py:class:`~domain.Hivemind.Hivemind` to manage the
+            used by :py:class:`~domain.master_servers.Hivemind` to manage the
             simulation process.
         _recovery_epoch_sum:
             Helper attribute that facilitates the storage of the sum of the
-            values returned by all :py:meth:`~SharedFilePart.set_recovery_epoch`
+            values returned by all :py:meth:`~FileBlockData.set_recovery_epoch`
             method calls. Important for logging purposes.
         _recovery_epoch_calls:
             Helper attribute that facilitates the storage of the sum of the
-            values returned by all :py:meth:`~SharedFilePart.set_recovery_epoch`
+            values returned by all :py:meth:`~FileBlockData.set_recovery_epoch`
             method calls throughout the :py:attr:`~current_epoch`.
     """
 
-    def __init__(self, hivemind: hm.Hivemind,
+    def __init__(self, hivemind: ms.Hivemind,
                  file_name: str,
                  members: Dict[str, Worker],
                  sim_id: int = 0,
@@ -87,7 +106,7 @@ class Hive:
 
         Args:
             hivemind:
-                A reference to an :py:class:`~domain.Hivemind.Hivemind`
+                A reference to an :py:class:`~domain.master_servers.Hivemind`
                 object that manages the Hive being initialized.
             file_name:
                 The name of the file this Hive is responsible for persisting.
@@ -139,7 +158,7 @@ class Hive:
         and a backup solution using cloud approaches is desired. The idea
         is that surviving members upload their replicas to the cloud server,
         e.g., an Amazon S3 instance. See Hivemind method
-        :py:meth:`~domain.Hivemind.Hivemind.get_cloud_reference` for more
+        :py:meth:`~domain.master_servers.Hivemind.get_cloud_reference` for more
         details.
 
         Notes:
@@ -152,7 +171,7 @@ class Hive:
     def route_part(self,
                    sender: str,
                    destination: str,
-                   part: SharedFilePart,
+                   part: FileBlockData,
                    fresh_replica: bool = False) -> Any:
         """Sends one file block replica to some other network node.
 
@@ -317,7 +336,7 @@ class Hive:
 
     # noinspection DuplicatedCode
     def spread_files(
-            self, strategy: str, file_parts: Dict[int, SharedFilePart]
+            self, strategy: str, file_parts: Dict[int, FileBlockData]
     ) -> None:
         """Batch distributes files to Hive members.
 
@@ -329,7 +348,7 @@ class Hive:
             strategy:
                 `u` - Distributed uniformly across network;
                 `a` - Give all file block replicas to N different network
-                nodes, where N is equal to :py:const:`~<globals.globals.REPLICATION_LEVEL>`;
+                nodes, where N is equal to :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
                 `i` - Distribute all file block replicas following such
                 that the simulation starts with all file blocks and their
                 replicas distributed with a bias towards the ideal steady
@@ -375,8 +394,8 @@ class Hive:
 
         Note:
             If the Hive terminates early, i.e., if it terminates before
-            reaching :py:code:`~globals.globals.MAX_EPOCHS`, no logging
-            should be done in :py:class:`~domain.helpers.SimulationData.SimulationData`
+            reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
+            should be done in :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
         Args:
@@ -394,7 +413,7 @@ class Hive:
             offline_workers: List[Worker] = self._workers_execute_epoch()
             self.evaluate_hive_convergence()
             self._membership_maintenance(offline_workers)
-            if epoch == hm.Hivemind.MAX_EPOCHS:
+            if epoch == ms.Hivemind.MAX_EPOCHS:
                 self.running = False
         except Exception as e:
             self.set_fail(f"Exception caused simulation termination: {str(e)}")
@@ -482,12 +501,12 @@ class Hive:
         This method logs the amount of lost parts throughout the current
         epoch according to the members who went offline and the file blocks
         they posssed and is responsible for setting up a recovery epoch those
-        lost replicas (:py:meth:`domain.Hive.Hive.set_recovery_epoch`).
+        lost replicas (:py:meth:`domain.cluster_groups.Hive.set_recovery_epoch`).
         Similarly it logs the number of members who disconnected.
 
         Returns:
              A collection of members who disconnected during the current
-             epoch. See :py:meth:`~domain.Worker.Worker.get_epoch_status`.
+             epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
         offline_workers: List[Worker] = []
@@ -507,7 +526,7 @@ class Hive:
             self.set_fail("all hive members disconnected simultaneously")
 
         e: int = self.current_epoch
-        sf: SimulationData = self.file.simulation_data
+        sf: LoggingData = self.file.simulation_data
         sf.set_disconnected_workers_at_index(len(offline_workers), e)
         sf.set_lost_parts_at_index(lost_parts_count, e)
 
@@ -560,7 +579,7 @@ class Hive:
 
         Returns:
             A dictionary mapping network node identifiers and their instance
-            objects (:py:class:`~domain.Worker.Worker`).
+            objects (:py:class:`~domain.network_nodes.BaseNode`).
         """
         return self.hivemind.find_replacement_worker(
             self.members, self.original_size - len(self.members))
@@ -569,9 +588,10 @@ class Hive:
         """Ends the Hive instance simulation.
 
         Sets :py:attr:`running` to False and instructs
-        :py:class:`~domain.helpers.FileData.FileData` to persist
-        :py:class:`~domain.helpers.SimulationData.SimulationData` to disk and
-        close its IO stream (py:attr:`~domain.helpers.FileData.out_file`).
+        :py:class:`~domain.helpers.smart_dataclasses.FileData` to persist
+        :py:class:`~domain.helpers.smart_dataclasses.LoggingData` to disk and
+        close its IO stream (py:attr:`~domain.helpers.smart_dataclasses.FileData
+        .out_file`).
 
         Args:
             message:
@@ -580,11 +600,11 @@ class Hive:
         self.running = False
         self.file.simulation_data.set_fail(self.current_epoch, message)
 
-    def set_recovery_epoch(self, part: SharedFilePart) -> None:
-        """Delegates to :py:meth:`~domain.helpers.SharedFilePart.SharedFilePart.set_recovery_epoch`
+    def set_recovery_epoch(self, part: FileBlockData) -> None:
+        """Delegates to :py:meth:`~domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
 
         Args:
-            part: A :py:class:`~domain.helpers.SharedFilePart.SharedFilePart`
+            part: A :py:class:`~domain.helpers.smart_dataclasses.FileBlockData`
             instance that represents a file block replica that was lost.
         """
         self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
@@ -651,10 +671,10 @@ class Hive:
             :py:meth:`~_validate_transition_matrix`.
         """
         results: List[Tuple[Optional[np.ndarray], float]] = [
-            tmg.new_mh_transition_matrix(a, v_),
-            tmg.new_sdp_mh_transition_matrix(a, v_),
-            tmg.new_go_transition_matrix(a, v_),
-            tmg.new_mgo_transition_matrix(a, v_)
+            mm.new_mh_transition_matrix(a, v_),
+            mm.new_sdp_mh_transition_matrix(a, v_),
+            mm.new_go_transition_matrix(a, v_),
+            mm.new_mgo_transition_matrix(a, v_)
         ]
 
         size = len(results)
@@ -674,7 +694,6 @@ class Hive:
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
 
-    # endregion
     def __vector_comparison_table__(
             self, target: pd.DataFrame, atol: float, rtol: float
     ) -> Union[JupyterHTMLStr, str]:
@@ -687,5 +706,4 @@ class Hive:
         zipped = zip(df['(cv_ - v_)'].to_list(), df['tolerance'].to_list())
         df['is_close'] = [x < y for x, y in zipped]
         return tabulate(df, headers='keys', tablefmt='psql')
-
-
+    # endregion

@@ -1,19 +1,19 @@
-"""This module is used by :py:class:`~domain.Hive.Hive to create transition matrices for the simulation.
+"""Module used by :py:class:`~domain.cluster_groups.Hive to create transition
+matrices for the simulation.
 
 You should implement your own metropolis-hastings or alternative algorithms
 as well as any steady-state or transition matrix optimization algorithms in
 this module.
 """
 
-from typing import Tuple, Union, Any, Optional
+from typing import Tuple, Any, Optional
 
 import cvxpy as cvx
-import matlab
 import numpy as np
 
-from domain.exceptions.DistributionShapeError import DistributionShapeError
-from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
-from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
+from domain.helpers.exceptions import DistributionShapeError
+from domain.helpers.exceptions import MatrixNotSquareError
+from domain.helpers.matlab_utils import MatlabEngineContainer
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 

@@ -1,5 +1,5 @@
 {
-    "peers_uptime": {
+    "nodes_uptime": {
         "a": 0.4639849012172244,
         "b": 0.8108251766435667,
         "c": 0.99,
@@ -129,9 +129,9 @@
         "dw": 0.8797441229169567,
         "dx": 0.99
     },
-    "shared": {
+    "persisting": {
         "FBZ_0134.NEF": {
-            "hive_size": 8,
+            "cluster_size": 8,
             "spread": "a"
         }
     }

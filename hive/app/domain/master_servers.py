@@ -1,16 +1,20 @@
+"""This module contains domain specific classes that coordinate all
+:py:mod:`~domain.cluster_groups` of a simulation instance."""
 from __future__ import annotations
 
 import json
 import os
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, TypeAlias
 
 import numpy as np
 
-from domain.Hive import Hive
-from domain.Worker import Worker
-from domain.helpers.Enums import Status
-from domain.helpers.SharedFilePart import SharedFilePart
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
+from domain.cluster_groups import Hive
+from domain.helpers.enums import Status
+from domain.helpers.smart_dataclasses import FileBlockData
+from domain.network_nodes import Worker
+from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
+
+_PersistentingDict: TypeAlias = Dict[str, Dict[str, Union[List[str], str]]]
 
 
 class Hivemind:
@@ -34,13 +38,13 @@ class Hivemind:
         epoch:
             The simulation's current epoch.
         hives:
-            A collection of :py:class:`~domain.Hive.Hive` instances managed
+            A collection of :py:class:`~domain.cluster_groups.Hive` instances managed
             by the Hivemind.
         workers:
             A dictionary mapping network node identifiers names to their
-            object instances (:py:class:`~domain.Worker.Worker`). This
-            collection differs from the :py:class:`~domain.Hive.Hive`s'
-            attribute :py:attr:`~domain.Hive.Hive.members` in the sense that
+            object instances (:py:class:`~domain.network_nodes.BaseNode`). This
+            collection differs from the :py:class:`~domain.cluster_groups.Hive`s'
+            attribute :py:attr:`~domain.cluster_groups.Hive.members` in the sense that
             the latter is only a subset of `workers`, which includes all
             network nodes of the distributed backup system. Regardless of
             their participation on any Hive.
@@ -78,28 +82,28 @@ class Hivemind:
             self.workers: Dict[str, Worker] = {}
 
             # Instantiaite jobless Workers
-            for worker_id, worker_uptime in json_obj['peers_uptime'].items():
+            for worker_id, worker_uptime in json_obj['nodes_uptime'].items():
                 worker: Worker = Worker(worker_id, worker_uptime)
                 self.workers[worker.id] = worker
 
             # Read and split all shareable files specified on the input, also assign Hive initial attributes (uuid, members, and FileData)
             hive: Hive
             files_spreads: Dict[str, str] = {}
-            files_dict: Dict[str, Dict[int, SharedFilePart]] = {}
-            file_parts: Dict[int, SharedFilePart]
+            files_dict: Dict[str, Dict[int, FileBlockData]] = {}
+            file_parts: Dict[int, FileBlockData]
 
-            shared: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['shared']
-            for file_name in shared:
+            persisting: _PersistentingDict = json_obj['persisting']
+            for file_name in persisting:
                 with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
                     part_number: int = 0
                     file_parts = {}
-                    files_spreads[file_name] = shared[file_name]['spread']
-                    hive = self.__new_hive(shared, file_name)
+                    files_spreads[file_name] = persisting[file_name]['spread']
+                    hive = self.__new_hive(persisting, file_name)
                     while True:
                         read_buffer = file.read(READ_SIZE)
                         if read_buffer:
                             part_number = part_number + 1
-                            file_parts[part_number] = SharedFilePart(
+                            file_parts[part_number] = FileBlockData(
                                 hive.id, file_name, part_number, read_buffer)
                         else:
                             files_dict[file_name] = file_parts
@@ -117,7 +121,7 @@ class Hivemind:
     def execute_simulation(self) -> None:
         """Runs a stochastic swarm guidance algorithm applied to a P2P network"""
         while self.epoch < Hivemind.MAX_EPOCHS_PLUS_ONE and self.hives:
-            # print("epoch: {}".format(self.epoch))
+            print("epoch: {}".format(self.epoch))
             terminated_hives: List[str] = []
             for hive in self.hives.values():
                 hive.execute_epoch(self.epoch)
@@ -161,7 +165,7 @@ class Hivemind:
         Args:
             exclusion_dict:
                 A dictionary of network nodes identifiers and their object
-                instances (:py:class:`~domain.Worker.Worker`),
+                instances (:py:class:`~domain.network_nodes.BaseNode`),
                 which represent the nodes the Hive is not interested in,
                 i.e., this argument is a blacklist.
             n:
@@ -201,13 +205,13 @@ class Hivemind:
     # region Helpers
 
     def __new_hive(self,
-                   shared: Dict[str, Dict[str, Union[List[str], str]]],
+                   persisting: Dict[str, Dict[str, Union[List[str], str]]],
                    file_name: str) -> Hive:
         """
         Helper method that initializes a new hive.
         """
         hive_members: Dict[str, Worker] = {}
-        size = shared[file_name]['hive_size']
+        size = persisting[file_name]['cluster_size']
         initial_members: np.array = np.random.choice(a=[*self.workers.keys()],
                                                      size=size,
                                                      replace=False)
