@@ -8,10 +8,9 @@ this module.
 from typing import Tuple, Union, Any, Optional
 
 import cvxpy as cvx
-import matlab
 import numpy as np
 
-from domain.exceptions.exceptions import DistributionShapeError
+from domain.exceptions import DistributionShapeError
 from domain.exceptions import MatrixNotSquareError
 from domain.helpers.matlab_utils import MatlabEngineContainer
 

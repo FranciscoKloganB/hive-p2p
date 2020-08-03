@@ -77,7 +77,7 @@ def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
         epochs:
             The number of discrete time steps the simulation lasts.
     """
-    hm.Hivemind(sname, sid, epochs).execute_simulation()
+    ms.Hivemind(sname, sid, epochs).execute_simulation()
 
 
 def __parallel_main(
