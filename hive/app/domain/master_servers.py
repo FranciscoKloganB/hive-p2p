@@ -34,13 +34,13 @@ class Hivemind:
         epoch:
             The simulation's current epoch.
         hives:
-            A collection of :py:class:`~domain.Hive.Hive` instances managed
+            A collection of :py:class:`~domain.cluster_groups.Hive` instances managed
             by the Hivemind.
         workers:
             A dictionary mapping network node identifiers names to their
-            object instances (:py:class:`~domain.Worker.Worker`). This
-            collection differs from the :py:class:`~domain.Hive.Hive`s'
-            attribute :py:attr:`~domain.Hive.Hive.members` in the sense that
+            object instances (:py:class:`~domain.network_nodes.BaseNode`). This
+            collection differs from the :py:class:`~domain.cluster_groups.Hive`s'
+            attribute :py:attr:`~domain.cluster_groups.Hive.members` in the sense that
             the latter is only a subset of `workers`, which includes all
             network nodes of the distributed backup system. Regardless of
             their participation on any Hive.
@@ -161,7 +161,7 @@ class Hivemind:
         Args:
             exclusion_dict:
                 A dictionary of network nodes identifiers and their object
-                instances (:py:class:`~domain.Worker.Worker`),
+                instances (:py:class:`~domain.network_nodes.BaseNode`),
                 which represent the nodes the Hive is not interested in,
                 i.e., this argument is a blacklist.
             n:

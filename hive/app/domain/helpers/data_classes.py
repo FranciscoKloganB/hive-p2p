@@ -5,13 +5,10 @@ from pathlib import Path
 from random import randint
 from typing import Any, Dict, IO, List
 
-import domain.cluster_groups as h
-import domain.master_servers as hm
-from domain import master_servers as hm
+import domain.cluster_groups as cg
+import domain.master_servers as ms
 
 from globals.globals import *
-from globals.globals import MIN_DETECTION_DELAY, MAX_DETECTION_DELAY, \
-    REPLICATION_LEVEL, MIN_CONVERGENCE_THRESHOLD
 from utils import convertions, crypto
 
 
@@ -74,7 +71,7 @@ class FileData:
         """
         self.out_file.write(msg + "\n")
 
-    def jwrite(self, hive: h.Hive, origin: str, epoch: int) -> None:
+    def jwrite(self, hive: cg.Hive, origin: str, epoch: int) -> None:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
@@ -83,7 +80,7 @@ class FileData:
 
         Args:
             hive:
-                The :py:class:`Hive <domain.Hive.Hive>` object that manages
+                The :py:class:`Hive <domain.cluster_groups.Hive>` object that manages
                 the simulated persistence of the referenced file.
             origin:
                 The name of the simulation file that started the simulation
@@ -124,7 +121,7 @@ class FileData:
             "sufficient_size_threshold": hive.sufficient_size,
             "original_hive_size": hive.original_size,
             "redundant_size": hive.redundant_size,
-            "max_epochs": hm.Hivemind.MAX_EPOCHS,
+            "max_epochs": ms.Hivemind.MAX_EPOCHS,
             "min_recovery_delay": MIN_DETECTION_DELAY,
             "max_recovery_delay": MAX_DETECTION_DELAY,
             "replication_level": REPLICATION_LEVEL,
@@ -340,8 +337,8 @@ class LoggingData:
     Notes:
         Most attributes of this class are not documented in docstrings,
         but they are straight forward to understand. They are mostly lists of
-        length :py:const:`hm.Hivemind.MAX_EPOCHS
-        <globals.globals.hm.Hivemind.MAX_EPOCHS>` that
+        length :py:const:`ms.Hivemind.MAX_EPOCHS
+        <globals.globals.ms.Hivemind.MAX_EPOCHS>` that
         contain data concerning the current state of simulation at the
         respective epoch times. For example, :py:attr:`~lost_parts` keeps
         a integers that represent how many file blocks were lost at each
@@ -354,7 +351,7 @@ class LoggingData:
         cswc (int):
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
-            :py:meth:`equal_distributions() <domain.Hive.Hive.equal_distributions>`
+            :py:meth:`equal_distributions() <domain.cluster_groups.Hive.equal_distributions>`
             this attribute is reseted to zero.
         largest_convergence_window (int):
             Stores the largest convergence window that occurred throughout
@@ -373,8 +370,8 @@ class LoggingData:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
             to persist the file throughout
-            :py:const:`hm.Hivemind.MAX_EPOCHS
-            <globals.globals.hm.Hivemind.MAX_EPOCHS>` time
+            :py:const:`ms.Hivemind.MAX_EPOCHS
+            <globals.globals.ms.Hivemind.MAX_EPOCHS>` time
             steps.
         messages (list of str):
             Set of at least one error message that led to the failure
@@ -387,8 +384,8 @@ class LoggingData:
     def __init__(self) -> None:
         """Instanciates a LoggingData object for simulation event logging."""
 
-        max_epochs = hm.Hivemind.MAX_EPOCHS
-        max_epochs_plus_one = hm.Hivemind.MAX_EPOCHS_PLUS_ONE
+        max_epochs = ms.Hivemind.MAX_EPOCHS
+        max_epochs_plus_one = ms.Hivemind.MAX_EPOCHS_PLUS_ONE
 
         ###############################
         # Do not alter these
@@ -471,9 +468,9 @@ class LoggingData:
     # region Overrides
 
     def __str__(self):
-        return "time in convergence: " + str(self._recursive_len(self.convergence_sets)) + \
-               "\nlargest_convergence_window: " + str(self.largest_convergence_window) + \
-               "\nconvergence_sets:\n " + str(self.convergence_sets)
+        rlen = self._recursive_len(self.convergence_sets)
+        cw = self.largest_convergence_window
+        return f"time in convergence: {rlen}\nlargest_convergence_window: {cw}"
 
     def __repr__(self):
         return str(self.__dict__)
@@ -600,5 +597,4 @@ class LoggingData:
         self.hive_status_before_maintenance[epoch-1] = status
         self.hive_size_before_maintenance[epoch-1] = size_before
         self.hive_size_after_maintenance[epoch-1] = size_after
-
     # endregion

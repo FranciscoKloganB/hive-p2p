@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate, JupyterHTMLStr
 
-import domain.master_servers as hm
+import domain.master_servers as ms
 import utils.transition_matrices as tmg
 from domain.network_nodes import Worker
 from domain.helpers.enums import Status, HttpCodes
@@ -35,7 +35,7 @@ class Hive:
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`setup_epoch() <domain.Hive.Hive.setup_epoch>` for
+            :py:meth:`setup_epoch() <domain.cluster_groups.Hive.setup_epoch>` for
             corruption chance configuration.
         v_ (pandas DataFrame):
             Density distribution hive members must achieve with independent
@@ -43,7 +43,7 @@ class Hive:
         cv_ (pandas DataFrame):
             Tracks the file current density distribution, updated at each epoch.
         hivemind:
-            A reference to :py:class:`~domain.Hivemind.Hivemind` that
+            A reference to :py:class:`~domain.master_servers.Hivemind` that
             coordinates this Hive instance.
         members:
             A collection of network nodes that belong to the Hive instance.
@@ -64,7 +64,7 @@ class Hive:
             of the Hive must be pruned.
         running:
             Indicates if the Hive instance is active. This attribute is
-            used by :py:class:`~domain.Hivemind.Hivemind` to manage the
+            used by :py:class:`~domain.master_servers.Hivemind` to manage the
             simulation process.
         _recovery_epoch_sum:
             Helper attribute that facilitates the storage of the sum of the
@@ -76,7 +76,7 @@ class Hive:
             method calls throughout the :py:attr:`~current_epoch`.
     """
 
-    def __init__(self, hivemind: hm.Hivemind,
+    def __init__(self, hivemind: ms.Hivemind,
                  file_name: str,
                  members: Dict[str, Worker],
                  sim_id: int = 0,
@@ -85,7 +85,7 @@ class Hive:
 
         Args:
             hivemind:
-                A reference to an :py:class:`~domain.Hivemind.Hivemind`
+                A reference to an :py:class:`~domain.master_servers.Hivemind`
                 object that manages the Hive being initialized.
             file_name:
                 The name of the file this Hive is responsible for persisting.
@@ -137,7 +137,7 @@ class Hive:
         and a backup solution using cloud approaches is desired. The idea
         is that surviving members upload their replicas to the cloud server,
         e.g., an Amazon S3 instance. See Hivemind method
-        :py:meth:`~domain.Hivemind.Hivemind.get_cloud_reference` for more
+        :py:meth:`~domain.master_servers.Hivemind.get_cloud_reference` for more
         details.
 
         Notes:
@@ -392,7 +392,7 @@ class Hive:
             offline_workers: List[Worker] = self._workers_execute_epoch()
             self.evaluate_hive_convergence()
             self._membership_maintenance(offline_workers)
-            if epoch == hm.Hivemind.MAX_EPOCHS:
+            if epoch == ms.Hivemind.MAX_EPOCHS:
                 self.running = False
         except Exception as e:
             self.set_fail(f"Exception caused simulation termination: {str(e)}")
@@ -480,12 +480,12 @@ class Hive:
         This method logs the amount of lost parts throughout the current
         epoch according to the members who went offline and the file blocks
         they posssed and is responsible for setting up a recovery epoch those
-        lost replicas (:py:meth:`domain.Hive.Hive.set_recovery_epoch`).
+        lost replicas (:py:meth:`domain.cluster_groups.Hive.set_recovery_epoch`).
         Similarly it logs the number of members who disconnected.
 
         Returns:
              A collection of members who disconnected during the current
-             epoch. See :py:meth:`~domain.Worker.Worker.get_epoch_status`.
+             epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
         offline_workers: List[Worker] = []
@@ -558,7 +558,7 @@ class Hive:
 
         Returns:
             A dictionary mapping network node identifiers and their instance
-            objects (:py:class:`~domain.Worker.Worker`).
+            objects (:py:class:`~domain.network_nodes.BaseNode`).
         """
         return self.hivemind.find_replacement_worker(
             self.members, self.original_size - len(self.members))
