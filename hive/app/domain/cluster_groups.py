@@ -1,3 +1,23 @@
+"""This module contains domain specific classes that represent groups of
+storage nodes.
+
+Classes:
+    BaseHive:
+        A group of P2P nodes working together to ensure the durability of a
+        file using stochastic swarm guidance.
+    Hive:
+        A group of P2P nodes working together to ensure the durability of a
+        file using stochastic swarm guidance. Differs from `BaseHive` in the
+        sense that member eviction is based on the received complaints
+        from other P2P member nodes within the Hive rather than having the
+        BaseHive detecting the disconnection fault, i.e., Hive role in the
+        simulation is more coordinative and less informative to nodes.
+    Cluster:
+        A group of reliable servers that ensure the durability of a file
+        following a client-server model as seen in Google File System or
+        Hadoop Distributed File System.
+"""
+
 from __future__ import annotations
 
 import math
