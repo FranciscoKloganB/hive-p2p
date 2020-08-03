@@ -80,7 +80,7 @@ class Hivemind:
             self.workers: Dict[str, Worker] = {}
 
             # Instantiaite jobless Workers
-            for worker_id, worker_uptime in json_obj['peers_uptime'].items():
+            for worker_id, worker_uptime in json_obj['nodes_uptime'].items():
                 worker: Worker = Worker(worker_id, worker_uptime)
                 self.workers[worker.id] = worker
 
