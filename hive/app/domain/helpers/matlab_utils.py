@@ -1,3 +1,4 @@
+"""Module with Matlab related classes."""
 from __future__ import annotations
 
 import threading
@@ -12,6 +13,9 @@ from globals.globals import MATLAB_DIR
 class MatlabEngineContainer:
     """Singleton class wrapper containing thread safe access to a MatlabEngine.
 
+    The purpose of this class is to provide a thread-safe way to access the
+    matlab engine instance object when running simulations in threaded mode.
+
     Attributes:
         eng:
             A matlab engine instance object used for matrix and vector
@@ -23,7 +27,7 @@ class MatlabEngineContainer:
             the multithreaded mode to speed up simulations.
     """
 
-    __lock = threading.RLock()
+    __LOCK = threading.RLock()
     __instance: MatlabEngineContainer = None
 
     @staticmethod
@@ -37,7 +41,7 @@ class MatlabEngineContainer:
             A reference to the existing MatlabEngineContainer instance.
         """
         if MatlabEngineContainer.__instance is None:
-            with MatlabEngineContainer.__lock:
+            with MatlabEngineContainer.__LOCK:
                 if MatlabEngineContainer.__instance is None:
                     MatlabEngineContainer()
         return MatlabEngineContainer.__instance
@@ -80,7 +84,7 @@ class MatlabEngineContainer:
             Markov Matrix with `v_` as steady state distribution and the
             respective mixing rate or None.
         """
-        with MatlabEngineContainer.__lock:
+        with MatlabEngineContainer.__LOCK:
             ma = matlab.double(a.tolist())
             mv_ = matlab.double(v_.tolist())
             return self.eng.matrixGlobalOpt(ma, mv_, nargout=1)

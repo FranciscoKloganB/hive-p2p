@@ -1,3 +1,5 @@
+"""Module with classes that helpt to avoid domain class polution by
+encapsulating attribute and method behaviour."""
 from __future__ import annotations
 
 import json

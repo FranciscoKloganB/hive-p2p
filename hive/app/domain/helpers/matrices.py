@@ -1,4 +1,5 @@
-"""This module is used by :py:class:`~domain.cluster_groups.Hive to create transition matrices for the simulation.
+"""Module used by :py:class:`~domain.cluster_groups.Hive to create transition
+matrices for the simulation.
 
 You should implement your own metropolis-hastings or alternative algorithms
 as well as any steady-state or transition matrix optimization algorithms in
