@@ -31,7 +31,7 @@ class FileData:
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
             has graphs and figures. See
-            :py:class:`~domain.helpers.data_classes.SimulationData`
+            :py:class:`~domain.helpers.structs.SimulationData`
         out_file (str/bytes/int):
             File output stream to where captured data is written in append mode.
     """
@@ -77,7 +77,7 @@ class FileData:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
-        :py:class:`LoggingData <domain.helpers.data_classes.LoggingData`
+        :py:class:`LoggingData <domain.helpers.structs.LoggingData`
          class.
 
         Args:

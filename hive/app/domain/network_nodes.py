@@ -15,7 +15,7 @@ import domain.cluster_groups as cg
 import domain.master_servers as ms
 
 from domain.helpers.enums import Status, HttpCodes
-from domain.helpers.data_classes import FileBlockData
+from domain.helpers.structs import FileBlockData
 from utils import crypto
 
 

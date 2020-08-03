@@ -11,7 +11,7 @@ import numpy as np
 from domain.cluster_groups import Hive
 from domain.network_nodes import Worker
 from domain.helpers.enums import Status
-from domain.helpers.data_classes import FileBlockData
+from domain.helpers.structs import FileBlockData
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
 
 

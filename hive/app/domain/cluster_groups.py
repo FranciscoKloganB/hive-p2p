@@ -33,7 +33,7 @@ import domain.master_servers as ms
 import domain.helpers.matrices as mm
 from domain.network_nodes import Worker
 from domain.helpers.enums import Status, HttpCodes
-from domain.helpers.data_classes import FileData, FileBlockData, LoggingData
+from domain.helpers.structs import FileData, FileBlockData, LoggingData
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
@@ -394,7 +394,7 @@ class Hive:
         Note:
             If the Hive terminates early, i.e., if it terminates before
             reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
-            should be done in :py:class:`~domain.helpers.data_classes.LoggingData`
+            should be done in :py:class:`~domain.helpers.structs.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
         Args:
@@ -587,9 +587,9 @@ class Hive:
         """Ends the Hive instance simulation.
 
         Sets :py:attr:`running` to False and instructs
-        :py:class:`~domain.helpers.data_classes.FileData` to persist
-        :py:class:`~domain.helpers.data_classes.LoggingData` to disk and
-        close its IO stream (py:attr:`~domain.helpers.data_classes.FileData
+        :py:class:`~domain.helpers.structs.FileData` to persist
+        :py:class:`~domain.helpers.structs.LoggingData` to disk and
+        close its IO stream (py:attr:`~domain.helpers.structs.FileData
         .out_file`).
 
         Args:
@@ -600,10 +600,10 @@ class Hive:
         self.file.simulation_data.set_fail(self.current_epoch, message)
 
     def set_recovery_epoch(self, part: FileBlockData) -> None:
-        """Delegates to :py:meth:`~domain.helpers.data_classes.FileBlockData.set_recovery_epoch`
+        """Delegates to :py:meth:`~domain.helpers.structs.FileBlockData.set_recovery_epoch`
 
         Args:
-            part: A :py:class:`~domain.helpers.data_classes.FileBlockData`
+            part: A :py:class:`~domain.helpers.structs.FileBlockData`
             instance that represents a file block replica that was lost.
         """
         self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
