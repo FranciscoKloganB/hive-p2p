@@ -64,7 +64,6 @@ class Worker:
             :py:class:`~domain.helpers.Enums.Status`
     """
 
-    # region Class Variables, Instance Variables and Constructors
     def __init__(self, uid: str, uptime: float) -> None:
         """Instantiates a Worker object.
 
@@ -88,9 +87,8 @@ class Worker:
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
         self.status: int = Status.ONLINE
-    # endregion
 
-    # region Routing Table
+    # region Routing tables
     def set_file_routing(self,
                          fid: str,
                          transition_vector: Union[pd.Series, pd.DataFrame]
@@ -132,10 +130,10 @@ class Worker:
         self.files.pop(fid, None)
     # endregion
 
-    # region File Routing
+    # region File Routing and Swarm Guidance Implementation
+
     def send_part(
-            self, hive: h.Hive, part: SharedFilePart
-    ) -> Union[int, HttpCodes]:
+            self, hive: h.Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
         """Attempts to send a file block replica to another Worker instance.
 
         Args:
@@ -191,7 +189,35 @@ class Worker:
             self.files[part.name][part.number] = part
             return HttpCodes.OK  # accepted file part, because Sha256 was correct and Worker did not have this replica yet
 
-    def replicate(self, hive: h.Hive, part: SharedFilePart) -> None:
+    def discard_part(self,
+                     fid: str,
+                     number: int,
+                     corrupt: bool = False,
+                     hive: h.Hive = None) -> None:
+        """Safely deletes a part from the Worker instance's disk.
+
+        Args:
+            fid:
+                Name of the file the file block replica belongs to.
+            number:
+                The part number that uniquely identifies the file block.
+            corrupt:
+                optional; If discard is being invoked due to identified file
+                block corruption, e.g., Sha256 does not match the expected (
+                default False).
+            hive:
+                Gateway Hive that will set the recovery epoch (see
+                :py:meth:`~domain.Hive.Hive.set_recovery_epoch` or mark the
+                simulation as failed.
+        """
+        part: SharedFilePart = self.files.get(fid, {}).pop(number, None)
+        if part and corrupt:
+            if part.decrement_and_get_references() == 0:
+                hive.set_fail(f"Lost file with id: {part.id} due to corruption")
+            else:
+                hive.set_recovery_epoch(part)
+
+    def replicate_part(self, hive: h.Hive, part: SharedFilePart) -> None:
         """Equal to :py:meth:`~send_part` but with different delivery semantics.
 
         The file block replica is sent selectively in descending order to the
@@ -227,9 +253,7 @@ class Worker:
                     part.references += 1
             # replication level may have not been completely restored
             part.update_epochs_to_recover(hive.current_epoch)
-    # endregion
 
-    # region Swarm Guidance Interface
     def execute_epoch(self, hive: h.Hive, fid: str) -> None:
         """Instructs the Worker instance to execute the epoch.
         
@@ -257,7 +281,7 @@ class Worker:
         """
         file_view: Dict[int, SharedFilePart] = self.files.get(fid, {}).copy()
         for number, part in file_view.items():
-            self.replicate(hive, part)
+            self.replicate_part(hive, part)
             response_code = self.send_part(hive, part)
             if response_code == HttpCodes.OK:
                 self.discard_part(fid, number)
@@ -268,34 +292,6 @@ class Worker:
     # endregion
 
     # region Helpers
-    def discard_part(self,
-                     fid: str,
-                     number: int,
-                     corrupt: bool = False,
-                     hive: h.Hive = None) -> None:
-        """Safely deletes a part from the Worker instance's disk.
-
-        Args:
-            fid:
-                Name of the file the file block replica belongs to.
-            number:
-                The part number that uniquely identifies the file block.
-            corrupt:
-                optional; If discard is being invoked due to identified file
-                block corruption, e.g., Sha256 does not match the expected (
-                default False).
-            hive:
-                Gateway Hive that will set the recovery epoch (see
-                :py:meth:`~domain.Hive.Hive.set_recovery_epoch` or mark the
-                simulation as failed.
-        """
-        part: SharedFilePart = self.files.get(fid, {}).pop(number, None)
-        if part and corrupt:
-            if part.decrement_and_get_references() == 0:
-                hive.set_fail(f"Lost file with id: {part.id} due to corruption")
-            else:
-                hive.set_recovery_epoch(part)
-
     def get_file_parts(self, fid: str) -> Dict[int, SharedFilePart]:
         """Gets collection of file parts that correspond to the named file.
 
