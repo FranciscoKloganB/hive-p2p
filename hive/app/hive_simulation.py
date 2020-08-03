@@ -1,4 +1,4 @@
-"""The functionality offered by this module is used to start simulations.
+"""This scripts's functions are used to start simulations.
 
     You can start a simulation by executing the following command::
 

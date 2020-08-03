@@ -1,4 +1,4 @@
-"""This module's functions are used to create a simulation file for the user.
+"""This scripts's functions are used to create a simulation file for the user.
 
     You can create a simulation file by following the instructions that
     appear in your terminal when running the following command::
