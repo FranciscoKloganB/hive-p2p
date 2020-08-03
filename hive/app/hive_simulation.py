@@ -18,7 +18,7 @@
 
     If you don't have a simulation file yet, run the following instead::
 
-        $ python simulation_file_generator.py --file=filename.json
+        $ python simfile_generator.py --file=filename.json
 
     Notes:
         For the simulation to run without errors you must ensurue that::

@@ -3,7 +3,7 @@
     You can create a simulation file by following the instructions that
     appear in your terminal when running the following command::
 
-        $ python simulation_file_generator.py --file=filename.json
+        $ python simfile_generator.py --file=filename.json
 
     Notes:
         Simulation files are placed in:
@@ -315,7 +315,7 @@ if __name__ == "__main__":
                     sys.exit("Invalid simulation file - blank id not allowed")
 
     except getopt.GetoptError:
-        print("Usage: python simulation_file_generator.py "
+        print("Usage: python simfile_generator.py "
               "--file=filename.json")
 
 # endregion
