@@ -29,11 +29,12 @@ import numpy as np
 import pandas as pd
 from tabulate import tabulate, JupyterHTMLStr
 
-import domain.master_servers as ms
 import domain.helpers.matrices as mm
-from domain.network_nodes import Worker
+import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
-from domain.helpers.smart_dataclasses import FileData, FileBlockData, LoggingData
+from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
+    LoggingData
+from domain.network_nodes import Worker
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index

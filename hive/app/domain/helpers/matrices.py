@@ -6,7 +6,7 @@ as well as any steady-state or transition matrix optimization algorithms in
 this module.
 """
 
-from typing import Tuple, Union, Any, Optional
+from typing import Tuple, Any, Optional
 
 import cvxpy as cvx
 import numpy as np

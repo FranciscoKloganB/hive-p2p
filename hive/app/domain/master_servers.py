@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import json
 import os
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, TypeAlias
 
 import numpy as np
 
 from domain.cluster_groups import Hive
-from domain.network_nodes import Worker
 from domain.helpers.enums import Status
 from domain.helpers.smart_dataclasses import FileBlockData
+from domain.network_nodes import Worker
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
+
+_PersistentingDict: TypeAlias = Dict[str, Dict[str, Union[List[str], str]]]
 
 
 class Hivemind:
@@ -90,7 +92,7 @@ class Hivemind:
             files_dict: Dict[str, Dict[int, FileBlockData]] = {}
             file_parts: Dict[int, FileBlockData]
 
-            persisting: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['persisting']
+            persisting: _PersistentingDict = json_obj['persisting']
             for file_name in persisting:
                 with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
                     part_number: int = 0

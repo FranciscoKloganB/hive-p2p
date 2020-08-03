@@ -31,11 +31,12 @@
             3. An output file simdirectory exists with default path being:
             :py:const:`~environment_settings.OUTFILE_ROOT`.
 """
+import getopt
 import os
 import sys
-import numpy
-import getopt
 from concurrent.futures.thread import ThreadPoolExecutor
+
+import numpy
 
 import domain.master_servers as ms
 from domain.helpers.matlab_utils import MatlabEngineContainer

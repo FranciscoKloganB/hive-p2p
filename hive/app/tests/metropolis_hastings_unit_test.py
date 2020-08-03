@@ -1,7 +1,6 @@
 import sys
 
 import numpy as np
-
 import utils.matrices as mH
 
 

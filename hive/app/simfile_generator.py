@@ -15,15 +15,14 @@
 import getopt
 import itertools
 import json
-import logging
 import math
 import os
 import string
 import sys
-import numpy
-
 from pathlib import Path
 from typing import List, Dict, Any
+
+import numpy
 
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT
 from scripts.python import normal_distribution_generator as ng
