@@ -480,7 +480,7 @@ class LoggingData:
 
     # region Helpers
 
-    def set_delay_at_index(self, delay: int, calls: int, epoch: int) -> None:
+    def log_recovery_delay(self, delay: int, calls: int, epoch: int) -> None:
         """Logs the expected delay at epoch at an epoch.
 
         Args:
@@ -493,7 +493,7 @@ class LoggingData:
         """
         self.delay[epoch-1] = 0 if calls == 0 else delay / calls
 
-    def set_moved_parts_at_index(self, n: int, epoch: int) -> None:
+    def log_bandwidth_units(self, n: int, epoch: int) -> None:
         """Logs the amount of moved file blocks moved at an epoch.
 
         Args:
@@ -504,7 +504,7 @@ class LoggingData:
         """
         self.moved_parts[epoch-1] += n
 
-    def set_parts_at_index(self, n: int, epoch: int) -> None:
+    def log_existing_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of existing file blocks in the simulation environment at an epoch.
 
         Args:
@@ -515,7 +515,7 @@ class LoggingData:
         """
         self.parts_in_hive[epoch-1] += n
 
-    def set_disconnected_workers_at_index(self, n: int, epoch: int) -> None:
+    def log_disconnected_workers(self, n: int, epoch: int) -> None:
         """Logs the amount of disconnected workers at an epoch.
 
         Args:
@@ -526,7 +526,7 @@ class LoggingData:
         """
         self.disconnected_workers[epoch-1] += n
 
-    def set_lost_parts_at_index(self, n: int, epoch: int) -> None:
+    def log_lost_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of permanently lost file block replicas at an epoch.
 
         Args:
@@ -537,7 +537,7 @@ class LoggingData:
         """
         self.lost_parts[epoch-1] += n
 
-    def set_lost_messages_at_index(self, n: int, epoch: int) -> None:
+    def log_lost_messages(self, n: int, epoch: int) -> None:
         """Logs the amount of failed message transmissions at an epoch.
 
         Args:
@@ -548,7 +548,7 @@ class LoggingData:
         """
         self.lost_messages[epoch-1] += n
 
-    def set_corrupt_files_at_index(self, n: int, epoch: int) -> None:
+    def log_corrupted_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of corrupted file block replicas at an epoch.
 
         Args:
@@ -559,7 +559,7 @@ class LoggingData:
         """
         self.corrupted_parts[epoch-1] += n
 
-    def set_fail(self, epoch: int, message: str = "") -> None:
+    def log_fail(self, epoch: int, message: str = "") -> None:
         """Logs the epoch at which a simulation terminated due to a failure.
 
         Note:
@@ -577,11 +577,11 @@ class LoggingData:
         self.successfull = False
         self.messages.append(message)
 
-    def set_membership_maintenace_at_index(self,
-                                           status: str,
-                                           size_before: int,
-                                           size_after: int,
-                                           epoch: int) -> None:
+    def log_maintenance(self,
+                        status: str,
+                        size_before: int,
+                        size_after: int,
+                        epoch: int) -> None:
         """Logs hive membership status and size at an epoch.
 
         Args:

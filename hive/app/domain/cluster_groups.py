@@ -102,14 +102,15 @@ class BaseHive:
                  members: Dict[str, Worker],
                  sim_id: int = 0,
                  origin: str = "") -> None:
-        """Instantiates an BaseHive object
+        """Instantiates an `BaseHive` object
 
         Args:
             hivemind:
                 A reference to an :py:class:`~domain.master_servers.Hivemind`
-                object that manages the BaseHive being initialized.
+                object that manages the `BaseHive` being initialized.
             file_name:
-                The name of the file this BaseHive is responsible for persisting.
+                The name of the file this `BaseHive` is responsible
+                for persisting.
             members:
                 A dictionary mapping unique identifiers to of the BaseHive's
                 initial network nodes (:py:class:`~domain.domain.Worker`.)
@@ -193,14 +194,14 @@ class BaseHive:
         if sender == destination:
             return HttpCodes.DUMMY
 
-        self.file.simulation_data.set_moved_parts_at_index(1, self.current_epoch)
+        self.file.simulation_data.log_bandwidth_units(1, self.current_epoch)
 
         if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):
-            self.file.simulation_data.set_lost_messages_at_index(1, self.current_epoch)
+            self.file.simulation_data.log_lost_messages(1, self.current_epoch)
             return HttpCodes.TIME_OUT
 
         if not fresh_replica and np.random.choice(a=TRUE_FALSE, p=self.corruption_chances):
-            self.file.simulation_data.set_corrupt_files_at_index(1, self.current_epoch)
+            self.file.simulation_data.log_corrupted_file_blocks(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST
 
         member: Worker = self.members[destination]
@@ -333,8 +334,174 @@ class BaseHive:
     # endregion
 
     # region Simulation Interface
+    def setup_epoch(self, epoch: int) -> None:
+        """Initializes some attributes of the BaseHive during its initialization.
 
-    # noinspection DuplicatedCode
+        The helper method is used to isolate the initialization of some
+        simulation related attributes for eaasier comprehension.
+
+        Args:
+            epoch:
+                The simulation's current epoch.
+        """
+        self.current_epoch = epoch
+        self.corruption_chances[0] = np.log10(epoch).item() / 300.0
+        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
+        self._recovery_epoch_sum = 0
+        self._recovery_epoch_calls = 0
+
+    def execute_epoch(self, epoch: int) -> None:
+        """Orders all network node members to execute their epoch
+
+        Note:
+            If the BaseHive terminates early, i.e., if it terminates before
+            reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
+            should be done in :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
+            the received `epoch` to avoid skewing previously collected results.
+
+        Args:
+            epoch:
+                The epoch the BaseHive should currently be in, according to it's
+                managing Hivemind.
+
+        Returns:
+            False if BaseHive failed to persist the file it was responsible for,
+            otherwise True.
+        """
+        self.setup_epoch(epoch)
+
+        try:
+            offline_workers: List[Worker] = self.nodes_execute()
+            self.evaluate()
+            self.maintain(offline_workers)
+            if epoch == ms.Hivemind.MAX_EPOCHS:
+                self.running = False
+        except Exception as e:
+            self.set_fail(f"Exception caused simulation termination: {str(e)}")
+
+        self.file.simulation_data.log_recovery_delay(self._recovery_epoch_sum,
+                                                     self._recovery_epoch_calls,
+                                                     self.current_epoch)
+
+    def nodes_execute(self) -> List[Worker]:
+        """Queries all network node members execute the epoch.
+
+        This method logs the amount of lost parts throughout the current
+        epoch according to the members who went offline and the file blocks
+        they posssed and is responsible for setting up a recovery epoch those
+        lost replicas (:py:meth:`domain.cluster_groups.BaseHive.set_recovery_epoch`).
+        Similarly it logs the number of members who disconnected.
+
+        Returns:
+             A collection of members who disconnected during the current
+             epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+        """
+        lost_parts_count: int = 0
+        offline_workers: List[Worker] = []
+        for worker in self.members.values():
+            if worker.get_epoch_status() == Status.ONLINE:
+                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause BaseHive failure: see Worker.discard_part(...)
+            else:
+                lost_parts = worker.get_file_parts(self.file.name)
+                lost_parts_count += len(lost_parts)
+                offline_workers.append(worker)
+                for part in lost_parts.values():
+                    self.set_recovery_epoch(part)
+                    if part.decrement_and_get_references() == 0:
+                        self.set_fail("lost all replicas of file part with id: {}".format(part.id))
+
+        if len(offline_workers) >= len(self.members):
+            self.set_fail("all hive members disconnected simultaneously")
+
+        e: int = self.current_epoch
+        sf: LoggingData = self.file.simulation_data
+        sf.log_disconnected_workers(len(offline_workers), e)
+        sf.log_lost_file_blocks(lost_parts_count, e)
+
+        return offline_workers
+
+    def evaluate(self) -> None:
+        """Verifies file block distribution and hive health status.
+
+        This method is invoked by every BaseHive instance at every epoch time.
+        Among other things it compares the current file block distribution
+        to the desired distribution, evicts and recruits new network nodes
+        for the BaseHive and, performs logging invocations.
+        """
+        if not self.members:
+            self.set_fail("BaseHive has no remaining members.")
+
+        parts_in_hive: int = 0
+        for worker in self.members.values():
+            if worker.status == Status.ONLINE:
+                worker_parts_count = worker.get_file_parts_count(self.file.name)
+                self.cv_.at[worker.id, 0] = worker_parts_count
+                parts_in_hive += worker_parts_count
+            else:
+                self.cv_.at[worker.id, 0] = 0
+
+        self.file.simulation_data.log_existing_file_blocks(parts_in_hive, self.current_epoch)
+
+        if parts_in_hive <= 0:
+            self.set_fail("BaseHive has no remaining parts.")
+
+        self.file.parts_in_hive = parts_in_hive
+        if self.equal_distributions():
+            self.file.simulation_data.register_convergence(self.current_epoch)
+        else:
+            self.file.simulation_data.save_sets_and_reset()
+
+    def maintain(self, offline_workers: List[Worker]) -> None:
+        """Evicts disconnected workers from the BaseHive and attempts to
+        recruit new ones.
+
+        It implicitly creates a new `transition matrix` and `v_`.
+
+        Args:
+            offline_workers:
+                The collection of members who disconnected during the
+                current epoch.
+        """
+        # remove all disconnected workers from the hive
+        for member in offline_workers:
+            self.members.pop(member.id, None)
+            member.remove_file_routing(self.file.name)
+
+        damaged_hive_size = len(self.members)
+        if damaged_hive_size >= self.sufficient_size:
+            self.remove_cloud_reference()
+
+        if damaged_hive_size >= self.redundant_size:
+            # TODO: future-iterations evict worse members
+            status_before_recovery = "redundant"
+        elif self.original_size <= damaged_hive_size < self.redundant_size:
+            status_before_recovery = "stable"
+        elif self.sufficient_size <= damaged_hive_size < self.original_size:
+            status_before_recovery = "sufficient"
+            self.members.update(self.__get_new_members__())
+        elif self.critical_size < damaged_hive_size < self.sufficient_size:
+            status_before_recovery = "unstable"
+            self.members.update(self.__get_new_members__())
+        elif 0 < damaged_hive_size <= self.critical_size:
+            status_before_recovery = "critical"
+            self.members.update(self.__get_new_members__())
+            self.add_cloud_reference()
+        else:
+            status_before_recovery = "dead"
+
+        healed_hive_size = len(self.members)
+        if damaged_hive_size != healed_hive_size:
+            self.create_and_bcast_new_transition_matrix()
+
+        self.file.simulation_data.log_maintenance(
+            status_before_recovery,
+            damaged_hive_size,
+            healed_hive_size,
+            self.current_epoch
+        )
+    # endregion
+
+    # region Helpers
     def spread_files(
             self, strategy: str, file_parts: Dict[int, FileBlockData]
     ) -> None:
@@ -389,74 +556,6 @@ class BaseHive:
                     part.references += 1
                     worker.receive_part(part)
 
-    def execute_epoch(self, epoch: int) -> None:
-        """Orders all network node members to execute their epoch
-
-        Note:
-            If the BaseHive terminates early, i.e., if it terminates before
-            reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
-            should be done in :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
-            the received `epoch` to avoid skewing previously collected results.
-
-        Args:
-            epoch:
-                The epoch the BaseHive should currently be in, according to it's
-                managing Hivemind.
-
-        Returns:
-            False if BaseHive failed to persist the file it was responsible for,
-            otherwise True.
-        """
-        self._setup_epoch(epoch)
-
-        try:
-            offline_workers: List[Worker] = self._workers_execute_epoch()
-            self.evaluate_hive_convergence()
-            self._membership_maintenance(offline_workers)
-            if epoch == ms.Hivemind.MAX_EPOCHS:
-                self.running = False
-        except Exception as e:
-            self.set_fail(f"Exception caused simulation termination: {str(e)}")
-
-        self.file.simulation_data.set_delay_at_index(self._recovery_epoch_sum,
-                                                     self._recovery_epoch_calls,
-                                                     self.current_epoch)
-
-    def evaluate_hive_convergence(self) -> None:
-        """Verifies file block distribution and hive health status.
-
-        This method is invoked by every BaseHive instance at every epoch time.
-        Among other things it compares the current file block distribution
-        to the desired distribution, evicts and recruits new network nodes
-        for the BaseHive and, performs logging invocations.
-        """
-        if not self.members:
-            self.set_fail("BaseHive has no remaining members.")
-
-        parts_in_hive: int = 0
-        for worker in self.members.values():
-            if worker.status == Status.ONLINE:
-                worker_parts_count = worker.get_file_parts_count(self.file.name)
-                self.cv_.at[worker.id, 0] = worker_parts_count
-                parts_in_hive += worker_parts_count
-            else:
-                self.cv_.at[worker.id, 0] = 0
-
-        self.file.simulation_data.set_parts_at_index(parts_in_hive, self.current_epoch)
-
-        if parts_in_hive <= 0:
-            self.set_fail("BaseHive has no remaining parts.")
-
-        self.file.parts_in_hive = parts_in_hive
-        if self.equal_distributions():
-            self.file.simulation_data.register_convergence(self.current_epoch)
-        else:
-            self.file.simulation_data.save_sets_and_reset()
-
-    # endregion
-
-    # region Helpers
-
     def equal_distributions(self) -> bool:
         """Infers if v_ and cv_ are equal.
 
@@ -478,101 +577,6 @@ class BaseHive:
             print(self.__vector_comparison_table__(target, atol, rtol))
 
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
-
-    def _setup_epoch(self, epoch: int) -> None:
-        """Initializes some attributes of the BaseHive during its initialization.
-
-        The helper method is used to isolate the initialization of some
-        simulation related attributes for eaasier comprehension.
-
-        Args:
-            epoch:
-                The simulation's current epoch.
-        """
-        self.current_epoch = epoch
-        self.corruption_chances[0] = np.log10(epoch).item() / 300.0
-        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
-        self._recovery_epoch_sum = 0
-        self._recovery_epoch_calls = 0
-
-    def _workers_execute_epoch(self) -> List[Worker]:
-        """Queries all network node members execute the epoch.
-
-        This method logs the amount of lost parts throughout the current
-        epoch according to the members who went offline and the file blocks
-        they posssed and is responsible for setting up a recovery epoch those
-        lost replicas (:py:meth:`domain.cluster_groups.BaseHive.set_recovery_epoch`).
-        Similarly it logs the number of members who disconnected.
-
-        Returns:
-             A collection of members who disconnected during the current
-             epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
-        """
-        lost_parts_count: int = 0
-        offline_workers: List[Worker] = []
-        for worker in self.members.values():
-            if worker.get_epoch_status() == Status.ONLINE:
-                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause BaseHive failure: see Worker.discard_part(...)
-            else:
-                lost_parts = worker.get_file_parts(self.file.name)
-                lost_parts_count += len(lost_parts)
-                offline_workers.append(worker)
-                for part in lost_parts.values():
-                    self.set_recovery_epoch(part)
-                    if part.decrement_and_get_references() == 0:
-                        self.set_fail("lost all replicas of file part with id: {}".format(part.id))
-
-        if len(offline_workers) >= len(self.members):
-            self.set_fail("all hive members disconnected simultaneously")
-
-        e: int = self.current_epoch
-        sf: LoggingData = self.file.simulation_data
-        sf.set_disconnected_workers_at_index(len(offline_workers), e)
-        sf.set_lost_parts_at_index(lost_parts_count, e)
-
-        return offline_workers
-
-    def _membership_maintenance(self, offline_workers: List[Worker]) -> None:
-        """Evicts disconnected workers from the BaseHive and attempts to recruit new ones.
-
-        It implicitly creates a new `transition matrix` and `v_`.
-
-        Args:
-            offline_workers:
-                The collection of members who disconnected during the
-                current epoch.
-        """
-        # remove all disconnected workers from the hive
-        for member in offline_workers:
-            self.members.pop(member.id, None)
-            member.remove_file_routing(self.file.name)
-
-        damaged_hive_size = len(self.members)
-        if damaged_hive_size >= self.sufficient_size:
-            self.remove_cloud_reference()
-
-        if damaged_hive_size >= self.redundant_size:
-            status_before_recovery = "redundant"  # TODO: future-iterations evict worse members
-        elif self.original_size <= damaged_hive_size < self.redundant_size:
-            status_before_recovery = "stable"
-        elif self.sufficient_size <= damaged_hive_size < self.original_size:
-            status_before_recovery = "sufficient"
-            self.members.update(self.__get_new_members__())
-        elif self.critical_size < damaged_hive_size < self.sufficient_size:
-            status_before_recovery = "unstable"
-            self.members.update(self.__get_new_members__())
-        elif 0 < damaged_hive_size <= self.critical_size:
-            status_before_recovery = "critical"
-            self.members.update(self.__get_new_members__())
-            self.add_cloud_reference()
-        else:
-            status_before_recovery = "dead"
-
-        healed_hive_size = len(self.members)
-        if damaged_hive_size != healed_hive_size:
-            self.create_and_bcast_new_transition_matrix()
-
-        self.file.simulation_data.set_membership_maintenace_at_index(status_before_recovery, damaged_hive_size, healed_hive_size, self.current_epoch)
 
     def __get_new_members__(self) -> Dict[str, Worker]:
         """Helper method that gets adds network nodes, if possible, to the BaseHive.
@@ -598,7 +602,7 @@ class BaseHive:
                 A short explanation of why the BaseHive suffered early termination.
         """
         self.running = False
-        self.file.simulation_data.set_fail(self.current_epoch, message)
+        self.file.simulation_data.log_fail(self.current_epoch, message)
 
     def set_recovery_epoch(self, part: FileBlockData) -> None:
         """Delegates to :py:meth:`~domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
@@ -707,3 +711,85 @@ class BaseHive:
         df['is_close'] = [x < y for x, y in zipped]
         return tabulate(df, headers='keys', tablefmt='psql')
     # endregion
+
+
+class Hive(BaseHive):
+    def __init__(self, hivemind: ms.Hivemind, file_name: str,
+                 members: Dict[str, Worker], sim_id: int = 0,
+                 origin: str = "") -> None:
+        """Instantiates an `Hive` object.
+
+        Hive instances differ from BaseHive in the sense that the
+        :py:class:`~domain.domain.Worker` are responsible detecting that
+        their cluster companions are disconnected and reporting it to the
+        Hive for eviction after a certain quota is met.
+
+        Args:
+            hivemind:
+                A reference to an :py:class:`~domain.master_servers.Hivemind`
+                object that manages the BaseHive being initialized.
+            file_name:
+                The name of the file this BaseHive is responsible for persisting.
+            members:
+                A dictionary mapping unique identifiers to of the BaseHive's
+                initial network nodes (:py:class:`~domain.domain.Worker`.)
+                to their instance objects.
+            sim_id:
+                optional; Identifier that generates unique output file names,
+                thus guaranteeing that different simulation instances do not
+                overwrite previous out files.
+            origin:
+                optional; The name of the simulation file name that started
+                the simulation process.
+        """
+        super().__init__(hivemind, file_name, members, sim_id, origin)
+
+    def execute_epoch(self, epoch: int) -> None:
+        """Orders all network node members to execute their epoch
+
+        Note:
+            If the BaseHive terminates early, i.e., if it terminates before
+            reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
+            should be done in :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
+            the received `epoch` to avoid skewing previously collected results.
+
+        Args:
+            epoch:
+                The epoch the BaseHive should currently be in, according to it's
+                managing Hivemind.
+
+        Returns:
+            False if BaseHive failed to persist the file it was responsible for,
+            otherwise True.
+        """
+
+    def evaluate(self) -> None:
+        """Verifies file block distribution and hive health status.
+
+        This method is invoked by every BaseHive instance at every epoch time.
+        Among other things it compares the current file block distribution
+        to the desired distribution, evicts and recruits new network nodes
+        for the BaseHive and, performs logging invocations.
+        """
+        if not self.members:
+            self.set_fail("BaseHive has no remaining members.")
+
+        parts_in_hive: int = 0
+        for worker in self.members.values():
+            if worker.status == Status.ONLINE:
+                worker_parts_count = worker.get_file_parts_count(self.file.name)
+                self.cv_.at[worker.id, 0] = worker_parts_count
+                parts_in_hive += worker_parts_count
+            else:
+                self.cv_.at[worker.id, 0] = 0
+
+        self.file.simulation_data.log_existing_file_blocks(parts_in_hive, self.current_epoch)
+
+        if parts_in_hive <= 0:
+            self.set_fail("BaseHive has no remaining parts.")
+
+        self.file.parts_in_hive = parts_in_hive
+        if self.equal_distributions():
+            self.file.simulation_data.register_convergence(self.current_epoch)
+        else:
+            self.file.simulation_data.save_sets_and_reset()
