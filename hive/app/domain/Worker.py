@@ -65,7 +65,6 @@ class Worker:
     """
 
     # region Class Variables, Instance Variables and Constructors
-
     def __init__(self, uid: str, uptime: float) -> None:
         """Instantiates a Worker object.
 
@@ -89,11 +88,9 @@ class Worker:
         self.files: Dict[str, Dict[int, SharedFilePart]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
         self.status: int = Status.ONLINE
-
     # endregion
 
     # region Routing Table
-
     def set_file_routing(self,
                          fid: str,
                          transition_vector: Union[pd.Series, pd.DataFrame]
@@ -133,11 +130,9 @@ class Worker:
         """
         self.routing_table.pop(fid, None)
         self.files.pop(fid, None)
-
     # endregion
 
     # region File Routing
-
     def send_part(
             self, hive: h.Hive, part: SharedFilePart
     ) -> Union[int, HttpCodes]:
@@ -232,7 +227,6 @@ class Worker:
                     part.references += 1
             # replication level may have not been completely restored
             part.update_epochs_to_recover(hive.current_epoch)
-
     # endregion
 
     # region Swarm Guidance Interface
@@ -271,26 +265,9 @@ class Worker:
                 self.discard_part(fid, number, corrupt=True, hive=hive)
             elif HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
                 pass  # Keep file part for at least one more epoch
-
-    # endregion
-
-    # region Overrides
-
-    def __hash__(self):
-        """Allows a Worker instance or a Worker name to be used as dict keys."""
-        return hash(str(self.id))
-
-    def __eq__(self, other):
-        """Worker equality is based solely on Worker id."""
-        return self.id == other
-
-    def __ne__(self, other):
-        return not(self == other)
-
     # endregion
 
     # region Helpers
-
     def discard_part(self,
                      fid: str,
                      number: int,
@@ -360,5 +337,17 @@ class Worker:
             self.uptime -= 1
             self.status = Status.ONLINE if self.uptime > 0 else Status.OFFLINE
         return self.status
+    # endregion
 
+    # region Overrides
+    def __hash__(self):
+        """Allows a Worker instance or a Worker name to be used as dict keys."""
+        return hash(str(self.id))
+
+    def __eq__(self, other):
+        """Worker equality is based solely on Worker id."""
+        return self.id == other
+
+    def __ne__(self, other):
+        return not(self == other)
     # endregion
