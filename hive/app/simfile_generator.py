@@ -221,13 +221,13 @@ def __init_nodes_uptime() -> Dict[str, float]:
     return nodes_uptime
 
 
-def __init_shared_dict() -> Dict[str, Any]:
+def __init_persisting_dict() -> Dict[str, Any]:
     """Creates the "persisting" key of simulation file.
 
     Returns:
         A dictionary containing data respecting files to be shared in the system
     """
-    shared_dict: Dict[str, Any] = {}
+    persisting: Dict[str, Any] = {}
 
     print(
         "\nAny file you want to simulate persistance of must be inside the "
@@ -249,15 +249,15 @@ def __init_shared_dict() -> Dict[str, Any]:
         options_list = ["u", "U", "i", "I", "a", "A"]
         option_choice = __input_character_option(options_message, options_list)
 
-        shared_dict[file_name] = {}
-        shared_dict[file_name]["spread"] = option_choice.lower()
-        shared_dict[file_name]["cluster_size"] = __input_bounded_integer(
+        persisting[file_name] = {}
+        persisting[file_name]["spread"] = option_choice.lower()
+        persisting[file_name]["cluster_size"] = __input_bounded_integer(
             "Number of nodes that should be sharing the next file: \n")
 
         add_file = __in_yes_no(
             "\nSimulate persistence of another file in simulation?")
 
-    return shared_dict
+    return persisting
 # endregion
 
 
@@ -276,7 +276,7 @@ def main(simfile_name: str) -> None:
     """
     simfile_json: Dict[str, Any] = {
         "peers_uptime": __init_nodes_uptime(),
-        "persisting": __init_shared_dict()
+        "persisting": __init_persisting_dict()
     }
 
     with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
