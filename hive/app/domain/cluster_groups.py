@@ -5,7 +5,7 @@ Classes:
     BaseHive:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance.
-    BaseHive:
+    Hive:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance. Differs from `BaseHive` in the
         sense that member eviction is based on the received complaints
@@ -429,7 +429,7 @@ class BaseHive:
         for the BaseHive and, performs logging invocations.
         """
         if not self.members:
-            self.set_fail("BaseHive has no remaining members.")
+            self.set_fail("Cluster has no remaining members.")
 
         parts_in_hive: int = 0
         for worker in self.members.values():
@@ -443,7 +443,7 @@ class BaseHive:
         self.file.logger.log_existing_file_blocks(parts_in_hive, self.current_epoch)
 
         if parts_in_hive <= 0:
-            self.set_fail("BaseHive has no remaining parts.")
+            self.set_fail("Cluster has no remaining parts.")
 
         self.file.parts_in_hive = parts_in_hive
         if self.equal_distributions():
@@ -811,7 +811,7 @@ class Hive(BaseHive):
         for the BaseHive and, performs logging invocations.
         """
         if not self.members:
-            self.set_fail("BaseHive has no remaining members.")
+            self.set_fail("Cluster has no remaining members.")
 
         parts_in_hive: int = 0
         for worker in self.members.values():
@@ -825,7 +825,7 @@ class Hive(BaseHive):
         self.file.logger.log_existing_file_blocks(parts_in_hive, self.current_epoch)
 
         if parts_in_hive <= 0:
-            self.set_fail("BaseHive has no remaining parts.")
+            self.set_fail("Cluster has no remaining parts.")
 
         self.file.parts_in_hive = parts_in_hive
         if self.equal_distributions():
