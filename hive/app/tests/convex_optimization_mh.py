@@ -3,7 +3,6 @@
 You can modify, extend or delete the module without consequences. Use as you
 see fit.
 """
-
 import os
 from typing import List, Tuple, Optional
 
@@ -14,8 +13,6 @@ import numpy as np
 
 
 # region Module Private Functions
-
-
 def __adjency_matrix_sdp_optimization(a: List[List[int]]) -> Optional[np.ndarray]:
     """Optimizes a symmetric adjacency matrix using Semidefinite Programming.
 
@@ -187,9 +184,8 @@ def __get_diagonal_entry_probability(rw: np.ndarray, r: np.ndarray, i: int) -> n
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
-
-
 # endregion
+
 
 # region Magic Methods
 def __first_method__(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
