@@ -1,4 +1,5 @@
-"""This module includes domain specific Exception classes."""
+"""This module includes domain specific classes that inherit from Python's
+builtin Exception class."""
 
 
 class DistributionShapeError(Exception):
