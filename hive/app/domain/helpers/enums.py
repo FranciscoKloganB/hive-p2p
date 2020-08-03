@@ -1,3 +1,4 @@
+"""This module contains domain specific classes that inherit from python's builtin Enum class."""
 from __future__ import annotations
 
 from enum import Enum
