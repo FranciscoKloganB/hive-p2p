@@ -14,7 +14,7 @@ import utils.transition_matrices as tmg
 from domain.network_nodes import Worker
 from domain.helpers.Enums import Status, HttpCodes
 from domain.helpers.data_classes import FileData
-from domain.helpers.SharedFilePart import SharedFilePart
+from domain.helpers.FileBlockData import FileBlockData
 from domain.helpers.SimulationData import SimulationData
 from globals.globals import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
@@ -70,11 +70,11 @@ class Hive:
             simulation process.
         _recovery_epoch_sum:
             Helper attribute that facilitates the storage of the sum of the
-            values returned by all :py:meth:`~SharedFilePart.set_recovery_epoch`
+            values returned by all :py:meth:`~FileBlockData.set_recovery_epoch`
             method calls. Important for logging purposes.
         _recovery_epoch_calls:
             Helper attribute that facilitates the storage of the sum of the
-            values returned by all :py:meth:`~SharedFilePart.set_recovery_epoch`
+            values returned by all :py:meth:`~FileBlockData.set_recovery_epoch`
             method calls throughout the :py:attr:`~current_epoch`.
     """
 
@@ -152,7 +152,7 @@ class Hive:
     def route_part(self,
                    sender: str,
                    destination: str,
-                   part: SharedFilePart,
+                   part: FileBlockData,
                    fresh_replica: bool = False) -> Any:
         """Sends one file block replica to some other network node.
 
@@ -317,7 +317,7 @@ class Hive:
 
     # noinspection DuplicatedCode
     def spread_files(
-            self, strategy: str, file_parts: Dict[int, SharedFilePart]
+            self, strategy: str, file_parts: Dict[int, FileBlockData]
     ) -> None:
         """Batch distributes files to Hive members.
 
@@ -580,11 +580,11 @@ class Hive:
         self.running = False
         self.file.simulation_data.set_fail(self.current_epoch, message)
 
-    def set_recovery_epoch(self, part: SharedFilePart) -> None:
-        """Delegates to :py:meth:`~domain.helpers.SharedFilePart.SharedFilePart.set_recovery_epoch`
+    def set_recovery_epoch(self, part: FileBlockData) -> None:
+        """Delegates to :py:meth:`~domain.helpers.FileBlockData.FileBlockData.set_recovery_epoch`
 
         Args:
-            part: A :py:class:`~domain.helpers.SharedFilePart.SharedFilePart`
+            part: A :py:class:`~domain.helpers.FileBlockData.FileBlockData`
             instance that represents a file block replica that was lost.
         """
         self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)

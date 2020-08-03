@@ -9,7 +9,7 @@ import numpy as np
 from domain.cluster_groups import Hive
 from domain.network_nodes import Worker
 from domain.helpers.Enums import Status
-from domain.helpers.SharedFilePart import SharedFilePart
+from domain.helpers.FileBlockData import FileBlockData
 from globals.globals import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
 
 
@@ -85,8 +85,8 @@ class Hivemind:
             # Read and split all shareable files specified on the input, also assign Hive initial attributes (uuid, members, and FileData)
             hive: Hive
             files_spreads: Dict[str, str] = {}
-            files_dict: Dict[str, Dict[int, SharedFilePart]] = {}
-            file_parts: Dict[int, SharedFilePart]
+            files_dict: Dict[str, Dict[int, FileBlockData]] = {}
+            file_parts: Dict[int, FileBlockData]
 
             shared: Dict[str, Dict[str, Union[List[str], str]]] = json_obj['shared']
             for file_name in shared:
@@ -99,7 +99,7 @@ class Hivemind:
                         read_buffer = file.read(READ_SIZE)
                         if read_buffer:
                             part_number = part_number + 1
-                            file_parts[part_number] = SharedFilePart(
+                            file_parts[part_number] = FileBlockData(
                                 hive.id, file_name, part_number, read_buffer)
                         else:
                             files_dict[file_name] = file_parts

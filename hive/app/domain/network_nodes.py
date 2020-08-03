@@ -12,7 +12,7 @@ import domain.cluster_groups as h
 import domain.master_servers as hm
 
 from domain.helpers.Enums import Status, HttpCodes
-from domain.helpers.SharedFilePart import SharedFilePart
+from domain.helpers.FileBlockData import FileBlockData
 from utils import crypto
 
 
@@ -84,7 +84,7 @@ class Worker:
         self.id: str = uid
         self.uptime: float = uptime
         self.hives: Dict[str, h.Hive] = {}
-        self.files: Dict[str, Dict[int, SharedFilePart]] = {}
+        self.files: Dict[str, Dict[int, FileBlockData]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
         self.status: int = Status.ONLINE
 
@@ -133,7 +133,7 @@ class Worker:
     # region File Routing and Swarm Guidance Implementation
 
     def send_part(
-            self, hive: h.Hive, part: SharedFilePart) -> Union[int, HttpCodes]:
+            self, hive: h.Hive, part: FileBlockData) -> Union[int, HttpCodes]:
         """Attempts to send a file block replica to another Worker instance.
 
         Args:
@@ -158,7 +158,7 @@ class Worker:
             print(f"{routing_vector}\nStochastic?: {np.sum(member_chances)}")
             sys.exit("".join(traceback.format_exception(etype=type(vE), value=vE, tb=vE.__traceback__)))
 
-    def receive_part(self, part: SharedFilePart) -> int:
+    def receive_part(self, part: FileBlockData) -> int:
         """Endpoint for file block replica reception.
 
         Invoking this method results in the worker keeping store a new
@@ -210,14 +210,14 @@ class Worker:
                 :py:meth:`~domain.Hive.Hive.set_recovery_epoch` or mark the
                 simulation as failed.
         """
-        part: SharedFilePart = self.files.get(fid, {}).pop(number, None)
+        part: FileBlockData = self.files.get(fid, {}).pop(number, None)
         if part and corrupt:
             if part.decrement_and_get_references() == 0:
                 hive.set_fail(f"Lost file with id: {part.id} due to corruption")
             else:
                 hive.set_recovery_epoch(part)
 
-    def replicate_part(self, hive: h.Hive, part: SharedFilePart) -> None:
+    def replicate_part(self, hive: h.Hive, part: FileBlockData) -> None:
         """Equal to :py:meth:`~send_part` but with different delivery semantics.
 
         The file block replica is sent selectively in descending order to the
@@ -279,7 +279,7 @@ class Worker:
                 The identifier that determines which file blocks 
                 replicas should be routed.
         """
-        file_view: Dict[int, SharedFilePart] = self.files.get(fid, {}).copy()
+        file_view: Dict[int, FileBlockData] = self.files.get(fid, {}).copy()
         for number, part in file_view.items():
             self.replicate_part(hive, part)
             response_code = self.send_part(hive, part)
@@ -292,7 +292,7 @@ class Worker:
     # endregion
 
     # region Helpers
-    def get_file_parts(self, fid: str) -> Dict[int, SharedFilePart]:
+    def get_file_parts(self, fid: str) -> Dict[int, FileBlockData]:
         """Gets collection of file parts that correspond to the named file.
 
         Args:

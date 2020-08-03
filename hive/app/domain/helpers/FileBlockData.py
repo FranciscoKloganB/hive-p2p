@@ -7,10 +7,10 @@ from globals.globals import REPLICATION_LEVEL, MIN_DETECTION_DELAY, \
 from utils import convertions, crypto
 
 
-class SharedFilePart:
+class FileBlockData:
     """Wrapping class for the contents of a file block.
 
-    Among other responsabilities SharedFilePart helps managing simulation
+    Among other responsabilities FileBlockData helps managing simulation
     parameters, e.g., replica control such or file block integrity.
 
     Attributes:
@@ -41,7 +41,7 @@ class SharedFilePart:
     def __init__(
             self, hive_id: str, name: str, number: int, data: bytes
     ) -> None:
-        """Creates an instance of SharedFilePart.
+        """Creates an instance of FileBlockData.
 
         Args:
             hive_id:
@@ -79,7 +79,7 @@ class SharedFilePart:
             peers, which is not our case. We assume peers only report their
             suspicions to a small number of trusted of monitors who then
             decide if the reported network node is disconnected, consequently
-            losing the instance of SharedFilePart and possibly others.
+            losing the instance of FileBlockData and possibly others.
 
         Args:
             epoch:
@@ -135,7 +135,7 @@ class SharedFilePart:
     # region Overrides
 
     def __str__(self):
-        """Overrides default string representation of SharedFilePart instances.
+        """Overrides default string representation of FileBlockData instances.
 
         Returns:
             A dictionary representation of the object.
