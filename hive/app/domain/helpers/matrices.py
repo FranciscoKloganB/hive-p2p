@@ -1,4 +1,4 @@
-"""Module used by :py:class:`~domain.cluster_groups.Hive to create transition
+"""Module used by :py:class:`~domain.cluster_groups.BaseHive to create transition
 matrices for the simulation.
 
 You should implement your own metropolis-hastings or alternative algorithms

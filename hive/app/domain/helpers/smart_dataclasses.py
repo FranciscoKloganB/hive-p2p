@@ -72,7 +72,7 @@ class FileData:
         """
         self.out_file.write(msg + "\n")
 
-    def jwrite(self, hive: cg.Hive, origin: str, epoch: int) -> None:
+    def jwrite(self, hive: cg.BaseHive, origin: str, epoch: int) -> None:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
@@ -81,7 +81,7 @@ class FileData:
 
         Args:
             hive:
-                The :py:class:`Hive <domain.cluster_groups.Hive>` object that manages
+                The :py:class:`BaseHive <domain.cluster_groups.BaseHive>` object that manages
                 the simulated persistence of the referenced file.
             origin:
                 The name of the simulation file that started the simulation
@@ -262,7 +262,7 @@ class FileBlockData:
             Zero if the current `recovery_epoch` is positive infinity,
             otherwise the expected delay is returned. This value can be
             used to log, for example, the average recovery delay in the
-            Hive simulation.
+            BaseHive simulation.
         """
         new_proposed_epoch = float(epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY))
         if new_proposed_epoch < self.recovery_epoch:
@@ -352,7 +352,7 @@ class LoggingData:
         cswc (int):
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
-            :py:meth:`equal_distributions() <domain.cluster_groups.Hive.equal_distributions>`
+            :py:meth:`equal_distributions() <domain.cluster_groups.BaseHive.equal_distributions>`
             this attribute is reseted to zero.
         largest_convergence_window (int):
             Stores the largest convergence window that occurred throughout

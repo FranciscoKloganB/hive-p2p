@@ -5,12 +5,12 @@ Classes:
     BaseHive:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance.
-    Hive:
+    BaseHive:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance. Differs from `BaseHive` in the
         sense that member eviction is based on the received complaints
-        from other P2P member nodes within the Hive rather than having the
-        BaseHive detecting the disconnection fault, i.e., Hive role in the
+        from other P2P member nodes within the BaseHive rather than having the
+        BaseHive detecting the disconnection fault, i.e., BaseHive role in the
         simulation is more coordinative and less informative to nodes.
     Cluster:
         A group of reliable servers that ensure the durability of a file
@@ -40,7 +40,7 @@ from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
 from utils.randoms import random_index
 
 
-class Hive:
+class BaseHive:
     """Represents a group of network nodes persisting a file.
 
     Notes:
@@ -49,14 +49,14 @@ class Hive:
 
     Attributes:
         id:
-            An uuid that uniquely identifies the Hive. Usefull for when
-            there are multiple Hive instances in a simulation environment.
+            An uuid that uniquely identifies the BaseHive. Usefull for when
+            there are multiple BaseHive instances in a simulation environment.
         current_epoch:
             The simulation's current epoch.
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`setup_epoch() <domain.cluster_groups.Hive.setup_epoch>` for
+            :py:meth:`setup_epoch() <domain.cluster_groups.BaseHive.setup_epoch>` for
             corruption chance configuration.
         v_ (pandas DataFrame):
             Density distribution hive members must achieve with independent
@@ -65,26 +65,26 @@ class Hive:
             Tracks the file current density distribution, updated at each epoch.
         hivemind:
             A reference to :py:class:`~domain.master_servers.Hivemind` that
-            coordinates this Hive instance.
+            coordinates this BaseHive instance.
         members:
-            A collection of network nodes that belong to the Hive instance.
+            A collection of network nodes that belong to the BaseHive instance.
             See also :py:class:`~domain.domain.Worker`.
         file:
             A reference to :py:class:`~domain.helpers.FileData` object that
-            represents the file being persisted by the Hive instance.
+            represents the file being persisted by the BaseHive instance.
         critical_size:
             Minimum number of network nodes plus required to exist in the
-            Hive to assure the target replication level.
+            BaseHive to assure the target replication level.
         sufficient_size:
              Sum of :py:attr:`critical_size` and the number of nodes
              expected to fail between two successive recovery phases.
         original_size:
-            The initial and optimal Hive size.
+            The initial and optimal BaseHive size.
         redundant_size:
             Application-specific parameter, which indicates that membership
-            of the Hive must be pruned.
+            of the BaseHive must be pruned.
         running:
-            Indicates if the Hive instance is active. This attribute is
+            Indicates if the BaseHive instance is active. This attribute is
             used by :py:class:`~domain.master_servers.Hivemind` to manage the
             simulation process.
         _recovery_epoch_sum:
@@ -102,16 +102,16 @@ class Hive:
                  members: Dict[str, Worker],
                  sim_id: int = 0,
                  origin: str = "") -> None:
-        """Instantiates an Hive object
+        """Instantiates an BaseHive object
 
         Args:
             hivemind:
                 A reference to an :py:class:`~domain.master_servers.Hivemind`
-                object that manages the Hive being initialized.
+                object that manages the BaseHive being initialized.
             file_name:
-                The name of the file this Hive is responsible for persisting.
+                The name of the file this BaseHive is responsible for persisting.
             members:
-                A dictionary mapping unique identifiers to of the Hive's
+                A dictionary mapping unique identifiers to of the BaseHive's
                 initial network nodes (:py:class:`~domain.domain.Worker`.)
                 to their instance objects.
             sim_id:
@@ -154,7 +154,7 @@ class Hive:
     def add_cloud_reference(self) -> None:
         """Adds a cloud server reference to the membership.
 
-        This method is used when Hive membership size becomes compromised
+        This method is used when BaseHive membership size becomes compromised
         and a backup solution using cloud approaches is desired. The idea
         is that surviving members upload their replicas to the cloud server,
         e.g., an Amazon S3 instance. See Hivemind method
@@ -221,7 +221,7 @@ class Hive:
 
          Args:
              size:
-                The number of network nodes the Hive will have.
+                The number of network nodes the BaseHive will have.
 
         Returns:
             The adjency matrix representing the connections between a
@@ -254,7 +254,7 @@ class Hive:
     def new_desired_distribution(self,
                                  member_ids: List[str],
                                  member_uptimes: List[float]) -> List[float]:
-        """Sets a new desired distribution for the Hive instance.
+        """Sets a new desired distribution for the BaseHive instance.
 
         Normalizes the received uptimes to create a stochastic representation
         of the desired distribution, which can be used by the different
@@ -263,7 +263,7 @@ class Hive:
         Args:
             member_ids:
                 A list of network node identifiers currently belonging
-                to the Hive membership.
+                to the BaseHive membership.
             member_uptimes:
                 A list in which each index contains the uptime of the network
                 node with the same index in `member_ids`.
@@ -310,21 +310,21 @@ class Hive:
         """Slices a transition matrix and delivers them to respective network nodes.
 
         Gives each member his respective slice (vector column) of the
-        transition matrix the Hive is currently executing.
+        transition matrix the BaseHive is currently executing.
 
         Args:
             m:
                 A transition matrix to be broadcasted to the network nodes
-                belonging who are currently members of the Hive instance.
+                belonging who are currently members of the BaseHive instance.
 
         Note:
             An optimization could be made that configures a transition matrix
-            for the hive, independent of of file names, i.e., turn Hive
+            for the hive, independent of of file names, i.e., turn BaseHive
             groups into groups persisting multiple files instead of only one,
             thus reducing simulation spaceoverheads and in real-life
             scenarios, decreasing the load done to metadata servers, through
             queries and matrix calculations. For simplicity of implementation
-            each Hive only manages one file for now.
+            each BaseHive only manages one file for now.
         """
         for worker in self.members.values():
             transition_vector: pd.DataFrame = m.loc[:, worker.id]
@@ -338,7 +338,7 @@ class Hive:
     def spread_files(
             self, strategy: str, file_parts: Dict[int, FileBlockData]
     ) -> None:
-        """Batch distributes files to Hive members.
+        """Batch distributes files to BaseHive members.
 
         This method is used at the start of a simulation to give all file
         blocks including the replicas to members of the hive. Different
@@ -355,7 +355,7 @@ class Hive:
                 state distribution;
             file_parts:
                 A collection of file blocks, without replication, to be
-                distributed between the Hive members according to
+                distributed between the BaseHive members according to
                 the desired `strategy`.
         """
         self.file.simulation_data.initial_spread = strategy
@@ -393,18 +393,18 @@ class Hive:
         """Orders all network node members to execute their epoch
 
         Note:
-            If the Hive terminates early, i.e., if it terminates before
+            If the BaseHive terminates early, i.e., if it terminates before
             reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
             should be done in :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
         Args:
             epoch:
-                The epoch the Hive should currently be in, according to it's
+                The epoch the BaseHive should currently be in, according to it's
                 managing Hivemind.
 
         Returns:
-            False if Hive failed to persist the file it was responsible for,
+            False if BaseHive failed to persist the file it was responsible for,
             otherwise True.
         """
         self._setup_epoch(epoch)
@@ -425,13 +425,13 @@ class Hive:
     def evaluate_hive_convergence(self) -> None:
         """Verifies file block distribution and hive health status.
 
-        This method is invoked by every Hive instance at every epoch time.
+        This method is invoked by every BaseHive instance at every epoch time.
         Among other things it compares the current file block distribution
         to the desired distribution, evicts and recruits new network nodes
-        for the Hive and, performs logging invocations.
+        for the BaseHive and, performs logging invocations.
         """
         if not self.members:
-            self.set_fail("Hive has no remaining members.")
+            self.set_fail("BaseHive has no remaining members.")
 
         parts_in_hive: int = 0
         for worker in self.members.values():
@@ -445,7 +445,7 @@ class Hive:
         self.file.simulation_data.set_parts_at_index(parts_in_hive, self.current_epoch)
 
         if parts_in_hive <= 0:
-            self.set_fail("Hive has no remaining parts.")
+            self.set_fail("BaseHive has no remaining parts.")
 
         self.file.parts_in_hive = parts_in_hive
         if self.equal_distributions():
@@ -480,7 +480,7 @@ class Hive:
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
     def _setup_epoch(self, epoch: int) -> None:
-        """Initializes some attributes of the Hive during its initialization.
+        """Initializes some attributes of the BaseHive during its initialization.
 
         The helper method is used to isolate the initialization of some
         simulation related attributes for eaasier comprehension.
@@ -501,7 +501,7 @@ class Hive:
         This method logs the amount of lost parts throughout the current
         epoch according to the members who went offline and the file blocks
         they posssed and is responsible for setting up a recovery epoch those
-        lost replicas (:py:meth:`domain.cluster_groups.Hive.set_recovery_epoch`).
+        lost replicas (:py:meth:`domain.cluster_groups.BaseHive.set_recovery_epoch`).
         Similarly it logs the number of members who disconnected.
 
         Returns:
@@ -512,7 +512,7 @@ class Hive:
         offline_workers: List[Worker] = []
         for worker in self.members.values():
             if worker.get_epoch_status() == Status.ONLINE:
-                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause Hive failure: see Worker.discard_part(...)
+                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause BaseHive failure: see Worker.discard_part(...)
             else:
                 lost_parts = worker.get_file_parts(self.file.name)
                 lost_parts_count += len(lost_parts)
@@ -533,7 +533,7 @@ class Hive:
         return offline_workers
 
     def _membership_maintenance(self, offline_workers: List[Worker]) -> None:
-        """Evicts disconnected workers from the Hive and attempts to recruit new ones.
+        """Evicts disconnected workers from the BaseHive and attempts to recruit new ones.
 
         It implicitly creates a new `transition matrix` and `v_`.
 
@@ -575,7 +575,7 @@ class Hive:
         self.file.simulation_data.set_membership_maintenace_at_index(status_before_recovery, damaged_hive_size, healed_hive_size, self.current_epoch)
 
     def __get_new_members__(self) -> Dict[str, Worker]:
-        """Helper method that gets adds network nodes, if possible, to the Hive.
+        """Helper method that gets adds network nodes, if possible, to the BaseHive.
 
         Returns:
             A dictionary mapping network node identifiers and their instance
@@ -585,7 +585,7 @@ class Hive:
             self.members, self.original_size - len(self.members))
 
     def set_fail(self, message: str) -> None:
-        """Ends the Hive instance simulation.
+        """Ends the BaseHive instance simulation.
 
         Sets :py:attr:`running` to False and instructs
         :py:class:`~domain.helpers.smart_dataclasses.FileData` to persist
@@ -595,7 +595,7 @@ class Hive:
 
         Args:
             message:
-                A short explanation of why the Hive suffered early termination.
+                A short explanation of why the BaseHive suffered early termination.
         """
         self.running = False
         self.file.simulation_data.set_fail(self.current_epoch, message)
@@ -632,12 +632,12 @@ class Hive:
         return True
 
     def create_and_bcast_new_transition_matrix(self) -> None:
-        """Tries to create a valid transition matrix and distributes between members of the Hive.
+        """Tries to create a valid transition matrix and distributes between members of the BaseHive.
 
         After creating a transition matrix it ensures that the matrix is a
         markov matrix by invoking :py:meth:`~_validate_transition_matrix`.
         If this validation fails three times, simulation is resumed with an
-        invalid matrix until the Hive membership is changed again for any
+        invalid matrix until the BaseHive membership is changed again for any
         reason.
         """
         tries = 1

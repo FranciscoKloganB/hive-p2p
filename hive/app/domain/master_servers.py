@@ -8,7 +8,7 @@ from typing import List, Union, Dict, Any, TypeAlias
 
 import numpy as np
 
-from domain.cluster_groups import Hive
+from domain.cluster_groups import BaseHive
 from domain.helpers.enums import Status
 from domain.helpers.smart_dataclasses import FileBlockData
 from domain.network_nodes import Worker
@@ -38,16 +38,16 @@ class Hivemind:
         epoch:
             The simulation's current epoch.
         hives:
-            A collection of :py:class:`~domain.cluster_groups.Hive` instances managed
+            A collection of :py:class:`~domain.cluster_groups.BaseHive` instances managed
             by the Hivemind.
         workers:
             A dictionary mapping network node identifiers names to their
             object instances (:py:class:`~domain.network_nodes.BaseNode`). This
-            collection differs from the :py:class:`~domain.cluster_groups.Hive`s'
-            attribute :py:attr:`~domain.cluster_groups.Hive.members` in the sense that
+            collection differs from the :py:class:`~domain.cluster_groups.BaseHive`s'
+            attribute :py:attr:`~domain.cluster_groups.BaseHive.members` in the sense that
             the latter is only a subset of `workers`, which includes all
             network nodes of the distributed backup system. Regardless of
-            their participation on any Hive.
+            their participation on any BaseHive.
     """
 
     MAX_EPOCHS = None
@@ -78,7 +78,7 @@ class Hivemind:
             json_obj: Any = json.load(input_file)
 
             # Init basic simulation variables
-            self.hives: Dict[str, Hive] = {}
+            self.hives: Dict[str, BaseHive] = {}
             self.workers: Dict[str, Worker] = {}
 
             # Instantiaite jobless Workers
@@ -86,8 +86,8 @@ class Hivemind:
                 worker: Worker = Worker(worker_id, worker_uptime)
                 self.workers[worker.id] = worker
 
-            # Read and split all shareable files specified on the input, also assign Hive initial attributes (uuid, members, and FileData)
-            hive: Hive
+            # Read and split all shareable files specified on the input, also assign BaseHive initial attributes (uuid, members, and FileData)
+            hive: BaseHive
             files_spreads: Dict[str, str] = {}
             files_dict: Dict[str, Dict[int, FileBlockData]] = {}
             file_parts: Dict[int, FileBlockData]
@@ -129,7 +129,7 @@ class Hivemind:
                     terminated_hives.append(hive.id)
                     hive.file.jwrite(hive, self.origin, self.epoch)
             for hid in terminated_hives:
-                print("Hive: {} terminated at epoch {}".format(hid, self.epoch))
+                print("BaseHive: {} terminated at epoch {}".format(hid, self.epoch))
                 self.hives.pop(hid)
             self.epoch += 1
 
@@ -138,7 +138,7 @@ class Hivemind:
     # region Keeper Interface
 
     def receive_complaint(self, suspects_name: str) -> None:
-        """Registers a complain against a network node, if enough complaints are received, target is evicted from the complainters Hive.
+        """Registers a complain against a network node, if enough complaints are received, target is evicted from the complainters BaseHive.
 
         Note:
             This method needs implementation at the user descretion.
@@ -160,16 +160,16 @@ class Hivemind:
     # region Peer Search and Cloud References
 
     def find_replacement_worker(self, exclusion_dict: Dict[str, Worker], n: int) -> Dict[str, Worker]:
-        """Finds a collection of online network nodes that can be used to replace offline ones in an Hive.
+        """Finds a collection of online network nodes that can be used to replace offline ones in an BaseHive.
 
         Args:
             exclusion_dict:
                 A dictionary of network nodes identifiers and their object
                 instances (:py:class:`~domain.network_nodes.BaseNode`),
-                which represent the nodes the Hive is not interested in,
+                which represent the nodes the BaseHive is not interested in,
                 i.e., this argument is a blacklist.
             n:
-                How many replacements the calling Hive desires to find.
+                How many replacements the calling BaseHive desires to find.
 
         Returns:
             A collection of replacements which is smaller or equal than `n`.
@@ -206,7 +206,7 @@ class Hivemind:
 
     def __new_hive(self,
                    persisting: Dict[str, Dict[str, Union[List[str], str]]],
-                   file_name: str) -> Hive:
+                   file_name: str) -> BaseHive:
         """
         Helper method that initializes a new hive.
         """
@@ -217,8 +217,8 @@ class Hivemind:
                                                      replace=False)
         for member_id in initial_members:
             hive_members[member_id] = self.workers[member_id]
-        hive = Hive(self, file_name, hive_members,
-                    sim_id=self.sim_id, origin=self.origin)
+        hive = BaseHive(self, file_name, hive_members,
+                        sim_id=self.sim_id, origin=self.origin)
         self.hives[hive.id] = hive
         return hive
 
