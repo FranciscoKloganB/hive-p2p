@@ -315,8 +315,7 @@ class Worker:
         part: SharedFilePart = self.files.get(fid, {}).pop(number, None)
         if part and corrupt:
             if part.decrement_and_get_references() == 0:
-                hive.set_fail(
-                    f"Loss of file with id: {part.id} due to corruption")
+                hive.set_fail(f"Lost file with id: {part.id} due to corruption")
             else:
                 hive.set_recovery_epoch(part)
 
