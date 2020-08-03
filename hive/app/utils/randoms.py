@@ -1,3 +1,5 @@
+"""This module implements some functions related with random number generation."""
+
 import logging
 import random
 
