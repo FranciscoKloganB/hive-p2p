@@ -204,7 +204,7 @@ def __second_method__(A: np.ndarray, v_: np.ndarray, U: np.ndarray) -> None:
 
 
 def __third_method__(A: np.ndarray, v_: np.ndarray) -> None:
-    matlab_scripts_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'scripts', 'matlabscripts')))
+    matlab_scripts_dir = os.path.join(os.path.abspath(os.path.join(os.getcwd(), '..', 'scripts', 'matlab')))
     try:
         eng = me.start_matlab()
         eng.cd(matlab_scripts_dir)

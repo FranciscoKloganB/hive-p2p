@@ -25,7 +25,7 @@ from typing import List, Dict, Any
 import numpy as np
 
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT
-from scripts.pyscripts import normal_distribution_generator as ng, \
+from scripts.python import normal_distribution_generator as ng, \
     label_generator as cg
 
 

@@ -83,7 +83,7 @@ ABS_TOLERANCE: float = 0.05
 SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
-MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlabscripts')
+MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlab')
 
 # Others
 TRUE_FALSE = [True, False]

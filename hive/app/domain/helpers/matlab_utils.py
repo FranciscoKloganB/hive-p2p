@@ -69,7 +69,7 @@ class MatlabEngineContainer:
         Constructs an optimized transition matrix using linear programming
         relaxations and convex envelope approximations for the specified steady
         state `v`, this is done by invoke the matlabscript matrixGlobalOpt
-        in the project folder name matlabscripts.
+        in the project folder name matlab.
 
         Note:
             This function can only be invoked if you have a valid matlab license.
