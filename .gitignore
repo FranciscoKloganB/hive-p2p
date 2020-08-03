@@ -357,6 +357,7 @@ codegen/
 
 # Hives: Simulator Files
 convex_optimization_mh.py
+metropolis_hastings_unit_test.py
 *.slxc
 
 # Octave session info
