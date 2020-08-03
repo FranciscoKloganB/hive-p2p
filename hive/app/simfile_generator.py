@@ -275,7 +275,7 @@ def main(simfile_name: str) -> None:
             Name to be assigned to JSON file in the user's file system.
     """
     simfile_json: Dict[str, Any] = {
-        "peers_uptime": __init_nodes_uptime(),
+        "nodes_uptime": __init_nodes_uptime(),
         "persisting": __init_persisting_dict()
     }
 
