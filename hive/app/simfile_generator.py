@@ -197,12 +197,12 @@ def __init_nodes_uptime() -> Dict[str, float]:
         A collection mapping :py:mod:`~domain.network_nodes`'s class
         instance labels to their respective uptime values.
     """
-    number_of_nodes = __input_bounded_integer("\nNetwork Size [2, 16384]: ")
+    number_of_nodes = __input_bounded_integer("Network Size [2, 16384]: ")
 
-    min_uptime = __input_bounded_float("\nMin node uptime [0.0, 100.0]: ") / 100
+    min_uptime = __input_bounded_float("Min node uptime [0.0, 100.0]: ") / 100
     min_uptime = __truncate_float_value(min_uptime, 6)
 
-    max_uptime = __input_bounded_float("\nMax node uptime [0.0, 100.0]: ") / 100
+    max_uptime = __input_bounded_float("Max node uptime [0.0, 100.0]: ") / 100
     max_uptime = __truncate_float_value(max_uptime, 6)
 
     mean = __input_bounded_float("Distribution mean [0.0, 100.0]: ")
@@ -239,7 +239,7 @@ def __init_shared_dict() -> Dict[str, Any]:
     add_file: bool = True
     while add_file:
         file_name = __input_filename(
-            "\nName of the file, with extension, to persist: ")
+            "Name the file (with extension) you wish to simulate persistence of: ")
 
         options_message = ("\nSelect how files blocks are spread across "
                            "clusters at the start of the simulation: {\n"
