@@ -2,7 +2,7 @@ import sys
 
 import numpy as np
 
-import utils.transition_matrices as mH
+import utils.matrices as mH
 
 
 def print_test(name, expect, result, accept):

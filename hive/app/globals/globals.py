@@ -5,13 +5,14 @@ through out the simulation's lifetime including initialization and execution.
 
 Note:
     To configure the amount of available network nodes in a simulation (
-    :py:class:`~domain.Worker.Worker`), the number of network nodes in a group
-    persisting a file (:py:class:`~domain.Hive.Hive`), the way files are
-    initially distributed between network nodes of a simulation (
-    :py:meth:`~domain.Hive.Hive.spread_files`) and, the actual name of the
-    file whose persistence is being simulated, you should create a simulation
-    file using :py:mod:`simulation_file_generator` and follow its
-    instructions. To run that modules functionality use::
+    :py:class:`~domain.network_nodes.Worker`), the number of network nodes in a
+    group persisting a file (:py:class:`~domain.cluster_groups.Hive`),
+    the way files are initially distributed between network nodes of a
+    simulation (:py:meth:`~domain.cluster_groups.Hive.spread_files`) and,
+    the actual name of the file whose persistence is being simulated,
+    you should create a simulation file using
+    :py:mod:`simulation_file_generator` and follow its instructions. To run
+    that modules functionality use::
 
         $ python simfile_generator.py --file=filename.json
 
@@ -39,8 +40,8 @@ Attributes:
         The amount of replicas each file block has (default is 3)
     MIN_CONVERGENCE_THRESHOLD:
         The number of consecutive epoch time steps that an
-        :py:class:`~domain.Hive.Hive` must converge before epochs start being
-        marked with verified convergence in
+        :py:class:`~domain.cluster_groups.Hive` must converge before epochs
+        start being marked with verified convergence in
         :py:attr:`~domain.helpers.data_classes.LoggingData.convergence_set`
          (default is 2).
     LOSS_CHANCE:
@@ -48,15 +49,16 @@ Attributes:
         destination due to network link problems, in the simulation environment.
     ABS_TOLERANCE:
         Defines the maximum amount of absolute positive or negative deviation
-        that a current distribution :py:func:`~domain.Hive.Hive.cv_` can have
-        from the desired steady state :py:func:`~domain.Hive.Hive.v_`,
-        in order for the distributions to be considered equal and thus
-        marking the epoch as being in convergence in
-        :py:attr:`~domain.helpers.data_classes.LoggingData
-        .convergence_set`. This constant will be used by
-        :py:meth:`~domain.Hive.Hive.equal_distributions` along with a
+        that a current distribution :py:func:`~domain.cluster_groups.Hive.cv_`
+        can have from the desired steady state
+        :py:func:`~domain.cluster_groups.Hive.v_`, in order for the
+        distributions to be considered equal and thus marking the epoch as
+        being in convergence in
+        :py:attr:`~domain.helpers.data_classes.LoggingData.convergence_set`.
+        This constant will be used by
+        :py:meth:`~domain.cluster_groups.Hive.equal_distributions` along with a
         relative tolerance that is the minimum value in
-        :py:func:`~domain.Hive.Hive.v_`.
+        :py:func:`~domain.cluster_groups.Hive.v_`.
 """
 
 import os

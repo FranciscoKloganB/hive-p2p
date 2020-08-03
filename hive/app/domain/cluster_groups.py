@@ -30,7 +30,7 @@ import pandas as pd
 from tabulate import tabulate, JupyterHTMLStr
 
 import domain.master_servers as ms
-import utils.transition_matrices as tmg
+import domain.helpers.matrices as mm
 from domain.network_nodes import Worker
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.data_classes import FileData, FileBlockData, LoggingData
@@ -669,10 +669,10 @@ class Hive:
             :py:meth:`~_validate_transition_matrix`.
         """
         results: List[Tuple[Optional[np.ndarray], float]] = [
-            tmg.new_mh_transition_matrix(a, v_),
-            tmg.new_sdp_mh_transition_matrix(a, v_),
-            tmg.new_go_transition_matrix(a, v_),
-            tmg.new_mgo_transition_matrix(a, v_)
+            mm.new_mh_transition_matrix(a, v_),
+            mm.new_sdp_mh_transition_matrix(a, v_),
+            mm.new_go_transition_matrix(a, v_),
+            mm.new_mgo_transition_matrix(a, v_)
         ]
 
         size = len(results)
