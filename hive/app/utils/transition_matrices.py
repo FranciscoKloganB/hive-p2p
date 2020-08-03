@@ -11,8 +11,8 @@ import cvxpy as cvx
 import matlab
 import numpy as np
 
-from domain.exceptions.DistributionShapeError import DistributionShapeError
-from domain.exceptions.MatrixNotSquareError import MatrixNotSquareError
+from domain.exceptions.exceptions import DistributionShapeError
+from domain.exceptions import MatrixNotSquareError
 from domain.helpers.matlab_utils import MatlabEngineContainer
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
