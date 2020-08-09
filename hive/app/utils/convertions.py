@@ -7,7 +7,7 @@ as base64-encoded strings or serialization objects into JSON strings.
 import base64
 import importlib
 
-from typing import Union, Optional, Any
+from typing import Union, Optional, Any, List
 
 import jsonpickle
 
@@ -118,22 +118,30 @@ def json_string_to_obj(json_string: str) -> Any:
     return jsonpickle.decode(json_string)
 
 
-def str_to_class(module_name: str, class_name: str) -> Any:
+def str_to_class(module_name: str, class_name: str, args: List[Any]) -> Any:
     """Uses reflection to instanciate a class by name.
 
     Args:
         module_name:
-            The full descriptive name of the module the class is defined in.
+            The fully qualified path of the module the class is defined in.
+            The name of the module must be included.
         class_name:
             The name of the class to be instanciated.
+        args:
+            The arguments expected by the named class as an iterable list.
 
     Returns:
         An object of the named class.
+
+    Examples:
+        You could call this function like so::
+
+            str_to_class("domain.master_servers", "Hivemind", ["f.jpg", 1, 80]).
     """
     try:
         module_ = importlib.import_module(module_name)
         try:
-            instance = getattr(module_, class_name)()
+            instance = getattr(module_, class_name)(*args)
             return instance
         except AttributeError:
             print("Class does not exist.")
