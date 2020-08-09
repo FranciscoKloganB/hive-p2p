@@ -6,7 +6,7 @@ from __future__ import annotations
 import math
 import sys
 import traceback
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -65,7 +65,10 @@ class BaseNode:
         status:
             Indicates the BaseNode instance is online or offline. In later
             releases this could also contain a 'suspect' status. See
-            :py:class:`~domain.helpers.enums.Status`
+            :py:class:`~domain.helpers.enums.Status`.
+        suspicious_replies:
+            Set that contains :py:class:`~domain.helpers.enums.HttpCodes`
+            that trigger complaints to monitors.
     """
 
     def __init__(self, uid: str, uptime: float) -> None:
@@ -91,6 +94,11 @@ class BaseNode:
         self.files: Dict[str, Dict[int, FileBlockData]] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
         self.status: int = Status.ONLINE
+        self.suspicious_replies = {
+            HttpCodes.NOT_FOUND,
+            HttpCodes.TIME_OUT,
+            HttpCodes.SERVER_DOWN,
+        }
 
     # region Routing tables
     def set_file_routing(self,
@@ -138,7 +146,6 @@ class BaseNode:
 
     def send_part(
             self, hive: cg.BaseHive, part: FileBlockData
-    ) -> Union[int, HttpCodes]:
     ) -> Tuple[Union[int, HttpCodes], str]:
         """Attempts to send a file block replica to another BaseNode instance.
 
@@ -152,17 +159,21 @@ class BaseNode:
                 The file block container to be sent to some other worker.
         Returns:
              An HTTP code defined in
-             :py:class:`~domain.helpers.enums.HttpCodes`.
+             :py:class:`~domain.helpers.enums.HttpCodes` and the destination
+             the part was sent to.
         """
         routing_vector: pd.DataFrame = self.routing_table[part.name]
         hive_members: List[str] = [*routing_vector.index]
         member_chances: List[float] = [*routing_vector.iloc[:, 0]]
         try:
-            destination: str = np.random.choice(a=hive_members, p=member_chances).item()  # converts numpy.str to python str
-            return hive.route_part(self.id, destination, part)
+            destination: str = np.random.choice(
+                a=hive_members, p=member_chances).item()
+            return hive.route_part(self.id, destination, part), destination
         except ValueError as vE:
             print(f"{routing_vector}\nStochastic?: {np.sum(member_chances)}")
-            sys.exit("".join(traceback.format_exception(etype=type(vE), value=vE, tb=vE.__traceback__)))
+            sys.exit("".join(
+                traceback.format_exception(
+                    etype=type(vE), value=vE, tb=vE.__traceback__)))
 
     def receive_part(self, part: FileBlockData) -> int:
         """Endpoint for file block replica reception.
@@ -213,15 +224,16 @@ class BaseNode:
                 default False).
             hive:
                 Gateway BaseHive that will set the recovery epoch (see
-                :py:meth:`~domain.cluster_groups.BaseHive.set_recovery_epoch` or mark the
-                simulation as failed.
+                :py:meth:`~domain.cluster_groups.BaseHive.set_recovery_epoch`
+                or mark the simulation as failed.
         """
         part: FileBlockData = self.files.get(fid, {}).pop(number, None)
         if part and corrupt:
-            if part.decrement_and_get_references() == 0:
-                hive.set_fail(f"Lost file with id: {part.id} due to corruption")
-            else:
+            if part.decrement_and_get_references() > 0:
                 hive.set_recovery_epoch(part)
+            else:
+                hive.set_fail(f"Lost last file block replica with id:"
+                              f" {part.id} due to corruption.")
 
     def replicate_part(self, hive: cg.BaseHive, part: FileBlockData) -> None:
         """Equal to :py:meth:`~send_part` but with different delivery semantics.
@@ -244,19 +256,17 @@ class BaseNode:
         # Number of times the block needs to be replicated.
         lost_replicas: int = part.can_replicate(hive.current_epoch)
         if lost_replicas > 0:
-
             sorted_members = [*hive.v_.sort_values(0, ascending=False).index]
-
             for member_id in sorted_members:
                 if lost_replicas == 0:
                     break
-
-                route_result = hive.route_part(
+                response_code, destination = hive.route_part(
                     self.id, member_id, part, fresh_replica=True)
-
-                if route_result == HttpCodes.OK:
+                if response_code == HttpCodes.OK:
                     lost_replicas -= 1
                     part.references += 1
+                elif response_code in self.suspicious_replies:
+                    hive.complain(self.id, destination)
             # replication level may have not been completely restored
             part.update_epochs_to_recover(hive.current_epoch)
 
@@ -273,10 +283,11 @@ class BaseNode:
         destination replies with OK, meaning it accepted the replica,
         this BaseNode instance deletes the replica from his disk. If it
         replies with a BAD_REQUEST the replica is discarded and the worker
-        starts a recovery process in the BaseHive. Any other code response resuts
-        in the BaseNode instance keeping replica in his disk for at least one
-        more epoch times. See :py:class:`~domain.helpers.enums.HttpCodes`
-        for more information on possible HTTP Codes.
+        starts a recovery process in the BaseHive. Any other code response
+        results in the BaseNode instance keeping replica in his disk for at
+        least one more epoch times. See
+        :py:class:`~domain.helpers.enums.HttpCodes` for more information on
+        possible HTTP Codes.
 
         Args:
             hive: 
@@ -288,13 +299,17 @@ class BaseNode:
         file_view: Dict[int, FileBlockData] = self.files.get(fid, {}).copy()
         for number, part in file_view.items():
             self.replicate_part(hive, part)
-            response_code = self.send_part(hive, part)
+            response_code, destination = self.send_part(hive, part)
             if response_code == HttpCodes.OK:
                 self.discard_part(fid, number)
             elif response_code == HttpCodes.BAD_REQUEST:
                 self.discard_part(fid, number, corrupt=True, hive=hive)
-            elif HttpCodes.TIME_OUT or HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
-                pass  # Keep file part for at least one more epoch
+            elif response_code in self.suspicious_replies:
+                hive.complain(self.id, destination)
+            else:
+                # Keep file part for at least one more epoch
+                # HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
+                pass
     # endregion
 
     # region Helpers
@@ -337,7 +352,8 @@ class BaseNode:
         """
         if self.status == Status.ONLINE:
             self.uptime -= 1
-            self.status = Status.ONLINE if self.uptime > 0 else Status.OFFLINE
+            if self.uptime <= 0:
+                self.status = Status.OFFLINE
         return self.status
     # endregion
 
@@ -355,9 +371,27 @@ class BaseNode:
     # endregion
 
 
-class HiveNode:
+class HiveNode(BaseNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     HiveNode instances differ from BaseNode in the sense that the
     :py:class:`~domain.domain.BaseNode` do not monitor their groups' peers,
     concerning fault detection."""
+
+    def get_epoch_status(self) -> int:
+        """Used to obtain the status of the worker.
+
+        Overrides:
+            :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`. When
+            not ONLINE the node sets itself as Suspect and will only become
+            offline when the monitor marks him as so (e.g.: due to complaints).
+
+        Returns:
+            The status of the worker. See
+            :py:class:`~domain.helpers.enums.Status`.
+        """
+        if self.status == Status.ONLINE:
+            self.uptime -= 1
+            if self.uptime <= 0:
+                self.status = Status.SUSPECT
+        return self.status
