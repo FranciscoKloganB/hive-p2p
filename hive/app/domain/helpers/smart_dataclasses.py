@@ -26,7 +26,7 @@ class FileData:
         parts_in_hive (int):
             The number of file parts including replicas that exist for the
             named file that exist in the simulation. Updated every epoch.
-        simulation_data (LoggingData):
+        logger (LoggingData):
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
             has graphs and figures. See
@@ -51,7 +51,7 @@ class FileData:
         """
         self.name: str = name
         self.parts_in_hive = 0
-        self.simulation_data: LoggingData = LoggingData()
+        self.logger: LoggingData = LoggingData()
         self.out_file: IO = open(
             os.path.join(
                 OUTFILE_ROOT, "{}_{}{}.{}".format(
@@ -72,7 +72,7 @@ class FileData:
         """
         self.out_file.write(msg + "\n")
 
-    def jwrite(self, hive: cg.Hive, origin: str, epoch: int) -> None:
+    def jwrite(self, hive: cg.BaseHive, origin: str, epoch: int) -> None:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
@@ -81,7 +81,7 @@ class FileData:
 
         Args:
             hive:
-                The :py:class:`Hive <domain.cluster_groups.Hive>` object that manages
+                The :py:class:`BaseHive <domain.cluster_groups.BaseHive>` object that manages
                 the simulated persistence of the referenced file.
             origin:
                 The name of the simulation file that started the simulation
@@ -91,7 +91,7 @@ class FileData:
                 output file.
 
         """
-        sd: LoggingData = self.simulation_data
+        sd: LoggingData = self.logger
 
         sd.save_sets_and_reset()
 
@@ -262,7 +262,7 @@ class FileBlockData:
             Zero if the current `recovery_epoch` is positive infinity,
             otherwise the expected delay is returned. This value can be
             used to log, for example, the average recovery delay in the
-            Hive simulation.
+            BaseHive simulation.
         """
         new_proposed_epoch = float(epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY))
         if new_proposed_epoch < self.recovery_epoch:
@@ -352,7 +352,7 @@ class LoggingData:
         cswc (int):
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
-            :py:meth:`equal_distributions() <domain.cluster_groups.Hive.equal_distributions>`
+            :py:meth:`equal_distributions() <domain.cluster_groups.BaseHive.equal_distributions>`
             this attribute is reseted to zero.
         largest_convergence_window (int):
             Stores the largest convergence window that occurred throughout
@@ -480,7 +480,7 @@ class LoggingData:
 
     # region Helpers
 
-    def set_delay_at_index(self, delay: int, calls: int, epoch: int) -> None:
+    def log_recovery_delay(self, delay: int, calls: int, epoch: int) -> None:
         """Logs the expected delay at epoch at an epoch.
 
         Args:
@@ -493,7 +493,7 @@ class LoggingData:
         """
         self.delay[epoch-1] = 0 if calls == 0 else delay / calls
 
-    def set_moved_parts_at_index(self, n: int, epoch: int) -> None:
+    def log_bandwidth_units(self, n: int, epoch: int) -> None:
         """Logs the amount of moved file blocks moved at an epoch.
 
         Args:
@@ -504,7 +504,7 @@ class LoggingData:
         """
         self.moved_parts[epoch-1] += n
 
-    def set_parts_at_index(self, n: int, epoch: int) -> None:
+    def log_existing_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of existing file blocks in the simulation environment at an epoch.
 
         Args:
@@ -515,7 +515,7 @@ class LoggingData:
         """
         self.parts_in_hive[epoch-1] += n
 
-    def set_disconnected_workers_at_index(self, n: int, epoch: int) -> None:
+    def log_disconnected_workers(self, n: int, epoch: int) -> None:
         """Logs the amount of disconnected workers at an epoch.
 
         Args:
@@ -526,7 +526,7 @@ class LoggingData:
         """
         self.disconnected_workers[epoch-1] += n
 
-    def set_lost_parts_at_index(self, n: int, epoch: int) -> None:
+    def log_lost_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of permanently lost file block replicas at an epoch.
 
         Args:
@@ -537,7 +537,7 @@ class LoggingData:
         """
         self.lost_parts[epoch-1] += n
 
-    def set_lost_messages_at_index(self, n: int, epoch: int) -> None:
+    def log_lost_messages(self, n: int, epoch: int) -> None:
         """Logs the amount of failed message transmissions at an epoch.
 
         Args:
@@ -548,7 +548,7 @@ class LoggingData:
         """
         self.lost_messages[epoch-1] += n
 
-    def set_corrupt_files_at_index(self, n: int, epoch: int) -> None:
+    def log_corrupted_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of corrupted file block replicas at an epoch.
 
         Args:
@@ -559,7 +559,7 @@ class LoggingData:
         """
         self.corrupted_parts[epoch-1] += n
 
-    def set_fail(self, epoch: int, message: str = "") -> None:
+    def log_fail(self, epoch: int, message: str = "") -> None:
         """Logs the epoch at which a simulation terminated due to a failure.
 
         Note:
@@ -577,11 +577,11 @@ class LoggingData:
         self.successfull = False
         self.messages.append(message)
 
-    def set_membership_maintenace_at_index(self,
-                                           status: str,
-                                           size_before: int,
-                                           size_after: int,
-                                           epoch: int) -> None:
+    def log_maintenance(self,
+                        status: str,
+                        size_before: int,
+                        size_after: int,
+                        epoch: int) -> None:
         """Logs hive membership status and size at an epoch.
 
         Args:

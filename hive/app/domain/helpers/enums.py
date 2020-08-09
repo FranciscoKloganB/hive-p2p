@@ -27,7 +27,7 @@ class HttpCodes(Enum):
         * NOT_FOUND: Callee is not a member of the network;
         * NOT_ACCEPTABLE: Callee already has a file with same Id;
         * TIME_OUT: Message lost in translation;
-        *  SERVER_DOWN: Metadata server is offline;
+        * SERVER_DOWN: Metadata server is offline;
     """
     DUMMY: int = -1
     OK: int = 200
