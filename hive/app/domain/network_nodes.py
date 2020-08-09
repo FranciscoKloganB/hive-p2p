@@ -168,7 +168,7 @@ class BaseNode:
         try:
             destination: str = np.random.choice(
                 a=hive_members, p=member_chances).item()
-            return hive.route_part(self.id, destination, part), destination
+            return hive.route_part(self.id, destination, part)
         except ValueError as vE:
             print(f"{routing_vector}\nStochastic?: {np.sum(member_chances)}")
             sys.exit("".join(
@@ -257,11 +257,11 @@ class BaseNode:
         lost_replicas: int = part.can_replicate(hive.current_epoch)
         if lost_replicas > 0:
             sorted_members = [*hive.v_.sort_values(0, ascending=False).index]
-            for member_id in sorted_members:
+            for node_id in sorted_members:
                 if lost_replicas == 0:
                     break
                 response_code, destination = hive.route_part(
-                    self.id, member_id, part, fresh_replica=True)
+                    self.id, node_id, part, fresh_replica=True)
                 if response_code == HttpCodes.OK:
                     lost_replicas -= 1
                     part.references += 1

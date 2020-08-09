@@ -171,7 +171,8 @@ class BaseHive:
                    sender: str,
                    destination: str,
                    part: FileBlockData,
-                   fresh_replica: bool = False) -> Any:
+                   fresh_replica: bool = False
+                   ) -> Tuple[Union[HttpCodes, int], str]:
         """Sends one file block replica to some other network node.
 
         Args:
@@ -190,23 +191,23 @@ class BaseHive:
             An HTTP code sent by destination network node.
         """
         if sender == destination:
-            return HttpCodes.DUMMY
+            return HttpCodes.DUMMY, destination
 
         self.file.logger.log_bandwidth_units(1, self.current_epoch)
 
         if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):
             self.file.logger.log_lost_messages(1, self.current_epoch)
-            return HttpCodes.TIME_OUT
+            return HttpCodes.TIME_OUT, destination
 
         if not fresh_replica and np.random.choice(a=TRUE_FALSE, p=self.corruption_chances):
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
-            return HttpCodes.BAD_REQUEST
+            return HttpCodes.BAD_REQUEST, destination
 
         destination_node: BaseNode = self.members[destination]
         if destination_node.status == Status.ONLINE:
-            return destination_node.receive_part(part)
+            return destination_node.receive_part(part), destination
         else:
-            return HttpCodes.NOT_FOUND
+            return HttpCodes.NOT_FOUND, destination
 
     # endregion
 
