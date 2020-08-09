@@ -207,8 +207,10 @@ class BaseHive:
         destination_node: BaseNode = self.members[destination]
         if destination_node.status == Status.ONLINE:
             return destination_node.receive_part(part)
-        else:
+        elif destination_node.status == Status.OFFLINE:
             return HttpCodes.NOT_FOUND
+        else:
+            return HttpCodes.TIME_OUT
 
     # endregion
 
@@ -826,15 +828,15 @@ class Hive(BaseHive):
             if node.status == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
             else:
+                # TODO: In Hive class this branch should only be executed
+                #  once, and later in time, when network nodes detect that a
+                #  peer as been offline (through complaints) another method
+                #  must do set_recovery_epoch on every
+                #  element of node.get_file_parts(self.file.name).
                 lost_parts = node.get_file_parts(self.file.name)
                 lost_parts_count += len(lost_parts)
                 offline_workers.append(node)
                 for part in lost_parts.values():
-                    # This can not be called here, decrement_and_get_references
-                    # is called here because it allows us to properly infer
-                    # simulation failure, but the recovery mechanisms in this
-                    # version of the simulation is handled by the network nodes.
-                    # self.set_recovery_epoch(part)
                     if part.decrement_and_get_references() == 0:
                         self.set_fail(f"lost all replicas of file part with "
                                       f"id: {part.id}")
