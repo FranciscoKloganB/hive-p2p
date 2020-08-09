@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import List, Union, Dict, Any, TypeAlias
+from typing import List, Union, Dict, Any
 
 import numpy as np
 
@@ -14,7 +14,7 @@ from domain.helpers.smart_dataclasses import FileBlockData
 from domain.network_nodes import BaseNode
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
 
-_PersistentingDict: TypeAlias = Dict[str, Dict[str, Union[List[str], str]]]
+_PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 
 
 class Hivemind:
