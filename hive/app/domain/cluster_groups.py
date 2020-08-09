@@ -432,21 +432,29 @@ class BaseHive:
         if not self.members:
             self.set_fail("Cluster has no remaining members.")
 
-        parts_in_hive: int = 0
-        for worker in self.members.values():
-            if worker.status == Status.ONLINE:
-                worker_parts_count = worker.get_file_parts_count(self.file.name)
-                self.cv_.at[worker.id, 0] = worker_parts_count
-                parts_in_hive += worker_parts_count
+        pcount: int = 0
+        members = self.members.values()
+        for node in members:
+            if node.status == Status.ONLINE:
+                worker_parts_count = node.get_file_parts_count(self.file.name)
+                self.cv_.at[node.id, 0] = worker_parts_count
+                pcount += worker_parts_count
             else:
-                self.cv_.at[worker.id, 0] = 0
+                self.cv_.at[node.id, 0] = 0
+        self.log_evaluation(pcount)
 
-        self.file.logger.log_existing_file_blocks(parts_in_hive, self.current_epoch)
+    def log_evaluation(self, pcount: int) -> None:
+        """Helper method that performs evaluate step related logging.
 
-        if parts_in_hive <= 0:
+        Args:
+            pcount:
+                The number of existing parts in the system at the
+                simulation's current epoch.
+        """
+        self.file.logger.log_existing_file_blocks(pcount, self.current_epoch)
+        if pcount <= 0:
             self.set_fail("Cluster has no remaining parts.")
-
-        self.file.parts_in_hive = parts_in_hive
+        self.file.parts_in_hive = pcount
         if self.equal_distributions():
             self.file.logger.register_convergence(self.current_epoch)
         else:
@@ -595,7 +603,8 @@ class BaseHive:
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
     def __get_new_members__(self) -> Dict[str, Worker]:
-        """Helper method that gets adds network nodes, if possible, to the BaseHive.
+        """Helper method that gets adds network nodes, if possible,
+        to the BaseHive.
 
         Returns:
             A dictionary mapping network node identifiers and their instance
@@ -621,7 +630,8 @@ class BaseHive:
         self.file.logger.log_fail(self.current_epoch, message)
 
     def set_recovery_epoch(self, part: FileBlockData) -> None:
-        """Delegates to :py:meth:`~domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
+        """Delegates to :py:meth:
+        `~domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
 
         Args:
             part: A :py:class:`~domain.helpers.smart_dataclasses.FileBlockData`
@@ -647,12 +657,14 @@ class BaseHive:
         column_count = t_pow.shape[1]
         for j in range(column_count):
             test_target = t_pow[:, j]  # gets array column j
-            if not np.allclose(test_target, target_distribution[0].values, atol=1e-02):
+            if not np.allclose(
+                    test_target, target_distribution[0].values, atol=1e-02):
                 return False
         return True
 
     def create_and_bcast_new_transition_matrix(self) -> None:
-        """Tries to create a valid transition matrix and distributes between members of the BaseHive.
+        """Tries to create a valid transition matrix and distributes between
+        members of the BaseHive.
 
         After creating a transition matrix it ensures that the matrix is a
         markov matrix by invoking :py:meth:`~_validate_transition_matrix`.
@@ -668,7 +680,10 @@ class BaseHive:
             if self._validate_transition_matrix(result, self.v_):
                 self.broadcast_transition_matrix(result)
                 break
-        self.broadcast_transition_matrix(result)  # if after 3 validations attempts no matrix was generated, use any other one.
+        # Only tries to generate a valid matrix up to three times,
+        # then resumes with the last generated matrix even if it never
+        # converges.
+        self.broadcast_transition_matrix(result)
 
     def select_fastest_topology(
             self, a: np.ndarray, v_: np.ndarray
@@ -833,37 +848,6 @@ class Hive(BaseHive):
         sf.log_lost_file_blocks(lost_parts_count, e)
 
         return offline_workers
-
-    def evaluate(self) -> None:
-        """Verifies file block distribution and hive health status.
-
-        This method is invoked by every BaseHive instance at every epoch time.
-        Among other things it compares the current file block distribution
-        to the desired distribution, evicts and recruits new network nodes
-        for the BaseHive and, performs logging invocations.
-        """
-        if not self.members:
-            self.set_fail("Cluster has no remaining members.")
-
-        parts_in_hive: int = 0
-        for worker in self.members.values():
-            if worker.status == Status.ONLINE:
-                worker_parts_count = worker.get_file_parts_count(self.file.name)
-                self.cv_.at[worker.id, 0] = worker_parts_count
-                parts_in_hive += worker_parts_count
-            else:
-                self.cv_.at[worker.id, 0] = 0
-
-        self.file.logger.log_existing_file_blocks(parts_in_hive, self.current_epoch)
-
-        if parts_in_hive <= 0:
-            self.set_fail("Cluster has no remaining parts.")
-
-        self.file.parts_in_hive = parts_in_hive
-        if self.equal_distributions():
-            self.file.logger.register_convergence(self.current_epoch)
-        else:
-            self.file.logger.save_sets_and_reset()
 
     def maintain(self, off_nodes: List[Worker] = None) -> None:
         """Evicts any worker whose number of complaints as surpassed the
