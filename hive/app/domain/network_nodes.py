@@ -139,6 +139,7 @@ class BaseNode:
     def send_part(
             self, hive: cg.BaseHive, part: FileBlockData
     ) -> Union[int, HttpCodes]:
+    ) -> Tuple[Union[int, HttpCodes], str]:
         """Attempts to send a file block replica to another BaseNode instance.
 
         Args:
