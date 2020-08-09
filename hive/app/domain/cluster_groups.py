@@ -205,10 +205,8 @@ class BaseHive:
         destination_node: BaseNode = self.members[destination]
         if destination_node.status == Status.ONLINE:
             return destination_node.receive_part(part)
-        elif destination_node.status == Status.OFFLINE:
-            return HttpCodes.NOT_FOUND
         else:
-            return HttpCodes.TIME_OUT
+            return HttpCodes.NOT_FOUND
 
     # endregion
 
