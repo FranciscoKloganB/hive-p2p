@@ -156,9 +156,16 @@ if __name__ == "__main__":
     iterations = 30
     duration = 720
 
+    master_class = "Hivemind"
+    cluster_class = "BaseHive"
+    node_class = "BaseNode"
+
     try:
-        short_opts = "df:i:t:e:"
-        long_opts = ["directory", "file=", "iters=", "threading=", "epochs="]
+        short_opts = "df:i:t:e:m:c:n:"
+        long_opts = [
+            "directory", "file=", "iters=", "threading=", "epochs=",
+            "master_server=", "cluster_group=", "network_node="
+        ]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
@@ -174,6 +181,12 @@ if __name__ == "__main__":
                 iterations = int(str(args).strip())
             if options in ("-e", "--epochs"):
                 duration = int(str(args).strip())
+            if options in ("-m", "--master_server"):
+                master_class = str(args).strip()
+            if options in ("-c", "--cluster_group"):
+                cluster_class = str(args).strip()
+            if options in ("-n", "--network_node"):
+                node_class = str(args).strip()
 
         if simfile or simdirectory:
             main(threading, simdirectory, simfile, iterations, duration)
@@ -188,4 +201,7 @@ if __name__ == "__main__":
                  "--epochs -e (int)\n"
                  "--threading -t (int)\n"
                  "--directory -d (void)\n"
-                 "--file -f (str)")
+                 "--file -f (str)\n"
+                 "--master_server -m (str)\n"
+                 "--cluster_group -c (str)\n"
+                 "--network_node -n (str)\n")
