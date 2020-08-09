@@ -204,9 +204,9 @@ class BaseHive:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST
 
-        member: BaseNode = self.members[destination]
-        if member.status == Status.ONLINE:
-            return member.receive_part(part)
+        destination_node: BaseNode = self.members[destination]
+        if destination_node.status == Status.ONLINE:
+            return destination_node.receive_part(part)
         else:
             return HttpCodes.NOT_FOUND
 
