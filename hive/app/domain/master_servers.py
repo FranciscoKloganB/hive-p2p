@@ -18,7 +18,8 @@ _PersistentingDict: TypeAlias = Dict[str, Dict[str, Union[List[str], str]]]
 
 
 class Hivemind:
-    """Simulation manager class. Plays the role of a master server for all Hives of the distributed backup system.
+    """Simulation manager class. Plays the role of a master server for all
+    Hives of the distributed backup system.
 
     Class Attributes:
         MAX_EPOCHS:
@@ -38,13 +39,14 @@ class Hivemind:
         epoch:
             The simulation's current epoch.
         hives:
-            A collection of :py:class:`~domain.cluster_groups.BaseHive` instances managed
-            by the Hivemind.
+            A collection of :py:class:`~domain.cluster_groups.BaseHive`
+            instances managed by the Hivemind.
         workers:
             A dictionary mapping network node identifiers names to their
-            object instances (:py:class:`~domain.network_nodes.BaseNode`). This
-            collection differs from the :py:class:`~domain.cluster_groups.BaseHive`s'
-            attribute :py:attr:`~domain.cluster_groups.BaseHive.members` in the sense that
+            object instances (:py:class:`~domain.network_nodes.BaseNode`).
+            This collection differs from the
+            :py:class:`~domain.cluster_groups.BaseHive`s' attribute
+            :py:attr:`~domain.cluster_groups.BaseHive.members` in the sense that
             the latter is only a subset of `workers`, which includes all
             network nodes of the distributed backup system. Regardless of
             their participation on any BaseHive.
@@ -159,8 +161,11 @@ class Hivemind:
 
     # region Peer Search and Cloud References
 
-    def find_replacement_worker(self, exclusion_dict: Dict[str, BaseNode], n: int) -> Dict[str, BaseNode]:
-        """Finds a collection of online network nodes that can be used to replace offline ones in an BaseHive.
+    def find_replacement_worker(
+            self, exclusion_dict: Dict[str, BaseNode], n: int
+    ) -> Dict[str, BaseNode]:
+        """Finds a collection of online network nodes that can be used to
+        replace offline ones in an BaseHive.
 
         Args:
             exclusion_dict:
