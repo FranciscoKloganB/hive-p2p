@@ -232,8 +232,8 @@ class BaseNode:
             if part.decrement_and_get_references() > 0:
                 hive.set_recovery_epoch(part)
             else:
-                hive.set_fail(f"Lost last file block replica with id:"
-                              f" {part.id} due to corruption.")
+                hive.set_fail(f"Lost last file block replica with id "
+                              f"{part.id} due to corruption.")
 
     def replicate_part(self, hive: cg.BaseHive, part: FileBlockData) -> None:
         """Equal to :py:meth:`~send_part` but with different delivery semantics.
