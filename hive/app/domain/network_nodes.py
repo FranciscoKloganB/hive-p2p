@@ -351,3 +351,11 @@ class BaseNode:
     def __ne__(self, other):
         return not(self == other)
     # endregion
+
+
+class HiveNode:
+    """Represents a network node that executes a Swarm Guidance algorithm.
+
+    HiveNode instances differ from BaseNode in the sense that the
+    :py:class:`~domain.domain.BaseNode` do not monitor their groups' peers,
+    concerning fault detection."""
