@@ -137,7 +137,8 @@ class BaseNode:
     # region File Routing and Swarm Guidance Implementation
 
     def send_part(
-            self, hive: cg.BaseHive, part: FileBlockData) -> Union[int, HttpCodes]:
+            self, hive: cg.BaseHive, part: FileBlockData
+    ) -> Union[int, HttpCodes]:
         """Attempts to send a file block replica to another BaseNode instance.
 
         Args:
