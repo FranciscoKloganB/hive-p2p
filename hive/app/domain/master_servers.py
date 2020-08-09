@@ -11,7 +11,7 @@ import numpy as np
 from domain.cluster_groups import BaseHive
 from domain.helpers.enums import Status
 from domain.helpers.smart_dataclasses import FileBlockData
-from domain.network_nodes import Worker
+from domain.network_nodes import BaseNode
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
 
 _PersistentingDict: TypeAlias = Dict[str, Dict[str, Union[List[str], str]]]
@@ -79,11 +79,11 @@ class Hivemind:
 
             # Init basic simulation variables
             self.hives: Dict[str, BaseHive] = {}
-            self.workers: Dict[str, Worker] = {}
+            self.workers: Dict[str, BaseNode] = {}
 
             # Instantiaite jobless Workers
             for worker_id, worker_uptime in json_obj['nodes_uptime'].items():
-                worker: Worker = Worker(worker_id, worker_uptime)
+                worker: BaseNode = BaseNode(worker_id, worker_uptime)
                 self.workers[worker.id] = worker
 
             # Read and split all shareable files specified on the input, also assign BaseHive initial attributes (uuid, members, and FileData)
@@ -159,7 +159,7 @@ class Hivemind:
 
     # region Peer Search and Cloud References
 
-    def find_replacement_worker(self, exclusion_dict: Dict[str, Worker], n: int) -> Dict[str, Worker]:
+    def find_replacement_worker(self, exclusion_dict: Dict[str, BaseNode], n: int) -> Dict[str, BaseNode]:
         """Finds a collection of online network nodes that can be used to replace offline ones in an BaseHive.
 
         Args:
@@ -174,7 +174,7 @@ class Hivemind:
         Returns:
             A collection of replacements which is smaller or equal than `n`.
         """
-        selected_workers: Dict[str, Worker] = {}
+        selected_workers: Dict[str, BaseNode] = {}
         workers_view = self.workers.copy().values()
         for worker in workers_view:
             if len(selected_workers) == n:
@@ -210,7 +210,7 @@ class Hivemind:
         """
         Helper method that initializes a new hive.
         """
-        hive_members: Dict[str, Worker] = {}
+        hive_members: Dict[str, BaseNode] = {}
         size = persisting[file_name]['cluster_size']
         initial_members: np.array = np.random.choice(a=[*self.workers.keys()],
                                                      size=size,

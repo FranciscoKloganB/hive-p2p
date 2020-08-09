@@ -34,7 +34,7 @@ import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
-from domain.network_nodes import Worker
+from domain.network_nodes import BaseNode
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
@@ -68,7 +68,7 @@ class BaseHive:
             coordinates this BaseHive instance.
         members:
             A collection of network nodes that belong to the BaseHive instance.
-            See also :py:class:`~domain.domain.Worker`.
+            See also :py:class:`~domain.domain.BaseNode`.
         file:
             A reference to :py:class:`~domain.helpers.FileData` object that
             represents the file being persisted by the BaseHive instance.
@@ -99,7 +99,7 @@ class BaseHive:
 
     def __init__(self, hivemind: ms.Hivemind,
                  file_name: str,
-                 members: Dict[str, Worker],
+                 members: Dict[str, BaseNode],
                  sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `BaseHive` object
@@ -113,7 +113,7 @@ class BaseHive:
                 for persisting.
             members:
                 A dictionary mapping unique identifiers to of the BaseHive's
-                initial network nodes (:py:class:`~domain.domain.Worker`.)
+                initial network nodes (:py:class:`~domain.domain.BaseNode`.)
                 to their instance objects.
             sim_id:
                 optional; Identifier that generates unique output file names,
@@ -129,7 +129,7 @@ class BaseHive:
         self.v_: pd.DataFrame = pd.DataFrame()
         self.corruption_chances: List[float] = [0, 0]
         self.hivemind = hivemind
-        self.members: Dict[str, Worker] = members
+        self.members: Dict[str, BaseNode] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
@@ -204,7 +204,7 @@ class BaseHive:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST
 
-        member: Worker = self.members[destination]
+        member: BaseNode = self.members[destination]
         if member.status == Status.ONLINE:
             return member.receive_part(part)
         else:
@@ -371,7 +371,7 @@ class BaseHive:
         self.setup_epoch(epoch)
 
         try:
-            offline_workers: List[Worker] = self.nodes_execute()
+            offline_workers: List[BaseNode] = self.nodes_execute()
             self.evaluate()
             self.maintain(offline_workers)
             if epoch == ms.Hivemind.MAX_EPOCHS:
@@ -383,7 +383,7 @@ class BaseHive:
                                             self._recovery_epoch_calls,
                                             self.current_epoch)
 
-    def nodes_execute(self) -> List[Worker]:
+    def nodes_execute(self) -> List[BaseNode]:
         """Queries all network node members execute the epoch.
 
         This method logs the amount of lost parts throughout the current
@@ -397,7 +397,7 @@ class BaseHive:
              epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
-        offline_workers: List[Worker] = []
+        offline_workers: List[BaseNode] = []
         for worker in self.members.values():
             if worker.get_epoch_status() == Status.ONLINE:
                 worker.execute_epoch(self, self.file.name)
@@ -460,7 +460,7 @@ class BaseHive:
         else:
             self.file.logger.save_sets_and_reset()
 
-    def maintain(self, off_nodes: List[Worker]) -> None:
+    def maintain(self, off_nodes: List[BaseNode]) -> None:
         """Evicts disconnected workers from the BaseHive and attempts to
         recruit new ones.
 
@@ -552,8 +552,8 @@ class BaseHive:
         self.file.logger.initial_spread = strategy
 
         if strategy == "a":
-            choices: List[Worker] = [*self.members.values()]
-            workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+            choices: List[BaseNode] = [*self.members.values()]
+            workers: List[BaseNode] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
             for worker in workers:
                 for part in file_parts.values():
                     part.references += 1
@@ -561,8 +561,8 @@ class BaseHive:
 
         elif strategy == "u":
             for part in file_parts.values():
-                choices: List[Worker] = [*self.members.values()]
-                workers: List[Worker] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+                choices: List[BaseNode] = [*self.members.values()]
+                workers: List[BaseNode] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
                     part.references += 1
                     worker.receive_part(part)
@@ -574,8 +574,8 @@ class BaseHive:
                 desired_distribution.append(self.v_.loc[member_id, 0].item())
 
             for part in file_parts.values():
-                choices: List[Worker] = choices.copy()
-                workers: List[Worker] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
+                choices: List[BaseNode] = choices.copy()
+                workers: List[BaseNode] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
                 for worker in workers:
                     part.references += 1
                     worker.receive_part(part)
@@ -602,7 +602,7 @@ class BaseHive:
 
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
-    def __get_new_members__(self) -> Dict[str, Worker]:
+    def __get_new_members__(self) -> Dict[str, BaseNode]:
         """Helper method that gets adds network nodes, if possible,
         to the BaseHive.
 
@@ -748,7 +748,7 @@ class Hive(BaseHive):
     """Represents a group of network nodes persisting a file.
 
     Hive instances differ from BaseHive in the sense that the
-    :py:class:`~domain.domain.Worker` are responsible detecting that
+    :py:class:`~domain.domain.BaseNode` are responsible detecting that
     their cluster companions are disconnected and reporting it to the
     Hive for eviction after a certain quota is met.
 
@@ -765,7 +765,7 @@ class Hive(BaseHive):
             it is evicted from the Hive.
     """
     def __init__(self, hivemind: ms.Hivemind, file_name: str,
-                 members: Dict[str, Worker], sim_id: int = 0,
+                 members: Dict[str, BaseNode], sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `Hive` object.
 
@@ -800,7 +800,7 @@ class Hive(BaseHive):
                                             self._recovery_epoch_calls,
                                             self.current_epoch)
 
-    def nodes_execute(self) -> List[Worker]:
+    def nodes_execute(self) -> List[BaseNode]:
         """Queries all network node members execute the epoch.
 
         This method logs the amount of lost parts throughout the current
@@ -816,7 +816,7 @@ class Hive(BaseHive):
         # TODO:
         #  In order for nodes to execute, we first need to implement new nodes
         lost_parts_count: int = 0
-        offline_workers: List[Worker] = []
+        offline_workers: List[BaseNode] = []
 
         members = self.members.values()
         for node in members:
@@ -849,7 +849,7 @@ class Hive(BaseHive):
 
         return offline_workers
 
-    def maintain(self, off_nodes: List[Worker] = None) -> None:
+    def maintain(self, off_nodes: List[BaseNode] = None) -> None:
         """Evicts any worker whose number of complaints as surpassed the
         `complaint_threshold`.
 
