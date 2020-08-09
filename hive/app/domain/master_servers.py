@@ -185,6 +185,7 @@ class Hivemind:
             if len(selected_workers) == n:
                 return selected_workers
             elif worker.status != Status.ONLINE:
+                # TODO: future-iterations review this code.
                 self.workers.pop(worker.id, None)
             elif worker.id not in exclusion_dict:
                 selected_workers[worker.id] = worker
