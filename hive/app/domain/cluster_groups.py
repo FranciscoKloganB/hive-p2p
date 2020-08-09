@@ -34,7 +34,7 @@ import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
-from domain.network_nodes import BaseNode
+from domain.network_nodes import BaseNode, HiveNode
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
 from utils.randoms import random_index
@@ -139,8 +139,6 @@ class BaseHive:
         self._recovery_epoch_sum: int = 0
         self._recovery_epoch_calls: int = 0
         self.create_and_bcast_new_transition_matrix()
-
-    # endregion
 
     # region Routing
 
@@ -373,9 +371,9 @@ class BaseHive:
         self.setup_epoch(epoch)
 
         try:
-            offline_workers: List[BaseNode] = self.nodes_execute()
+            off_nodes = self.nodes_execute()
             self.evaluate()
-            self.maintain(offline_workers)
+            self.maintain(off_nodes)
             if epoch == ms.Hivemind.MAX_EPOCHS:
                 self.running = False
         except Exception as e:
@@ -399,29 +397,28 @@ class BaseHive:
              epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
-        offline_workers: List[BaseNode] = []
+        off_nodes: List[BaseNode] = []
         for worker in self.members.values():
             if worker.get_epoch_status() == Status.ONLINE:
                 worker.execute_epoch(self, self.file.name)
             else:
                 lost_parts = worker.get_file_parts(self.file.name)
                 lost_parts_count += len(lost_parts)
-                offline_workers.append(worker)
+                off_nodes.append(worker)
                 for part in lost_parts.values():
                     self.set_recovery_epoch(part)
                     if part.decrement_and_get_references() == 0:
-                        self.set_fail(f"lost all replicas of file part with "
-                                      f"id: {part.id}")
+                        self.set_fail(f"Lost all replicas of file part with "
+                                      f"id: {part.id}.")
 
-        if len(offline_workers) >= len(self.members):
-            self.set_fail("all hive members disconnected simultaneously")
+        if len(off_nodes) >= len(self.members):
+            self.set_fail("All hive members disconnected before maintenance.")
 
-        e: int = self.current_epoch
         sf: LoggingData = self.file.logger
-        sf.log_disconnected_workers(len(offline_workers), e)
-        sf.log_lost_file_blocks(lost_parts_count, e)
+        sf.log_disconnected_workers(len(off_nodes), self.current_epoch)
+        sf.log_lost_file_blocks(lost_parts_count, self.current_epoch)
 
-        return offline_workers
+        return off_nodes
 
     def evaluate(self) -> None:
         """Verifies file block distribution and hive health status.
@@ -474,9 +471,9 @@ class BaseHive:
                 current epoch.
         """
         # remove all disconnected workers from the hive
-        for member in off_nodes:
-            self.members.pop(member.id, None)
-            member.remove_file_routing(self.file.name)
+        for node in off_nodes:
+            self.members.pop(node.id, None)
+            node.remove_file_routing(self.file.name)
         self.membership_maintenance()
 
     def membership_maintenance(self) -> None:
@@ -755,19 +752,27 @@ class Hive(BaseHive):
     Hive for eviction after a certain quota is met.
 
     Attributes:
+        complaint_threshold:
+            Reference value that defines the maximum number of complaints a
+            :py:mod:`Network Node <domain.network_nodes>` can receive before
+            it is evicted from the Hive.
         nodes_complaints:
             A dictionary mapping :py:mod:`Network
             Nodes' <domain.network_nodes>` identifiers to their respective
             number of received complaints. When complaints becomes bigger than
             `complaint_threshold`, the respective complaintee is evicted
             from the `Hive`.
-        complaint_threshold:
-            Reference value that defines the maximum number of complaints a
-            :py:mod:`Network Node <domain.network_nodes>` can receive before
-            it is evicted from the Hive.
+        suspicious_nodes:
+            A set containing the unique identifiers of known suspicious nodes.
+        _epoch_complaints:
+            A set of unique identifiers formed from the concatenation of
+            :py:attr:`node identifiers <domain.network_nodes.BaseNode.id>`,
+            to avoid multiple complaint registrations on the same epoch,
+            done by the same source towards the same target. The set is
+            reset every epoch.
     """
     def __init__(self, hivemind: ms.Hivemind, file_name: str,
-                 members: Dict[str, BaseNode], sim_id: int = 0,
+                 members: Dict[str, HiveNode], sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `Hive` object.
 
@@ -777,81 +782,68 @@ class Hive(BaseHive):
         super().__init__(hivemind, file_name, members, sim_id, origin)
         self.complaint_threshold: float = len(members) * 0.5
         self.nodes_complaints: Dict[str, 0] = {}
-        self.epoch_complaints: set = set()
-        for node_id in members.keys():
-            self.nodes_complaints[node_id] = 0
+        self.suspicious_nodes: set = set()
+        self._epoch_complaints: set = set()
 
     def execute_epoch(self, epoch: int) -> None:
         """Instructs the cluster to execute an epoch.
 
-        Overrides:
+        Extends:
             :py:meth:`~domain.cluster_groups.BaseHive.execute_epoch`.
         """
-        self.setup_epoch(epoch)
+        super().execute_epoch(epoch)
+        self._epoch_complaints.clear()
 
-        try:
-            self.nodes_execute()
-            self.evaluate()
-            self.maintain()
-            if epoch == ms.Hivemind.MAX_EPOCHS:
-                self.running = False
-        except Exception as e:
-            self.set_fail(f"Exception caused simulation termination: {str(e)}")
-        self.epoch_complaints.clear()
-        self.file.logger.log_recovery_delay(self._recovery_epoch_sum,
-                                            self._recovery_epoch_calls,
-                                            self.current_epoch)
-
-    def nodes_execute(self) -> List[BaseNode]:
+    def nodes_execute(self) -> List[HiveNode]:
         """Queries all network node members execute the epoch.
 
-        This method logs the amount of lost parts throughout the current
-        epoch according to the members who went offline and the file blocks
-        they posssed and is responsible for setting up a recovery epoch those
-        lost replicas (:py:meth:`domain.cluster_groups.BaseHive.set_recovery_epoch`).
-        Similarly it logs the number of members who disconnected.
+        Overrides:
+            :py:meth:`~domain.cluster_groups.BaseHive.nodes_execute`.
+            Differs the super class implementation because it considers nodes
+            as Suspects until it receives enough complaints from member nodes.
+            This is important because lost parts can not be logged multiple
+            times. Yet suspected workers need to be contabilized as offline
+            for simulation purposes without being evicted from the group
+            until said detection occurs.
 
         Returns:
              A collection of members who disconnected during the current
              epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
-        # TODO:
-        #  In order for nodes to execute, we first need to implement new nodes
         lost_parts_count: int = 0
-        offline_workers: List[BaseNode] = []
+        off_nodes: List[HiveNode] = []
 
         members = self.members.values()
         for node in members:
             node.get_epoch_status()
-
-        for node in self.members.values():
+        for node in members:
             if node.status == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
-            else:
-                # TODO: In Hive class this branch should only be executed
-                #  once, and later in time, when network nodes detect that a
-                #  peer as been offline (through complaints) another method
-                #  must do set_recovery_epoch on every
-                #  element of node.get_file_parts(self.file.name).
+            elif node.status == Status.SUSPECT:
                 lost_parts = node.get_file_parts(self.file.name)
-                lost_parts_count += len(lost_parts)
-                offline_workers.append(node)
-                for part in lost_parts.values():
-                    if part.decrement_and_get_references() == 0:
-                        self.set_fail(f"lost all replicas of file part with "
-                                      f"id: {part.id}")
+                if node.id not in self.suspicious_nodes:
+                    self.suspicious_nodes.add(node.id)
+                    lost_parts_count += len(lost_parts)
+                    for part in lost_parts.values():
+                        if part.decrement_and_get_references() == 0:
+                            self.set_fail(f"Lost all replicas of file part "
+                                          f"with id: {part.id}")
+                ccount = self.nodes_complaints.get(node.id, -1)
+                if ccount >= self.complaint_threshold:
+                    off_nodes.append(node)
+                    for part in lost_parts.values():
+                        self.set_recovery_epoch(part)
 
-        if len(offline_workers) >= len(self.members):
-            self.set_fail("all hive members disconnected simultaneously")
+        if len(self.suspicious_nodes) >= len(self.members):
+            self.set_fail("All hive members disconnected before maintenance.")
 
-        e: int = self.current_epoch
         sf: LoggingData = self.file.logger
-        sf.log_disconnected_workers(len(offline_workers), e)
-        sf.log_lost_file_blocks(lost_parts_count, e)
+        sf.log_disconnected_workers(len(off_nodes), self.current_epoch)
+        sf.log_lost_file_blocks(lost_parts_count, self.current_epoch)
 
-        return offline_workers
+        return off_nodes
 
-    def maintain(self, off_nodes: List[BaseNode] = None) -> None:
+    def maintain(self, off_nodes: List[HiveNode]) -> None:
         """Evicts any worker whose number of complaints as surpassed the
         `complaint_threshold`.
 
@@ -865,15 +857,11 @@ class Hive(BaseHive):
                 optionalThe collection of members who disconnected during the
                 current epoch.
         """
-        delete_records = []
-        for node_id, complaints in self.nodes_complaints:
-            if complaints >= self.complaint_threshold:
-                node = self.members.pop(node_id, None)
-                if node is not None:
-                    node.remove_file_routing(self.file.name)
-                delete_records.append(node_id)
-        for node_id in delete_records:
-            self.nodes_complaints.pop(node_id, None)
+        for node in off_nodes:
+            self.suspicious_nodes.discard(node.id)
+            self.nodes_complaints.pop(node.id, -1)
+            self.members.pop(node.id, None)
+            node.remove_file_routing(self.file.name)
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
 
@@ -887,8 +875,8 @@ class Hive(BaseHive):
             :py:meth:`~domain.cluster_groups.BaseHive.complain`.
         """
         complaint_id = f"{complainter}|{complainee}"
-        if complaint_id not in self.epoch_complaints:
-            self.epoch_complaints.add(complaint_id)
+        if complaint_id not in self._epoch_complaints:
+            self._epoch_complaints.add(complaint_id)
             if complainee in self.nodes_complaints:
                 self.nodes_complaints[complainee] += 1
             else:
