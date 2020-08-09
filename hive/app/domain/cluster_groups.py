@@ -400,7 +400,7 @@ class BaseHive:
         offline_workers: List[Worker] = []
         for worker in self.members.values():
             if worker.get_epoch_status() == Status.ONLINE:
-                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause BaseHive failure: see Worker.discard_part(...)
+                worker.execute_epoch(self, self.file.name)
             else:
                 lost_parts = worker.get_file_parts(self.file.name)
                 lost_parts_count += len(lost_parts)
@@ -408,7 +408,8 @@ class BaseHive:
                 for part in lost_parts.values():
                     self.set_recovery_epoch(part)
                     if part.decrement_and_get_references() == 0:
-                        self.set_fail("lost all replicas of file part with id: {}".format(part.id))
+                        self.set_fail(f"lost all replicas of file part with "
+                                      f"id: {part.id}")
 
         if len(offline_workers) >= len(self.members):
             self.set_fail("all hive members disconnected simultaneously")
@@ -801,17 +802,27 @@ class Hive(BaseHive):
         #  In order for nodes to execute, we first need to implement new nodes
         lost_parts_count: int = 0
         offline_workers: List[Worker] = []
-        for worker in self.members.values():
-            if worker.get_epoch_status() == Status.ONLINE:
-                worker.execute_epoch(self, self.file.name)  # do not forget, file corruption, can also cause BaseHive failure: see Worker.discard_part(...)
+
+        members = self.members.values()
+        for node in members:
+            node.get_epoch_status()
+
+        for node in self.members.values():
+            if node.status == Status.ONLINE:
+                node.execute_epoch(self, self.file.name)
             else:
-                lost_parts = worker.get_file_parts(self.file.name)
+                lost_parts = node.get_file_parts(self.file.name)
                 lost_parts_count += len(lost_parts)
-                offline_workers.append(worker)
+                offline_workers.append(node)
                 for part in lost_parts.values():
-                    self.set_recovery_epoch(part)
+                    # This can not be called here, decrement_and_get_references
+                    # is called here because it allows us to properly infer
+                    # simulation failure, but the recovery mechanisms in this
+                    # version of the simulation is handled by the network nodes.
+                    # self.set_recovery_epoch(part)
                     if part.decrement_and_get_references() == 0:
-                        self.set_fail("lost all replicas of file part with id: {}".format(part.id))
+                        self.set_fail(f"lost all replicas of file part with "
+                                      f"id: {part.id}")
 
         if len(offline_workers) >= len(self.members):
             self.set_fail("all hive members disconnected simultaneously")
