@@ -55,7 +55,12 @@ class Hivemind:
     MAX_EPOCHS = None
     MAX_EPOCHS_PLUS_ONE = None
 
-    def __init__(self, simfile_name: str, sid: int, epochs: int) -> None:
+    def __init__(self,
+                 simfile_name: str,
+                 sid: int,
+                 epochs: int,
+                 cluster_class: str,
+                 node_class: str) -> None:
         """Instantiates an Hivemind object.
 
         Args:
@@ -67,6 +72,14 @@ class Hivemind:
                 overwrite previous out files.
             epochs:
                 The number of discrete time steps the simulation lasts.
+            cluster_class:
+                The name of the class used to instantiate cluster group
+                instances through reflection. See :py:mod:`Cluster Group
+                <domain.cluster_groups>`.
+            node_class:
+                The name of the class used to instantiate network node
+                instances through reflection. See :py:mod:`Network Node
+                <domain.network_nodes>`.
         """
         Hivemind.MAX_EPOCHS = epochs
         Hivemind.MAX_EPOCHS_PLUS_ONE = epochs + 1
