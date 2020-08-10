@@ -336,7 +336,6 @@ class BaseHive:
             transition_vector: pd.DataFrame = m.loc[:, nid]
             node.set_file_routing(self.file.name, transition_vector)
         self.file.logger.log_matrices_degrees(nodes_degrees)
-
     # endregion
 
     # region Simulation Interface
