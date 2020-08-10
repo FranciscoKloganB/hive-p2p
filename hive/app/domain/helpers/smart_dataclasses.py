@@ -98,20 +98,20 @@ class FileData:
         if not sd.messages:
             sd.messages.append("completed simulation successfully")
 
-        sd.parts_in_hive = sd.parts_in_hive[:epoch]
+        sd.blocks_existing = sd.blocks_existing[:epoch]
 
-        sd.disconnected_workers = sd.disconnected_workers[:epoch]
-        sd.lost_parts = sd.lost_parts[:epoch]
+        sd.off_node_count = sd.off_node_count[:epoch]
+        sd.blocks_lost = sd.blocks_lost[:epoch]
 
-        sd.hive_status_before_maintenance = sd.hive_status_before_maintenance[:epoch]
-        sd.hive_size_before_maintenance = sd.hive_size_before_maintenance[:epoch]
-        sd.hive_size_after_maintenance = sd.hive_size_after_maintenance[:epoch]
+        sd.cluster_status_bm = sd.cluster_status_bm[:epoch]
+        sd.cluster_size_bm = sd.cluster_size_bm[:epoch]
+        sd.cluster_size_am = sd.cluster_size_am[:epoch]
 
-        sd.replication_delay = sd.replication_delay[:epoch]
+        sd.delay_replication = sd.delay_replication[:epoch]
 
-        sd.moved_parts = sd.moved_parts[:epoch]
-        sd.corrupted_parts = sd.corrupted_parts[:epoch]
-        sd.lost_messages = sd.lost_messages[:epoch]
+        sd.blocks_moved = sd.blocks_moved[:epoch]
+        sd.blocks_corrupted = sd.blocks_corrupted[:epoch]
+        sd.transmissions_failed = sd.transmissions_failed[:epoch]
 
         extras: Dict[str, Any] = {
             "simfile_name": origin,
@@ -260,9 +260,9 @@ class FileBlockData:
 
         Returns:
             Zero if the current `replication_epoch` is positive infinity,
-            otherwise the expected replication_delay is returned. This value
+            otherwise the expected delay_replication is returned. This value
             can be used to log, for example, the average recovery
-            replication_delay in a simulation.
+            delay_replication in a simulation.
         """
         new_proposed_epoch = float(
             epoch + randint(MIN_REPLICATION_DELAY, MAX_REPLICATION_DELAY))
@@ -345,9 +345,9 @@ class LoggingData:
         length :py:const:`ms.Hivemind.MAX_EPOCHS
         <environment_settings.ms.Hivemind.MAX_EPOCHS>` that
         contain data concerning the current state of simulation at the
-        respective epoch times. For example, :py:attr:`~lost_parts` keeps
+        respective epoch times. For example, :py:attr:`~lost_block_count` keeps
         a integers that represent how many file blocks were lost at each
-        epoch of the simulation and :py:attr:`~moved_parts` registers
+        epoch of the simulation and :py:attr:`~blocks_moved` registers
         the number of file block messages that traveled the network at the
         same respective epoch. If you wish to monitor any property (or not) of
         the simulation you should modify this class.
@@ -382,30 +382,30 @@ class LoggingData:
             Set of at least one error message that led to the failure
             of the simulation or one success message, at termination epoch
             (:py:attr:`~terminated`)
-        disconnected_workers:
+        off_node_count:
             The number of :py:mod:`Network Nodes <domain.network_nodes>`
             whose status changed to offline at each epoch.
-        lost_parts:
+        blocks_lost:
             The number of file block replicas that were lost at each epoch
             due to :py:mod:`Network Nodes <domain.network_nodes>` going offline.
-        moved_parts:
+        blocks_moved:
             The number of messages containing file block replicas that were
             transmited, including those that were not delivered or
             acknowledged, at each epoch.
-        corrupted_parts:
+        blocks_corrupted:
             The number of file block repllicas lost at each epoch due
             to disk errors.
-        lost_messages:
+        transmissions_failed:
             The number of messages transmissions that were lost in the
             network at each epoch.
-        parts_in_hive:
+        blocks_existing:
             The number of existing file block repllicas inside the
             :py:mod:`Cluster Group <domain.cluster_group>` members' storage
             disks at each epoch.
-        replication_delay:
+        delay_replication:
             Log of the average time it took to recover one or more lost file
             block replicas during each epoch.
-        suspicious_node_detection_delay:
+        delay_suspects_detection:
             Log of the time it took for each suspicious
             :py:mod:`Network Node <domain.network_nodes>` to be evicted
             from the :py:mod:`Cluster Group <domain.cluster_group>`.
@@ -441,19 +441,19 @@ class LoggingData:
 
         ###############################
         # Alter these at will
-        self.disconnected_workers: List[int] = [0] * max_epochs
-        self.lost_parts: List[int] = [0] * max_epochs_plus_one
-        self.hive_status_before_maintenance: List[str] = [""] * max_epochs
-        self.hive_size_before_maintenance: List[int] = [0] * max_epochs
-        self.hive_size_after_maintenance: List[int] = [0] * max_epochs
-        self.moved_parts: List[int] = [0] * max_epochs
-        self.corrupted_parts: List[int] = [0] * max_epochs
-        self.lost_messages: List[int] = [0] * max_epochs
-        self.parts_in_hive: List[int] = [0] * max_epochs
-        self.replication_delay: List[float] = [0.0] * max_epochs_plus_one
-        self.suspicious_node_detection_delay: Dict[int, str] = {}
-        self.nodes_degree: List[Dict[str, int]] = {}
+        self.blocks_corrupted: List[int] = [0] * max_epochs
+        self.blocks_existing: List[int] = [0] * max_epochs
+        self.blocks_lost: List[int] = [0] * max_epochs_plus_one
+        self.blocks_moved: List[int] = [0] * max_epochs
+        self.cluster_status_bm: List[str] = [""] * max_epochs
+        self.cluster_size_bm: List[int] = [0] * max_epochs
+        self.cluster_size_am: List[int] = [0] * max_epochs
+        self.delay_replication: List[float] = [0.0] * max_epochs_plus_one
+        self.delay_suspects_detection: Dict[int, str] = {}
         self.initial_spread = ""
+        self.nodes_degree: List[Dict[str, int]] = {}
+        self.off_node_count: List[int] = [0] * max_epochs
+        self.transmissions_failed: List[int] = [0] * max_epochs
         ###############################
 
     # endregion
@@ -523,21 +523,21 @@ class LoggingData:
     # region Helpers
 
     def log_replication_delay(self, delay: int, calls: int, epoch: int) -> None:
-        """Logs the expected replication_delay at epoch at an epoch.
+        """Logs the expected delay_replication at epoch at an epoch.
 
         Args:
             delay:
                 The delay sum.
             calls:
-                Number of times a replication_delay was generated.
+                Number of times a delay_replication was generated.
             epoch:
                 A simulation epoch index.
         """
-        self.replication_delay[epoch - 1] = 0 if calls == 0 else delay / calls
+        self.delay_replication[epoch - 1] = 0 if calls == 0 else delay / calls
 
     def log_suspicous_node_detection_delay(
             self, node_id: str, delay: int) -> None:
-        """Logs the expected replication_delay at epoch at an epoch.
+        """Logs the expected delay_replication at epoch at an epoch.
 
         Args:
             delay:
@@ -548,7 +548,7 @@ class LoggingData:
                 A unique :py:mod:`Network Node
                 <domain.network_nodes>` identifier.
         """
-        self.suspicious_node_detection_delay[node_id] = delay
+        self.delay_suspects_detection[node_id] = delay
 
     def log_bandwidth_units(self, n: int, epoch: int) -> None:
         """Logs the amount of moved file blocks moved at an epoch.
@@ -559,7 +559,7 @@ class LoggingData:
             epoch:
                 A simulation epoch index.
         """
-        self.moved_parts[epoch-1] += n
+        self.blocks_moved[epoch - 1] += n
 
     def log_existing_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of existing file blocks in the simulation environment at an epoch.
@@ -570,7 +570,7 @@ class LoggingData:
             epoch:
                 A simulation epoch index.
         """
-        self.parts_in_hive[epoch-1] += n
+        self.blocks_existing[epoch - 1] += n
 
     def log_disconnected_workers(self, n: int, epoch: int) -> None:
         """Logs the amount of disconnected network_nodes at an epoch.
@@ -581,7 +581,7 @@ class LoggingData:
             epoch:
                 A simulation epoch index.
         """
-        self.disconnected_workers[epoch-1] += n
+        self.off_node_count[epoch - 1] += n
 
     def log_lost_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of permanently lost file block replicas at an epoch.
@@ -592,7 +592,7 @@ class LoggingData:
             epoch:
                 A simulation epoch index.
         """
-        self.lost_parts[epoch-1] += n
+        self.blocks_lost[epoch - 1] += n
 
     def log_lost_messages(self, n: int, epoch: int) -> None:
         """Logs the amount of failed message transmissions at an epoch.
@@ -603,7 +603,7 @@ class LoggingData:
             epoch:
                 A simulation epoch index.
         """
-        self.lost_messages[epoch-1] += n
+        self.transmissions_failed[epoch - 1] += n
 
     def log_corrupted_file_blocks(self, n: int, epoch: int) -> None:
         """Logs the amount of corrupted file block replicas at an epoch.
@@ -614,7 +614,7 @@ class LoggingData:
             epoch:
                 A simulation epoch index.
         """
-        self.corrupted_parts[epoch-1] += n
+        self.blocks_corrupted[epoch - 1] += n
 
     def log_fail(self, epoch: int, message: str = "") -> None:
         """Logs the epoch at which a simulation terminated due to a failure.
@@ -652,7 +652,7 @@ class LoggingData:
             epoch:
                 A simulation epoch at which termination occurred.
         """
-        self.hive_status_before_maintenance[epoch-1] = status
-        self.hive_size_before_maintenance[epoch-1] = size_before
-        self.hive_size_after_maintenance[epoch-1] = size_after
+        self.cluster_status_bm[epoch - 1] = status
+        self.cluster_size_bm[epoch - 1] = size_before
+        self.cluster_size_am[epoch - 1] = size_after
     # endregion

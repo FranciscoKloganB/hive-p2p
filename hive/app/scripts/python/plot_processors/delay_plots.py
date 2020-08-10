@@ -41,7 +41,7 @@ def plotvalues(epoch_means, mean, terminations, directory, state):
     # Display legends
     plt.legend(loc='upper right')
     # plt.show()
-    plt.savefig("{}-{}-{}".format("replication_delay", directory, state), prop=FontProperties().set_size('small'))
+    plt.savefig("{}-{}-{}".format("delay_replication", directory, state), prop=FontProperties().set_size('small'))
 
 
 def process_file(filepath, avg_delay, terminated_at_acount):
@@ -54,8 +54,8 @@ def process_file(filepath, avg_delay, terminated_at_acount):
             terminated_at_acount[terminated] += 1
         else:
             terminated_at_acount[terminated] = 1
-        # Epoch data from [0, terminated) w.r.t. replication_delay of the current simulation instance
-        data = json_obj["replication_delay"][:terminated]
+        # Epoch data from [0, terminated) w.r.t. delay_replication of the current simulation instance
+        data = json_obj["delay_replication"][:terminated]
         # Calculate and store the mean of current simulation instance
         avg_delay.append(np.mean(data))
         # Calculate and store the mean at each epoch i of the current simulation instance

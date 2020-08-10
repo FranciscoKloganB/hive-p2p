@@ -41,7 +41,7 @@ def plotvalues(epoch_means, mean, terminations, directory, state):
     # Display legends
     plt.legend(loc='lower right')
     # plt.show()
-    plt.savefig("{}-{}-{}".format("lost_parts", directory, state), prop=FontProperties().set_size('small'))
+    plt.savefig("{}-{}-{}".format("blocks_lost", directory, state), prop=FontProperties().set_size('small'))
 
 
 def process_file(filepath, avg_lost_parts, terminated_at_acount):
@@ -54,8 +54,8 @@ def process_file(filepath, avg_lost_parts, terminated_at_acount):
             terminated_at_acount[terminated] += 1
         else:
             terminated_at_acount[terminated] = 1
-        # Epoch data from [0, terminated) w.r.t. number of lost_parts of the current simulation instance
-        data = json_obj["lost_parts"][:terminated]
+        # Epoch data from [0, terminated) w.r.t. number of blocks_lost of the current simulation instance
+        data = json_obj["blocks_lost"][:terminated]
         # Calculate and store the mean of current simulation instance
         avg_lost_parts.append(np.mean(data))
         # Calculate and store the mean at each epoch i of the current simulation instance
