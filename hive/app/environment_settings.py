@@ -85,6 +85,11 @@ OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlab')
 
+# module paths
+MASTER_SERVERS: str = 'domain.master_servers'
+CLUSTER_GROUPS: str = 'domain.cluster_groups'
+NETWORK_NODES: str = 'domain.network_nodes'
+
 # Others
 TRUE_FALSE = [True, False]
 DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
