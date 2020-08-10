@@ -328,10 +328,8 @@ class BaseHive:
             each BaseHive only manages one file for now.
         """
         nodes_degrees: Dict[str, float] = {}
-        # noinspection PyUnresolvedReferences
-        in_degrees: pd.Series = (m > 0.0).apply(np.count_nonzero, axis=1)
-        # noinspection PyUnresolvedReferences
-        out_degrees: pd.Series = (m > 0.0).apply(np.count_nonzero)
+        out_degrees: pd.Series = m.apply(np.count_nonzero, axis=0)  # columns
+        in_degrees: pd.Series = m.apply(np.count_nonzero, axis=1)  # rows
         for node in self.members.values():
             nid = node.id
             nodes_degrees[nid] = float(f"{in_degrees[nid]}.{out_degrees[nid]}")
