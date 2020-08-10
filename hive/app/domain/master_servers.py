@@ -12,7 +12,9 @@ from domain.cluster_groups import BaseHive
 from domain.helpers.enums import Status
 from domain.helpers.smart_dataclasses import FileBlockData
 from domain.network_nodes import BaseNode
-from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
+from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
+    NETWORK_NODES, CLUSTER_GROUPS
+from utils.convertions import class_name_to_obj
 
 _PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 
@@ -98,36 +100,38 @@ class Hivemind:
 
             # Instantiaite jobless Workers
             for node_id, node_uptime in json_obj['nodes_uptime'].items():
-                node: BaseNode = BaseNode(node_id, node_uptime)
+                node = class_name_to_obj(
+                    NETWORK_NODES, node_class, [node_id, node_uptime])
                 self.network_nodes[node.id] = node
 
             # Read and split all shareable files specified on the input
             files_spreads: Dict[str, str] = {}
-            files_dict: Dict[str, Dict[int, FileBlockData]] = {}
-            file_parts: Dict[int, FileBlockData]
+            files_blocks: Dict[str, Dict[int, FileBlockData]] = {}
+            blocks: Dict[int, FileBlockData]
 
             persisting: _PersistentingDict = json_obj['persisting']
             for file_name in persisting:
                 with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
                     part_number: int = 0
-                    file_parts = {}
+                    blocks = {}
                     files_spreads[file_name] = persisting[file_name]['spread']
-                    cluster = self.__new_hive(persisting, file_name)
+                    cluster = self.__new_cluster_group(
+                        cluster_class, persisting, file_name)
                     while True:
                         read_buffer = file.read(READ_SIZE)
                         if read_buffer:
                             part_number = part_number + 1
-                            file_parts[part_number] = FileBlockData(
+                            blocks[part_number] = FileBlockData(
                                 cluster.id, file_name, part_number, read_buffer)
                         else:
-                            files_dict[file_name] = file_parts
+                            files_blocks[file_name] = blocks
                             break
                     cluster.file.parts_count = part_number
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
                 cluster.spread_files(files_spreads[cluster.file.name],
-                                     files_dict[cluster.file.name])
+                                     files_blocks[cluster.file.name])
 
     # endregion
 
@@ -216,22 +220,25 @@ class Hivemind:
 
     # region Helpers
 
-    def __new_hive(self,
-                   persisting: Dict[str, Dict[str, Union[List[str], str]]],
-                   file_name: str) -> BaseHive:
+    def __new_cluster_group(
+            self, cclass: str, persisting: _PersistentingDict, fname: str
+    ) -> BaseHive:
         """
         Helper method that initializes a new hive.
         """
-        hive_members: Dict[str, BaseNode] = {}
-        size = persisting[file_name]['cluster_size']
-        initial_members: np.array = np.random.choice(a=[*self.network_nodes.keys()],
-                                                     size=size,
-                                                     replace=False)
-        for member_id in initial_members:
-            hive_members[member_id] = self.network_nodes[member_id]
-        hive = BaseHive(self, file_name, hive_members,
-                        sim_id=self.sim_id, origin=self.origin)
-        self.cluster_groups[hive.id] = hive
-        return hive
+        cluster_members: Dict[str, BaseNode] = {}
+        size = persisting[fname]['cluster_size']
+        nodes = np.random.choice(
+            a=[*self.network_nodes.keys()], size=size, replace=False)
+
+        for node_id in nodes:
+            cluster_members[node_id] = self.network_nodes[node_id]
+
+        cluster = class_name_to_obj(
+            CLUSTER_GROUPS, cclass,
+            [self, fname, cluster_members, self.sim_id, self.origin])
+
+        self.cluster_groups[cluster.id] = cluster
+        return cluster
 
     # endregion
