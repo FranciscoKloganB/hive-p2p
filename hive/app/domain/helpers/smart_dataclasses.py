@@ -236,7 +236,7 @@ class FileBlockData:
         self.sha256: str = crypto.sha256(self.data)
 
     # region Simulation Interface
-    def set_recovery_epoch(self, epoch: int) -> int:
+    def set_replication_epoch(self, epoch: int) -> int:
         """Sets the epoch in which replication levels should be restored.
 
         This method tries to assign a new epoch, in the future, at which
@@ -264,10 +264,14 @@ class FileBlockData:
             used to log, for example, the average recovery delay in the
             BaseHive simulation.
         """
-        new_proposed_epoch = float(epoch + randint(MIN_REPLICATION_DELAY, MAX_REPLICATION_DELAY))
+        new_proposed_epoch = float(
+            epoch + randint(MIN_REPLICATION_DELAY, MAX_REPLICATION_DELAY))
         if new_proposed_epoch < self.recovery_epoch:
             self.recovery_epoch = new_proposed_epoch
-        return 0 if self.recovery_epoch == float('inf') else self.recovery_epoch - float(epoch)
+        if self.recovery_epoch == float('inf'):
+            return 0
+        else:
+            return self.recovery_epoch - float(epoch)
 
     def update_epochs_to_recover(self, epoch: int) -> None:
         """Update the `recovery_epoch` after a recovery attempt was carried out.

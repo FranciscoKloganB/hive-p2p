@@ -230,7 +230,7 @@ class BaseNode:
         part: FileBlockData = self.files.get(fid, {}).pop(number, None)
         if part and corrupt:
             if part.decrement_and_get_references() > 0:
-                hive.set_recovery_epoch(part)
+                hive.set_replication_epoch(part)
             else:
                 hive.set_fail(f"Lost last file block replica with id "
                               f"{part.id} due to corruption.")
