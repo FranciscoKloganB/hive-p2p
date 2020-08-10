@@ -357,11 +357,10 @@ class BaseHive:
             and the probability of not losing a file block due to disk
             errors, at an epoch basis.
         """
-        month_epochs = MONTH_EPOCHS
         ploss_month = 0.0086
-        ploss_epoch = (ms.Hivemind.MAX_EPOCHS * ploss_month) / month_epochs
+        ploss_epoch = (ms.Hivemind.MAX_EPOCHS * ploss_month) / MONTH_EPOCHS
         ploss_epoch = truncate_float_value(ploss_epoch, 6)
-        self.corruption_chances = [ploss_epoch, 1.0 - ploss_epoch]
+        return [ploss_epoch, 1.0 - ploss_epoch]
 
     def setup_epoch(self, epoch: int) -> None:
         """Initializes some attributes of the BaseHive during its initialization.
