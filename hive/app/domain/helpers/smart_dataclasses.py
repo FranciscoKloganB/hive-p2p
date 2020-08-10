@@ -95,8 +95,8 @@ class FileData:
 
         sd.save_sets_and_reset()
 
-        if not sd.messages:
-            sd.messages.append("completed simulation successfully")
+        if not sd.terminated_messages:
+            sd.terminated_messages.append("completed simulation successfully")
 
         sd.blocks_existing = sd.blocks_existing[:epoch]
 
@@ -371,6 +371,10 @@ class LoggingData:
             Stores all previous convergence sets. See :py:attr:`~convergence_set`.
         terminated:
             Indicates the epoch at which the simulation was terminated.
+        terminated_messages:
+            Set of at least one error message that led to the failure
+            of the simulation or one success message, at termination epoch
+            (:py:attr:`~terminated`)
         successfull:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
@@ -378,13 +382,13 @@ class LoggingData:
             :py:const:`ms.Hivemind.MAX_EPOCHS
             <environment_settings.ms.Hivemind.MAX_EPOCHS>` time
             steps.
-        messages:
-            Set of at least one error message that led to the failure
-            of the simulation or one success message, at termination epoch
-            (:py:attr:`~terminated`)
-        off_node_count:
-            The number of :py:mod:`Network Nodes <domain.network_nodes>`
-            whose status changed to offline at each epoch.
+        blocks_corrupted:
+            The number of file block repllicas lost at each epoch due
+            to disk errors.
+        blocks_existing:
+            The number of existing file block repllicas inside the
+            :py:mod:`Cluster Group <domain.cluster_group>` members' storage
+            disks at each epoch.
         blocks_lost:
             The number of file block replicas that were lost at each epoch
             due to :py:mod:`Network Nodes <domain.network_nodes>` going offline.
@@ -392,16 +396,6 @@ class LoggingData:
             The number of messages containing file block replicas that were
             transmited, including those that were not delivered or
             acknowledged, at each epoch.
-        blocks_corrupted:
-            The number of file block repllicas lost at each epoch due
-            to disk errors.
-        transmissions_failed:
-            The number of messages transmissions that were lost in the
-            network at each epoch.
-        blocks_existing:
-            The number of existing file block repllicas inside the
-            :py:mod:`Cluster Group <domain.cluster_group>` members' storage
-            disks at each epoch.
         delay_replication:
             Log of the average time it took to recover one or more lost file
             block replicas during each epoch.
@@ -409,15 +403,21 @@ class LoggingData:
             Log of the time it took for each suspicious
             :py:mod:`Network Node <domain.network_nodes>` to be evicted
             from the :py:mod:`Cluster Group <domain.cluster_group>`.
+        initial_spread:
+            Records the strategy used distribute file blocks in the
+            beggining of the simulation.
         nodes_degree:
             Stores the in-degree and out-degree of each
             :py:mod:`Network Node <domain.network_nodes>` in the
             :py:mod:`Cluster Group <domain.cluster_group>`. One dictionary
             is kept in the list for each transition matrix used throughout
             the simulation.
-        initial_spread:
-            Records the strategy used distribute file blocks in the
-            beggining of the simulation.
+        off_node_count:
+            The number of :py:mod:`Network Nodes <domain.network_nodes>`
+            whose status changed to offline at each epoch.
+        transmissions_failed:
+            The number of messages transmissions that were lost in the
+            network at each epoch.
     """
     # endregion
 
@@ -435,8 +435,8 @@ class LoggingData:
         self.convergence_set: List[int] = []
         self.convergence_sets: List[List[int]] = []
         self.terminated: int = max_epochs
+        self.terminated_messages = []
         self.successfull: bool = True
-        self.messages = []
         ###############################
 
         ###############################
@@ -599,7 +599,7 @@ class LoggingData:
 
         Args:
             n:
-                Number of lost messages.
+                Number of lost terminated_messages.
             epoch:
                 A simulation epoch index.
         """
@@ -632,7 +632,7 @@ class LoggingData:
         """
         self.terminated = epoch
         self.successfull = False
-        self.messages.append(message)
+        self.terminated_messages.append(message)
 
     def log_maintenance(self,
                         status: str,
