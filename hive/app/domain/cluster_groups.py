@@ -341,19 +341,16 @@ class BaseHive:
         Note:
             Recommended value should be based on the paper named
             `An Analysis of Data Corruption in the Storage Stack
-            <http://www.cs.toronto.edu/~bianca/papers/fast08.pdf>`. According to
-            this paper if each time unit is a month, then the probability of
-            encountering one or more disk errors is approximately 0.0086. Adapt
-            as you see fit, e.g., to simulate one day with epochs every two
-            minutes (720 discrete time steps) the value should be 2.87e-4.
-            Thus current implementation is based on the following formula::
+            <http://www.cs.toronto.edu/~bianca/papers/fast08.pdf>`. Thus
+            the current implementation follows this formula::
 
                 :py:const:`~domain.master_servers.Hivemind.MAX_EPOCHS` * P(Xt ≥
                 L) * / :py:const:`~environment_settings.MONTH_EPOCHS`
 
             The notation P(Xt ≥ L) denotes the probability of a disk
             developing at least L checksum mismatches within T months since
-            the disk’s first use in the field.
+            the disk’s first use in the field. Found in the paper's
+            results.
 
         Returns:
             A two element list with respectively, the probability of losing
