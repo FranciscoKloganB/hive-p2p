@@ -410,11 +410,12 @@ class LoggingData:
         self.hive_status_before_maintenance: List[str] = [""] * max_epochs
         self.hive_size_before_maintenance: List[int] = [0] * max_epochs
         self.hive_size_after_maintenance: List[int] = [0] * max_epochs
-        self.replication_delay: List[float] = [0.0] * max_epochs_plus_one
         self.moved_parts: List[int] = [0] * max_epochs
         self.corrupted_parts: List[int] = [0] * max_epochs
         self.lost_messages: List[int] = [0] * max_epochs
         self.parts_in_hive: List[int] = [0] * max_epochs
+        self.replication_delay: List[float] = [0.0] * max_epochs_plus_one
+        self.suspicious_node_detection_delay: Dict[int, str] = {}
         self.initial_spread = ""
         ###############################
 
@@ -496,6 +497,21 @@ class LoggingData:
                 A simulation epoch index.
         """
         self.replication_delay[epoch - 1] = 0 if calls == 0 else delay / calls
+
+    def log_suspicous_node_detection_delay(
+            self, node_id: str, delay: int) -> None:
+        """Logs the expected replication_delay at epoch at an epoch.
+
+        Args:
+            delay:
+                The time it took until the specified node was evicted from a
+                :py:mod:`Cluster <domain.cluster_groups>` after it was known
+                to be offline by the perfect failure detector.
+            node_id:
+                A unique :py:mod:`Network Node
+                <domain.network_nodes>` identifier.
+        """
+        self.suspicious_node_detection_delay[node_id] = delay
 
     def log_bandwidth_units(self, n: int, epoch: int) -> None:
         """Logs the amount of moved file blocks moved at an epoch.

@@ -894,7 +894,8 @@ class Hive(BaseHive):
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
-            self.suspicious_nodes.pop(node.id, -1)
+            tte = self.suspicious_nodes.pop(node.id, -1)
+            self.file.logger.log_suspicous_node_detection_delay(node.id, tte)
             self.nodes_complaints.pop(node.id, -1)
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
