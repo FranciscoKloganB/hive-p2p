@@ -564,7 +564,7 @@ class LoggingData:
         """
         self.blocks_existing[epoch - 1] += n
 
-    def log_disconnected_workers(self, n: int, epoch: int) -> None:
+    def log_off_nodes(self, n: int, epoch: int) -> None:
         """Logs the amount of disconnected network_nodes at an epoch.
 
         Args:
