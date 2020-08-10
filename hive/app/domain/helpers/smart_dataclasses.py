@@ -516,11 +516,11 @@ class LoggingData:
         self.parts_in_hive[epoch-1] += n
 
     def log_disconnected_workers(self, n: int, epoch: int) -> None:
-        """Logs the amount of disconnected workers at an epoch.
+        """Logs the amount of disconnected network_nodes at an epoch.
 
         Args:
             n:
-                Number of disconnected workers in the system.
+                Number of disconnected network_nodes in the system.
             epoch:
                 A simulation epoch index.
         """

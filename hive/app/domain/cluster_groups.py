@@ -459,7 +459,7 @@ class BaseHive:
             self.file.logger.save_sets_and_reset()
 
     def maintain(self, off_nodes: List[BaseNode]) -> None:
-        """Evicts disconnected workers from the BaseHive and attempts to
+        """Evicts disconnected network_nodes from the BaseHive and attempts to
         recruit new ones.
 
         It implicitly creates a new `transition matrix` and `v_`.
@@ -469,7 +469,7 @@ class BaseHive:
                 The collection of members who disconnected during the
                 current epoch.
         """
-        # remove all disconnected workers from the hive
+        # remove all disconnected network_nodes from the hive
         for node in off_nodes:
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
@@ -801,7 +801,7 @@ class Hive(BaseHive):
             Differs the super class implementation because it considers nodes
             as Suspects until it receives enough complaints from member nodes.
             This is important because lost parts can not be logged multiple
-            times. Yet suspected workers need to be contabilized as offline
+            times. Yet suspected network_nodes need to be contabilized as offline
             for simulation purposes without being evicted from the group
             until said detection occurs.
 

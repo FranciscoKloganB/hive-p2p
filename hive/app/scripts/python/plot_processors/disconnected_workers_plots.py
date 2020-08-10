@@ -16,7 +16,7 @@ from matplotlib.font_manager import FontProperties
 def usage():
     print(" -------------------------------------------------------------------------")
     print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
-    print(" Collect data disconnected workers from a collection of output files located in referenced directory\n")
+    print(" Collect data disconnected network_nodes from a collection of output files located in referenced directory\n")
     print(" Typical usage: python disconnected_workers_plots.py --meandir=mean32 --istate=a\n")
     print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
     print(" -------------------------------------------------------------------------\n")
@@ -54,7 +54,7 @@ def process_file(filepath, avg_dc_workers, terminated_at_acount):
             terminated_at_acount[terminated] += 1
         else:
             terminated_at_acount[terminated] = 1
-        # Epoch data from [0, terminated) w.r.t. disconnected workers of the current simulation instance
+        # Epoch data from [0, terminated) w.r.t. disconnected network_nodes of the current simulation instance
         data = json_obj["disconnected_workers"][:terminated]
         # Calculate and store the mean of current simulation instance
         avg_dc_workers.append(np.mean(data))
