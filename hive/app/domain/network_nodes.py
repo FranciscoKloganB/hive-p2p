@@ -266,7 +266,7 @@ class BaseNode:
                     lost_replicas -= 1
                     part.references += 1
                 elif response_code in self.suspicious_replies:
-                    hive.complain(self.id, destination)
+                    hive.complain(self.id, destination, response_code)
             # replication level may have not been completely restored
             part.update_epochs_to_recover(hive.current_epoch)
 
@@ -305,7 +305,7 @@ class BaseNode:
             elif response_code == HttpCodes.BAD_REQUEST:
                 self.discard_part(fid, number, corrupt=True, hive=hive)
             elif response_code in self.suspicious_replies:
-                hive.complain(self.id, destination)
+                hive.complain(self.id, destination, response_code)
             else:
                 # Keep file part for at least one more epoch
                 # HttpCodes.NOT_ACCEPTABLE or HttpCodes.DUMMY:
@@ -393,6 +393,6 @@ class HiveNode(BaseNode):
         if self.status == Status.ONLINE:
             self.uptime -= 1
             if self.uptime <= 0:
-                print(f"[*] {self.id} is offline (suspect status).")
+                print(f"    [x] {self.id} now offline (suspect status).")
                 self.status = Status.SUSPECT
         return self.status
