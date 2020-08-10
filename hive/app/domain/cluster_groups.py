@@ -36,7 +36,8 @@ from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
 from domain.network_nodes import BaseNode, HiveNode
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
-    COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
+    COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
+from utils.convertions import truncate_float_value
 from utils.randoms import random_index
 
 
@@ -56,8 +57,8 @@ class BaseHive:
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`setup_epoch() <domain.cluster_groups.BaseHive.setup_epoch>` for
-            corruption chance configuration.
+            :py:meth:`~domain.cluster_groups.BaseHive.
+            _assign_disk_error_chance` for corruption chance configuration.
         v_ (pandas DataFrame):
             Density distribution hive members must achieve with independent
             realizations for ideal persistence of the file.
@@ -127,7 +128,7 @@ class BaseHive:
         self.current_epoch: int = 0
         self.cv_: pd.DataFrame = pd.DataFrame()
         self.v_: pd.DataFrame = pd.DataFrame()
-        self.corruption_chances: List[float] = [0, 0]
+        self.corruption_chances: List[float] = self._assign_disk_error_chance()
         self.hivemind = hivemind
         self.members: Dict[str, BaseNode] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
@@ -333,6 +334,38 @@ class BaseHive:
     # endregion
 
     # region Simulation Interface
+    def _assign_disk_error_chance(self) -> List[float]:
+        """Defines the probability of a file block being corrupted while stored
+        at the disk of a :py:mod:`Network Node <domain.network nodes>`.
+
+        Note:
+            Recommended value should be based on the paper named
+            `An Analysis of Data Corruption in the Storage Stack
+            <http://www.cs.toronto.edu/~bianca/papers/fast08.pdf>`. According to
+            this paper if each time unit is a month, then the probability of
+            encountering one or more disk errors is approximately 0.0086. Adapt
+            as you see fit, e.g., to simulate one day with epochs every two
+            minutes (720 discrete time steps) the value should be 2.87e-4.
+            Thus current implementation is based on the following formula::
+
+                :py:const:`~domain.master_servers.Hivemind.MAX_EPOCHS` * P(Xt ≥
+                L) * / :py:const:`~environment_settings.MONTH_EPOCHS`
+
+            The notation P(Xt ≥ L) denotes the probability of a disk
+            developing at least L checksum mismatches within T months since
+            the disk’s first use in the field.
+
+        Returns:
+            A two element list with respectively, the probability of losing
+            and the probability of not losing a file block due to disk
+            errors, at an epoch basis.
+        """
+        month_epochs = MONTH_EPOCHS
+        ploss_month = 0.0086
+        ploss_epoch = (ms.Hivemind.MAX_EPOCHS * ploss_month) / month_epochs
+        ploss_epoch = truncate_float_value(ploss_epoch, 6)
+        self.corruption_chances = [ploss_epoch, 1.0 - ploss_epoch]
+
     def setup_epoch(self, epoch: int) -> None:
         """Initializes some attributes of the BaseHive during its initialization.
 
@@ -344,8 +377,6 @@ class BaseHive:
                 The simulation's current epoch.
         """
         self.current_epoch = epoch
-        self.corruption_chances[0] = np.log10(epoch).item() / 300.0
-        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
 
@@ -405,7 +436,7 @@ class BaseHive:
                 lost_parts_count += len(lost_parts)
                 off_nodes.append(worker)
                 for part in lost_parts.values():
-                    self.set_recovery_epoch(part)
+                    self.set_replication_epoch(part)
                     if part.decrement_and_get_references() == 0:
                         self.set_fail(f"Lost all replicas of file part with "
                                       f"id: {part.id}.")
@@ -631,7 +662,7 @@ class BaseHive:
         self.running = False
         self.file.logger.log_fail(self.current_epoch, message)
 
-    def set_recovery_epoch(self, part: FileBlockData) -> None:
+    def set_replication_epoch(self, part: FileBlockData) -> None:
         """Delegates to :py:meth:
         `~domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
 
@@ -639,7 +670,7 @@ class BaseHive:
             part: A :py:class:`~domain.helpers.smart_dataclasses.FileBlockData`
             instance that represents a file block replica that was lost.
         """
-        self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
+        self._recovery_epoch_sum += part.set_replication_epoch(self.current_epoch)
         self._recovery_epoch_calls += 1
 
     def _validate_transition_matrix(self,
@@ -835,7 +866,7 @@ class Hive(BaseHive):
                 if ccount >= self.complaint_threshold:
                     off_nodes.append(node)
                     for part in lost_parts.values():
-                        self.set_recovery_epoch(part)
+                        self.set_replication_epoch(part)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self.set_fail("All hive members disconnected before maintenance.")
