@@ -12,7 +12,9 @@ from domain.cluster_groups import BaseHive
 from domain.helpers.enums import Status
 from domain.helpers.smart_dataclasses import FileBlockData
 from domain.network_nodes import BaseNode
-from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE
+from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
+    NETWORK_NODES, CLUSTER_GROUPS
+from utils.convertions import class_name_to_obj
 
 _PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 
@@ -38,10 +40,10 @@ class Hivemind:
             overwrite previous out files.
         epoch:
             The simulation's current epoch.
-        hives:
+        cluster_groups:
             A collection of :py:class:`~domain.cluster_groups.BaseHive`
             instances managed by the Hivemind.
-        workers:
+        network_nodes:
             A dictionary mapping network node identifiers names to their
             object instances (:py:class:`~domain.network_nodes.BaseNode`).
             This collection differs from the
@@ -55,7 +57,12 @@ class Hivemind:
     MAX_EPOCHS = None
     MAX_EPOCHS_PLUS_ONE = None
 
-    def __init__(self, simfile_name: str, sid: int, epochs: int) -> None:
+    def __init__(self,
+                 simfile_name: str,
+                 sid: int,
+                 epochs: int,
+                 cluster_class: str,
+                 node_class: str) -> None:
         """Instantiates an Hivemind object.
 
         Args:
@@ -67,6 +74,14 @@ class Hivemind:
                 overwrite previous out files.
             epochs:
                 The number of discrete time steps the simulation lasts.
+            cluster_class:
+                The name of the class used to instantiate cluster group
+                instances through reflection. See :py:mod:`Cluster Group
+                <domain.cluster_groups>`.
+            node_class:
+                The name of the class used to instantiate network node
+                instances through reflection. See :py:mod:`Network Node
+                <domain.network_nodes>`.
         """
         Hivemind.MAX_EPOCHS = epochs
         Hivemind.MAX_EPOCHS_PLUS_ONE = epochs + 1
@@ -80,41 +95,43 @@ class Hivemind:
             json_obj: Any = json.load(input_file)
 
             # Init basic simulation variables
-            self.hives: Dict[str, BaseHive] = {}
-            self.workers: Dict[str, BaseNode] = {}
+            self.cluster_groups: Dict[str, BaseHive] = {}
+            self.network_nodes: Dict[str, BaseNode] = {}
 
             # Instantiaite jobless Workers
-            for worker_id, worker_uptime in json_obj['nodes_uptime'].items():
-                worker: BaseNode = BaseNode(worker_id, worker_uptime)
-                self.workers[worker.id] = worker
+            for node_id, node_uptime in json_obj['nodes_uptime'].items():
+                node = class_name_to_obj(
+                    NETWORK_NODES, node_class, [node_id, node_uptime])
+                self.network_nodes[node.id] = node
 
-            # Read and split all shareable files specified on the input, also assign BaseHive initial attributes (uuid, members, and FileData)
-            hive: BaseHive
+            # Read and split all shareable files specified on the input
             files_spreads: Dict[str, str] = {}
-            files_dict: Dict[str, Dict[int, FileBlockData]] = {}
-            file_parts: Dict[int, FileBlockData]
+            files_blocks: Dict[str, Dict[int, FileBlockData]] = {}
+            blocks: Dict[int, FileBlockData]
 
             persisting: _PersistentingDict = json_obj['persisting']
             for file_name in persisting:
                 with open(os.path.join(SHARED_ROOT, file_name), "rb") as file:
                     part_number: int = 0
-                    file_parts = {}
+                    blocks = {}
                     files_spreads[file_name] = persisting[file_name]['spread']
-                    hive = self.__new_hive(persisting, file_name)
+                    cluster = self.__new_cluster_group(
+                        cluster_class, persisting, file_name)
                     while True:
                         read_buffer = file.read(READ_SIZE)
                         if read_buffer:
                             part_number = part_number + 1
-                            file_parts[part_number] = FileBlockData(
-                                hive.id, file_name, part_number, read_buffer)
+                            blocks[part_number] = FileBlockData(
+                                cluster.id, file_name, part_number, read_buffer)
                         else:
-                            files_dict[file_name] = file_parts
+                            files_blocks[file_name] = blocks
                             break
-                    hive.file.parts_count = part_number
+                    cluster.file.parts_count = part_number
 
             # Distribute files before starting simulation
-            for hive in self.hives.values():
-                hive.spread_files(files_spreads[hive.file.name], files_dict[hive.file.name])
+            for cluster in self.cluster_groups.values():
+                cluster.spread_files(files_spreads[cluster.file.name],
+                                     files_blocks[cluster.file.name])
 
     # endregion
 
@@ -122,17 +139,17 @@ class Hivemind:
 
     def execute_simulation(self) -> None:
         """Runs a stochastic swarm guidance algorithm applied to a P2P network"""
-        while self.epoch < Hivemind.MAX_EPOCHS_PLUS_ONE and self.hives:
+        while self.epoch < Hivemind.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
             print("epoch: {}".format(self.epoch))
-            terminated_hives: List[str] = []
-            for hive in self.hives.values():
-                hive.execute_epoch(self.epoch)
-                if not hive.running:
-                    terminated_hives.append(hive.id)
-                    hive.file.jwrite(hive, self.origin, self.epoch)
-            for hid in terminated_hives:
-                print("BaseHive: {} terminated at epoch {}".format(hid, self.epoch))
-                self.hives.pop(hid)
+            terminated_clusters: List[str] = []
+            for cluster in self.cluster_groups.values():
+                cluster.execute_epoch(self.epoch)
+                if not cluster.running:
+                    terminated_clusters.append(cluster.id)
+                    cluster.file.jwrite(cluster, self.origin, self.epoch)
+            for cid in terminated_clusters:
+                print(f"BaseHive: {cid} terminated at epoch {self.epoch}")
+                self.cluster_groups.pop(cid)
             self.epoch += 1
 
     # endregion
@@ -140,7 +157,8 @@ class Hivemind:
     # region Keeper Interface
 
     def receive_complaint(self, suspects_name: str) -> None:
-        """Registers a complain against a network node, if enough complaints are received, target is evicted from the complainters BaseHive.
+        """Registers a complain against a network node, if enough complaints
+        are received, target is evicted from the complainters BaseHive.
 
         Note:
             This method needs implementation at the user descretion.
@@ -150,16 +168,8 @@ class Hivemind:
                 A unique identifier of the suspicious network node.
         """
         # TODO future-iterations:
-        #  1. register complaint
-        #  2. when byzantine complaints > threshold
-        #    2.1. find away of obtaining shared_file_names user had
-        #    2.2. discover the files the node used to share, probably requires yet another sf_strucutre
-        #    2.3. ask the next highest density node that is alive to rebuild dead nodes' files
+        #   Move cluster_groups complaint method to this method..
         raise NotImplementedError()
-
-    # endregion
-
-    # region Peer Search and Cloud References
 
     def find_replacement_worker(
             self, exclusion_dict: Dict[str, BaseNode], n: int
@@ -179,17 +189,17 @@ class Hivemind:
         Returns:
             A collection of replacements which is smaller or equal than `n`.
         """
-        selected_workers: Dict[str, BaseNode] = {}
-        workers_view = self.workers.copy().values()
-        for worker in workers_view:
-            if len(selected_workers) == n:
-                return selected_workers
-            elif worker.status != Status.ONLINE:
+        selected: Dict[str, BaseNode] = {}
+        network_nodes_view = self.network_nodes.copy().values()
+        for node in network_nodes_view:
+            if len(selected) == n:
+                return selected
+            elif node.status != Status.ONLINE:
                 # TODO: future-iterations review this code.
-                self.workers.pop(worker.id, None)
-            elif worker.id not in exclusion_dict:
-                selected_workers[worker.id] = worker
-        return selected_workers
+                self.network_nodes.pop(node.id, None)
+            elif node.id not in exclusion_dict:
+                selected[node.id] = node
+        return selected
 
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
@@ -210,22 +220,25 @@ class Hivemind:
 
     # region Helpers
 
-    def __new_hive(self,
-                   persisting: Dict[str, Dict[str, Union[List[str], str]]],
-                   file_name: str) -> BaseHive:
+    def __new_cluster_group(
+            self, cclass: str, persisting: _PersistentingDict, fname: str
+    ) -> BaseHive:
         """
         Helper method that initializes a new hive.
         """
-        hive_members: Dict[str, BaseNode] = {}
-        size = persisting[file_name]['cluster_size']
-        initial_members: np.array = np.random.choice(a=[*self.workers.keys()],
-                                                     size=size,
-                                                     replace=False)
-        for member_id in initial_members:
-            hive_members[member_id] = self.workers[member_id]
-        hive = BaseHive(self, file_name, hive_members,
-                        sim_id=self.sim_id, origin=self.origin)
-        self.hives[hive.id] = hive
-        return hive
+        cluster_members: Dict[str, BaseNode] = {}
+        size = persisting[fname]['cluster_size']
+        nodes = np.random.choice(
+            a=[*self.network_nodes.keys()], size=size, replace=False)
+
+        for node_id in nodes:
+            cluster_members[node_id] = self.network_nodes[node_id]
+
+        cluster = class_name_to_obj(
+            CLUSTER_GROUPS, cclass,
+            [self, fname, cluster_members, self.sim_id, self.origin])
+
+        self.cluster_groups[cluster.id] = cluster
+        return cluster
 
     # endregion

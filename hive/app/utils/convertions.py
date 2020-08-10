@@ -5,7 +5,10 @@ as base64-encoded strings or serialization objects into JSON strings.
 """
 
 import base64
-from typing import Union, Optional, Any
+import importlib
+import math
+
+from typing import Union, Optional, Any, List
 
 import jsonpickle
 
@@ -114,3 +117,54 @@ def json_string_to_obj(json_string: str) -> Any:
         A python object obtained from the JSON string.
     """
     return jsonpickle.decode(json_string)
+
+
+def class_name_to_obj(module_name: str, class_name: str, args: List[Any]) -> Any:
+    """Uses reflection to instanciate a class by name.
+
+    Args:
+        module_name:
+            The fully qualified path of the module the class is defined in.
+            The name of the module must be included.
+        class_name:
+            The name of the class to be instanciated.
+        args:
+            The arguments expected by the named class as an iterable list.
+
+    Returns:
+        An object of the named class.
+
+    Examples:
+        You could call this function like so::
+
+            h = class_name_to_obj(MASTER_SERVERS, "Hivemind", ["f.jpg", 1, 80])
+
+        This would be equivalent to calling::
+
+            h = Hivemind("f.jpg", 1, 80)
+    """
+    try:
+        module_ = importlib.import_module(module_name)
+        try:
+            instance = getattr(module_, class_name)(*args)
+            return instance
+        except AttributeError:
+            print(f"Class {class_name} does not exist.")
+    except ImportError:
+        print(f"Module {module_name} does not exist.")
+    return None
+
+
+def truncate_float_value(f: float, d: int) -> float:
+    """Truncates a float value without rounding.
+
+    Args:
+        f:
+            The float value to truncate.
+        d:
+            The number of decimal places the float can have.
+
+    Returns:
+        The truncated float.
+    """
+    return math.floor(f * 10 ** d) / 10 ** d

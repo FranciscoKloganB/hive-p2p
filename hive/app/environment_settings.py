@@ -30,10 +30,14 @@ Attributes:
         :py:class:`~domain.helpers.smart_dataclasses.FileBlockData` instance
         object (default is 131072). Example values: 32KB = 32768b;
         128KB = 131072b; 512KB = 524288b; 20MB = 20971520b.
-    MIN_DETECTION_DELAY:
+    MONTH_EPOCHS:
+        Defines how many epochs (discrete time steps) a month is represented
+        with (default is 21600, one epoch per two minutes). See 
+        py:meth:`~domain.cluster_groups._assign_disk_error_chance`.
+    MIN_REPLICATION_DELAY:
         The minimum amount of epoch time steps replica file block replicas
         take to be regenerated after their are lost (default is 1)
-    MAX_DETECTION_DELAY:
+    MAX_REPLICATION_DELAY:
         The maximum amount of epoch time steps replica file block replicas
         take to be regenerated after their are lost (default is 4)
     REPLICATION_LEVEL:
@@ -69,10 +73,15 @@ DEBUG: bool = False
 
 READ_SIZE: int = 131072
 
-MIN_DETECTION_DELAY: int = 1
-MAX_DETECTION_DELAY: int = 4
+MONTH_EPOCHS: int = 21600
+
+MIN_REPLICATION_DELAY: int = 1
+MAX_REPLICATION_DELAY: int = 4
+
 REPLICATION_LEVEL: int = 3
+
 MIN_CONVERGENCE_THRESHOLD: int = 2
+
 LOSS_CHANCE: float = 0.04
 ABS_TOLERANCE: float = 0.05
 # endregion
@@ -84,6 +93,11 @@ SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlab')
+
+# module paths
+MASTER_SERVERS: str = 'domain.master_servers'
+CLUSTER_GROUPS: str = 'domain.cluster_groups'
+NETWORK_NODES: str = 'domain.network_nodes'
 
 # Others
 TRUE_FALSE = [True, False]

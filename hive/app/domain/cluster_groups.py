@@ -36,7 +36,8 @@ from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
 from domain.network_nodes import BaseNode, HiveNode
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
-    COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE
+    COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
+from utils.convertions import truncate_float_value
 from utils.randoms import random_index
 
 
@@ -56,8 +57,8 @@ class BaseHive:
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`setup_epoch() <domain.cluster_groups.BaseHive.setup_epoch>` for
-            corruption chance configuration.
+            :py:meth:`~domain.cluster_groups.BaseHive.
+            _assign_disk_error_chance` for corruption chance configuration.
         v_ (pandas DataFrame):
             Density distribution hive members must achieve with independent
             realizations for ideal persistence of the file.
@@ -127,7 +128,7 @@ class BaseHive:
         self.current_epoch: int = 0
         self.cv_: pd.DataFrame = pd.DataFrame()
         self.v_: pd.DataFrame = pd.DataFrame()
-        self.corruption_chances: List[float] = [0, 0]
+        self.corruption_chances: List[float] = self._assign_disk_error_chance()
         self.hivemind = hivemind
         self.members: Dict[str, BaseNode] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
@@ -333,6 +334,34 @@ class BaseHive:
     # endregion
 
     # region Simulation Interface
+    def _assign_disk_error_chance(self) -> List[float]:
+        """Defines the probability of a file block being corrupted while stored
+        at the disk of a :py:mod:`Network Node <domain.network nodes>`.
+
+        Note:
+            Recommended value should be based on the paper named
+            `An Analysis of Data Corruption in the Storage Stack
+            <http://www.cs.toronto.edu/~bianca/papers/fast08.pdf>`. Thus
+            the current implementation follows this formula::
+
+                :py:const:`~domain.master_servers.Hivemind.MAX_EPOCHS` * P(Xt ≥
+                L) * / :py:const:`~environment_settings.MONTH_EPOCHS`
+
+            The notation P(Xt ≥ L) denotes the probability of a disk
+            developing at least L checksum mismatches within T months since
+            the disk’s first use in the field. Found in the paper's
+            results.
+
+        Returns:
+            A two element list with respectively, the probability of losing
+            and the probability of not losing a file block due to disk
+            errors, at an epoch basis.
+        """
+        ploss_month = 0.0086
+        ploss_epoch = (ms.Hivemind.MAX_EPOCHS * ploss_month) / MONTH_EPOCHS
+        ploss_epoch = truncate_float_value(ploss_epoch, 6)
+        return [ploss_epoch, 1.0 - ploss_epoch]
+
     def setup_epoch(self, epoch: int) -> None:
         """Initializes some attributes of the BaseHive during its initialization.
 
@@ -344,8 +373,6 @@ class BaseHive:
                 The simulation's current epoch.
         """
         self.current_epoch = epoch
-        self.corruption_chances[0] = np.log10(epoch).item() / 300.0
-        self.corruption_chances[1] = 1.0 - self.corruption_chances[0]
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
 
@@ -378,9 +405,9 @@ class BaseHive:
         except Exception as e:
             self.set_fail(f"Exception caused simulation termination: {str(e)}")
 
-        self.file.logger.log_recovery_delay(self._recovery_epoch_sum,
-                                            self._recovery_epoch_calls,
-                                            self.current_epoch)
+        self.file.logger.log_replication_delay(self._recovery_epoch_sum,
+                                               self._recovery_epoch_calls,
+                                               self.current_epoch)
 
     def nodes_execute(self) -> List[BaseNode]:
         """Queries all network node members execute the epoch.
@@ -405,7 +432,7 @@ class BaseHive:
                 lost_parts_count += len(lost_parts)
                 off_nodes.append(worker)
                 for part in lost_parts.values():
-                    self.set_recovery_epoch(part)
+                    self.set_replication_epoch(part)
                     if part.decrement_and_get_references() == 0:
                         self.set_fail(f"Lost all replicas of file part with "
                                       f"id: {part.id}.")
@@ -459,7 +486,7 @@ class BaseHive:
             self.file.logger.save_sets_and_reset()
 
     def maintain(self, off_nodes: List[BaseNode]) -> None:
-        """Evicts disconnected workers from the BaseHive and attempts to
+        """Evicts disconnected network_nodes from the BaseHive and attempts to
         recruit new ones.
 
         It implicitly creates a new `transition matrix` and `v_`.
@@ -469,7 +496,7 @@ class BaseHive:
                 The collection of members who disconnected during the
                 current epoch.
         """
-        # remove all disconnected workers from the hive
+        # remove all disconnected network_nodes from the hive
         for node in off_nodes:
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
@@ -504,7 +531,8 @@ class BaseHive:
         self.file.logger.log_maintenance(
             status_bm, damaged_hive_size, status_am, self.current_epoch)
 
-    def complain(self, complainter: str, complainee: str) -> None:
+    def complain(
+            self, complainter: str, complainee: str, reason: HttpCodes) -> None:
         """Registers a complaint against a possibly offline node.
 
         Note:
@@ -519,6 +547,9 @@ class BaseHive:
             complainee:
                 The identifier of the :py:mod:`Network Node
                 <domain.network_nodes>` being complained about.
+            reason:
+                The :py:class:`code <domain.helpers.enums.HttpCodes>` that
+                led to the complaint.
         """
         pass
     # endregion
@@ -627,7 +658,7 @@ class BaseHive:
         self.running = False
         self.file.logger.log_fail(self.current_epoch, message)
 
-    def set_recovery_epoch(self, part: FileBlockData) -> None:
+    def set_replication_epoch(self, part: FileBlockData) -> None:
         """Delegates to :py:meth:
         `~domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
 
@@ -635,7 +666,7 @@ class BaseHive:
             part: A :py:class:`~domain.helpers.smart_dataclasses.FileBlockData`
             instance that represents a file block replica that was lost.
         """
-        self._recovery_epoch_sum += part.set_recovery_epoch(self.current_epoch)
+        self._recovery_epoch_sum += part.set_replication_epoch(self.current_epoch)
         self._recovery_epoch_calls += 1
 
     def _validate_transition_matrix(self,
@@ -762,7 +793,9 @@ class Hive(BaseHive):
             `complaint_threshold`, the respective complaintee is evicted
             from the `Hive`.
         suspicious_nodes:
-            A set containing the unique identifiers of known suspicious nodes.
+            A dict containing the unique identifiers of known suspicious
+            nodes and how many epochs have passed since they changed to that
+            status.
         _epoch_complaints:
             A set of unique identifiers formed from the concatenation of
             :py:attr:`node identifiers <domain.network_nodes.BaseNode.id>`,
@@ -780,8 +813,8 @@ class Hive(BaseHive):
         """
         super().__init__(hivemind, file_name, members, sim_id, origin)
         self.complaint_threshold: float = len(members) * 0.5
-        self.nodes_complaints: Dict[str, 0] = {}
-        self.suspicious_nodes: set = set()
+        self.nodes_complaints: Dict[str, int] = {}
+        self.suspicious_nodes: Dict[str, int] = {}
         self._epoch_complaints: set = set()
 
     def execute_epoch(self, epoch: int) -> None:
@@ -801,7 +834,7 @@ class Hive(BaseHive):
             Differs the super class implementation because it considers nodes
             as Suspects until it receives enough complaints from member nodes.
             This is important because lost parts can not be logged multiple
-            times. Yet suspected workers need to be contabilized as offline
+            times. Yet suspected network_nodes need to be contabilized as offline
             for simulation purposes without being evicted from the group
             until said detection occurs.
 
@@ -821,17 +854,20 @@ class Hive(BaseHive):
             elif node.status == Status.SUSPECT:
                 lost_parts = node.get_file_parts(self.file.name)
                 if node.id not in self.suspicious_nodes:
-                    self.suspicious_nodes.add(node.id)
+                    self.suspicious_nodes[node.id] = 1
                     lost_parts_count += len(lost_parts)
                     for part in lost_parts.values():
                         if part.decrement_and_get_references() == 0:
                             self.set_fail(f"Lost all replicas of file part "
                                           f"with id: {part.id}")
+                else:
+                    self.suspicious_nodes[node.id] += 1
+
                 ccount = self.nodes_complaints.get(node.id, -1)
                 if ccount >= self.complaint_threshold:
                     off_nodes.append(node)
                     for part in lost_parts.values():
-                        self.set_recovery_epoch(part)
+                        self.set_replication_epoch(part)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self.set_fail("All hive members disconnected before maintenance.")
@@ -857,14 +893,17 @@ class Hive(BaseHive):
                 current epoch.
         """
         for node in off_nodes:
-            self.suspicious_nodes.discard(node.id)
+            print(f"    [o] Evicted suspect {node.id}.")
+            tte = self.suspicious_nodes.pop(node.id, -1)
+            self.file.logger.log_suspicous_node_detection_delay(node.id, tte)
             self.nodes_complaints.pop(node.id, -1)
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
 
-    def complain(self, complainter: str, complainee: str) -> None:
+    def complain(
+            self, complainter: str, complainee: str, reason: HttpCodes) -> None:
         """Registers a complaint against a possibly offline node.
 
         A unique identifier for the complaint is generated by concatenation
@@ -873,6 +912,9 @@ class Hive(BaseHive):
         Overrides:
             :py:meth:`~domain.cluster_groups.BaseHive.complain`.
         """
+        if reason == HttpCodes.TIME_OUT:
+            return
+
         complaint_id = f"{complainter}|{complainee}"
         if complaint_id not in self._epoch_complaints:
             self._epoch_complaints.add(complaint_id)
@@ -880,3 +922,6 @@ class Hive(BaseHive):
                 self.nodes_complaints[complainee] += 1
             else:
                 self.nodes_complaints[complainee] = 1
+            print(f"    > Logged complaint {complaint_id}, "
+                  f"complainee complaint count: "
+                  f"{self.nodes_complaints[complainee]}")

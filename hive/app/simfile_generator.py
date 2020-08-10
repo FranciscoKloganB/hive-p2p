@@ -15,7 +15,6 @@
 import getopt
 import itertools
 import json
-import math
 import os
 import string
 import sys
@@ -29,6 +28,9 @@ from scripts.python import normal_distribution_generator as ng
 
 
 # region Input Consumption and Verification
+from utils.convertions import truncate_float_value
+
+
 def __input_character_option(message: str, white_list: List[str]) -> str:
     """Obtains a user inputed character within a predefined set.
 
@@ -157,21 +159,6 @@ def __in_yes_no(message: str) -> bool:
 
 
 # region Helpers
-def __truncate_float_value(f: float, d: int) -> float:
-    """Truncates a float value without rounding.
-
-    Args:
-        f:
-            The float value to truncate.
-        d:
-            The number of decimal places the float can have.
-
-    Returns:
-        The truncated float.
-    """
-    return math.floor(f * 10 ** d) / 10 ** d
-
-
 def __yield_label() -> str:
     """Used to generate an arbrirary numbers of unique labels.
 
@@ -204,10 +191,10 @@ def __init_nodes_uptime() -> Dict[str, float]:
     number_of_nodes = __input_bounded_integer("Network Size [2, 16384]: ")
 
     min_uptime = __input_bounded_float("Min node uptime [0.0, 100.0]: ") / 100
-    min_uptime = __truncate_float_value(min_uptime, 6)
+    min_uptime = truncate_float_value(min_uptime, 6)
 
     max_uptime = __input_bounded_float("Max node uptime [0.0, 100.0]: ") / 100
-    max_uptime = __truncate_float_value(max_uptime, 6)
+    max_uptime = truncate_float_value(max_uptime, 6)
 
     mean = __input_bounded_float("Distribution mean [0.0, 100.0]: ")
     std = __input_bounded_float("Standard deviation [0.0, 100.0]: ")
@@ -219,7 +206,7 @@ def __init_nodes_uptime() -> Dict[str, float]:
         # gets and removes last element in samples to assign it to label
         uptime = numpy.abs(samples.pop()[0]) / 100.0
         uptime = numpy.clip(uptime, min_uptime, max_uptime)
-        nodes_uptime[label] = __truncate_float_value(uptime.item(), 6)
+        nodes_uptime[label] = truncate_float_value(uptime.item(), 6)
     samples.clear()
 
     return nodes_uptime

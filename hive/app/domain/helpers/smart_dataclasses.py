@@ -107,7 +107,7 @@ class FileData:
         sd.hive_size_before_maintenance = sd.hive_size_before_maintenance[:epoch]
         sd.hive_size_after_maintenance = sd.hive_size_after_maintenance[:epoch]
 
-        sd.delay = sd.delay[:epoch]
+        sd.replication_delay = sd.replication_delay[:epoch]
 
         sd.moved_parts = sd.moved_parts[:epoch]
         sd.corrupted_parts = sd.corrupted_parts[:epoch]
@@ -123,8 +123,8 @@ class FileData:
             "original_hive_size": hive.original_size,
             "redundant_size": hive.redundant_size,
             "max_epochs": ms.Hivemind.MAX_EPOCHS,
-            "min_recovery_delay": MIN_DETECTION_DELAY,
-            "max_recovery_delay": MAX_DETECTION_DELAY,
+            "min_replication_delay": MIN_REPLICATION_DELAY,
+            "max_replication_delay": MAX_REPLICATION_DELAY,
             "replication_level": REPLICATION_LEVEL,
             "convergence_treshold": MIN_CONVERGENCE_THRESHOLD,
             "channel_loss": LOSS_CHANCE,
@@ -199,12 +199,12 @@ class FileBlockData:
             Tracks how many references exist to the file block in the
             simulation environment. When it reaches 0 the file block ceases
             to exist and the simulation fails.
-        recovery_epoch (float):
+        replication_epoch (float):
             When a reference to the file block is lost, i.e., decremented,
-            a recovery_epoch that simulates failure detection and recovery
-            delay is assigned to this attribute. Until a loss occurs and
-            after a loss is recovered, `recovery_epoch` is set to positive
-            infinity.
+            a replication epoch that simulates time to copy replicas from one
+            node to another is assigned to this attribute.
+            Until a loss occurs and after a loss is recovered,
+            `recovery_epoch` is set to positive infinity.
         data (str):
             A base64-encoded string representation of the file block bytes.
         sha256 (str):
@@ -231,12 +231,12 @@ class FileBlockData:
         self.number: int = number
         self.id: str = name + "_#_" + str(number)
         self.references: int = 0
-        self.recovery_epoch: float = float('inf')
+        self.replication_epoch: float = float('inf')
         self.data: str = convertions.bytes_to_base64_string(data)
         self.sha256: str = crypto.sha256(self.data)
 
     # region Simulation Interface
-    def set_recovery_epoch(self, epoch: int) -> int:
+    def set_replication_epoch(self, epoch: int) -> int:
         """Sets the epoch in which replication levels should be restored.
 
         This method tries to assign a new epoch, in the future, at which
@@ -244,7 +244,7 @@ class FileBlockData:
         previous proposition then assignment is accepted, else, it's rejected.
 
         Note:
-            This method of calculating the `recovery_epoch` may seem
+            This method of calculating the `replication_epoch` may seem
             controversial, but the justification lies in the assumption that
             if there are more network nodes monitoring file parts,
             than failure detections should be in theory, faster, unless
@@ -259,29 +259,33 @@ class FileBlockData:
                 Simulation's current epoch.
 
         Returns:
-            Zero if the current `recovery_epoch` is positive infinity,
-            otherwise the expected delay is returned. This value can be
-            used to log, for example, the average recovery delay in the
-            BaseHive simulation.
+            Zero if the current `replication_epoch` is positive infinity,
+            otherwise the expected replication_delay is returned. This value
+            can be used to log, for example, the average recovery
+            replication_delay in a simulation.
         """
-        new_proposed_epoch = float(epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY))
-        if new_proposed_epoch < self.recovery_epoch:
-            self.recovery_epoch = new_proposed_epoch
-        return 0 if self.recovery_epoch == float('inf') else self.recovery_epoch - float(epoch)
+        new_proposed_epoch = float(
+            epoch + randint(MIN_REPLICATION_DELAY, MAX_REPLICATION_DELAY))
+        if new_proposed_epoch < self.replication_epoch:
+            self.replication_epoch = new_proposed_epoch
+        if self.replication_epoch == float('inf'):
+            return 0
+        else:
+            return self.replication_epoch - float(epoch)
 
     def update_epochs_to_recover(self, epoch: int) -> None:
-        """Update the `recovery_epoch` after a recovery attempt was carried out.
+        """Update the `replication_epoch` after a recovery attempt was carried out.
 
         If the recovery attempt performed by some network node successfully
         managed to restore the replication levels to the original target, then,
-        `recovery_epoch` is set to positive infinity, otherwise, another
+        `replication_epoch` is set to positive infinity, otherwise, another
         attempt will be done in the next epoch.
 
         Args:
             epoch:
                 Simulation's current epoch.
         """
-        self.recovery_epoch = float('inf') if self.references == REPLICATION_LEVEL else float(epoch + 1)
+        self.replication_epoch = float('inf') if self.references == REPLICATION_LEVEL else float(epoch + 1)
 
     def can_replicate(self, epoch: int) -> int:
         """Informs the calling network node if file block needs replication.
@@ -295,10 +299,10 @@ class FileBlockData:
             node knows how many replicas he needs to create and distribute if
             returned value is bigger than zero.
         """
-        if self.recovery_epoch == float('inf'):
+        if self.replication_epoch == float('inf'):
             return 0
 
-        if 0 < self.references < REPLICATION_LEVEL and self.recovery_epoch - float(epoch) <= 0.0:
+        if 0 < self.references < REPLICATION_LEVEL and self.replication_epoch - float(epoch) <= 0.0:
             return REPLICATION_LEVEL - self.references
 
         return 0
@@ -406,11 +410,12 @@ class LoggingData:
         self.hive_status_before_maintenance: List[str] = [""] * max_epochs
         self.hive_size_before_maintenance: List[int] = [0] * max_epochs
         self.hive_size_after_maintenance: List[int] = [0] * max_epochs
-        self.delay: List[float] = [0.0] * max_epochs_plus_one
         self.moved_parts: List[int] = [0] * max_epochs
         self.corrupted_parts: List[int] = [0] * max_epochs
         self.lost_messages: List[int] = [0] * max_epochs
         self.parts_in_hive: List[int] = [0] * max_epochs
+        self.replication_delay: List[float] = [0.0] * max_epochs_plus_one
+        self.suspicious_node_detection_delay: Dict[int, str] = {}
         self.initial_spread = ""
         ###############################
 
@@ -480,18 +485,33 @@ class LoggingData:
 
     # region Helpers
 
-    def log_recovery_delay(self, delay: int, calls: int, epoch: int) -> None:
-        """Logs the expected delay at epoch at an epoch.
+    def log_replication_delay(self, delay: int, calls: int, epoch: int) -> None:
+        """Logs the expected replication_delay at epoch at an epoch.
 
         Args:
             delay:
                 The delay sum.
             calls:
-                Number of times a delay was generated.
+                Number of times a replication_delay was generated.
             epoch:
                 A simulation epoch index.
         """
-        self.delay[epoch-1] = 0 if calls == 0 else delay / calls
+        self.replication_delay[epoch - 1] = 0 if calls == 0 else delay / calls
+
+    def log_suspicous_node_detection_delay(
+            self, node_id: str, delay: int) -> None:
+        """Logs the expected replication_delay at epoch at an epoch.
+
+        Args:
+            delay:
+                The time it took until the specified node was evicted from a
+                :py:mod:`Cluster <domain.cluster_groups>` after it was known
+                to be offline by the perfect failure detector.
+            node_id:
+                A unique :py:mod:`Network Node
+                <domain.network_nodes>` identifier.
+        """
+        self.suspicious_node_detection_delay[node_id] = delay
 
     def log_bandwidth_units(self, n: int, epoch: int) -> None:
         """Logs the amount of moved file blocks moved at an epoch.
@@ -516,11 +536,11 @@ class LoggingData:
         self.parts_in_hive[epoch-1] += n
 
     def log_disconnected_workers(self, n: int, epoch: int) -> None:
-        """Logs the amount of disconnected workers at an epoch.
+        """Logs the amount of disconnected network_nodes at an epoch.
 
         Args:
             n:
-                Number of disconnected workers in the system.
+                Number of disconnected network_nodes in the system.
             epoch:
                 A simulation epoch index.
         """

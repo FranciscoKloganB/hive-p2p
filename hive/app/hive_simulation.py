@@ -38,9 +38,9 @@ from concurrent.futures.thread import ThreadPoolExecutor
 
 import numpy
 
-import domain.master_servers as ms
 from domain.helpers.matlab_utils import MatlabEngineContainer
-from environment_settings import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
+from environment_settings import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT, \
+    MASTER_SERVERS
 
 __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
@@ -48,6 +48,9 @@ __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
 
 
 # region Module private functions (helpers)
+from utils.convertions import class_name_to_obj
+
+
 def __makedirs() -> None:
     """Creates required simulation working directories if they do not exist."""
     if not os.path.exists(SHARED_ROOT):
@@ -78,7 +81,10 @@ def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
         epochs:
             The number of discrete time steps the simulation lasts.
     """
-    ms.Hivemind(sname, sid, epochs).execute_simulation()
+    master_server = class_name_to_obj(
+        MASTER_SERVERS, master_class,
+        [sname, sid, epochs, cluster_class, node_class])
+    master_server.execute_simulation()
 
 
 def __parallel_main(
@@ -156,9 +162,16 @@ if __name__ == "__main__":
     iterations = 30
     duration = 720
 
+    master_class = "Hivemind"
+    cluster_class = "BaseHive"
+    node_class = "BaseNode"
+
     try:
-        short_opts = "df:i:t:e:"
-        long_opts = ["directory", "file=", "iters=", "threading=", "epochs="]
+        short_opts = "df:i:t:e:m:c:n:"
+        long_opts = [
+            "directory", "file=", "iters=", "threading=", "epochs=",
+            "master_server=", "cluster_group=", "network_node="
+        ]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
@@ -174,6 +187,12 @@ if __name__ == "__main__":
                 iterations = int(str(args).strip())
             if options in ("-e", "--epochs"):
                 duration = int(str(args).strip())
+            if options in ("-m", "--master_server"):
+                master_class = str(args).strip()
+            if options in ("-c", "--cluster_group"):
+                cluster_class = str(args).strip()
+            if options in ("-n", "--network_node"):
+                node_class = str(args).strip()
 
         if simfile or simdirectory:
             main(threading, simdirectory, simfile, iterations, duration)
@@ -188,4 +207,7 @@ if __name__ == "__main__":
                  "--epochs -e (int)\n"
                  "--threading -t (int)\n"
                  "--directory -d (void)\n"
-                 "--file -f (str)")
+                 "--file -f (str)\n"
+                 "--master_server -m (str)\n"
+                 "--cluster_group -c (str)\n"
+                 "--network_node -n (str)\n")
