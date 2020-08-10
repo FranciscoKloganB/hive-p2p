@@ -393,5 +393,6 @@ class HiveNode(BaseNode):
         if self.status == Status.ONLINE:
             self.uptime -= 1
             if self.uptime <= 0:
+                print(f"[*] {self.id} is offline (suspect status).")
                 self.status = Status.SUSPECT
         return self.status

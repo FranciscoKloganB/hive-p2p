@@ -857,6 +857,7 @@ class Hive(BaseHive):
                 current epoch.
         """
         for node in off_nodes:
+            print(f"[o] Evicted suspect {node.id}.")
             self.suspicious_nodes.discard(node.id)
             self.nodes_complaints.pop(node.id, -1)
             self.members.pop(node.id, None)
@@ -880,3 +881,6 @@ class Hive(BaseHive):
                 self.nodes_complaints[complainee] += 1
             else:
                 self.nodes_complaints[complainee] = 1
+            print(f"Logged complaint {complaint_id},\n"
+                  f"Complainee {complainee}, current complaints: "
+                  f"{self.nodes_complaints[complainee]}")
