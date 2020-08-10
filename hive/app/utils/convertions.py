@@ -6,6 +6,7 @@ as base64-encoded strings or serialization objects into JSON strings.
 
 import base64
 import importlib
+import math
 
 from typing import Union, Optional, Any, List
 
@@ -152,3 +153,18 @@ def class_name_to_obj(module_name: str, class_name: str, args: List[Any]) -> Any
     except ImportError:
         print(f"Module {module_name} does not exist.")
     return None
+
+
+def truncate_float_value(f: float, d: int) -> float:
+    """Truncates a float value without rounding.
+
+    Args:
+        f:
+            The float value to truncate.
+        d:
+            The number of decimal places the float can have.
+
+    Returns:
+        The truncated float.
+    """
+    return math.floor(f * 10 ** d) / 10 ** d
