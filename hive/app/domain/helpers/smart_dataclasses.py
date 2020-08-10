@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from random import randint
-from typing import Any, Dict, IO, List
+from typing import Any, Dict, IO, List, Union
 
 import domain.cluster_groups as cg
 import domain.master_servers as ms
@@ -402,7 +402,8 @@ class LoggingData:
             :py:mod:`Network Node <domain.network_nodes>` in the
             :py:mod:`Cluster Group <domain.cluster_group>`. One dictionary
             is kept in the list for each transition matrix used throughout
-            the simulation.
+            the simulation. The integral part of the float value is the
+            in-degree, the decimal part is the out-degree.
         off_node_count:
             The number of :py:mod:`Network Nodes <domain.network_nodes>`
             whose status changed to offline at each epoch.
@@ -442,7 +443,7 @@ class LoggingData:
         self.delay_replication: List[float] = [0.0] * max_epochs_plus_one
         self.delay_suspects_detection: Dict[int, str] = {}
         self.initial_spread = ""
-        self.nodes_degree: List[Dict[str, int]] = {}
+        self.nodes_degree: List[Dict[str, float]] = []
         self.off_node_count: List[int] = [0] * max_epochs
         self.transmissions_failed: List[int] = [0] * max_epochs
         ###############################
