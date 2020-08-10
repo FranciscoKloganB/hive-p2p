@@ -397,7 +397,7 @@ class LoggingData:
         initial_spread:
             Records the strategy used distribute file blocks in the
             beggining of the simulation.
-        nodes_degree:
+        matrices_nodes_degrees:
             Stores the in-degree and out-degree of each
             :py:mod:`Network Node <domain.network_nodes>` in the
             :py:mod:`Cluster Group <domain.cluster_group>`. One dictionary
@@ -443,7 +443,7 @@ class LoggingData:
         self.delay_replication: List[float] = [0.0] * max_epochs_plus_one
         self.delay_suspects_detection: Dict[int, str] = {}
         self.initial_spread = ""
-        self.nodes_degree: List[Dict[str, float]] = []
+        self.matrices_nodes_degrees: List[Dict[str, float]] = []
         self.off_node_count: List[int] = [0] * max_epochs
         self.transmissions_failed: List[int] = [0] * max_epochs
         ###############################
@@ -513,6 +513,8 @@ class LoggingData:
     # endregion
 
     # region Helpers
+    def log_matrices_degrees(self, nodes_degrees: Dict[str, float]):
+        self.matrices_nodes_degrees.append(nodes_degrees)
 
     def log_replication_delay(self, delay: int, calls: int, epoch: int) -> None:
         """Logs the expected delay_replication at epoch at an epoch.

@@ -327,10 +327,17 @@ class BaseHive:
             queries and matrix calculations. For simplicity of implementation
             each BaseHive only manages one file for now.
         """
+        nodes_degrees: Dict[str, float] = {}
+        # noinspection PyUnresolvedReferences
+        in_degrees: pd.Series = (m > 0.0).apply(np.count_nonzero, axis=1)
+        # noinspection PyUnresolvedReferences
+        out_degrees: pd.Series = (m > 0.0).apply(np.count_nonzero)
         for node in self.members.values():
-
-            transition_vector: pd.DataFrame = m.loc[:, node.id]
+            nid = node.id
+            nodes_degrees[nid] = float(f"{in_degrees[nid]}.{out_degrees[nid]}")
+            transition_vector: pd.DataFrame = m.loc[:, nid]
             node.set_file_routing(self.file.name, transition_vector)
+        self.file.logger.log_matrices_degrees(nodes_degrees)
 
     # endregion
 
