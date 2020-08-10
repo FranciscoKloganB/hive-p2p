@@ -48,7 +48,7 @@ __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
 
 
 # region Module private functions (helpers)
-from utils.convertions import str_to_class
+from utils.convertions import class_name_to_obj
 
 
 def __makedirs() -> None:
@@ -81,7 +81,7 @@ def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
         epochs:
             The number of discrete time steps the simulation lasts.
     """
-    master_server = str_to_class(
+    master_server = class_name_to_obj(
         MASTER_SERVERS, master_class, [sname, sid, epochs])
     master_server.execute_simulation()
 

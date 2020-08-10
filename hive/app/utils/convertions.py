@@ -118,7 +118,7 @@ def json_string_to_obj(json_string: str) -> Any:
     return jsonpickle.decode(json_string)
 
 
-def str_to_class(module_name: str, class_name: str, args: List[Any]) -> Any:
+def class_name_to_obj(module_name: str, class_name: str, args: List[Any]) -> Any:
     """Uses reflection to instanciate a class by name.
 
     Args:
@@ -144,7 +144,7 @@ def str_to_class(module_name: str, class_name: str, args: List[Any]) -> Any:
             instance = getattr(module_, class_name)(*args)
             return instance
         except AttributeError:
-            print("Class does not exist.")
+            print(f"Class {class_name} does not exist.")
     except ImportError:
-        print("Module does not exist.")
+        print(f"Module {module_name} does not exist.")
     return None
