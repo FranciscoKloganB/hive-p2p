@@ -123,8 +123,8 @@ class FileData:
             "original_hive_size": hive.original_size,
             "redundant_size": hive.redundant_size,
             "max_epochs": ms.Hivemind.MAX_EPOCHS,
-            "min_recovery_delay": MIN_DETECTION_DELAY,
-            "max_recovery_delay": MAX_DETECTION_DELAY,
+            "min_recovery_delay": MIN_REPLICATION_DELAY,
+            "max_recovery_delay": MAX_REPLICATION_DELAY,
             "replication_level": REPLICATION_LEVEL,
             "convergence_treshold": MIN_CONVERGENCE_THRESHOLD,
             "channel_loss": LOSS_CHANCE,
@@ -264,7 +264,7 @@ class FileBlockData:
             used to log, for example, the average recovery delay in the
             BaseHive simulation.
         """
-        new_proposed_epoch = float(epoch + randint(MIN_DETECTION_DELAY, MAX_DETECTION_DELAY))
+        new_proposed_epoch = float(epoch + randint(MIN_REPLICATION_DELAY, MAX_REPLICATION_DELAY))
         if new_proposed_epoch < self.recovery_epoch:
             self.recovery_epoch = new_proposed_epoch
         return 0 if self.recovery_epoch == float('inf') else self.recovery_epoch - float(epoch)
