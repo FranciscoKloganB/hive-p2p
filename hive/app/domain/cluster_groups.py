@@ -405,9 +405,9 @@ class BaseHive:
         except Exception as e:
             self.set_fail(f"Exception caused simulation termination: {str(e)}")
 
-        self.file.logger.log_recovery_delay(self._recovery_epoch_sum,
-                                            self._recovery_epoch_calls,
-                                            self.current_epoch)
+        self.file.logger.log_replication_delay(self._recovery_epoch_sum,
+                                               self._recovery_epoch_calls,
+                                               self.current_epoch)
 
     def nodes_execute(self) -> List[BaseNode]:
         """Queries all network node members execute the epoch.

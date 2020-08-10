@@ -484,7 +484,7 @@ class LoggingData:
 
     # region Helpers
 
-    def log_recovery_delay(self, delay: int, calls: int, epoch: int) -> None:
+    def log_replication_delay(self, delay: int, calls: int, epoch: int) -> None:
         """Logs the expected replication_delay at epoch at an epoch.
 
         Args:
