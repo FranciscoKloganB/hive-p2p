@@ -889,4 +889,6 @@ class Hive(BaseHive):
                 self.nodes_complaints[complainee] += 1
             else:
                 self.nodes_complaints[complainee] = 1
-            print(f"    > Logged complaint {complaint_id}")
+            print(f"    > Logged complaint {complaint_id}, "
+                  f"complainee complaint count: "
+                  f"{self.nodes_complaints[complainee]}")
