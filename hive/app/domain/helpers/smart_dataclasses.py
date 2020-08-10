@@ -340,17 +340,8 @@ class LoggingData:
     """Logging class that registers simulation state per epoch basis.
 
     Notes:
-        Most attributes of this class are not documented in docstrings,
-        but they are straight forward to understand. They are mostly lists of
-        length :py:const:`ms.Hivemind.MAX_EPOCHS
-        <environment_settings.ms.Hivemind.MAX_EPOCHS>` that
-        contain data concerning the current state of simulation at the
-        respective epoch times. For example, :py:attr:`~lost_block_count` keeps
-        a integers that represent how many file blocks were lost at each
-        epoch of the simulation and :py:attr:`~blocks_moved` registers
-        the number of file block messages that traveled the network at the
-        same respective epoch. If you wish to monitor any property (or not) of
-        the simulation you should modify this class.
+        Some attributes might not be documented, but should be straight
+        forward to understand after inspecting their usage in the source code.
 
     Attributes:
         cswc:
