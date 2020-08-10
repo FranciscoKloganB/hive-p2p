@@ -793,7 +793,9 @@ class Hive(BaseHive):
             `complaint_threshold`, the respective complaintee is evicted
             from the `Hive`.
         suspicious_nodes:
-            A set containing the unique identifiers of known suspicious nodes.
+            A dict containing the unique identifiers of known suspicious
+            nodes and how many epochs have passed since they changed to that
+            status.
         _epoch_complaints:
             A set of unique identifiers formed from the concatenation of
             :py:attr:`node identifiers <domain.network_nodes.BaseNode.id>`,
@@ -811,8 +813,8 @@ class Hive(BaseHive):
         """
         super().__init__(hivemind, file_name, members, sim_id, origin)
         self.complaint_threshold: float = len(members) * 0.5
-        self.nodes_complaints: Dict[str, 0] = {}
-        self.suspicious_nodes: set = set()
+        self.nodes_complaints: Dict[str, int] = {}
+        self.suspicious_nodes: Dict[str, int] = {}
         self._epoch_complaints: set = set()
 
     def execute_epoch(self, epoch: int) -> None:
@@ -852,12 +854,15 @@ class Hive(BaseHive):
             elif node.status == Status.SUSPECT:
                 lost_parts = node.get_file_parts(self.file.name)
                 if node.id not in self.suspicious_nodes:
-                    self.suspicious_nodes.add(node.id)
+                    self.suspicious_nodes[node.id] = 1
                     lost_parts_count += len(lost_parts)
                     for part in lost_parts.values():
                         if part.decrement_and_get_references() == 0:
                             self.set_fail(f"Lost all replicas of file part "
                                           f"with id: {part.id}")
+                else:
+                    self.suspicious_nodes[node.id] += 1
+
                 ccount = self.nodes_complaints.get(node.id, -1)
                 if ccount >= self.complaint_threshold:
                     off_nodes.append(node)
@@ -889,7 +894,7 @@ class Hive(BaseHive):
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
-            self.suspicious_nodes.discard(node.id)
+            self.suspicious_nodes.pop(node.id, -1)
             self.nodes_complaints.pop(node.id, -1)
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
