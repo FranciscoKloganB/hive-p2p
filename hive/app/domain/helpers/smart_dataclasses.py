@@ -353,35 +353,71 @@ class LoggingData:
         the simulation you should modify this class.
 
     Attributes:
-        cswc (int):
+        cswc:
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
             :py:meth:`equal_distributions() <domain.cluster_groups.BaseHive.equal_distributions>`
             this attribute is reseted to zero.
-        largest_convergence_window (int):
+        largest_convergence_window:
             Stores the largest convergence window that occurred throughout
             the simulation, i.e., it stores the highest verified
             :py:attr:`~cswc`.
-        convergence_set (list of ints):
+        convergence_set:
             Set of consecutive epochs in which convergence was verified.
             This list only stores the most up to date convergence set and like
             :py:attr:`~cswc` is cleared once convergence is not verified,
             after being appended to :py:attr:`~convergence_sets`.
-        convergence_sets (list of lists of ints):
+        convergence_sets:
             Stores all previous convergence sets. See :py:attr:`~convergence_set`.
-        terminated (int):
+        terminated:
             Indicates the epoch at which the simulation was terminated.
-        successfull (bool):
+        successfull:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
             to persist the file throughout
             :py:const:`ms.Hivemind.MAX_EPOCHS
             <environment_settings.ms.Hivemind.MAX_EPOCHS>` time
             steps.
-        messages (list of str):
+        messages:
             Set of at least one error message that led to the failure
             of the simulation or one success message, at termination epoch
             (:py:attr:`~terminated`)
+        disconnected_workers:
+            The number of :py:mod:`Network Nodes <domain.network_nodes>`
+            whose status changed to offline at each epoch.
+        lost_parts:
+            The number of file block replicas that were lost at each epoch
+            due to :py:mod:`Network Nodes <domain.network_nodes>` going offline.
+        moved_parts:
+            The number of messages containing file block replicas that were
+            transmited, including those that were not delivered or
+            acknowledged, at each epoch.
+        corrupted_parts:
+            The number of file block repllicas lost at each epoch due
+            to disk errors.
+        lost_messages:
+            The number of messages transmissions that were lost in the
+            network at each epoch.
+        parts_in_hive:
+            The number of existing file block repllicas inside the
+            :py:mod:`Cluster Group <domain.cluster_group>` members' storage
+            disks at each epoch.
+        replication_delay:
+            Log of the average time it took to recover one or more lost file
+            block replicas during each epoch.
+        suspicious_node_detection_delay:
+            Log of the time it took for each suspicious
+            :py:mod:`Network Node <domain.network_nodes>` to be evicted
+            from the :py:mod:`Cluster Group <domain.cluster_group>`.
+        nodes_degree:
+            Stores the in-degree and out-degree of each
+            :py:mod:`Network Node <domain.network_nodes>` in the
+            :py:mod:`Cluster Group <domain.cluster_group>`. One dictionary
+            is kept in the list for each transition matrix used throughout
+            the simulation.
+        initial_spread:
+            Records the strategy used distribute file blocks in the
+            beggining of the simulation.
     """
     # endregion
 
@@ -416,6 +452,7 @@ class LoggingData:
         self.parts_in_hive: List[int] = [0] * max_epochs
         self.replication_delay: List[float] = [0.0] * max_epochs_plus_one
         self.suspicious_node_detection_delay: Dict[int, str] = {}
+        self.nodes_degree: List[Dict[str, int]] = {}
         self.initial_spread = ""
         ###############################
 
