@@ -171,7 +171,7 @@ class Hivemind:
         #   Move cluster_groups complaint method to this method..
         raise NotImplementedError()
 
-    def find_replacement_worker(
+    def find_replacement_node(
             self, exclusion_dict: Dict[str, BaseNode], n: int
     ) -> Dict[str, BaseNode]:
         """Finds a collection of online network nodes that can be used to

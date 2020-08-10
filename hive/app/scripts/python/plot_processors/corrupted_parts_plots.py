@@ -54,8 +54,8 @@ def process_file(filepath, avg_corrupted_parts, terminated_at_acount):
             terminated_at_acount[terminated] += 1
         else:
             terminated_at_acount[terminated] = 1
-        # Epoch data from [0, terminated) w.r.t. number of corrupted_parts of the current simulation instance
-        data = json_obj["corrupted_parts"][:terminated]
+        # Epoch data from [0, terminated) w.r.t. number of blocks_corrupted of the current simulation instance
+        data = json_obj["blocks_corrupted"][:terminated]
         # Calculate and store the mean of current simulation instance
         avg_corrupted_parts.append(np.mean(data))
         # Calculate and store the mean at each epoch i of the current simulation instance

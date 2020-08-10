@@ -55,7 +55,7 @@ def process_file(filepath, avg_dc_workers, terminated_at_acount):
         else:
             terminated_at_acount[terminated] = 1
         # Epoch data from [0, terminated) w.r.t. disconnected network_nodes of the current simulation instance
-        data = json_obj["disconnected_workers"][:terminated]
+        data = json_obj["off_node_count"][:terminated]
         # Calculate and store the mean of current simulation instance
         avg_dc_workers.append(np.mean(data))
         # Calculate and store the mean at each epoch i of the current simulation instance

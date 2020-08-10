@@ -294,9 +294,9 @@ class BaseHive:
         member_uptimes: List[float] = []
         member_ids: List[str] = []
 
-        for worker in self.members.values():
-            member_uptimes.append(worker.uptime)
-            member_ids.append(worker.id)
+        for node in self.members.values():
+            member_uptimes.append(node.uptime)
+            member_ids.append(node.id)
 
         A: np.ndarray = np.asarray(
             self.new_symmetric_adjency_matrix(len(member_ids)))
@@ -327,10 +327,15 @@ class BaseHive:
             queries and matrix calculations. For simplicity of implementation
             each BaseHive only manages one file for now.
         """
-        for worker in self.members.values():
-            transition_vector: pd.DataFrame = m.loc[:, worker.id]
-            worker.set_file_routing(self.file.name, transition_vector)
-
+        nodes_degrees: Dict[str, float] = {}
+        out_degrees: pd.Series = m.apply(np.count_nonzero, axis=0)  # columns
+        in_degrees: pd.Series = m.apply(np.count_nonzero, axis=1)  # rows
+        for node in self.members.values():
+            nid = node.id
+            nodes_degrees[nid] = float(f"{in_degrees[nid]}.{out_degrees[nid]}")
+            transition_vector: pd.DataFrame = m.loc[:, nid]
+            node.set_file_routing(self.file.name, transition_vector)
+        self.file.logger.log_matrices_degrees(nodes_degrees)
     # endregion
 
     # region Simulation Interface
@@ -424,13 +429,13 @@ class BaseHive:
         """
         lost_parts_count: int = 0
         off_nodes: List[BaseNode] = []
-        for worker in self.members.values():
-            if worker.get_epoch_status() == Status.ONLINE:
-                worker.execute_epoch(self, self.file.name)
+        for node in self.members.values():
+            if node.get_epoch_status() == Status.ONLINE:
+                node.execute_epoch(self, self.file.name)
             else:
-                lost_parts = worker.get_file_parts(self.file.name)
+                lost_parts = node.get_file_parts(self.file.name)
                 lost_parts_count += len(lost_parts)
-                off_nodes.append(worker)
+                off_nodes.append(node)
                 for part in lost_parts.values():
                     self.set_replication_epoch(part)
                     if part.decrement_and_get_references() == 0:
@@ -441,7 +446,7 @@ class BaseHive:
             self.set_fail("All hive members disconnected before maintenance.")
 
         sf: LoggingData = self.file.logger
-        sf.log_disconnected_workers(len(off_nodes), self.current_epoch)
+        sf.log_off_nodes(len(off_nodes), self.current_epoch)
         sf.log_lost_file_blocks(lost_parts_count, self.current_epoch)
 
         return off_nodes
@@ -461,9 +466,9 @@ class BaseHive:
         members = self.members.values()
         for node in members:
             if node.status == Status.ONLINE:
-                worker_parts_count = node.get_file_parts_count(self.file.name)
-                self.cv_.at[node.id, 0] = worker_parts_count
-                pcount += worker_parts_count
+                node_parts_count = node.get_file_parts_count(self.file.name)
+                self.cv_.at[node.id, 0] = node_parts_count
+                pcount += node_parts_count
             else:
                 self.cv_.at[node.id, 0] = 0
         self.log_evaluation(pcount)
@@ -582,19 +587,20 @@ class BaseHive:
 
         if strategy == "a":
             choices: List[BaseNode] = [*self.members.values()]
-            workers: List[BaseNode] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
-            for worker in workers:
+            nodes: List[BaseNode] = np.random.choice(a=choices,
+                                                     size=REPLICATION_LEVEL, replace=False)
+            for node in nodes:
                 for part in file_parts.values():
                     part.references += 1
-                    worker.receive_part(part)
+                    node.receive_part(part)
 
         elif strategy == "u":
             for part in file_parts.values():
                 choices: List[BaseNode] = [*self.members.values()]
-                workers: List[BaseNode] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
-                for worker in workers:
+                nodes: List[BaseNode] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+                for node in nodes:
                     part.references += 1
-                    worker.receive_part(part)
+                    node.receive_part(part)
 
         elif strategy == 'i':
             choices = [*self.members.values()]
@@ -604,10 +610,10 @@ class BaseHive:
 
             for part in file_parts.values():
                 choices: List[BaseNode] = choices.copy()
-                workers: List[BaseNode] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
-                for worker in workers:
+                nodes: List[BaseNode] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
+                for node in nodes:
                     part.references += 1
-                    worker.receive_part(part)
+                    node.receive_part(part)
 
     def equal_distributions(self) -> bool:
         """Infers if v_ and cv_ are equal.
@@ -639,7 +645,7 @@ class BaseHive:
             A dictionary mapping network node identifiers and their instance
             objects (:py:class:`~domain.network_nodes.BaseNode`).
         """
-        return self.hivemind.find_replacement_worker(
+        return self.hivemind.find_replacement_node(
             self.members, self.original_size - len(self.members))
 
     def set_fail(self, message: str) -> None:
@@ -873,13 +879,13 @@ class Hive(BaseHive):
             self.set_fail("All hive members disconnected before maintenance.")
 
         sf: LoggingData = self.file.logger
-        sf.log_disconnected_workers(len(off_nodes), self.current_epoch)
+        sf.log_off_nodes(len(off_nodes), self.current_epoch)
         sf.log_lost_file_blocks(lost_parts_count, self.current_epoch)
 
         return off_nodes
 
     def maintain(self, off_nodes: List[HiveNode]) -> None:
-        """Evicts any worker whose number of complaints as surpassed the
+        """Evicts any node whose number of complaints as surpassed the
         `complaint_threshold`.
 
         Overrides:

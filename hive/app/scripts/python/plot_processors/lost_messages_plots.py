@@ -41,7 +41,7 @@ def plotvalues(epoch_means, mean, terminations, directory, state):
     # Display legends
     plt.legend(loc='lower right')
     # plt.show()
-    plt.savefig("{}-{}-{}".format("lost_messages", directory, state), prop=FontProperties().set_size('small'))
+    plt.savefig("{}-{}-{}".format("transmissions_failed", directory, state), prop=FontProperties().set_size('small'))
 
 
 def process_file(filepath, avg_lost_messages, terminated_at_acount):
@@ -54,8 +54,8 @@ def process_file(filepath, avg_lost_messages, terminated_at_acount):
             terminated_at_acount[terminated] += 1
         else:
             terminated_at_acount[terminated] = 1
-        # Epoch data from [0, terminated) w.r.t. number of lost_messages of the current simulation instance
-        data = json_obj["lost_messages"][:terminated]
+        # Epoch data from [0, terminated) w.r.t. number of transmissions_failed of the current simulation instance
+        data = json_obj["transmissions_failed"][:terminated]
         # Calculate and store the mean of current simulation instance
         avg_lost_messages.append(np.mean(data))
         # Calculate and store the mean at each epoch i of the current simulation instance
