@@ -31,6 +31,7 @@
             3. An output file simdirectory exists with default path being:
             :py:const:`~environment_settings.OUTFILE_ROOT`.
 """
+
 import getopt
 import os
 import sys
