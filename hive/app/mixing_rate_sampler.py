@@ -38,7 +38,7 @@ from matlab.engine import EngineError
 
 import domain.helpers.matrices as mm
 from domain.helpers.matlab_utils import MatlabEngineContainer
-from environment_settings import OUTFILE_ROOT
+from environment_settings import MIXING_RATE_SAMPLE_ROOT
 
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
@@ -49,10 +49,10 @@ def main():
     specified `functions`, `samples` times.
 
     The execution of the main method results in a JSON file outputed to
-    :py:const:`environment_settings.OUTFILE_ROOT` folder.
+    :py:const:`environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.
     """
-    if not os.path.exists(OUTFILE_ROOT):
-        os.makedirs(OUTFILE_ROOT)
+    if not os.path.exists(MIXING_RATE_SAMPLE_ROOT):
+        os.makedirs(MIXING_RATE_SAMPLE_ROOT)
 
     MatlabEngineContainer.get_instance()
 
@@ -84,9 +84,9 @@ def main():
         size += size
 
     json_string = json.dumps(results, indent=4)
-    dir_contents = os.listdir(OUTFILE_ROOT)
-    fid = len([*filter(lambda x: "mr_comparison" in x, dir_contents)])
-    file_path = f"{OUTFILE_ROOT}/mr_comparison-{fid + 1}.json"
+    dir_contents = os.listdir(MIXING_RATE_SAMPLE_ROOT)
+    fid = len([*filter(lambda x: "sample" in x, dir_contents)])
+    file_path = f"{MIXING_RATE_SAMPLE_ROOT}/sample_{fid + 1}.json"
     with open(file_path, 'w+') as file:
         file.write(json_string)
 
