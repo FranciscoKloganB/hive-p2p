@@ -4,19 +4,16 @@ import getopt
 import json
 import os
 import sys
-import matplotlib.pyplot as plt
-
 from json import JSONDecodeError
 from typing import OrderedDict, List, Any, Dict
 
-from environment_settings import OUTFILE_ROOT
-
+import matplotlib.pyplot as plt
 
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
 
 __MIXING_RATE_HOME__ = os.path.abspath(os.path.join(
-    os.getcwd(), '..', '..', 'static', 'outfiles', 'mixing_rate_samples'))
+    os.getcwd(), '..', '..', '..', 'static', 'outfiles', 'mixing_rate_samples'))
 __MIXING_RATE_PLOTS_HOME__ = os.path.join(__MIXING_RATE_HOME__, 'plots')
 
 
@@ -31,15 +28,15 @@ def box_plot(json: Dict[str, Any]) -> None:
 
 
 def __create_pie_chart__(
-        size_key: str, sample_count: int, func_wins: Dict[str, int]) -> None:
+        skey: str, slen: int, func_wins: Dict[str, int]) -> None:
     """Uses matplotlib.pyplot.pie_chart to create a pie chart.
 
     Args:
-        size_key:
+        skey:
             The key representing the size of the matrices upon which the
             various functions were tested, i.e., if the matrices were of
-            shape (8, 8), `size_key` should be "8".
-        sample_count:
+            shape (8, 8), `skey` should be "8".
+        slen:
             How many times each function in `func_wins` was tested in a
             random adjacency matrix.
         func_wins:
@@ -57,7 +54,7 @@ def __create_pie_chart__(
     ax1.pie(sizes, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
     # Equal aspect ratio ensures that pie is drawn as a circle.
     ax1.axis('equal')
-    plt.savefig(f"pie_chart_sk{size_key}-samples{sample_count}")
+    plt.savefig(f"{__MIXING_RATE_PLOTS_HOME__}/pc_sk{skey}-samples{slen}")
 
 
 def pie_chart(json: Dict[str, Any]) -> None:
