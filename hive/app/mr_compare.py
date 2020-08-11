@@ -39,8 +39,8 @@ import domain.helpers.matrices as mm
 from domain.helpers.matlab_utils import MatlabEngineContainer
 from environment_settings import OUTFILE_ROOT
 
-_ResultsDict: OrderedDict[str, Dict[str, List[float]]]
 _SizeResultsDict: OrderedDict[str, List[float]]
+_ResultsDict: OrderedDict[str, _SizeResultsDict]
 
 
 def main():
@@ -49,7 +49,6 @@ def main():
 
     The execution of the main method results in a JSON file outputed to
     :py:const:`environment_settings.OUTFILE_ROOT` folder.
-
     """
     if not os.path.exists(OUTFILE_ROOT):
         os.makedirs(OUTFILE_ROOT)
