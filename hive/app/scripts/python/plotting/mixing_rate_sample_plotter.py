@@ -49,12 +49,14 @@ def __create_pie_chart__(
     labels = [*func_wins.keys()]
     sizes = [*func_wins.values()]
 
-    fig1, ax1 = plt.subplots()
+    fig1, ax = plt.subplots()
 
-    ax1.pie(sizes, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
+    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
     # Equal aspect ratio ensures that pie is drawn as a circle.
-    ax1.axis('equal')
-    plt.savefig(f"{__MIXING_RATE_PLOTS_HOME__}/pc_sk{skey}-samples{slen}")
+    ax.axis('equal')
+
+    fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_sk{skey}-samples{slen}"
+    plt.savefig(fig_name, bbox_inches='tight')
 
 
 def pie_chart(json: Dict[str, Any]) -> None:
@@ -65,7 +67,6 @@ def pie_chart(json: Dict[str, Any]) -> None:
     Args:
         json: A readable json object.
     """
-
     for size_key, func_dict in json.items():
         # Hack to get sample count, i.e., the length of the List[float]
         # associated with each function name inside func_dict. They should
@@ -76,12 +77,12 @@ def pie_chart(json: Dict[str, Any]) -> None:
         # Create a (K,V) View of the func_dict once for efficiency.
         func_dict_items = func_dict.items()
         # Iterate all samples decide wins and use results in pie chart plotting.
-        for s in range(sample_count):
+        for i in range(sample_count):
             best_func = ""
             smallest_mr = float('inf')
             for func_name, sample_mr in func_dict_items:
-                if sample_mr < smallest_mr:
-                    smallest_mr = sample_mr
+                if sample_mr[i] < smallest_mr:
+                    smallest_mr = sample_mr[i]
                     best_func = func_name
             if best_func != "":
                 func_wins[best_func] += 1
@@ -101,26 +102,21 @@ if __name__ == "__main__":
         short_opts = "bpf:"
         long_opts = ["boxplot", "piechart", "file="]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        
         # Iterate all arguments first in search of -f option
         for options, args in options:
             if options in ("-f", "--file"):
                 file_name = str(args).strip()
-
         file_path = os.path.join(__MIXING_RATE_HOME__, file_name)
-
         file = open(file_path, "r")
         json_obj = json.load(file)
         file.close()
-
+        # If file was succesfully read, iterate (options, args) for methods.
+        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
         for options, args in options:
-            if options in ("-f", "--file"):
-                file_name = str(args).strip()
             if options in ("-b", "--boxplot"):
-                box_plot(file)
+                box_plot(json_obj)
             if options in ("-p", "--piechart"):
-                pie_chart(file)
-
+                pie_chart(json_obj)
     except getopt.GetoptError:
         sys.exit(
             "Usage: python mixing_rate_sampler.py -s 1000 -f a_matrix_generator")
