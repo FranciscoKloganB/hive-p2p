@@ -59,7 +59,7 @@ def main():
     results: _ResultsDict = collections.OrderedDict()
 
     size = 8
-    while size <= 32:
+    while size <= max_adj_size:
         print(f"\nTesting matrices of size: {size}.")
 
         size_results: _SizeResultsDict = collections.OrderedDict()
@@ -93,6 +93,7 @@ def main():
 
 if __name__ == "__main__":
     samples: int = 30
+    max_adj_size: int = 16
     module: Any = "domain.helpers.matrices"
     functions: List[str] = [
         "new_mh_transition_matrix",
@@ -102,12 +103,14 @@ if __name__ == "__main__":
     ]
 
     try:
-        short_opts = "s:m:f:"
-        long_opts = ["samples=", "module=", "functions="]
+        short_opts = "s:a:m:f:"
+        long_opts = ["samples=", "adjacency_size=", "module=", "functions="]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
         for options, args in options:
             if options in ("-s", "--samples"):
                 samples = int(str(args).strip()) or samples
+            if options in ("-a", "--adjacency_size"):
+                max_adj_size = int(str(args).strip()) or max_adj_size
             if options in ("-m", "--module"):
                 module = str(args).strip()
             if options in ("-f", "--functions"):
@@ -120,6 +123,7 @@ if __name__ == "__main__":
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --samples -s (int)\n"
+                 "  --adjacency_size -a (int)\n"
                  "  --module -m (str)\n"
                  "  --functions -f (comma seperated list of str)\n")
     except (ModuleNotFoundError, ImportError):
