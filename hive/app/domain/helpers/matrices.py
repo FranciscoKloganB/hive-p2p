@@ -6,10 +6,13 @@ as well as any steady-state or transition matrix optimization algorithms in
 this module.
 """
 
-from typing import Tuple, Any, Optional
+from typing import Tuple, Any, Optional, List
 
+import random
 import cvxpy as cvx
 import numpy as np
+
+from utils.randoms import random_index
 
 from domain.helpers.exceptions import DistributionShapeError
 from domain.helpers.exceptions import MatrixNotSquareError
@@ -18,8 +21,49 @@ from domain.helpers.matlab_utils import MatlabEngineContainer
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 
-# region Markov Matrix Constructors
+# region Adjacency matrix constructors
+def new_symmetric_adjency_matrix(size: int):
+    """Generates a random symmetric matrix
 
+     The generated adjacency matrix does not have transient state sets or
+     absorbent nodes and can effectively represent a network topology
+     with bidirectional connections between network nodes.
+
+     Args:
+         size:
+            The number of network nodes the BaseHive will have.
+
+    Returns:
+        The adjency matrix representing the connections between a
+        groups of network nodes.
+    """
+    secure_random = random.SystemRandom()
+    adj_matrix: List[List[int]] = [[0] * size for _ in range(size)]
+    choices: List[int] = [0, 1]
+
+    for i in range(size):
+        for j in range(i, size):
+            probability = secure_random.uniform(0.0, 1.0)
+            edge_val = np.random.choice(a=choices, p=[probability,
+                                                      1 - probability]).item()  # converts numpy.int32 to int
+            adj_matrix[i][j] = adj_matrix[j][i] = edge_val
+
+    # Use guilty until proven innocent approach for both checks
+    for i in range(size):
+        is_absorbent_or_transient: bool = True
+        for j in range(size):
+            # Ensure state i can reach and be reached by some other state j, where i != j
+            if adj_matrix[i][j] == 1 and i != j:
+                is_absorbent_or_transient = False
+                break
+        if is_absorbent_or_transient:
+            j = random_index(i, size)
+            adj_matrix[i][j] = adj_matrix[j][i] = 1
+    return adj_matrix
+# endregion
+
+
+# region Markov Matrix Constructors
 def new_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """ Constructs a transition matrix using metropolis-hastings.

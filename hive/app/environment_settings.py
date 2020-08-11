@@ -93,6 +93,7 @@ SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlab')
+MIXING_RATE_SAMPLE_ROOT: str = os.path.join(OUTFILE_ROOT, 'mixing_rate_samples')
 
 # module paths
 MASTER_SERVERS: str = 'domain.master_servers'

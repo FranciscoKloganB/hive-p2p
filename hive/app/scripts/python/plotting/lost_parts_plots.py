@@ -41,7 +41,7 @@ def plotvalues(epoch_means, mean, terminations, directory, state):
     # Display legends
     plt.legend(loc='lower right')
     # plt.show()
-    plt.savefig("{}-{}-{}".format("blocks_lost", directory, state), prop=FontProperties().set_size('small'))
+    plt.savefig(f"blocks_lost-{directory}-state{state}", prop=FontProperties().set_size('small'))
 
 
 def process_file(filepath, avg_lost_parts, terminated_at_acount):
