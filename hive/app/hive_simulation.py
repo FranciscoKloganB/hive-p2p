@@ -204,11 +204,11 @@ if __name__ == "__main__":
         sys.exit(__err_message__)
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
-                 "--iterations -i (int)\n"
-                 "--epochs -e (int)\n"
-                 "--threading -t (int)\n"
-                 "--directory -d (void)\n"
-                 "--file -f (str)\n"
-                 "--master_server -m (str)\n"
-                 "--cluster_group -c (str)\n"
-                 "--network_node -n (str)\n")
+                 "  --iterations -i (int)\n"
+                 "  --epochs -e (int)\n"
+                 "  --threading -t (int)\n"
+                 "  --directory -d (void)\n"
+                 "  --file -f (str)\n"
+                 "  --master_server -m (str)\n"
+                 "  --cluster_group -c (str)\n"
+                 "  --network_node -n (str)\n")

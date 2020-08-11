@@ -116,11 +116,10 @@ if __name__ == "__main__":
         sys.exit("Usage: python mr_compare.py -s 1000 -f a_matrix_generator")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
-                 "--samples -s (int)\n"
-                 "--module -m (str)\n"
-                 "--functions -f (comma seperated list of str)\n")
+                 "  --samples -s (int)\n"
+                 "  --module -m (str)\n"
+                 "  --functions -f (comma seperated list of str)\n")
     except (ModuleNotFoundError, ImportError):
-        sys.exit(f"Specified module does not exist or can not be imported: "
-                 f"'{module}'.")
+        sys.exit(f"Module '{module}' does not exist or can not be imported.")
     except AttributeError:
-        sys.exit(f"At least a function does not exist in module: '{module}'.")
+        sys.exit(f"At least a function does not exist in module '{module}'.")
