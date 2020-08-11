@@ -11,8 +11,13 @@ from typing import OrderedDict, List, Any, Dict
 
 from environment_settings import OUTFILE_ROOT
 
+
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
+
+__MIXING_RATE_HOME__ = os.path.abspath(os.path.join(
+    os.getcwd(), '..', '..', 'static', 'outfiles', 'mixing_rate_samples'))
+__MIXING_RATE_PLOTS_HOME__ = os.path.join(__MIXING_RATE_HOME__, 'plots')
 
 
 def box_plot(json: Dict[str, Any]) -> None:
@@ -43,7 +48,6 @@ def __create_pie_chart__(
             that generated a markov matrix that reaches an arbitrary steady
             state faster than the remaining ones.
     """
-
     # Pie chart, where the slices will be ordered and plotted counter-clockwise:
     labels = [*func_wins.keys()]
     sizes = [*func_wins.values()]
@@ -87,7 +91,14 @@ def pie_chart(json: Dict[str, Any]) -> None:
         __create_pie_chart__(size_key, sample_count, func_wins)
 
 
+def __makedirs__():
+    if not os.path.exists(__MIXING_RATE_PLOTS_HOME__):
+        os.mkdir(__MIXING_RATE_PLOTS_HOME__)
+
+
 if __name__ == "__main__":
+    __makedirs__()
+
     file_name = ""
     try:
         short_opts = "bpf:"
@@ -99,28 +110,28 @@ if __name__ == "__main__":
             if options in ("-f", "--file"):
                 file_name = str(args).strip()
 
-        file_path = os.path.join(
-            os.path.abspath(
-                os.path.join(
-                    os.getcwd(), '..', '..', '..', 'static', 'outfiles')
-            ), file_name)
+        file_path = os.path.join(__MIXING_RATE_HOME__, file_name)
 
-        with open(file_path, "r") as file:
-            json_obj = json.load(file)
-            for options, args in options:
-                if options in ("-f", "--file"):
-                    file_name = str(args).strip()
-                if options in ("-b", "--boxplot"):
-                    box_plot(file)
-                if options in ("-p", "--piechart"):
-                    pie_chart(file)
+        file = open(file_path, "r")
+        json_obj = json.load(file)
+        file.close()
+
+        for options, args in options:
+            if options in ("-f", "--file"):
+                file_name = str(args).strip()
+            if options in ("-b", "--boxplot"):
+                box_plot(file)
+            if options in ("-p", "--piechart"):
+                pie_chart(file)
 
     except getopt.GetoptError:
-        sys.exit("Usage: python mixing_rate_sampler.py -s 1000 -f a_matrix_generator")
-    except FileNotFoundError:
-        sys.exit(f"File '{file_name}' does not exist in '{OUTFILE_ROOT}'.")
+        sys.exit(
+            "Usage: python mixing_rate_sampler.py -s 1000 -f a_matrix_generator")
     except JSONDecodeError:
         sys.exit("Specified file exists, but seems to be an invalid JSON.")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --file -f (str)\n")
+    except FileNotFoundError:
+        sys.exit(
+            f"File '{file_name}' does not exist in '{__MIXING_RATE_HOME__}'.")
