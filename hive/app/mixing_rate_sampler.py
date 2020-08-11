@@ -5,12 +5,12 @@ markov matrices.
 
     You can start a test by executing the following command::
 
-        $ python mr_compare.py --samples=1000
+        $ python mixing_rate_sampler.py --samples=1000
 
     You can also specify the names of the functions used to generate markov
     matrices like so::
 
-        $ python hive_simulation.py -s 10 -f afunc,anotherfunc,yetanotherfunc
+        $ python mixing_rate_sampler.py -s 10 -f afunc,anotherfunc,yetanotherfunc
 
         Default functions set {
             "new_mh_transition_matrix",
@@ -24,18 +24,19 @@ markov matrices.
 
 from __future__ import annotations
 
+import collections
+import getopt
+import importlib
 import json
 import os
 import sys
-import getopt
-import importlib
-import collections
-
-from typing import Dict, List, Any, OrderedDict
+from typing import List, Any, OrderedDict
 
 import numpy as np
-import domain.helpers.matrices as mm
+from cvxpy.error import SolverError
+from matlab.engine import EngineError
 
+import domain.helpers.matrices as mm
 from domain.helpers.matlab_utils import MatlabEngineContainer
 from environment_settings import OUTFILE_ROOT
 
@@ -73,8 +74,11 @@ def main():
 
             for name in functions:
                 print(f"        Calculating mr for matrix of function: '{name}'")
-                _, mixing_rate = getattr(module, name)(a, v_)
-                size_results[name].append(mixing_rate)
+                try:
+                    _, mixing_rate = getattr(module, name)(a, v_)
+                    size_results[name].append(mixing_rate)
+                except (SolverError, EngineError):
+                    size_results[name].append(float('inf'))
 
         results[str(size)] = size_results
         size += size
@@ -112,7 +116,7 @@ if __name__ == "__main__":
         module = importlib.import_module(module)
         main()
     except getopt.GetoptError:
-        sys.exit("Usage: python mr_compare.py -s 1000 -f a_matrix_generator")
+        sys.exit("Usage: python mixing_rate_sampler.py -s 1000 -f a_matrix_generator")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --samples -s (int)\n"
