@@ -12,6 +12,7 @@ import _matplotlib_configs as cfg
 from json import JSONDecodeError
 from typing import OrderedDict, List, Any, Dict
 
+from utils.convertions import truncate_float_value
 
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
@@ -117,6 +118,17 @@ def pie_chart(json: _ResultsDict) -> None:
         __create_pie_chart__(size_key, sample_count, func_wins)
 
 
+def __format_pct__(pct: np.float64) -> str:
+    """Formats the pie chart wedges' text
+
+    Args:
+        pct:
+            The size of the wedge relative to the remaining ones. Default pie
+            value is likely to be in [0.0, 100.0].
+    """
+    return "" if (pct < 1.0) else f"{truncate_float_value(pct, 2)}%"
+
+
 def __create_pie_chart__(
         skey: str, slen: int, func_wins: Dict[str, int]) -> None:
     """Uses matplotlib.pyplot.pie_chart to create a pie chart.
@@ -137,38 +149,36 @@ def __create_pie_chart__(
     """
     # Pie chart, where the slices will be ordered and plotted counter-clockwise:
     labels = __shorten_labels__([*func_wins.keys()])
-    sizes = [*func_wins.values()]
+    wins = np.asarray([*func_wins.values()])
 
     fig1, ax = plt.subplots()
 
     plt.title(f"Algorithm selection frequency for networks of size {skey}",
-              x=0.68, y=1,
+              x=0.57, y=1,
               pad=cfg.title_pad,
               fontproperties=cfg.fp_title)
 
     wedges, texts, autotexts = ax.pie(
-        sizes,
-        # labels=labels,
-        autopct='%1.1f%%',
+        wins,
+        autopct=lambda pct: __format_pct__(pct),
         startangle=90,
-        labeldistance=None,  # labeldistance=None hides labels
+        labeldistance=None,
         textprops={
             'color': 'white',
             'weight': 'bold'
         }
     )
-    # Equal aspect ratio ensures that pie is drawn as a circle.
-    ax.axis('equal')
-
     # bbox_to_anchor(Xanchor, Yanchor, Xc_offset,  Yc_offset)
+    # axis 'equal' ensures that pie is drawn as a circle.
     leg = ax.legend(wedges,
                     labels,
                     frameon=False,
                     loc="center left",
-                    bbox_to_anchor=(1, 0, 0.5, 1))
+                    bbox_to_anchor=(0.8, 0, 0, 0))
     leg.set_title("generating function",
                   prop=cfg.fp_axis_labels)
     leg._legend_box.sep = cfg.legends_pad
+    ax.axis('equal')
 
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_sk{skey}-samples{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
