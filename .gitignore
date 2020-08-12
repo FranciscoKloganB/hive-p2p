@@ -353,9 +353,15 @@ codegen/
 *.autosave
 
 # Simulink cache files
+
+
+# Hives: Simulator Files
+convex_optimization_mh.py
+metropolis_hastings_unit_test.py
 *.slxc
 
 # Octave session info
 octave-workspace
 hive/app/static/outfiles/FTB_4376.out
 hive/app/static/outfiles/powerglove.out
+*.pyc

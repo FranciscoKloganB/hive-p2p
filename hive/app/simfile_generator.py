@@ -1,4 +1,4 @@
-"""This module's functions are used to create a simulation file for the user.
+"""This scripts's functions are used to create a simulation file for the user.
 
     You can create a simulation file by following the instructions that
     appear in your terminal when running the following command::
@@ -7,306 +7,281 @@
 
     Notes:
         Simulation files are placed in:
-        :py:const:`~globals.globals.SIMULATION_ROOT`.
+        :py:const:`~environment_settings.SIMULATION_ROOT`.
 
         Any file used to simulate persistance must be in:
-        :py:const:`~globals.globals.SHARED_ROOT`.
+        :py:const:`~environment_settings.SHARED_ROOT`.
 """
-import copy
 import getopt
 import itertools
 import json
-import logging
 import os
+import string
 import sys
 from pathlib import Path
 from typing import List, Dict, Any
 
-import numpy as np
+import numpy
 
-from globals.globals import SHARED_ROOT, SIMULATION_ROOT
-from scripts.pyscripts import normal_distribution_generator as ng, \
-    label_generator as cg
+from environment_settings import SHARED_ROOT, SIMULATION_ROOT
+from scripts.python import normal_distribution_generator as ng
 
 
 # region Input Consumption and Verification
+from utils.convertions import truncate_float_value
 
-def __in_initial_spread() -> str:
+
+def __input_character_option(message: str, white_list: List[str]) -> str:
+    """Obtains a user inputed character within a predefined set.
+
+    Args:
+        message:
+            The message to be printed to the user upon first input request.
+        white_list:
+            A list of valid option characters.
+
+    Returns:
+        The character that represents the initial distribution of files in a
+        :py:mod:`~domain.cluster_groups`'s class instance desired by the user.
     """
-    :returns str spread_mode: how files are distributed across the hive
-    """
-    spread_mode = input("\nSelect how files are spread across the Hives in the beggining of the simulation: "
-                        "\nPress 'u' for uniform distribution, 'i' to beging closely to desired distribution, and, 'a' to give all files to one peer...\n")
+    character = input(message)
     while True:
-        if spread_mode in ["u", "U", "i", "I", "a", "A"]:
-            return spread_mode.lower()
-        spread_mode = input("Available choices are 'u', 'i', 'a'... Try again: ")
+        if character in white_list:
+            return character
+        character = input(f"Choose an option among {white_list}. Try again: ")
 
 
-def __in_number_of_nodes(msg: str, lower_bound: int = 1, upper_bound: int = 10000) -> int:
+def __input_bounded_integer(
+        message: str, lower_bound: int = 2, upper_bound: int = 16384) -> int:
+    """Obtains a user inputed integer within the specified closed interval.
+
+    Args:
+        message:
+            The message to be printed to the user upon first input request.
+        lower_bound:
+            optional; Any input equal or smaller than`lower_bound` is rejected (
+            default is 2).
+        upper_bound:
+            optional; Any input equal or bigger than `upper_bound` is rejected (
+            default is 16384).
+
+    Returns:
+        An integer inputed by the user.
     """
-    :param str msg: message to be printed to the user upon first input request
-    :param int lower_bound: rejects any input equal or below it
-    :param int upper_bound: rejects any input that is equal or above it
-    :return int node_count: the number of nodes
-    """
-    node_count = input(msg)
+    integer = input(message)
     while True:
         try:
-            node_count = int(node_count)
-            if lower_bound < node_count < upper_bound:
-                return node_count
-            node_count = input("At least two nodes should be indicated. Try again with value in [2, 9999]: ")
+            integer = int(integer)
+            if lower_bound <= integer <= upper_bound:
+                return integer
+            integer = input(f"Input should be in [{lower_bound}, "
+                            f"{upper_bound}]. Try again: ")
         except ValueError:
-            node_count = input("Input should be an integer... Try again: ")
+            integer = input("Input should be a integer. Try again: ")
             continue
 
 
-def __in_min_node_uptime(msg: str) -> float:
+def __input_bounded_float(
+        message: str, lower_bound: float = 0.0, upper_bound: float = 100.0
+) -> float:
+    """Obtains a user inputed integer within the specified closed interval.
+
+    Args:
+        message:
+            The message to be printed to the user upon first input request.
+        lower_bound:
+            optional; Any input smaller than`lower_bound` is rejected (
+            default is 0.0).
+        upper_bound:
+            optional; Any input bigger than `upper_bound` is rejected (
+            default is 100.0).
+
+    Returns:
+        An float inputed by the user.
     """
-    :param str msg: message to be printed to the user upon first input request
-    :return float min_uptime: minimum node uptime value
-    """
-    min_uptime = input(msg)
+    double = input(message)
     while True:
         try:
-            min_uptime = float(min_uptime)
-            if 0.0 <= min_uptime <= 100.0:
-                return float(str(min_uptime)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
-            min_uptime = input("Minimum node uptime should be in [0.0, 100.0]... Try again: ")
+            double = float(double)
+            if lower_bound <= double <= upper_bound:
+                return double
+            double = input(f"Input should be in [{lower_bound}, "
+                           f"{upper_bound}]. Try again: ")
         except ValueError:
-            min_uptime = input("Input should be an integer or a float... Try again: ")
+            double = input("Input should be a float. Try again: ")
             continue
 
 
-def __in_samples_skewness() -> float:
+def __input_filename(message: str) -> str:
+    """Verifies if inputed file name exists in
+    :py:const:`~environment_settings.SHARED_ROOT` directory.
+
+    Note:
+        If a blank file name is given, default value of FBZ_0134.NEF is
+        selected.
+
+    Args:
+        message:
+            The message to be printed to the user upon first input request.
+
+    Returns:
+        A file name with extension.
     """
-    :return float skewness: the skew value
-    """
-    print("\nSkewness should be [-100.0, 100.0]; Negative skews shift distribution mean to bigger positive values!")
-    skewness = input("Enter the desired skewness for skewnorm distribution: ")
+    file_name = input(message).strip()
     while True:
-        try:
-            skewness = float(skewness)
-            if -100.0 <= skewness < 0.0:
-                return float(str(skewness)[:10])  # truncates valid float value to up 6 decimals w/o any rounding!
-            elif 0.0 <= skewness <= 100.0:
-                return float(str(skewness)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
-            else:
-                skewness = input("Skewness should be in [-100.0, 100.0]... Try again: ")
-        except ValueError:
-            skewness = input("Input should be an integer or a float... Try again: ")
-            continue
-
-
-def __in_samples_mean() -> float:
-    """
-    :return float mean: the mean value
-    """
-    print("\nMean should be [0.0, 100.0];")
-    mean = input("Enter the desired mean for the normal distribution: ")
-    while True:
-        try:
-            mean = float(mean)
-            if 0.0 <= mean <= 100.0:
-                return float(str(mean)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
-            else:
-                mean = input("Mean should be in [0, 100.0]... Try again: ")
-        except ValueError:
-            mean = input("Input should be an integer or a float... Try again: ")
-            continue
-
-
-def __in_samples_std() -> float:
-    """
-    :return float std: the standard deviation value
-    """
-    print("\nStandard deviation should be [0.0, 50.0]")
-    std = input("Enter the desired standard deviation: ")
-    while True:
-        try:
-            std = float(std)
-            if 0 <= std <= 50.0:
-                return float(str(std)[:9])  # truncates valid float value to up 6 decimals w/o any rounding!
-            else:
-                std = input("Standard deviation should be in [0.0, 50.0]... Try again: ")
-        except ValueError:
-            std = input("Input should be an integer or a float... Try again: ")
-            continue
-
-
-def __in_file_name(msg: str) -> str:
-    """
-    :param str msg: message to be printed to the user upon first input request
-    :return str file_name: the id of the file to be shared
-    """
-    file_name = input(msg).strip()
-    while True:
-        if not file_name:
-            print("Falling back to default name 'FBZ_0134.NEF' because inputed string was blank...")
+        if file_name == "":
+            print("Invalid name, falling back to default 'FBZ_0134.NEF'.")
             file_name = "FBZ_0134.NEF"
-            # file_name = input("A non-blank file id is expected... Try again: ")
-            # continue
         if not Path(os.path.join(SHARED_ROOT, file_name)).is_file():
-            logging.warning(" {} isn't inside ~/hive/app/static/shared folder.".format(file_name))
-            print("File not found in~/hive/app/static/shared). Running the present simfile might cause bad behaviour.")
+            print(f"{file_name} is not inside ~/hive/app/static/shared folder.")
         return file_name
 
 
-def __in_yes_no(msg: str) -> bool:
+def __in_yes_no(message: str) -> bool:
+    """Asks the user to reply with yes or no to a message.
+
+    Args:
+        message:
+            The message to be printed to the user upon first input request.
+
+    Returns:
+        True if user presses yes, otherwise False.
     """
-    :param str msg: message to be printed to the user upon first input request
-    :returns bool
-    """
-    char = input(msg + " y/n: ").lower()
+    char = input(f"{message}; y/n: ").lower()
     while True:
         if char == 'y':
             return True
         elif char == 'n':
             return False
         else:
-            char = input("Answer should be 'y' for yes or 'n' for no... Try again: ")
-
-
-def __in_file_labels(peer_uptime_dict: Dict[str, float], peer_names: List[str]) -> List[str]:
-    """
-    :param Dict[str, float] peer_uptime_dict: names of all peers in the system and their uptimes;
-    :param List[str] peer_names: names of all peers in the system; the length of labels must be >= desired_node_count
-    :returns List[str]: a subset of :param labels_list; labels selected by the user which are known to exist
-    """
-    chosen_labels = input("The following labels are available:\n{}\nInsert a list of the ones you desire...\n"
-                          "Example of a five label list input: a b c aa bcd\nTIP: You are not required to input"
-                          "all labels manually...\nIf you assign less labels than required for the file "
-                          "or accidently assign an unexisting label, the missing labels are automatically chosen"
-                          "for you!\n".format(peer_uptime_dict)).strip().split(" ")
-    return [*filter(lambda label: label in peer_names, chosen_labels)]
-
+            char = input("Press 'y' for yes or 'n' for no. Try again: ")
 # endregion
 
 
-# region Generation Functions
+# region Helpers
+def __yield_label() -> str:
+    """Used to generate an arbrirary numbers of unique labels.
 
-def __init_peer_uptime_dict() -> Dict[str, float]:
-    """
-    :return Dict[str, float] peers_uptime_dict: a dictionary the maps peers (state labels) to their machine uptimes.
-    """
-    number_of_nodes = __in_number_of_nodes("\nEnter the number of nodes you wish to have in the network [2, 9999]: ")
-    min_uptime = float(str(__in_min_node_uptime("\nEnter the mininum node uptime of nodes in the network [0.0, 100.0]: "))[:9]) / 100.0
+    Yields:
+        The next string label in the sequence.
 
-    # skewness = __in_samples_skewness()
-    # samples = sg.generate_skewed_samples(skewness=skewness).tolist()
-    #
-    # peers_uptime_dict = {}
-    # for label in itertools.islice(cg.yield_label(), number_of_nodes):
-    #     uptime = abs(samples.pop()) / 100.0  # gets and removes last element in samples to assign it to label
-    #     if uptime > 1.0:
-    #         peers_uptime_dict[label] = 1.0
-    #     elif uptime > min_uptime:
-    #         peers_uptime_dict[label] = uptime
-    #     else:
-    #         peers_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
-    # samples.clear()
-    # return peers_uptime_dict
-    mean = __in_samples_mean()
-    std = __in_samples_std()
+    Examples:
+        >>> n = 4
+        >>> for s in itertools.islice(__yield_label(), n):
+        ...     return s
+        [a, b, c, d]
+
+       >>> n = 4 + 26
+        >>> for s in itertools.islice(__yield_label(), n):
+        ...     return s
+        [a, b, c, d, ..., aa, ab, ac, ad]
+    """
+    for size in itertools.count(1):
+        for s in itertools.product(string.ascii_lowercase, repeat=size):
+            yield "".join(s)
+
+
+def __init_nodes_uptime() -> Dict[str, float]:
+    """Creates a record containing network nodes' uptime.
+
+    Returns:
+        A collection mapping :py:mod:`~domain.network_nodes`'s class
+        instance labels to their respective uptime values.
+    """
+    number_of_nodes = __input_bounded_integer("Network Size [2, 16384]: ")
+
+    min_uptime = __input_bounded_float("Min node uptime [0.0, 100.0]: ") / 100
+    min_uptime = truncate_float_value(min_uptime, 6)
+
+    max_uptime = __input_bounded_float("Max node uptime [0.0, 100.0]: ") / 100
+    max_uptime = truncate_float_value(max_uptime, 6)
+
+    mean = __input_bounded_float("Distribution mean [0.0, 100.0]: ")
+    std = __input_bounded_float("Standard deviation [0.0, 100.0]: ")
+
     samples = ng.generate_samples(surveys=1, mean=mean, std=std).tolist()
 
-    peers_uptime_dict = {}
-    for label in itertools.islice(cg.yield_label(), number_of_nodes):
-        uptime = abs(samples.pop()[0]) / 100.0  # gets and removes last element in samples to assign it to label
-        if uptime >= 0.99:
-            peers_uptime_dict[label] = 0.99
-        elif min_uptime < uptime < 0.99:
-            peers_uptime_dict[label] = uptime
-        else:
-            peers_uptime_dict[label] = min_uptime  # min_uptime was already truncated in __in_min_uptime
+    nodes_uptime = {}
+    for label in itertools.islice(__yield_label(), number_of_nodes):
+        # gets and removes last element in samples to assign it to label
+        uptime = numpy.abs(samples.pop()[0]) / 100.0
+        uptime = numpy.clip(uptime, min_uptime, max_uptime)
+        nodes_uptime[label] = truncate_float_value(uptime.item(), 6)
     samples.clear()
-    return peers_uptime_dict
+
+    return nodes_uptime
 
 
-def __init_hive_members(desired_node_count: int, peers_uptime_dict: Dict[str, float], peer_names: List[str]) -> List[str]:
+def __init_persisting_dict() -> Dict[str, Any]:
+    """Creates the "persisting" key of simulation file.
+
+    Returns:
+        A dictionary containing data respecting files to be shared in the system
     """
-    :param int desired_node_count: the number of peers that will be responsible for sharing a file
-    :param Dict[str, float] peers_uptime_dict: names of all peers in the system and their uptimes;
-    :param List[str] peer_names: names of all peers in the system; the length of labels must be >= desired_node_count
-    :return List[str] chosen_peers: a subset of :param labels; the peers from the system that were selected for sharing
-    """
-
-    if len(peer_names) < desired_node_count:
-        raise ValueError("User requested that file is shared by more peers than the number of peers in the system")
-
-    chosen_peers = []
-    peer_names_copy = copy.deepcopy(peer_names)
-
-    if __in_yes_no("\nDo you wish to manually insert some labels for this file?"):
-        chosen_peers = __in_file_labels(peers_uptime_dict, peer_names)
-        peer_names_copy = [label for label in peer_names_copy if label not in chosen_peers]
-
-    chosen_count = len(chosen_peers)
-    while chosen_count < desired_node_count:
-        chosen_count += 1
-        choice = np.random.choice(a=peer_names_copy)
-        peer_names_copy.remove(choice)
-        chosen_peers.append(choice)
-    return chosen_peers
-
-
-def __init_shared_dict(peer_uptime_dict: Dict[str, float]) -> Dict[str, Any]:
-    """
-    Creates the "shared" key of simulation file (json file)
-    :param Dict[str, float] peer_uptime_dict: names of all peers in the system and their uptimes
-    :return Dict[Dict[Any]]shared_dict: the dictionary containing data respecting files to be shared in the system
-    """
-    shared_dict: Dict[str, Any] = {}
-    peer_names: List[str] = [*peer_uptime_dict.keys()]
+    persisting: Dict[str, Any] = {}
 
     print(
-        "\nAny file you want to simulate persistance of must be inside the following folder: ~/hive/app/static/shared\n"
-        "You may also want to keep a backup of such file in:  ~/hive/app/static/shared/shared_backups"
+        "\nAny file you want to simulate persistance of must be inside the "
+        "following folder: ~/hive/app/static/shared\n"
+        "You may also want to keep a backup of such file in:  "
+        "~/hive/app/static/shared/shared_backups"
     )
 
     add_file: bool = True
     while add_file:
-        file_name = __in_file_name("\nInsert name of the file you wish to persist (include extension if it has one): ")
-        shared_dict[file_name] = {}
-        shared_dict[file_name]["spread"] = __in_initial_spread()
-        shared_dict[file_name]["hive_size"] = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: \n")
-        # n = __in_number_of_nodes("Enter the number of nodes that should be sharing the next file: \n")
-        # shared_dict[file_name]["members"] = __init_hive_members(n, peer_uptime_dict, peer_names)
-        add_file = __in_yes_no("\nDo you want to add more files to be shared under this simulation file?")
-    return shared_dict
+        file_name = __input_filename(
+            "Name the file (with extension) you wish to simulate persistence of: ")
 
+        options_message = ("\nSelect how files blocks are spread across "
+                           "clusters at the start of the simulation: {\n"
+                           "   u: uniform distribution among network nodes,\n"
+                           "   i: near steady-state distribution,\n"
+                           "   a: all files concentrated on N replicas\n}\n")
+        options_list = ["u", "U", "i", "I", "a", "A"]
+        option_choice = __input_character_option(options_message, options_list)
+
+        persisting[file_name] = {}
+        persisting[file_name]["spread"] = option_choice.lower()
+        persisting[file_name]["cluster_size"] = __input_bounded_integer(
+            "Number of nodes that should be sharing the next file: \n")
+
+        add_file = __in_yes_no(
+            "\nSimulate persistence of another file in simulation?")
+
+    return persisting
 # endregion
 
 
-# region Main
+def main(simfile_name: str) -> None:
+    """Creates a JSON file within the user's file system that is used by
+    :py:mod:`hive_simulation`.
 
-def main(simfile_name: str):
+    Note:
+        The name of the created file concerns the name of the simulation file.
+        It does not concern the name or names of the files whose persistence
+        is being simulalted.
+
+    Args:
+        simfile_name:
+            Name to be assigned to JSON file in the user's file system.
     """
-    Creates a structured json file within the user's file system that can be used as input for an HIVE system simulation
-    :param str simfile_name: id to be assigned to the simulation file (json file) in the user's file system
-    """
-    peers_uptime_dict: Dict[str, float] = __init_peer_uptime_dict()
     simfile_json: Dict[str, Any] = {
-        "peers_uptime": peers_uptime_dict,
-        "shared": __init_shared_dict(peers_uptime_dict)
+        "nodes_uptime": __init_nodes_uptime(),
+        "persisting": __init_persisting_dict()
     }
 
     with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
         json.dump(simfile_json, outfile, indent=4)
 
 
-# noinspection DuplicatedCode
 if __name__ == "__main__":
     simfile_name_: str = ""
 
     try:
-        options, args = getopt.getopt(
-            sys.argv[1:], "pf:", ["plotuptimedistr", "file="])
-
+        short_opts = "f:"
+        long_opts = ["file="]
+        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
         for options, args in options:
-            if options in ("-p", "--plotuptimedistr"):
-                ng.plot_uptime_distribution()
             if options in ("-f", "--file"):
                 simfile_name_ = str(args).strip()
                 if simfile_name_:
@@ -315,7 +290,4 @@ if __name__ == "__main__":
                     sys.exit("Invalid simulation file - blank id not allowed")
 
     except getopt.GetoptError:
-        print("Usage: python simfile_generator.py "
-              "--file=filename.json")
-
-# endregion
+        print("Usage: python simfile_generator.py --file=filename.json")

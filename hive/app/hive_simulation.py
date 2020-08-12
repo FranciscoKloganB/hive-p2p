@@ -1,11 +1,11 @@
-"""The functionality offered by this module is used to start simulations.
+"""This scripts's functions are used to start simulations.
 
     You can start a simulation by executing the following command::
 
         $ python hive_simulation.py --file=a_simulation_name.json --iters=30
 
     You can also execute all simulation file that exist in
-    :py:const:`~globals.globals.SIMULATION_ROOT` by instead executing:
+    :py:const:`~environment_settings.SIMULATION_ROOT` by instead executing:
 
         $ python hive_simulation.py -d -i 24
 
@@ -23,23 +23,25 @@
     Notes:
         For the simulation to run without errors you must ensurue that::
             1. The specified simulation files exist in
-            :py:const:`~globals.globals.SIMULATION_ROOT`.
+            :py:const:`~environment_settings.SIMULATION_ROOT`.
 
             2. Any file used by the simulation, e.g., a picture or a .pptx
-            document is accessible in :py:const:`~globals.globals.SHARED_ROOT`.
+            document is accessible in :py:const:`~environment_settings.SHARED_ROOT`.
 
             3. An output file simdirectory exists with default path being:
-            :py:const:`~globals.globals.OUTFILE_ROOT`.
+            :py:const:`~environment_settings.OUTFILE_ROOT`.
 """
+
+import getopt
 import os
 import sys
-import numpy
-import getopt
 from concurrent.futures.thread import ThreadPoolExecutor
 
-import domain.Hivemind as hm
-from domain.helpers.MatlabEngineContainer import MatlabEngineContainer
-from globals.globals import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT
+import numpy
+
+from domain.helpers.matlab_utils import MatlabEngineContainer
+from environment_settings import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT, \
+    MASTER_SERVERS
 
 __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
@@ -47,6 +49,9 @@ __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
 
 
 # region Module private functions (helpers)
+from utils.convertions import class_name_to_obj
+
+
 def __makedirs() -> None:
     """Creates required simulation working directories if they do not exist."""
     if not os.path.exists(SHARED_ROOT):
@@ -77,7 +82,10 @@ def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
         epochs:
             The number of discrete time steps the simulation lasts.
     """
-    hm.Hivemind(sname, sid, epochs).execute_simulation()
+    master_server = class_name_to_obj(
+        MASTER_SERVERS, master_class,
+        [sname, sid, epochs, cluster_class, node_class])
+    master_server.execute_simulation()
 
 
 def __parallel_main(
@@ -122,14 +130,14 @@ def main(
             single thread).
         sdir:
             Indicates if the user wishes to execute all simulation files
-            that exist in :py:const:`~globals.globals.SIMULATION_ROOT` or
+            that exist in :py:const:`~environment_settings.SIMULATION_ROOT` or
             if he wishes to run one single simulation file, which must be
             explicitly specified in `sname` (default is False).
         sname:
             When `sdir` is set to False, `sname` needs to be specified as a
             non blank string containing the name of the simulation file to
             be executed. The named file must exist in
-            :py:const:`~globals.globals.SIMULATION_ROOT`.
+            :py:const:`~environment_settings.SIMULATION_ROOT`.
         iters:
             The number of times the same simulation file should be executed (
             default is 30).
@@ -155,9 +163,16 @@ if __name__ == "__main__":
     iterations = 30
     duration = 720
 
+    master_class = "Hivemind"
+    cluster_class = "BaseHive"
+    node_class = "BaseNode"
+
     try:
-        short_opts = "df:i:t:e:"
-        long_opts = ["directory", "file=", "iters=", "threading=", "epochs="]
+        short_opts = "df:i:t:e:m:c:n:"
+        long_opts = [
+            "directory", "file=", "iters=", "threading=", "epochs=",
+            "master_server=", "cluster_group=", "network_node="
+        ]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
@@ -173,6 +188,12 @@ if __name__ == "__main__":
                 iterations = int(str(args).strip())
             if options in ("-e", "--epochs"):
                 duration = int(str(args).strip())
+            if options in ("-m", "--master_server"):
+                master_class = str(args).strip()
+            if options in ("-c", "--cluster_group"):
+                cluster_class = str(args).strip()
+            if options in ("-n", "--network_node"):
+                node_class = str(args).strip()
 
         if simfile or simdirectory:
             main(threading, simdirectory, simfile, iterations, duration)
@@ -183,8 +204,11 @@ if __name__ == "__main__":
         sys.exit(__err_message__)
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
-                 "--iterations -i (int)\n"
-                 "--epochs -e (int)\n"
-                 "--threading -t (int)\n"
-                 "--directory -d (void)\n"
-                 "--file -f (str)")
+                 "  --iterations -i (int)\n"
+                 "  --epochs -e (int)\n"
+                 "  --threading -t (int)\n"
+                 "  --directory -d (void)\n"
+                 "  --file -f (str)\n"
+                 "  --master_server -m (str)\n"
+                 "  --cluster_group -c (str)\n"
+                 "  --network_node -n (str)\n")
