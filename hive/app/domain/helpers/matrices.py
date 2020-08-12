@@ -23,7 +23,7 @@ OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 
 # region Adjacency matrix constructors
-def new_symmetric_adjency_matrix(size: int):
+def new_symmetric_matrix(size: int):
     """Generates a random symmetric matrix
 
      The generated adjacency matrix does not have transient state sets or
@@ -39,26 +39,31 @@ def new_symmetric_adjency_matrix(size: int):
         groups of network nodes.
     """
     secure_random = random.SystemRandom()
-    adj_matrix: List[List[int]] = [[0] * size for _ in range(size)]
+    a: List[List[int]] = [[0] * size for _ in range(size)]
 
     for i in range(size):
         for j in range(i, size):
             p = secure_random.uniform(0.0, 1.0)
             edge_val = np.ceil(p) if p >= 0.5 else np.floor(p)
-            adj_matrix[i][j] = adj_matrix[j][i] = edge_val
+            a[i][j] = a[j][i] = edge_val
 
+    return a if is_symmetric(a) else new_symmetric_matrix(size)
+
+
+def make_matrix_connected(a: np.ndarray):
+    size = a.shape[0]
     # Use guilty until proven innocent approach for both checks
     for i in range(size):
         is_absorbent_or_transient: bool = True
         for j in range(size):
             # Ensure state i can reach and be reached by some other state j
-            if adj_matrix[i][j] == 1 and i != j:
+            if a[i, j] == 1 and i != j:
                 is_absorbent_or_transient = False
                 break
         if is_absorbent_or_transient:
             j = random_index(i, size)
-            adj_matrix[i][j] = adj_matrix[j][i] = 1
-    return adj_matrix
+            a[i, j] = a[j, i] = 1
+    return a
 # endregion
 
 
