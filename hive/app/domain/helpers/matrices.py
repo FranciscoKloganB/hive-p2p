@@ -11,19 +11,19 @@ from typing import Tuple, Any, Optional, List
 import random
 import cvxpy as cvx
 import numpy as np
-import pandas as pd
 
 from utils.randoms import random_index
 
 from domain.helpers.exceptions import DistributionShapeError, MatrixError
 from domain.helpers.exceptions import MatrixNotSquareError
 from domain.helpers.matlab_utils import MatlabEngineContainer
+from scipy.sparse.csgraph import connected_components
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 
 # region Adjacency matrix constructors
-def new_symmetric_matrix(size: int):
+def new_symmetric_matrix(size: int) -> np.ndarray:
     """Generates a random symmetric matrix
 
      The generated adjacency matrix does not have transient state sets or
@@ -49,7 +49,7 @@ def new_symmetric_matrix(size: int):
     return m if is_symmetric(m) else new_symmetric_matrix(size)
 
 
-def make_matrix_connected(m: np.ndarray):
+def make_connected(m: np.ndarray) -> np.ndarray:
     """Turns a matrix into a connected matrix that could represent a
     connected graph.
 
@@ -444,60 +444,28 @@ def is_symmetric(m: np.ndarray, tol: float = 1e-8) -> bool:
         tol:
             The tolerance used to verify the entries of the matrix (default
             is 1e-8).
+
     Returns:
         True if the matrix is symmetric, else False.
     """
     return np.all(np.abs(m - m.transpose()) < tol)
 
 
-def is_connected(
-        graph: pd.DataFrame, visited: set = None, start_node: str = "") -> bool:
-    """Determines if the graph is connected
+def is_connected(m: np.ndarray, directed: bool = False) -> bool:
+    """Checks if a matrix is connected by counting the number of connected
+    components.
 
     Args:
-        graph:
-            The graph to be verified.
-        visited:
-            A set of nodes that were visited throughout the recursion.
-        start_node:
-            A random node from the graph.
+        m:
+            The matrix to be verified.
+        directed:
+            If the matrix edges are directed, i.e., if the matrix is an adjency
+            matrix are the edges bidirectional, where false means they are (
+            default is false).
 
     Returns:
-        True when any node can be reached by any other node, otherwise False.
+        True if the matrix is a connected graph, else False.
     """
-    # if graph.shape == (0, 0):
-    #     raise MatrixError(f"Graph as invalid shape: {graph.shape}.")
-    #
-    # if visited is None:
-    #     visited = set()
-    #
-    # graph_nodes = [*graph.columns]
-    # if start_node == "":
-    #     start_node = graph_nodes[0]
-    #
-    # visited.add(start_node)
-    # if len(visited) != len(graph_nodes):
-    #     for node in gdict[start_node]:
-    #         if node not in visited:
-    #             if is_connected(visited, node):
-    #                 return True
-    # else:
-    #     return True
-    # return False
-    # if vertices_encountered is None:
-    #     vertices_encountered = set()
-    # gdict = self.__graph_dict
-    # vertices = list(gdict.keys()) # "list" necessary in Python 3
-    # if not start_vertex:
-    #     # chosse a vertex from graph as a starting point
-    #     start_vertex = vertices[0]
-    # vertices_encountered.add(start_vertex)
-    # if len(vertices_encountered) != len(vertices):
-    #     for vertex in gdict[start_vertex]:
-    #         if vertex not in vertices_encountered:
-    #             if self.is_connected(vertices_encountered, vertex):
-    #                 return True
-    # else:
-    #     return True
-    # return False
+    n, cc_labels = connected_components(m, directed=directed)
+    return n == 1
 # endregion

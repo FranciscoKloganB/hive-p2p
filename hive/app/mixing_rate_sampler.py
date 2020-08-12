@@ -69,7 +69,7 @@ def main():
         for i in range(1, samples + 1):
             print(f"    Sample {i}.")
             a = np.asarray(mm.new_symmetric_matrix(size))
-            a = mm.make_matrix_connected(a)
+            a = mm.make_connected(a)
             v_ = np.abs(np.random.randn(size))
             v_ /= v_.sum()
 
