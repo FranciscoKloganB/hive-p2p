@@ -11,10 +11,11 @@ from typing import Tuple, Any, Optional, List
 import random
 import cvxpy as cvx
 import numpy as np
+import pandas as pd
 
 from utils.randoms import random_index
 
-from domain.helpers.exceptions import DistributionShapeError
+from domain.helpers.exceptions import DistributionShapeError, MatrixError
 from domain.helpers.exceptions import MatrixNotSquareError
 from domain.helpers.matlab_utils import MatlabEngineContainer
 
@@ -39,20 +40,18 @@ def new_symmetric_adjency_matrix(size: int):
     """
     secure_random = random.SystemRandom()
     adj_matrix: List[List[int]] = [[0] * size for _ in range(size)]
-    choices: List[int] = [0, 1]
 
     for i in range(size):
         for j in range(i, size):
-            probability = secure_random.uniform(0.0, 1.0)
-            edge_val = np.random.choice(a=choices, p=[probability,
-                                                      1 - probability]).item()  # converts numpy.int32 to int
+            p = secure_random.uniform(0.0, 1.0)
+            edge_val = np.ceil(p) if p >= 0.5 else np.floor(p)
             adj_matrix[i][j] = adj_matrix[j][i] = edge_val
 
     # Use guilty until proven innocent approach for both checks
     for i in range(size):
         is_absorbent_or_transient: bool = True
         for j in range(size):
-            # Ensure state i can reach and be reached by some other state j, where i != j
+            # Ensure state i can reach and be reached by some other state j
             if adj_matrix[i][j] == 1 and i != j:
                 is_absorbent_or_transient = False
                 break
@@ -421,4 +420,60 @@ def get_markov_matrix_fast_mixing_rate(m: np.ndarray) -> float:
     mixing_rate = np.max(np.abs(eigenvalues))
     return mixing_rate.item()
 
+
+def is_symmetric(a: np.ndarray, tol: float = 1e-8) -> bool:
+    """Checks if a matrix is symmetric by comparing entries of a and a.T."""
+    return np.all(np.abs(a-a.transpose()) < tol)
+
+
+def is_connected(
+        graph: pd.DataFrame, visited: set = None, start_node: str = "") -> bool:
+    """Determines if the graph is connected
+
+    Args:
+        graph:
+            The graph to be verified.
+        visited:
+            A set of nodes that were visited throughout the recursion.
+        start_node:
+            A random node from the graph.
+
+    Returns:
+        True when any node can be reached by any other node, otherwise False.
+    """
+    # if graph.shape == (0, 0):
+    #     raise MatrixError(f"Graph as invalid shape: {graph.shape}.")
+    #
+    # if visited is None:
+    #     visited = set()
+    #
+    # graph_nodes = [*graph.columns]
+    # if start_node == "":
+    #     start_node = graph_nodes[0]
+    #
+    # visited.add(start_node)
+    # if len(visited) != len(graph_nodes):
+    #     for node in gdict[start_node]:
+    #         if node not in visited:
+    #             if is_connected(visited, node):
+    #                 return True
+    # else:
+    #     return True
+    # return False
+    # if vertices_encountered is None:
+    #     vertices_encountered = set()
+    # gdict = self.__graph_dict
+    # vertices = list(gdict.keys()) # "list" necessary in Python 3
+    # if not start_vertex:
+    #     # chosse a vertex from graph as a starting point
+    #     start_vertex = vertices[0]
+    # vertices_encountered.add(start_vertex)
+    # if len(vertices_encountered) != len(vertices):
+    #     for vertex in gdict[start_vertex]:
+    #         if vertex not in vertices_encountered:
+    #             if self.is_connected(vertices_encountered, vertex):
+    #                 return True
+    # else:
+    #     return True
+    # return False
 # endregion
