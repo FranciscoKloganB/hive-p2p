@@ -7,7 +7,7 @@ import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
-import scripts.python.plotting._matplotlib_configs as cfg
+import _matplotlib_configs as cfg
 
 from json import JSONDecodeError
 from typing import OrderedDict, List, Any, Dict
@@ -70,9 +70,17 @@ def __create_box_plot__(
                labels=func_labels,
                rotation=45)
 
-    plt.xlabel("Generating Function", fontproperties=cfg.fp_axis_labels)
+    plt.title(f"Algorithm performance comparison for networks of size {skey}",
+              pad=cfg.title_pad,
+              fontproperties=cfg.fp_title)
+    plt.xlabel("generating function",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    plt.ylabel("mixing rate",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+
     plt.xlim(-2, func_count * 2)
-    plt.ylabel("Mixing Rate", fontproperties=cfg.fp_axis_labels)
     plt.ylim(0.1, 1.1)
 
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_sk{skey}-samples{slen}"
