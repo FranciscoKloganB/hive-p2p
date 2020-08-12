@@ -257,8 +257,8 @@ class BaseHive:
             node_uptimes.append(node.uptime)
             node_ids.append(node.id)
 
-        a = np.asarray(mm.new_symmetric_matrix(len(node_ids)))
-        a = mm.make_connected(a)
+        size = len(node_ids)
+        a = mm.new_symmetric_connected_matrix(size)
         v_ = np.asarray(self.new_desired_distribution(node_ids, node_uptimes))
 
         t = self.select_fastest_topology(a, v_)

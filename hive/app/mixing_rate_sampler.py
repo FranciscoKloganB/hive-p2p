@@ -68,15 +68,14 @@ def main():
 
         for i in range(1, samples + 1):
             print(f"    Sample {i}.")
-            a = np.asarray(mm.new_symmetric_matrix(size))
-            a = mm.make_connected(a)
+            m = mm.new_symmetric_connected_matrix(size)
             v_ = np.abs(np.random.randn(size))
             v_ /= v_.sum()
 
             for name in functions:
                 print(f"        Calculating mr for matrix of function: '{name}'")
                 try:
-                    _, mixing_rate = getattr(module, name)(a, v_)
+                    _, mixing_rate = getattr(module, name)(m, v_)
                     size_results[name].append(mixing_rate)
                 except (SolverError, EngineError):
                     size_results[name].append(float('inf'))
