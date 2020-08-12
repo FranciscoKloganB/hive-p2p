@@ -54,19 +54,19 @@ def __create_box_plot__(
     labels = [*func_samples.keys()]
     samples = [*func_samples.values()]
 
-    green_diamond = {
-        'markerfacecolor': 'g',
+    outlyer_shape = {
+        # 'markerfacecolor': 'g',
         'marker': 'D'
     }
-    plt_offsets = np.array(range(func_count)) * 2.0 - 0.4
+    plt_offsets = np.array(range(func_count)) * 2.0
 
     plt.figure()
-    plt.boxplot(samples, positions=plt_offsets, flierprops=green_diamond,
-                widths=0.6, notch=True)
+    plt.boxplot(samples, positions=plt_offsets, flierprops=outlyer_shape,
+                widths=1, notch=True)
 
-    plt.xticks(range(0, func_count * 2, 2), labels)
+    plt.xticks(range(0, func_count * 2, 2), labels, rotation=90)
     plt.xlim(-2, func_count * 2)
-    plt.ylim(0, 1)
+    plt.ylim(0.1, 1.1)
 
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_sk{skey}-samples{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
