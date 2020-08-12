@@ -61,11 +61,9 @@ def main():
 
     for size in network_sizes:
         print(f"\nTesting matrices of size: {size}.")
-
         size_results: _SizeResultsDict = collections.OrderedDict()
         for name in functions:
             size_results[name] = []
-
         for i in range(1, samples + 1):
             print(f"    Sample {i}.")
             m = mm.new_symmetric_connected_matrix(size)
