@@ -12,6 +12,7 @@ import random
 import cvxpy as cvx
 import numpy as np
 from cvxpy import SolverError, DCPError
+from matlab.engine import EngineError
 
 from utils.randoms import random_index
 
@@ -161,11 +162,15 @@ def new_mgo_transition_matrix(
         respective mixing rate.
     """
     matlab_container = MatlabEngineContainer.get_instance()
-    result = matlab_container.matrix_global_opt(a, v_)
-    if result:
-        t = np.array(result._data).reshape(result.size, order='F').T
-        return t, get_mixing_rate(t)
-    return None, float('inf')
+    try:
+        result = matlab_container.matrix_global_opt(a, v_)
+        if result:
+            t = np.array(result._data).reshape(result.size, order='F').T
+            return t, get_mixing_rate(t)
+        else:
+            return None, float('inf')
+    except EngineError:
+        return None, float('inf')
 # endregion
 
 
