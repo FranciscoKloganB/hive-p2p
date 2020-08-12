@@ -17,7 +17,7 @@ __MIXING_RATE_HOME__ = os.path.abspath(os.path.join(
 __MIXING_RATE_PLOTS_HOME__ = os.path.join(__MIXING_RATE_HOME__, 'plots')
 
 
-def box_plot(json: Dict[str, Any]) -> None:
+def box_plot(json: _ResultsDict) -> None:
     """Creates a Box Plots that show the minimum, maximum, Q1, Q2, Q3 and IQR
     as well as outlyer mixing rate values of several markov matrix generating
     functions.
@@ -25,6 +25,59 @@ def box_plot(json: Dict[str, Any]) -> None:
     Args:
         json: A readable json object.
     """
+    for size_key, func_dict in json.items():
+        # Hack to get sample count, i.e., the length of the List[float]
+        sample_count = len(next(iter(func_dict.values())))
+        __create_box_plot__(size_key, sample_count, func_dict)
+
+
+def __create_box_plot__(
+        skey: str, slen: int, func_samples: _SizeResultsDict) -> None:
+    """Uses matplotlib.pyplot.pie_chart to create a pie chart.
+
+    Args:
+        skey:
+            The key representing the size of the matrices upon which the
+            various functions were tested, i.e., if the matrices were of
+            shape (8, 8), `skey` should be "8".
+        slen:
+            How many times each function in `func_wins` was tested in a
+            random adjacency matrix.
+        func_samples:
+            A collection mapping a function names to their respective mixing
+            rate samples, for matrices with size `skey`.
+    """
+    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+    fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_sk{skey}-samples{slen}"
+    plt.savefig(fig_name, bbox_inches='tight')
+
+
+def pie_chart(json: _ResultsDict) -> None:
+    """Creates Pies Chart that illustrate the frequency each function
+    inside processed json file was selected as the fastest markov matrix
+    converging to its respective steady state.
+
+    Args:
+        json: A readable json object.
+    """
+    for size_key, func_dict in json.items():
+        # Hack to get sample count, i.e., the length of the List[float]
+        sample_count = len(next(iter(func_dict.values())))
+        # Init all function names with 0 wins.
+        func_wins = {}.fromkeys(func_dict, 0)
+        # Create a (K,V) View of the func_dict once for efficiency.
+        func_dict_items = func_dict.items()
+        # Iterate all samples decide wins and use results in pie chart plotting.
+        for i in range(sample_count):
+            best_func = ""
+            smallest_mr = float('inf')
+            for func_name, sample_mr in func_dict_items:
+                if sample_mr[i] < smallest_mr:
+                    smallest_mr = sample_mr[i]
+                    best_func = func_name
+            if best_func != "":
+                func_wins[best_func] += 1
+        __create_pie_chart__(size_key, sample_count, func_wins)
 
 
 def __create_pie_chart__(
@@ -57,36 +110,6 @@ def __create_pie_chart__(
 
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_sk{skey}-samples{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
-
-
-def pie_chart(json: Dict[str, Any]) -> None:
-    """Creates Pies Chart that illustrate the frequency each function
-    inside processed json file was selected as the fastest markov matrix
-    converging to its respective steady state.
-
-    Args:
-        json: A readable json object.
-    """
-    for size_key, func_dict in json.items():
-        # Hack to get sample count, i.e., the length of the List[float]
-        # associated with each function name inside func_dict. They should
-        # all be the same length. Not the cleanest solution, but works...
-        sample_count = len(next(iter(func_dict.values())))
-        # Init all function names with 0 wins.
-        func_wins = {}.fromkeys(func_dict, 0)
-        # Create a (K,V) View of the func_dict once for efficiency.
-        func_dict_items = func_dict.items()
-        # Iterate all samples decide wins and use results in pie chart plotting.
-        for i in range(sample_count):
-            best_func = ""
-            smallest_mr = float('inf')
-            for func_name, sample_mr in func_dict_items:
-                if sample_mr[i] < smallest_mr:
-                    smallest_mr = sample_mr[i]
-                    best_func = func_name
-            if best_func != "":
-                func_wins[best_func] += 1
-        __create_pie_chart__(size_key, sample_count, func_wins)
 
 
 def __makedirs__():
