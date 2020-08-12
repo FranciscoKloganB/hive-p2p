@@ -45,8 +45,7 @@ def new_symmetric_matrix(size: int) -> np.ndarray:
             p = secure_random.uniform(0.0, 1.0)
             edge_val = np.ceil(p) if p >= 0.5 else np.floor(p)
             m[i, j] = m[j, i] = edge_val
-
-    return m if is_symmetric(m) else new_symmetric_matrix(size)
+    return m
 
 
 def make_connected(m: np.ndarray) -> np.ndarray:
