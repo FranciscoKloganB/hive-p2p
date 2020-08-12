@@ -73,7 +73,6 @@ def main():
             v_ /= v_.sum()
 
             for name in functions:
-                print(f"        Calculating mr for matrix of function: '{name}'")
                 try:
                     _, mixing_rate = getattr(module, name)(m, v_)
                     size_results[name].append(mixing_rate)
