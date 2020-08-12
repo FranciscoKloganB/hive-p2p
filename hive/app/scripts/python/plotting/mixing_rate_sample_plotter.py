@@ -51,41 +51,28 @@ def __create_box_plot__(
             rate samples, for matrices with size `skey`.
     """
     func_count = len(func_samples)
-    labels = [*func_samples.keys()]
+    func_labels = __shorten_labels__([*func_samples.keys()])
     samples = [*func_samples.values()]
 
     outlyer_shape = {
         # 'markerfacecolor': 'g',
         'marker': 'D'
     }
-    plt_offsets = np.array(range(func_count)) * 2.0
 
     plt.figure()
-    plt.boxplot(samples, positions=plt_offsets, flierprops=outlyer_shape,
-                widths=1, notch=True)
-
-    plt.xticks(range(0, func_count * 2, 2), labels, rotation=90)
+    plt.boxplot(samples,
+                positions=np.array(range(func_count)) * 2.0,
+                flierprops=outlyer_shape,
+                widths=1,
+                notch=True)
+    plt.xticks(ticks=range(0, func_count * 2, 2),
+               labels=func_labels,
+               rotation=45)
     plt.xlim(-2, func_count * 2)
     plt.ylim(0.1, 1.1)
 
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_sk{skey}-samples{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
-
-
-def __set_box_color__(bp: Any, color: str) -> None:
-    """Changes the colors of a boxplot.
-
-    Args:
-        bp:
-            The boxplot reference object to be modified.
-        color:
-            A string specifying the color to apply to the boxplot in
-            hexadecimal RBG.
-    """
-    plt.setp(bp['boxes'], color=color)
-    plt.setp(bp['whiskers'], color=color)
-    plt.setp(bp['caps'], color=color)
-    plt.setp(bp['medians'], color=color)
 # endregion
 
 
@@ -137,12 +124,16 @@ def __create_pie_chart__(
             state faster than the remaining ones.
     """
     # Pie chart, where the slices will be ordered and plotted counter-clockwise:
-    labels = [*func_wins.keys()]
+    labels = __shorten_labels__([*func_wins.keys()])
     sizes = [*func_wins.values()]
 
     fig1, ax = plt.subplots()
 
-    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+    ax.pie(sizes,
+           labels=labels,
+           autopct='%1.1f%%',
+           startangle=90,
+           labeldistance=1.25)
     # Equal aspect ratio ensures that pie is drawn as a circle.
     ax.axis('equal')
 
@@ -155,6 +146,39 @@ def __create_pie_chart__(
 def __makedirs__():
     if not os.path.exists(__MIXING_RATE_PLOTS_HOME__):
         os.mkdir(__MIXING_RATE_PLOTS_HOME__)
+
+
+def __shorten_labels__(labels: List[str]) -> List[str]:
+    """Shortens functions' names for better plot labeling.
+
+    Args:
+        labels:
+            A collection of labels to be shortened.
+    """
+    blacklist = {"new_", "_transition_matrix"}
+    labels_count = len(labels)
+    for i in range(labels_count):
+        text = labels[i]
+        for word in blacklist:
+            text = text.replace(word, "")
+        labels[i] = text
+    return labels
+
+
+def __set_box_color__(bp: Any, color: str) -> None:
+    """Changes the colors of a boxplot.
+
+    Args:
+        bp:
+            The boxplot reference object to be modified.
+        color:
+            A string specifying the color to apply to the boxplot in
+            hexadecimal RBG.
+    """
+    plt.setp(bp['boxes'], color=color)
+    plt.setp(bp['whiskers'], color=color)
+    plt.setp(bp['caps'], color=color)
+    plt.setp(bp['medians'], color=color)
 # endregion
 
 
