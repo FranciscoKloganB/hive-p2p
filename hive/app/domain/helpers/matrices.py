@@ -39,31 +39,40 @@ def new_symmetric_matrix(size: int):
         groups of network nodes.
     """
     secure_random = random.SystemRandom()
-    a: List[List[int]] = [[0] * size for _ in range(size)]
-
+    m = np.zeros((size, size))
     for i in range(size):
         for j in range(i, size):
             p = secure_random.uniform(0.0, 1.0)
             edge_val = np.ceil(p) if p >= 0.5 else np.floor(p)
-            a[i][j] = a[j][i] = edge_val
+            m[i, j] = m[j, i] = edge_val
 
-    return a if is_symmetric(a) else new_symmetric_matrix(size)
+    return m if is_symmetric(m) else new_symmetric_matrix(size)
 
 
-def make_matrix_connected(a: np.ndarray):
-    size = a.shape[0]
+def make_matrix_connected(m: np.ndarray):
+    """Turns a matrix into a connected matrix that could represent a
+    connected graph.
+
+    Args:
+        m: The matrix to be made connected.
+
+    Returns:
+        A connected matrix. If the inputed matrix was connected it will
+        remain so.
+    """
+    size = m.shape[0]
     # Use guilty until proven innocent approach for both checks
     for i in range(size):
         is_absorbent_or_transient: bool = True
         for j in range(size):
             # Ensure state i can reach and be reached by some other state j
-            if a[i, j] == 1 and i != j:
+            if m[i, j] == 1 and i != j:
                 is_absorbent_or_transient = False
                 break
         if is_absorbent_or_transient:
             j = random_index(i, size)
-            a[i, j] = a[j, i] = 1
-    return a
+            m[i, j] = m[j, i] = 1
+    return m
 # endregion
 
 
@@ -426,9 +435,19 @@ def get_markov_matrix_fast_mixing_rate(m: np.ndarray) -> float:
     return mixing_rate.item()
 
 
-def is_symmetric(a: np.ndarray, tol: float = 1e-8) -> bool:
-    """Checks if a matrix is symmetric by comparing entries of a and a.T."""
-    return np.all(np.abs(a-a.transpose()) < tol)
+def is_symmetric(m: np.ndarray, tol: float = 1e-8) -> bool:
+    """Checks if a matrix is symmetric by comparing entries of a and a.T.
+
+    Args:
+        m:
+            The matrix to be verified.
+        tol:
+            The tolerance used to verify the entries of the matrix (default
+            is 1e-8).
+    Returns:
+        True if the matrix is symmetric, else False.
+    """
+    return np.all(np.abs(m - m.transpose()) < tol)
 
 
 def is_connected(
