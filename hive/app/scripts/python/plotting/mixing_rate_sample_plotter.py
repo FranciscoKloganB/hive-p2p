@@ -142,6 +142,7 @@ def __create_pie_chart__(
     fig1, ax = plt.subplots()
 
     plt.title(f"Algorithm selection frequency for networks of size {skey}",
+              x=0.68, y=1,
               pad=cfg.title_pad,
               fontproperties=cfg.fp_title)
 
@@ -159,11 +160,11 @@ def __create_pie_chart__(
     # Equal aspect ratio ensures that pie is drawn as a circle.
     ax.axis('equal')
 
+    # bbox_to_anchor(Xanchor, Yanchor, Xc_offset,  Yc_offset)
     leg = ax.legend(wedges,
                     labels,
                     frameon=False,
                     loc="center left",
-                    # bbox_to_anchor(Xanchor, Yanchor, Xc_offset,  Yc_offset)
                     bbox_to_anchor=(1, 0, 0.5, 1))
     leg.set_title("generating function",
                   prop=cfg.fp_axis_labels)
