@@ -20,3 +20,13 @@ class MatrixNotSquareError(Exception):
 
     def __str__(self):
         return self.value
+
+
+class MatrixError(Exception):
+    """Generic Matrix Error, can be used for example when a pandas DataFrame
+    has shape (0, 0) or is one-dimensional."""
+    def __init__(self, value=""):
+        self.value = value
+
+    def __str__(self):
+        return self.value

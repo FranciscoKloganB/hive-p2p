@@ -30,10 +30,11 @@ import importlib
 import json
 import os
 import sys
-from typing import List, Any, OrderedDict
+import ast
+from typing import List, Any, OrderedDict, Tuple
 
 import numpy as np
-from cvxpy.error import SolverError
+from cvxpy.error import SolverError, DCPError
 from matlab.engine import EngineError
 
 import domain.helpers.matrices as mm
@@ -58,30 +59,24 @@ def main():
 
     results: _ResultsDict = collections.OrderedDict()
 
-    size = 8
-    while size <= max_adj_size:
+    for size in network_sizes:
         print(f"\nTesting matrices of size: {size}.")
-
         size_results: _SizeResultsDict = collections.OrderedDict()
         for name in functions:
             size_results[name] = []
-
         for i in range(1, samples + 1):
             print(f"    Sample {i}.")
-            a = np.asarray(mm.new_symmetric_adjency_matrix(size))
-            v_ = np.abs(np.random.randn(size))
+            m = mm.new_symmetric_connected_matrix(size)
+            v_ = np.abs(np.random.uniform(0, 100, size))
             v_ /= v_.sum()
 
             for name in functions:
-                print(f"        Calculating mr for matrix of function: '{name}'")
                 try:
-                    _, mixing_rate = getattr(module, name)(a, v_)
+                    _, mixing_rate = getattr(module, name)(m, v_)
                     size_results[name].append(mixing_rate)
-                except (SolverError, EngineError):
+                except (DCPError, SolverError, EngineError):
                     size_results[name].append(float('inf'))
-
         results[str(size)] = size_results
-        size += size
 
     json_string = json.dumps(results, indent=4)
     dir_contents = os.listdir(MIXING_RATE_SAMPLE_ROOT)
@@ -93,7 +88,7 @@ def main():
 
 if __name__ == "__main__":
     samples: int = 30
-    max_adj_size: int = 16
+    network_sizes: Tuple[int] = (8, 16)
     module: Any = "domain.helpers.matrices"
     functions: List[str] = [
         "new_mh_transition_matrix",
@@ -103,14 +98,14 @@ if __name__ == "__main__":
     ]
 
     try:
-        short_opts = "s:a:m:f:"
-        long_opts = ["samples=", "adjacency_size=", "module=", "functions="]
+        short_opts = "s:n:m:f:"
+        long_opts = ["samples=", "network_sizes=", "module=", "functions="]
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
         for options, args in options:
             if options in ("-s", "--samples"):
                 samples = int(str(args).strip()) or samples
-            if options in ("-a", "--adjacency_size"):
-                max_adj_size = int(str(args).strip()) or max_adj_size
+            if options in ("-n", "--network_sizes"):
+                network_sizes = ast.literal_eval(str(args).strip())
             if options in ("-m", "--module"):
                 module = str(args).strip()
             if options in ("-f", "--functions"):
@@ -123,7 +118,7 @@ if __name__ == "__main__":
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --samples -s (int)\n"
-                 "  --adjacency_size -a (int)\n"
+                 "  --network_size -n (comma seperated list of int)\n"
                  "  --module -m (str)\n"
                  "  --functions -f (comma seperated list of str)\n")
     except (ModuleNotFoundError, ImportError):

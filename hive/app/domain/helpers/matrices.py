@@ -11,56 +11,17 @@ from typing import Tuple, Any, Optional, List
 import random
 import cvxpy as cvx
 import numpy as np
+from cvxpy import SolverError, DCPError
+from matlab.engine import EngineError
 
 from utils.randoms import random_index
 
-from domain.helpers.exceptions import DistributionShapeError
+from domain.helpers.exceptions import DistributionShapeError, MatrixError
 from domain.helpers.exceptions import MatrixNotSquareError
 from domain.helpers.matlab_utils import MatlabEngineContainer
+from scipy.sparse.csgraph import connected_components
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
-
-
-# region Adjacency matrix constructors
-def new_symmetric_adjency_matrix(size: int):
-    """Generates a random symmetric matrix
-
-     The generated adjacency matrix does not have transient state sets or
-     absorbent nodes and can effectively represent a network topology
-     with bidirectional connections between network nodes.
-
-     Args:
-         size:
-            The number of network nodes the BaseHive will have.
-
-    Returns:
-        The adjency matrix representing the connections between a
-        groups of network nodes.
-    """
-    secure_random = random.SystemRandom()
-    adj_matrix: List[List[int]] = [[0] * size for _ in range(size)]
-    choices: List[int] = [0, 1]
-
-    for i in range(size):
-        for j in range(i, size):
-            probability = secure_random.uniform(0.0, 1.0)
-            edge_val = np.random.choice(a=choices, p=[probability,
-                                                      1 - probability]).item()  # converts numpy.int32 to int
-            adj_matrix[i][j] = adj_matrix[j][i] = edge_val
-
-    # Use guilty until proven innocent approach for both checks
-    for i in range(size):
-        is_absorbent_or_transient: bool = True
-        for j in range(size):
-            # Ensure state i can reach and be reached by some other state j, where i != j
-            if adj_matrix[i][j] == 1 and i != j:
-                is_absorbent_or_transient = False
-                break
-        if is_absorbent_or_transient:
-            j = random_index(i, size)
-            adj_matrix[i][j] = adj_matrix[j][i] = 1
-    return adj_matrix
-# endregion
 
 
 # region Markov Matrix Constructors
@@ -86,7 +47,7 @@ def new_mh_transition_matrix(
         respective mixing rate.
     """
     t = _metropolis_hastings(a, v_)
-    return t, get_markov_matrix_fast_mixing_rate(t)
+    return t, get_mixing_rate(t)
 
 
 def new_sdp_mh_transition_matrix(
@@ -111,11 +72,14 @@ def new_sdp_mh_transition_matrix(
         Markov Matrix with `v_` as steady state distribution and the
         respective mixing rate.
     """
-    problem, a = _adjency_matrix_sdp_optimization(a)
-    if problem.status in OPTIMAL_STATUS:
-        t = _metropolis_hastings(a.value, v_)
-        return t, get_markov_matrix_fast_mixing_rate(t)
-    else:
+    try:
+        problem, a = _adjency_matrix_sdp_optimization(a)
+        if problem.status in OPTIMAL_STATUS:
+            t = _metropolis_hastings(a.value, v_)
+            return t, get_mixing_rate(t)
+        else:
+            return None, float('inf')
+    except (SolverError, DCPError):
         return None, float('inf')
 
 
@@ -160,14 +124,17 @@ def new_go_transition_matrix(
     ]
 
     # Formulate and Solve Problem
-    objective = cvx.Minimize(cvx.norm(t - u, 2))
-    problem = cvx.Problem(objective, constraints)
-    problem.solve()
+    try:
+        objective = cvx.Minimize(cvx.norm(t - u, 2))
+        problem = cvx.Problem(objective, constraints)
+        problem.solve()
 
-    if problem.status in OPTIMAL_STATUS:
-        return t.value.transpose(), get_markov_matrix_fast_mixing_rate(t.value)
-
-    return None, float('inf')
+        if problem.status in OPTIMAL_STATUS:
+            return t.value.transpose(), get_mixing_rate(t.value)
+        else:
+            return None, float('inf')
+    except (SolverError, DCPError):
+        return None, float('inf')
 
 
 def new_mgo_transition_matrix(
@@ -195,16 +162,19 @@ def new_mgo_transition_matrix(
         respective mixing rate.
     """
     matlab_container = MatlabEngineContainer.get_instance()
-    result = matlab_container.matrix_global_opt(a, v_)
-    if result:
-        t = np.array(result._data).reshape(result.size, order='F').T
-        return t, get_markov_matrix_fast_mixing_rate(t)
-    return None, float('inf')
+    try:
+        result = matlab_container.matrix_global_opt(a, v_)
+        if result:
+            t = np.array(result._data).reshape(result.size, order='F').T
+            return t, get_mixing_rate(t)
+        else:
+            return None, float('inf')
+    except EngineError:
+        return None, float('inf')
 # endregion
 
 
-# region Optimization
-
+# region SDP Optimization
 def _adjency_matrix_sdp_optimization(
         a: np.ndarray) -> Optional[Tuple[cvx.Problem, cvx.Variable]]:
     """Optimizes a symmetric adjacency matrix using Semidefinite Programming.
@@ -252,12 +222,10 @@ def _adjency_matrix_sdp_optimization(
     problem.solve(solver=cvx.MOSEK)
 
     return problem, a_opt
-
 # endregion
 
 
-# region Metropolis Hastings Impl.
-
+# region Metropolis Hastings
 def _metropolis_hastings(a: np.ndarray,
                          v_: np.ndarray,
                          column_major_in: bool = False,
@@ -392,13 +360,11 @@ def __get_diagonal_entry_probability(
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
-
 # endregion
 
 
 # region Helpers
-
-def get_markov_matrix_fast_mixing_rate(m: np.ndarray) -> float:
+def get_mixing_rate(m: np.ndarray) -> float:
     """Calculats the fast mixing rate the input matrix.
 
     The fast mixing rate of matrix M is the highest eigenvalue that is
@@ -415,10 +381,115 @@ def get_markov_matrix_fast_mixing_rate(m: np.ndarray) -> float:
     size = m.shape[0]
 
     if size != m.shape[1]:
-        raise MatrixNotSquareError("get_max_eigenvalue can't compute eigenvalues/vectors with non-square matrix input.")
+        raise MatrixNotSquareError(
+            "Can not compute eigenvalues/vectors with non-square matrix")
 
     eigenvalues, eigenvectors = np.linalg.eig(m - np.ones((size, size)) / size)
     mixing_rate = np.max(np.abs(eigenvalues))
     return mixing_rate.item()
 
+
+def new_symmetric_matrix(size: int) -> np.ndarray:
+    """Generates a random symmetric matrix.
+
+     The generated adjacency matrix does not have transient state sets or
+     absorbent nodes and can effectively represent a network topology
+     with bidirectional connections between network nodes.
+
+     Args:
+         size:
+            The length of the square matrix.
+
+    Returns:
+        The adjency matrix representing the connections between a
+        groups of network nodes.
+    """
+    secure_random = random.SystemRandom()
+    m = np.zeros((size, size))
+    for i in range(size):
+        for j in range(i, size):
+            p = secure_random.uniform(0.0, 1.0)
+            edge_val = np.ceil(p) if p >= 0.5 else np.floor(p)
+            m[i, j] = m[j, i] = edge_val
+    return m
+
+
+def new_symmetric_connected_matrix(size: int) -> np.ndarray:
+    """Generates a random symmetric matrix which is also connected.
+
+    See :py:func:`~domain.helpers.matrices.new_symmetric_matrix` and
+    py:func:`~domain.helpers.matrices.make_connected`.
+
+     Args:
+         size:
+            The length of the square matrix.
+
+    Returns:
+        A matrix that represents an adjacency matrix that is also connected.
+    """
+    m = np.asarray(new_symmetric_matrix(size))
+    if not is_connected(m):
+        m = make_connected(m)
+    return m
+
+
+def make_connected(m: np.ndarray) -> np.ndarray:
+    """Turns a matrix into a connected matrix that could represent a
+    connected graph.
+
+    Args:
+        m: The matrix to be made connected.
+
+    Returns:
+        A connected matrix. If the inputed matrix was connected it will
+        remain so.
+    """
+    size = m.shape[0]
+    # Use guilty until proven innocent approach for both checks
+    for i in range(size):
+        is_absorbent_or_transient: bool = True
+        for j in range(size):
+            # Ensure state i can reach and be reached by some other state j
+            if m[i, j] == 1 and i != j:
+                is_absorbent_or_transient = False
+                break
+        if is_absorbent_or_transient:
+            j = random_index(i, size)
+            m[i, j] = m[j, i] = 1
+    return m
+
+
+def is_symmetric(m: np.ndarray, tol: float = 1e-8) -> bool:
+    """Checks if a matrix is symmetric by comparing entries of a and a.T.
+
+    Args:
+        m:
+            The matrix to be verified.
+        tol:
+            The tolerance used to verify the entries of the matrix (default
+            is 1e-8).
+
+    Returns:
+        True if the matrix is symmetric, else False.
+    """
+    return np.all(np.abs(m - m.transpose()) < tol)
+
+
+def is_connected(m: np.ndarray, directed: bool = False) -> bool:
+    """Checks if a matrix is connected by counting the number of connected
+    components.
+
+    Args:
+        m:
+            The matrix to be verified.
+        directed:
+            If the matrix edges are directed, i.e., if the matrix is an adjency
+            matrix are the edges bidirectional, where false means they are (
+            default is false).
+
+    Returns:
+        True if the matrix is a connected graph, else False.
+    """
+    n, cc_labels = connected_components(m, directed=directed)
+    return n == 1
 # endregion

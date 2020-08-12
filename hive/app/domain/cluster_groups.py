@@ -250,21 +250,20 @@ class BaseHive:
             The labeled matrix that has the fastests mixing rate from all
             the pondered strategies.
         """
-        member_uptimes: List[float] = []
-        member_ids: List[str] = []
+        node_uptimes: List[float] = []
+        node_ids: List[str] = []
 
         for node in self.members.values():
-            member_uptimes.append(node.uptime)
-            member_ids.append(node.id)
+            node_uptimes.append(node.uptime)
+            node_ids.append(node.id)
 
-        A: np.ndarray = np.asarray(
-            mm.new_symmetric_adjency_matrix(len(member_ids)))
-        v_: np.ndarray = np.asarray(
-            self.new_desired_distribution(member_ids, member_uptimes))
+        size = len(node_ids)
+        a = mm.new_symmetric_connected_matrix(size)
+        v_ = np.asarray(self.new_desired_distribution(node_ids, node_uptimes))
 
-        T = self.select_fastest_topology(A, v_)
+        t = self.select_fastest_topology(a, v_)
 
-        return pd.DataFrame(T, index=member_ids, columns=member_ids)
+        return pd.DataFrame(t, index=node_ids, columns=node_ids)
 
     def broadcast_transition_matrix(self, m: pd.DataFrame) -> None:
         """Slices a transition matrix and delivers them to respective network nodes.
