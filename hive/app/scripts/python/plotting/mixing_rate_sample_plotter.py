@@ -6,11 +6,12 @@ import os
 import sys
 
 import numpy as np
+import matplotlib.pyplot as plt
+import scripts.python.plotting._matplotlib_configs as cfg
 
 from json import JSONDecodeError
 from typing import OrderedDict, List, Any, Dict
 
-import matplotlib.pyplot as plt
 
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
@@ -68,7 +69,10 @@ def __create_box_plot__(
     plt.xticks(ticks=range(0, func_count * 2, 2),
                labels=func_labels,
                rotation=45)
+
+    plt.xlabel("Generating Function", fontproperties=cfg.fp_axis_labels)
     plt.xlim(-2, func_count * 2)
+    plt.ylabel("Mixing Rate", fontproperties=cfg.fp_axis_labels)
     plt.ylim(0.1, 1.1)
 
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_sk{skey}-samples{slen}"
@@ -129,13 +133,28 @@ def __create_pie_chart__(
 
     fig1, ax = plt.subplots()
 
-    ax.pie(sizes,
-           labels=labels,
-           autopct='%1.1f%%',
-           startangle=90,
-           labeldistance=1.25)
+    wedges, texts, autotexts = ax.pie(
+        sizes,
+        # labels=labels,
+        autopct='%1.1f%%',
+        startangle=90,
+        labeldistance=None,  # labeldistance=None hides labels
+        textprops={
+            'color': 'white',
+            'weight': 'bold'
+        }
+    )
     # Equal aspect ratio ensures that pie is drawn as a circle.
     ax.axis('equal')
+
+    ax.legend(
+            wedges,
+            labels,
+            title="Generating Function",
+            loc="upper right",
+            # bbox_to_anchor(Xanchor, Yanchor, Xc_offset,  Yc_offset)
+            bbox_to_anchor=(1, 1, 0.2, -0.04)
+        )
 
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_sk{skey}-samples{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
