@@ -11,6 +11,7 @@ from typing import Tuple, Any, Optional, List
 import random
 import cvxpy as cvx
 import numpy as np
+from cvxpy import SolverError, DCPError
 
 from utils.randoms import random_index
 
@@ -70,11 +71,14 @@ def new_sdp_mh_transition_matrix(
         Markov Matrix with `v_` as steady state distribution and the
         respective mixing rate.
     """
-    problem, a = _adjency_matrix_sdp_optimization(a)
-    if problem.status in OPTIMAL_STATUS:
-        t = _metropolis_hastings(a.value, v_)
-        return t, get_mixing_rate(t)
-    else:
+    try:
+        problem, a = _adjency_matrix_sdp_optimization(a)
+        if problem.status in OPTIMAL_STATUS:
+            t = _metropolis_hastings(a.value, v_)
+            return t, get_mixing_rate(t)
+        else:
+            return None, float('inf')
+    except (SolverError, DCPError):
         return None, float('inf')
 
 
@@ -119,14 +123,17 @@ def new_go_transition_matrix(
     ]
 
     # Formulate and Solve Problem
-    objective = cvx.Minimize(cvx.norm(t - u, 2))
-    problem = cvx.Problem(objective, constraints)
-    problem.solve()
+    try:
+        objective = cvx.Minimize(cvx.norm(t - u, 2))
+        problem = cvx.Problem(objective, constraints)
+        problem.solve()
 
-    if problem.status in OPTIMAL_STATUS:
-        return t.value.transpose(), get_mixing_rate(t.value)
-
-    return None, float('inf')
+        if problem.status in OPTIMAL_STATUS:
+            return t.value.transpose(), get_mixing_rate(t.value)
+        else:
+            return None, float('inf')
+    except (SolverError, DCPError):
+        return None, float('inf')
 
 
 def new_mgo_transition_matrix(
