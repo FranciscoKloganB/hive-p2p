@@ -4,6 +4,9 @@ import getopt
 import json
 import os
 import sys
+
+import numpy as np
+
 from json import JSONDecodeError
 from typing import OrderedDict, List, Any, Dict
 
@@ -17,6 +20,7 @@ __MIXING_RATE_HOME__ = os.path.abspath(os.path.join(
 __MIXING_RATE_PLOTS_HOME__ = os.path.join(__MIXING_RATE_HOME__, 'plots')
 
 
+# region Box Plots
 def box_plot(json: _ResultsDict) -> None:
     """Creates a Box Plots that show the minimum, maximum, Q1, Q2, Q3 and IQR
     as well as outlyer mixing rate values of several markov matrix generating
@@ -41,17 +45,51 @@ def __create_box_plot__(
             various functions were tested, i.e., if the matrices were of
             shape (8, 8), `skey` should be "8".
         slen:
-            How many times each function in `func_wins` was tested in a
-            random adjacency matrix.
+            How many times each function was sampled for matrices of size `skey`.
         func_samples:
             A collection mapping a function names to their respective mixing
             rate samples, for matrices with size `skey`.
     """
-    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+    func_count = len(func_samples)
+    labels = [*func_samples.keys()]
+    samples = [*func_samples.values()]
+
+    green_diamond = {
+        'markerfacecolor': 'g',
+        'marker': 'D'
+    }
+    plt_offsets = np.array(range(func_count)) * 2.0 - 0.4
+
+    plt.figure()
+    plt.boxplot(samples, positions=plt_offsets, flierprops=green_diamond,
+                widths=0.6, notch=True)
+
+    plt.xticks(range(0, func_count * 2, 2), labels)
+    plt.xlim(-2, func_count * 2)
+    plt.ylim(0, 1)
+
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_sk{skey}-samples{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
 
 
+def __set_box_color__(bp: Any, color: str) -> None:
+    """Changes the colors of a boxplot.
+
+    Args:
+        bp:
+            The boxplot reference object to be modified.
+        color:
+            A string specifying the color to apply to the boxplot in
+            hexadecimal RBG.
+    """
+    plt.setp(bp['boxes'], color=color)
+    plt.setp(bp['whiskers'], color=color)
+    plt.setp(bp['caps'], color=color)
+    plt.setp(bp['medians'], color=color)
+# endregion
+
+
+# region Pie Charts
 def pie_chart(json: _ResultsDict) -> None:
     """Creates Pies Chart that illustrate the frequency each function
     inside processed json file was selected as the fastest markov matrix
@@ -110,11 +148,14 @@ def __create_pie_chart__(
 
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_sk{skey}-samples{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
+# endregion
 
 
+# region Helpers
 def __makedirs__():
     if not os.path.exists(__MIXING_RATE_PLOTS_HOME__):
         os.mkdir(__MIXING_RATE_PLOTS_HOME__)
+# endregion
 
 
 if __name__ == "__main__":
