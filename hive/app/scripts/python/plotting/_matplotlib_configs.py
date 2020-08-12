@@ -7,6 +7,7 @@ mpl.style.use('seaborn-deep')
 
 title_pad = 20
 labels_pad = 15
+legends_pad = 12
 
 fp_title = FontProperties(
     family='sans-serif',
