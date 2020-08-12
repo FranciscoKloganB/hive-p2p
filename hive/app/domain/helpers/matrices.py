@@ -162,8 +162,7 @@ def new_mgo_transition_matrix(
 # endregion
 
 
-# region Optimization
-
+# region SDP Optimization
 def _adjency_matrix_sdp_optimization(
         a: np.ndarray) -> Optional[Tuple[cvx.Problem, cvx.Variable]]:
     """Optimizes a symmetric adjacency matrix using Semidefinite Programming.
@@ -211,12 +210,10 @@ def _adjency_matrix_sdp_optimization(
     problem.solve(solver=cvx.MOSEK)
 
     return problem, a_opt
-
 # endregion
 
 
-# region Metropolis Hastings Impl.
-
+# region Metropolis Hastings
 def _metropolis_hastings(a: np.ndarray,
                          v_: np.ndarray,
                          column_major_in: bool = False,
@@ -351,12 +348,10 @@ def __get_diagonal_entry_probability(
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
-
 # endregion
 
 
 # region Helpers
-
 def get_mixing_rate(m: np.ndarray) -> float:
     """Calculats the fast mixing rate the input matrix.
 
