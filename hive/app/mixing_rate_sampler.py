@@ -34,7 +34,7 @@ import ast
 from typing import List, Any, OrderedDict, Tuple
 
 import numpy as np
-from cvxpy.error import SolverError
+from cvxpy.error import SolverError, DCPError
 from matlab.engine import EngineError
 
 import domain.helpers.matrices as mm
@@ -77,7 +77,7 @@ def main():
                 try:
                     _, mixing_rate = getattr(module, name)(m, v_)
                     size_results[name].append(mixing_rate)
-                except (SolverError, EngineError):
+                except (DCPError, SolverError, EngineError):
                     size_results[name].append(float('inf'))
         results[str(size)] = size_results
 
