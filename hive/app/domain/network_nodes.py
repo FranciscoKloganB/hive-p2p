@@ -436,8 +436,9 @@ class HiveNodeExt(HiveNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     HiveNodeExt instances differ from HiveNode in the sense that the
-    :py:class:`~domain.domain.HiveNode` do not monitor their groups' peers,
-    concerning fault detection."""
+    :py:class:`Hive Nodes <domain.domain.HiveNode>` do not monitor their
+    groups' peers, concerning suspicious behaviors.
+    """
 
     # region BaseNode overrides
     def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
