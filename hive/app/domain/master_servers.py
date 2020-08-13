@@ -138,7 +138,8 @@ class Hivemind:
     # region Simulation Interface
 
     def execute_simulation(self) -> None:
-        """Runs a stochastic swarm guidance algorithm applied to a P2P network"""
+        """Runs a stochastic swarm guidance algorithm applied
+        to a P2P network"""
         while self.epoch < Hivemind.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
             print("epoch: {}".format(self.epoch))
             terminated_clusters: List[str] = []
