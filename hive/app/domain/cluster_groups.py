@@ -34,7 +34,7 @@ import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
-from domain.network_nodes import BaseNode, HiveNode
+from domain.network_nodes import SimpleHiveNode, HiveNode
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
 from utils.convertions import truncate_float_value
@@ -69,7 +69,7 @@ class BaseCluster:
             coordinates this BaseCluster instance.
         members:
             A collection of network nodes that belong to the BaseCluster
-            instance. See also :py:class:`~domain.domain.BaseNode`.
+            instance. See also :py:class:`~domain.domain.SimpleHiveNode`.
         file:
             A reference to :py:class:`~domain.helpers.FileData` object that
             represents the file being persisted by the BaseCluster instance.
@@ -100,7 +100,7 @@ class BaseCluster:
 
     def __init__(self, hivemind: ms.Hivemind,
                  file_name: str,
-                 members: Dict[str, BaseNode],
+                 members: Dict[str, SimpleHiveNode],
                  sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `BaseCluster` object
@@ -114,7 +114,7 @@ class BaseCluster:
                 for persisting.
             members:
                 A dictionary mapping unique identifiers to of the BaseCluster's
-                initial network nodes (:py:class:`~domain.domain.BaseNode`.)
+                initial network nodes (:py:class:`~domain.domain.SimpleHiveNode`.)
                 to their instance objects.
             sim_id:
                 optional; Identifier that generates unique output file names,
@@ -130,7 +130,7 @@ class BaseCluster:
         self.v_: pd.DataFrame = pd.DataFrame()
         self.corruption_chances: List[float] = self._assign_disk_error_chance()
         self.hivemind = hivemind
-        self.members: Dict[str, BaseNode] = members
+        self.members: Dict[str, SimpleHiveNode] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(
@@ -207,7 +207,7 @@ class BaseCluster:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST, destination
 
-        destination_node: BaseNode = self.members[destination]
+        destination_node: SimpleHiveNode = self.members[destination]
         if destination_node.status == Status.ONLINE:
             return destination_node.receive_part(part), destination
         else:
@@ -380,7 +380,7 @@ class BaseCluster:
                                                self._recovery_epoch_calls,
                                                self.current_epoch)
 
-    def nodes_execute(self) -> List[BaseNode]:
+    def nodes_execute(self) -> List[SimpleHiveNode]:
         """Queries all network node members execute the epoch.
 
         This method logs the amount of lost parts throughout the current
@@ -393,10 +393,10 @@ class BaseCluster:
         Returns:
              A collection of members who disconnected during the current
              epoch.
-             See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+             See :py:meth:`~domain.network_nodes.SimpleHiveNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
-        off_nodes: List[BaseNode] = []
+        off_nodes: List[SimpleHiveNode] = []
         for node in self.members.values():
             if node.get_epoch_status() == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
@@ -458,7 +458,7 @@ class BaseCluster:
         else:
             self.file.logger.save_sets_and_reset()
 
-    def maintain(self, off_nodes: List[BaseNode]) -> None:
+    def maintain(self, off_nodes: List[SimpleHiveNode]) -> None:
         """Evicts disconnected network_nodes from the BaseCluster and
         attempts to recruit new ones.
 
@@ -555,8 +555,8 @@ class BaseCluster:
         """
         self.file.logger.initial_spread = strategy
 
-        choices: List[BaseNode]
-        nodes: List[BaseNode]
+        choices: List[SimpleHiveNode]
+        nodes: List[SimpleHiveNode]
         if strategy == "a":
             choices = [*self.members.values()]
             nodes = np.random.choice(a=choices,
@@ -611,13 +611,13 @@ class BaseCluster:
 
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
-    def __get_new_members__(self) -> Dict[str, BaseNode]:
+    def __get_new_members__(self) -> Dict[str, SimpleHiveNode]:
         """Helper method that gets adds network nodes, if possible,
         to the BaseCluster.
 
         Returns:
             A dictionary mapping network node identifiers and their instance
-            objects (:py:class:`~domain.network_nodes.BaseNode`).
+            objects (:py:class:`~domain.network_nodes.SimpleHiveNode`).
         """
         return self.hivemind.find_replacement_node(
             self.members, self.original_size - len(self.members))
@@ -758,7 +758,7 @@ class Hive(BaseCluster):
     """Represents a group of network nodes persisting a file.
 
     Hive instances differ from BaseCluster in the sense that the
-    :py:class:`Network Nodes <domain.network_nodes.BaseNode>` are responsible
+    :py:class:`Network Nodes <domain.network_nodes.SimpleHiveNode>` are responsible
     detecting that their cluster companions are disconnected and reporting it
     to the Hive for eviction after a certain quota is met.
 
@@ -779,7 +779,7 @@ class Hive(BaseCluster):
             status.
         _epoch_complaints:
             A set of unique identifiers formed from the concatenation of
-            :py:attr:`node identifiers <domain.network_nodes.BaseNode.id>`,
+            :py:attr:`node identifiers <domain.network_nodes.SimpleHiveNode.id>`,
             to avoid multiple complaint registrations on the same epoch,
             done by the same source towards the same target. The set is
             reset every epoch.
@@ -822,7 +822,7 @@ class Hive(BaseCluster):
         Returns:
              A collection of members who disconnected during the current
              epoch.
-             See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+             See :py:meth:`~domain.network_nodes.SimpleHiveNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
         off_nodes = []
@@ -909,7 +909,7 @@ class HDFSCluster(BaseCluster):
     Distributed File System scenario.
 
     Differ from BaseCluster in the sense that the
-    :py:class:`Network Nodes <domain.network_nodes.BaseNode>` are
+    :py:class:`Network Nodes <domain.network_nodes.SimpleHiveNode>` are
     do not perform swarm guidance behaviors and instead report with regular
     heartbeats to their monitoring `HDFSCluster` instance. This class would
     represent a NameNode Server in HDFS and a Master server in GFS.
@@ -925,10 +925,6 @@ class HDFSCluster(BaseCluster):
             with at five beats. When they miss five beats in a row, i.e.,
             when the dictionary value count is zero, they are evicted from the
             cluster.
-        data_node_files:
-            A dictionary mapping :py:mod:`Network
-            Nodes' <domain.network_nodes>` identifiers to the file blocks
-            they own.
     """
     def __init__(self, hivemind: ms.Hivemind, file_name: str,
                  members: Dict[str, HiveNode], sim_id: int = 0,
@@ -941,7 +937,6 @@ class HDFSCluster(BaseCluster):
         super().__init__(hivemind, file_name, members, sim_id, origin)
         self.suspicious_nodes: set = set()
         self.data_node_heartbeats: Dict[str, int] = {}
-        self.data_node_files: Dict[str, Dict[str, FileBlockData]] = {}
 
     def execute_epoch(self, epoch: int) -> None:
         """Instructs the cluster to execute an epoch.
@@ -976,7 +971,7 @@ class HDFSCluster(BaseCluster):
         Returns:
              A collection of members who disconnected during the current
              epoch.
-             See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+             See :py:meth:`~domain.network_nodes.SimpleHiveNode.get_epoch_status`.
         """
         off_nodes = []
         lost_replicas_count: int = 0
@@ -991,7 +986,7 @@ class HDFSCluster(BaseCluster):
                 # Register lost replicas the moment the node disconnects.
                 if node.id not in self.suspicious_nodes:
                     self.suspicious_nodes.add(node.id)
-                    node_replicas = self.data_node_files.get(node.id, {})
+                    node_replicas = node.get_file_parts(self.file.name)
                     lost_replicas_count += len(node_replicas)
                     for replica in node_replicas.values():
                         if replica.decrement_and_get_references() <= 0:
@@ -1002,7 +997,7 @@ class HDFSCluster(BaseCluster):
                     self.data_node_heartbeats[node.id] -= 1
                     if self.data_node_heartbeats[node.id] <= 0:
                         off_nodes.append(node)
-                        node_replicas = self.data_node_files.get(node.id, {})
+                        node_replicas = node.get_file_parts(self.file.name)
                         for replica in node_replicas.values():
                             self.set_replication_epoch(replica)
 
@@ -1029,7 +1024,7 @@ class HDFSCluster(BaseCluster):
         members = self.members.values()
         for node in members:
             if node.status == Status.ONLINE:
-                node_replicas = self.data_node_files.get(node.id, {})
+                node_replicas = node.get_file_parts_count(self.file.name)
                 pcount += len(node_replicas)
         self.log_evaluation(pcount)
 
@@ -1044,8 +1039,7 @@ class HDFSCluster(BaseCluster):
             print(f"    [o] Evicted suspect {node.id}.")
             self.suspicious_nodes.discard(node.id)
             self.data_node_heartbeats.pop(node.id, -1)
-            self.data_node_files.pop(node.id, {})
             self.members.pop(node.id, None)
+            node.remove_file_routing(self.file.name)
             self.file.logger.log_suspicous_node_detection_delay(node.id, 5)
-            node.remove_file_routing(self.file.name) # TODO: HERE
         super().membership_maintenance()
