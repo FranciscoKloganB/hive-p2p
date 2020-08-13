@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Union
+
+HttpResponse: Union[int, HttpCodes]
 
 
 class Status(Enum):

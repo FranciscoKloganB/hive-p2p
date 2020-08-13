@@ -6,18 +6,16 @@ from __future__ import annotations
 import math
 import sys
 import traceback
-from typing import Union, Dict, List, Tuple
+from typing import Union, Dict, List
 
 import numpy as np
 import pandas as pd
 
 import domain.cluster_groups as cg
 import domain.master_servers as ms
-from domain.helpers.enums import Status, HttpCodes
+from domain.helpers.enums import Status, HttpCodes, HttpResponse
 from domain.helpers.smart_dataclasses import FileBlockData
 from utils import crypto
-
-_HttpResponse: Tuple[Union[int, HttpCodes], str]
 
 
 class BaseNode:
@@ -159,7 +157,7 @@ class BaseNode:
     def send_part(self,
                   cluster: cg.BaseCluster,
                   replica: FileBlockData,
-                  destination: str) -> _HttpResponse:
+                  destination: str) -> HttpResponse:
         """Attempts to send a replica to some other network node.
 
         Args:
