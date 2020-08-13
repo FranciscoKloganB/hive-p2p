@@ -436,7 +436,7 @@ class HiveNodeExt(HiveNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     HiveNodeExt instances differ from HiveNode in the sense that the
-    :py:class:`Hive Nodes <domain.domain.HiveNode>` do not monitor their
+    :py:class:`HiveClusterExt Nodes <domain.domain.HiveNode>` do not monitor their
     groups' peers, concerning suspicious behaviors.
     """
 
