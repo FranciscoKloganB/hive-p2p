@@ -157,7 +157,7 @@ class BaseNode:
     def send_part(self,
                   cluster: cg.BaseCluster,
                   replica: FileBlockData,
-                  destination: str) -> HttpResponse:
+                  destination: str) -> Union[int, HttpCodes]:
         """Attempts to send a replica to some other network node.
 
         Args:

@@ -34,7 +34,7 @@ import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
-from domain.network_nodes import HiveNode, HiveNodeExt, HDFSNode, HttpResponse
+from domain.network_nodes import HiveNode, HiveNodeExt, HDFSNode
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
 from utils.convertions import truncate_float_value
@@ -174,7 +174,7 @@ class BaseCluster:
                    destination: str,
                    part: FileBlockData,
                    fresh_replica: bool = False
-                   ) -> HttpResponse:
+                   ) -> Union[int, HttpCodes]:
         """Sends one file block replica to some other network node.
 
         Args:
