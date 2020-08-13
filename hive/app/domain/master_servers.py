@@ -11,7 +11,7 @@ import numpy as np
 from domain.cluster_groups import BaseCluster
 from domain.helpers.enums import Status
 from domain.helpers.smart_dataclasses import FileBlockData
-from domain.network_nodes import SimpleHiveNode
+from domain.network_nodes import HiveNode
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
     NETWORK_NODES, CLUSTER_GROUPS
 from utils.convertions import class_name_to_obj
@@ -45,7 +45,7 @@ class Hivemind:
             instances managed by the Hivemind.
         network_nodes:
             A dictionary mapping network node identifiers names to their
-            object instances (:py:class:`~domain.network_nodes.SimpleHiveNode`).
+            object instances (:py:class:`~domain.network_nodes.HiveNode`).
             This collection differs from the
             :py:class:`~domain.cluster_groups.BaseCluster`s' attribute
             :py:attr:`~domain.cluster_groups.BaseCluster.members` in the sense that
@@ -96,7 +96,7 @@ class Hivemind:
 
             # Init basic simulation variables
             self.cluster_groups: Dict[str, BaseCluster] = {}
-            self.network_nodes: Dict[str, SimpleHiveNode] = {}
+            self.network_nodes: Dict[str, HiveNode] = {}
 
             # Instantiaite jobless Workers
             for node_id, node_uptime in json_obj['nodes_uptime'].items():
@@ -173,15 +173,15 @@ class Hivemind:
         raise NotImplementedError()
 
     def find_replacement_node(
-            self, exclusion_dict: Dict[str, SimpleHiveNode], n: int
-    ) -> Dict[str, SimpleHiveNode]:
+            self, exclusion_dict: Dict[str, HiveNode], n: int
+    ) -> Dict[str, HiveNode]:
         """Finds a collection of online network nodes that can be used to
         replace offline ones in an BaseCluster.
 
         Args:
             exclusion_dict:
                 A dictionary of network nodes identifiers and their object
-                instances (:py:class:`~domain.network_nodes.SimpleHiveNode`),
+                instances (:py:class:`~domain.network_nodes.HiveNode`),
                 which represent the nodes the BaseCluster is not interested in,
                 i.e., this argument is a blacklist.
             n:
@@ -190,7 +190,7 @@ class Hivemind:
         Returns:
             A collection of replacements which is smaller or equal than `n`.
         """
-        selected: Dict[str, SimpleHiveNode] = {}
+        selected: Dict[str, HiveNode] = {}
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
             if len(selected) == n:
@@ -227,7 +227,7 @@ class Hivemind:
         """
         Helper method that initializes a new hive.
         """
-        cluster_members: Dict[str, SimpleHiveNode] = {}
+        cluster_members: Dict[str, HiveNode] = {}
         size = persisting[fname]['cluster_size']
         nodes = np.random.choice(
             a=[*self.network_nodes.keys()], size=size, replace=False)

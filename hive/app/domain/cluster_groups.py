@@ -34,7 +34,7 @@ import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
-from domain.network_nodes import SimpleHiveNode, HiveNode
+from domain.network_nodes import HiveNode, HiveNodeExt
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
 from utils.convertions import truncate_float_value
@@ -69,7 +69,7 @@ class BaseCluster:
             coordinates this BaseCluster instance.
         members:
             A collection of network nodes that belong to the BaseCluster
-            instance. See also :py:class:`~domain.domain.SimpleHiveNode`.
+            instance. See also :py:class:`~domain.domain.HiveNode`.
         file:
             A reference to :py:class:`~domain.helpers.FileData` object that
             represents the file being persisted by the BaseCluster instance.
@@ -100,7 +100,7 @@ class BaseCluster:
 
     def __init__(self, hivemind: ms.Hivemind,
                  file_name: str,
-                 members: Dict[str, SimpleHiveNode],
+                 members: Dict[str, HiveNode],
                  sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `BaseCluster` object
@@ -114,7 +114,7 @@ class BaseCluster:
                 for persisting.
             members:
                 A dictionary mapping unique identifiers to of the BaseCluster's
-                initial network nodes (:py:class:`~domain.domain.SimpleHiveNode`.)
+                initial network nodes (:py:class:`~domain.domain.HiveNode`.)
                 to their instance objects.
             sim_id:
                 optional; Identifier that generates unique output file names,
@@ -130,7 +130,7 @@ class BaseCluster:
         self.v_: pd.DataFrame = pd.DataFrame()
         self.corruption_chances: List[float] = self._assign_disk_error_chance()
         self.hivemind = hivemind
-        self.members: Dict[str, SimpleHiveNode] = members
+        self.members: Dict[str, HiveNode] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(
@@ -207,7 +207,7 @@ class BaseCluster:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST, destination
 
-        destination_node: SimpleHiveNode = self.members[destination]
+        destination_node: HiveNode = self.members[destination]
         if destination_node.status == Status.ONLINE:
             return destination_node.receive_part(part), destination
         else:
@@ -380,7 +380,7 @@ class BaseCluster:
                                                self._recovery_epoch_calls,
                                                self.current_epoch)
 
-    def nodes_execute(self) -> List[SimpleHiveNode]:
+    def nodes_execute(self) -> List[HiveNode]:
         """Queries all network node members execute the epoch.
 
         This method logs the amount of lost parts throughout the current
@@ -393,12 +393,12 @@ class BaseCluster:
         Returns:
              A collection of members who disconnected during the current
              epoch.
-             See :py:meth:`~domain.network_nodes.SimpleHiveNode.get_epoch_status`.
+             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
-        off_nodes: List[SimpleHiveNode] = []
+        off_nodes: List[HiveNode] = []
         for node in self.members.values():
-            if node.get_epoch_status() == Status.ONLINE:
+            if node.get_status() == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
             else:
                 lost_parts = node.get_file_parts(self.file.name)
@@ -458,7 +458,7 @@ class BaseCluster:
         else:
             self.file.logger.save_sets_and_reset()
 
-    def maintain(self, off_nodes: List[SimpleHiveNode]) -> None:
+    def maintain(self, off_nodes: List[HiveNode]) -> None:
         """Evicts disconnected network_nodes from the BaseCluster and
         attempts to recruit new ones.
 
@@ -555,8 +555,8 @@ class BaseCluster:
         """
         self.file.logger.initial_spread = strategy
 
-        choices: List[SimpleHiveNode]
-        nodes: List[SimpleHiveNode]
+        choices: List[HiveNode]
+        nodes: List[HiveNode]
         if strategy == "a":
             choices = [*self.members.values()]
             nodes = np.random.choice(a=choices,
@@ -611,13 +611,13 @@ class BaseCluster:
 
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
-    def __get_new_members__(self) -> Dict[str, SimpleHiveNode]:
+    def __get_new_members__(self) -> Dict[str, HiveNode]:
         """Helper method that gets adds network nodes, if possible,
         to the BaseCluster.
 
         Returns:
             A dictionary mapping network node identifiers and their instance
-            objects (:py:class:`~domain.network_nodes.SimpleHiveNode`).
+            objects (:py:class:`~domain.network_nodes.HiveNode`).
         """
         return self.hivemind.find_replacement_node(
             self.members, self.original_size - len(self.members))
@@ -758,7 +758,7 @@ class Hive(BaseCluster):
     """Represents a group of network nodes persisting a file.
 
     Hive instances differ from BaseCluster in the sense that the
-    :py:class:`Network Nodes <domain.network_nodes.SimpleHiveNode>` are responsible
+    :py:class:`Network Nodes <domain.network_nodes.HiveNode>` are responsible
     detecting that their cluster companions are disconnected and reporting it
     to the Hive for eviction after a certain quota is met.
 
@@ -779,13 +779,13 @@ class Hive(BaseCluster):
             status.
         _epoch_complaints:
             A set of unique identifiers formed from the concatenation of
-            :py:attr:`node identifiers <domain.network_nodes.SimpleHiveNode.id>`,
+            :py:attr:`node identifiers <domain.network_nodes.HiveNode.id>`,
             to avoid multiple complaint registrations on the same epoch,
             done by the same source towards the same target. The set is
             reset every epoch.
     """
     def __init__(self, hivemind: ms.Hivemind, file_name: str,
-                 members: Dict[str, HiveNode], sim_id: int = 0,
+                 members: Dict[str, HiveNodeExt], sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `Hive` object.
 
@@ -807,7 +807,7 @@ class Hive(BaseCluster):
         super().execute_epoch(epoch)
         self._epoch_complaints.clear()
 
-    def nodes_execute(self) -> List[HiveNode]:
+    def nodes_execute(self) -> List[HiveNodeExt]:
         """Queries all network node members execute the epoch.
 
         Overrides:
@@ -822,14 +822,14 @@ class Hive(BaseCluster):
         Returns:
              A collection of members who disconnected during the current
              epoch.
-             See :py:meth:`~domain.network_nodes.SimpleHiveNode.get_epoch_status`.
+             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
         off_nodes = []
 
         members = self.members.values()
         for node in members:
-            node.get_epoch_status()
+            node.get_status()
         for node in members:
             if node.status == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
@@ -860,7 +860,7 @@ class Hive(BaseCluster):
 
         return off_nodes
 
-    def maintain(self, off_nodes: List[HiveNode]) -> None:
+    def maintain(self, off_nodes: List[HiveNodeExt]) -> None:
         """Evicts any node whose number of complaints as surpassed the
         `complaint_threshold`.
 
@@ -909,7 +909,7 @@ class HDFSCluster(BaseCluster):
     Distributed File System scenario.
 
     Differ from BaseCluster in the sense that the
-    :py:class:`Network Nodes <domain.network_nodes.SimpleHiveNode>` are
+    :py:class:`Network Nodes <domain.network_nodes.HiveNode>` are
     do not perform swarm guidance behaviors and instead report with regular
     heartbeats to their monitoring `HDFSCluster` instance. This class would
     represent a NameNode Server in HDFS and a Master server in GFS.
@@ -927,7 +927,7 @@ class HDFSCluster(BaseCluster):
             cluster.
     """
     def __init__(self, hivemind: ms.Hivemind, file_name: str,
-                 members: Dict[str, HiveNode], sim_id: int = 0,
+                 members: Dict[str, HiveNodeExt], sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `Hive` object.
 
@@ -971,14 +971,14 @@ class HDFSCluster(BaseCluster):
         Returns:
              A collection of members who disconnected during the current
              epoch.
-             See :py:meth:`~domain.network_nodes.SimpleHiveNode.get_epoch_status`.
+             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
         """
         off_nodes = []
         lost_replicas_count: int = 0
 
         members = self.members.values()
         for node in members:
-            node.get_epoch_status()
+            node.get_status()
         for node in members:
             if node.status == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)

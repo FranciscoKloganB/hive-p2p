@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
     master_class = "Hivemind"
     cluster_class = "BaseCluster"
-    node_class = "SimpleHiveNode"
+    node_class = "HiveNode"
 
     try:
         short_opts = "df:i:t:e:m:c:n:"
