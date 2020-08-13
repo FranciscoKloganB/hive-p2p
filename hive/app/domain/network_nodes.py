@@ -143,8 +143,8 @@ class BaseNode:
                 if lost_replicas == 0:
                     break
 
-                code = cluster.route_part(
-                    self.id, node_id, replica, fresh_replica=True)
+                code = cluster.route_part(self.id, node_id, replica,
+                                          fresh_replica=True)
 
                 if code == HttpCodes.OK:
                     lost_replicas -= 1
@@ -156,8 +156,8 @@ class BaseNode:
 
     def send_part(self,
                   cluster: cg.BaseCluster,
-                  replica: FileBlockData,
-                  destination: str) -> Union[int, HttpCodes]:
+                  destination: str,
+                  replica: FileBlockData) -> Union[int, HttpCodes]:
         """Attempts to send a replica to some other network node.
 
         Args:
@@ -167,11 +167,12 @@ class BaseNode:
                 world implementation this argument would not be needed and
                 would not even make sense, but we use it to facilitate
                 simulation management and environment logging.
-            replica:
-                The file block container to be sent to some other worker.
             destination:
                 The name, address or another unique identifier of the node
                 that will receive the file block `replica`.
+            replica:
+                The file block container to be sent to some other worker.
+
         Returns:
              An HTTP code defined in
              :py:class:`~domain.helpers.enums.HttpCodes` and the destination
@@ -428,10 +429,10 @@ class HiveNode(BaseNode):
                 replicas should be routed.
         """
         file_view: Dict[int, FileBlockData] = self.files.get(fid, {}).copy()
-        for number, part in file_view.items():
-            self.replicate_part(cluster, part)
-            destination = self.select_destination(part.name)
-            response_code = self.send_part(cluster, destination, part)
+        for number, replica in file_view.items():
+            self.replicate_part(cluster, replica)
+            destination = self.select_destination(replica.name)
+            response_code = self.send_part(cluster, destination, replica)
             if response_code == HttpCodes.OK:
                 self.discard_part(fid, number)
             elif response_code == HttpCodes.BAD_REQUEST:

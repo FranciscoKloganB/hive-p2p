@@ -171,7 +171,7 @@ class BaseCluster:
 
     def route_part(self,
                    sender: str,
-                   destination: str,
+                   receiver: str,
                    part: FileBlockData,
                    fresh_replica: bool = False
                    ) -> Union[int, HttpCodes]:
@@ -180,7 +180,7 @@ class BaseCluster:
         Args:
             sender:
                 An identifier of the network node who is sending the message.
-            destination:
+            receiver:
                 The destination network node identifier.
             part:
                 The file block replica send to specified destination.
@@ -192,7 +192,7 @@ class BaseCluster:
         Returns:
             An HTTP code sent by destination network node.
         """
-        if sender == destination:
+        if sender == receiver:
             return HttpCodes.DUMMY
 
         self.file.logger.log_bandwidth_units(1, self.current_epoch)
@@ -206,7 +206,7 @@ class BaseCluster:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST
 
-        destination_node: HiveNode = self.members[destination]
+        destination_node: HiveNode = self.members[receiver]
         if destination_node.status == Status.ONLINE:
             return destination_node.receive_part(part)
         else:
