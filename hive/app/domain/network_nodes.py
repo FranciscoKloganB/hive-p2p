@@ -19,6 +19,33 @@ from utils import crypto
 
 
 class BaseNode:
+    """This class contains basic network node functionality that should
+    always be useful.
+
+
+    """
+    def __init__(self, uid: str, uptime: float) -> None:
+        """Instantiates a SimpleHiveNode object.
+
+        Workers are the network nodes responsible for persisting file block
+        replicas.
+
+        Args:
+            uid:
+                An unique identifier for the worker instance.
+            uptime:
+                The availability of the worker instance.
+        """
+        if uptime == 1.0:
+            uptime = float('inf')
+        else:
+            uptime = math.floor(uptime * ms.Hivemind.MAX_EPOCHS)
+
+        self.id: str = uid
+        self.uptime: float = uptime
+
+
+class SimpleHiveNode(BaseNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     Workers work in one or more cluster_groups
@@ -43,36 +70,35 @@ class BaseNode:
         uptime:
             The amount of time the worker is expected to remain online
             without disconnection. Current uptime implementation is based on
-            availability percentages. Furthermore, when a BaseNode joins an
-            BaseCluster as a replacement for some other BaseNode, in
+            availability percentages. Furthermore, when a SimpleHiveNode joins an
+            BaseCluster as a replacement for some other SimpleHiveNode, in
             :py:meth:`~domain.cluster_groups.BaseCluster._membership_maintenance`,
             the time the worker has been online is not considered. Thus,
-            if a BaseNode belongs to only one BaseCluster he is guaranteed to
+            if a SimpleHiveNode belongs to only one BaseCluster he is guaranteed to
             remain online for exactly `uptime` *
             :py:attr:`~environment_settings.MAX_EPOCHS`. If he belongs to
             multiple Hives in the simulation, than there is a possibility
             that he may go offline earlier.
         hives:
             A collection of :py:class:`~domain.cluster_groups.BaseCluster` this
-            BaseNode is a member of.
+            SimpleHiveNode is a member of.
         files:
             A dictionary mapping file names to file block identifiers and their
             respective contents. This collection represents the file block
-            replicas that are currently hosted in the BaseNode instance.
+            replicas that are currently hosted in the SimpleHiveNode instance.
         routing_table:
             Contains the information required to appropriately route file
-            block replicas to other BaseNode instances.
+            block replicas to other SimpleHiveNode instances.
         status:
-            Indicates the BaseNode instance is online or offline. In later
+            Indicates the SimpleHiveNode instance is online or offline. In later
             releases this could also contain a 'suspect' status. See
             :py:class:`~domain.helpers.enums.Status`.
         suspicious_replies:
             Set that contains :py:class:`~domain.helpers.enums.HttpCodes`
             that trigger complaints to monitors.
     """
-
     def __init__(self, uid: str, uptime: float) -> None:
-        """Instantiates a BaseNode object.
+        """Instantiates a SimpleHiveNode object.
 
         Workers are the network nodes responsible for persisting file block
         replicas.
@@ -130,7 +156,7 @@ class BaseNode:
     def remove_file_routing(self, fid: str) -> None:
         """Removes a file id from the routing table.
 
-        This method is called when a BaseNode is evicted from the BaseCluster
+        This method is called when a SimpleHiveNode is evicted from the BaseCluster
         and results in the complete deletion of all file blocks with that
         file id.
 
@@ -148,7 +174,7 @@ class BaseNode:
     def send_part(
             self, hive: cg.BaseCluster, part: FileBlockData
     ) -> Tuple[Union[int, HttpCodes], str]:
-        """Attempts to send a file block replica to another BaseNode instance.
+        """Attempts to send a file block replica to another SimpleHiveNode instance.
 
         Args:
             hive:
@@ -191,7 +217,7 @@ class BaseNode:
              An HTTP code defined in
              :py:class:`~domain.helpers.enums.HttpCodes`. If upon integrity
              verification the sha256 hashvalue differs from the expected,
-             the worker replies with a BAD_REQUEST code. If the BaseNode already
+             the worker replies with a BAD_REQUEST code. If the SimpleHiveNode already
              owns a replica with the same number identifier it
              replies with NOT_ACCEPTABLE. Otherwise it replies with a OK,
              i.e., the delivery is successful.
@@ -217,7 +243,7 @@ class BaseNode:
                      number: int,
                      corrupt: bool = False,
                      hive: cg.BaseCluster = None) -> None:
-        """Safely deletes a part from the BaseNode instance's disk.
+        """Safely deletes a part from the SimpleHiveNode instance's disk.
 
         Args:
             fid:
@@ -255,7 +281,7 @@ class BaseNode:
         Args:
             hive:
                 Gateway BaseCluster that will deliver the file block replica to
-                some destination BaseNode.
+                some destination SimpleHiveNode.
             part:
                 The file block replica to be delivered.
         """
@@ -277,20 +303,20 @@ class BaseNode:
             part.update_epochs_to_recover(hive.current_epoch)
 
     def execute_epoch(self, hive: cg.BaseCluster, fid: str) -> None:
-        """Instructs the BaseNode instance to execute the epoch.
+        """Instructs the SimpleHiveNode instance to execute the epoch.
         
         The method iterates all file block replicas in :py:attr:`~files` and 
-        independently decides if they should be sent to other BaseNode
+        independently decides if they should be sent to other SimpleHiveNode
         instances by following :py:attr:`~routing_table` column vectors.
 
-        When a file block is sent to some other BaseNode a reply is awaited.
+        When a file block is sent to some other SimpleHiveNode a reply is awaited.
         In real world environments this should be assynchronous, but for
         simulation purposes it's synchronous and instantaneous. When the
         destination replies with OK, meaning it accepted the replica,
-        this BaseNode instance deletes the replica from his disk. If it
+        this SimpleHiveNode instance deletes the replica from his disk. If it
         replies with a BAD_REQUEST the replica is discarded and the worker
         starts a recovery process in the BaseCluster. Any other code response
-        results in the BaseNode instance keeping replica in his disk for at
+        results in the SimpleHiveNode instance keeping replica in his disk for at
         least one more epoch times. See
         :py:class:`~domain.helpers.enums.HttpCodes` for more information on
         possible HTTP Codes.
@@ -325,7 +351,7 @@ class BaseNode:
         Args:
             fid:
                 The identifier that designates the file block replicas
-                the caller wishes to obtain from the BaseNode instance.
+                the caller wishes to obtain from the SimpleHiveNode instance.
 
         Returns:
              A collection that maps file block identifiers to file block
@@ -334,14 +360,14 @@ class BaseNode:
         return self.files.get(fid, {})
 
     def get_file_parts_count(self, fid: str) -> int:
-        """Counts the number of file block replicas owned by the BaseNode
+        """Counts the number of file block replicas owned by the SimpleHiveNode
         for a given file identifier.
 
         Args:
              fid:
                 An identifier of the file caller wishes to count.
         Returns:
-            The number of file block replicas from the named file the BaseNode
+            The number of file block replicas from the named file the SimpleHiveNode
             instance possesses.
         """
         return len(self.files.get(fid, {}))
@@ -349,7 +375,7 @@ class BaseNode:
     def get_epoch_status(self) -> int:
         """Used to obtain the status of the worker.
 
-        This method simulates a ping. When invoked, the BaseNode instance
+        This method simulates a ping. When invoked, the SimpleHiveNode instance
         decides if it should switch its status from ONLINE to some other
         depending on the time it has been active in the BaseCluster.
 
@@ -366,11 +392,11 @@ class BaseNode:
 
     # region Overrides
     def __hash__(self):
-        """Can use BaseNode instance or id as dictionary key."""
+        """Can use SimpleHiveNode instance or id as dictionary key."""
         return hash(str(self.id))
 
     def __eq__(self, other):
-        """BaseNode equality is based solely on BaseNode id."""
+        """SimpleHiveNode equality is based solely on SimpleHiveNode id."""
         return self.id == other
 
     def __ne__(self, other):
@@ -378,18 +404,18 @@ class BaseNode:
     # endregion
 
 
-class HiveNode(BaseNode):
+class HiveNode(SimpleHiveNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
-    HiveNode instances differ from BaseNode in the sense that the
-    :py:class:`~domain.domain.BaseNode` do not monitor their groups' peers,
+    HiveNode instances differ from SimpleHiveNode in the sense that the
+    :py:class:`~domain.domain.SimpleHiveNode` do not monitor their groups' peers,
     concerning fault detection."""
 
     def get_epoch_status(self) -> int:
         """Used to obtain the status of the worker.
 
         Overrides:
-            :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`. When
+            :py:meth:`~domain.network_nodes.SimpleHiveNode.get_epoch_status`. When
             not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
 
@@ -403,3 +429,8 @@ class HiveNode(BaseNode):
                 print(f"    [x] {self.id} now offline (suspect status).")
                 self.status = Status.SUSPECT
         return self.status
+
+
+class HDFSNode:
+    """Represents a data node in the Hadoop Distribute File System."""
+    pass
