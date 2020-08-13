@@ -758,9 +758,9 @@ class Hive(BaseCluster):
     """Represents a group of network nodes persisting a file.
 
     Hive instances differ from BaseCluster in the sense that the
-    :py:class:`~domain.domain.BaseNode` are responsible detecting that
-    their cluster companions are disconnected and reporting it to the
-    Hive for eviction after a certain quota is met.
+    :py:class:`Network Nodes <domain.network_nodes.BaseNode>` are responsible
+    detecting that their cluster companions are disconnected and reporting it
+    to the Hive for eviction after a certain quota is met.
 
     Attributes:
         complaint_threshold:
@@ -825,7 +825,7 @@ class Hive(BaseCluster):
              See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
-        off_nodes: List[HiveNode] = []
+        off_nodes = []
 
         members = self.members.values()
         for node in members:
@@ -868,11 +868,6 @@ class Hive(BaseCluster):
             :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
             Functionality is largely the same, but `off_nodes` parameter is
             ignored and replaced by an iteration over `nodes_complaints`.
-
-        Args:
-            off_nodes:
-                optionalThe collection of members who disconnected during the
-                current epoch.
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
@@ -907,3 +902,150 @@ class Hive(BaseCluster):
             print(f"    > Logged complaint {complaint_id}, "
                   f"complainee complaint count: "
                   f"{self.nodes_complaints[complainee]}")
+
+
+class HDFSCluster(BaseCluster):
+    """Represents a group of network nodes persisting a file in a Hadoop
+    Distributed File System scenario.
+
+    Differ from BaseCluster in the sense that the
+    :py:class:`Network Nodes <domain.network_nodes.BaseNode>` are
+    do not perform swarm guidance behaviors and instead report with regular
+    heartbeats to their monitoring `HDFSCluster` instance. This class would
+    represent a NameNode Server in HDFS and a Master server in GFS.
+
+    Attributes:
+        suspicious_nodes:
+            A set containing the unique identifiers of known suspicious
+            nodes.
+        data_node_heartbeats:
+            A dictionary mapping :py:mod:`Network
+            Nodes' <domain.network_nodes>` identifiers to their respective
+            number of received complaints. Each node enters the dictionary
+            with at five beats. When they miss five beats in a row, i.e.,
+            when the dictionary value count is zero, they are evicted from the
+            cluster.
+        data_node_files:
+            A dictionary mapping :py:mod:`Network
+            Nodes' <domain.network_nodes>` identifiers to the file blocks
+            they own.
+    """
+    def __init__(self, hivemind: ms.Hivemind, file_name: str,
+                 members: Dict[str, HiveNode], sim_id: int = 0,
+                 origin: str = "") -> None:
+        """Instantiates an `Hive` object.
+
+        Extends:
+            :py:class:`~domain.cluster_groups.BaseCluster`.
+        """
+        super().__init__(hivemind, file_name, members, sim_id, origin)
+        self.suspicious_nodes: set = set()
+        self.data_node_heartbeats: Dict[str, int] = {}
+        self.data_node_files: Dict[str, Dict[str, FileBlockData]] = {}
+
+    def execute_epoch(self, epoch: int) -> None:
+        """Instructs the cluster to execute an epoch.
+
+        Extends:
+            :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
+        """
+        self.current_epoch = epoch
+        try:
+            off_nodes = self.nodes_execute()
+            self.evaluate()
+            self.maintain(off_nodes)
+            if epoch == ms.Hivemind.MAX_EPOCHS:
+                self.running = False
+        except Exception as e:
+            self.set_fail(f"Exception caused simulation termination: {str(e)}")
+
+        self.file.logger.log_replication_delay(self._recovery_epoch_sum,
+                                               self._recovery_epoch_calls,
+                                               self.current_epoch)
+
+    def nodes_execute(self) -> List[HDFSNode]:
+        """Queries all network node members execute the epoch.
+
+        Overrides:
+            :py:meth:`~domain.cluster_groups.BaseCluster.nodes_execute`
+            regarding the behavior of :py:mod:`Network Nodes
+            <domain.network_nodes>`. They only send heartbeats to the
+            `HDFSCluster` and do nothing else in their epochs unless
+            specifically asked to do so.
+
+        Returns:
+             A collection of members who disconnected during the current
+             epoch.
+             See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+        """
+        off_nodes = []
+        lost_replicas_count: int = 0
+
+        members = self.members.values()
+        for node in members:
+            node.get_epoch_status()
+        for node in members:
+            if node.status == Status.ONLINE:
+                node.execute_epoch(self, self.file.name)
+            elif node.status == Status.SUSPECT:
+                # Register lost replicas the moment the node disconnects.
+                if node.id not in self.suspicious_nodes:
+                    self.suspicious_nodes.add(node.id)
+                    node_replicas = self.data_node_files.get(node.id, {})
+                    lost_replicas_count += len(node_replicas)
+                    for replica in node_replicas.values():
+                        if replica.decrement_and_get_references() <= 0:
+                            self.set_fail(f"Lost all replicas of file part "
+                                          f"with id: {replica.id}")
+                # Simulate missed heartbeats.
+                if node.id in self.data_node_heartbeats:
+                    self.data_node_heartbeats[node.id] -= 1
+                    if self.data_node_heartbeats[node.id] <= 0:
+                        off_nodes.append(node)
+                        node_replicas = self.data_node_files.get(node.id, {})
+                        for replica in node_replicas.values():
+                            self.set_replication_epoch(replica)
+
+        if len(self.suspicious_nodes) >= len(self.members):
+            self.set_fail("All data nodes disconnected before maintenance.")
+
+        sf: LoggingData = self.file.logger
+        sf.log_off_nodes(len(off_nodes), self.current_epoch)
+        sf.log_lost_file_blocks(lost_replicas_count, self.current_epoch)
+
+        return off_nodes
+
+    def evaluate(self) -> None:
+        """`HDFSCluster evaluate method merely logs the number of existing
+        replicas in the system.
+
+        Overrides:
+            :py:meth:`~domain.cluster_groups.BaseCluster.evaluate`.
+        """
+        if not self.members:
+            self.set_fail("Cluster has no remaining members.")
+
+        pcount: int = 0
+        members = self.members.values()
+        for node in members:
+            if node.status == Status.ONLINE:
+                node_replicas = self.data_node_files.get(node.id, {})
+                pcount += len(node_replicas)
+        self.log_evaluation(pcount)
+
+    def maintain(self, off_nodes: List[HDFSNode]) -> None:
+        """Evicts any :py:mod:`Network Node <domain.network_nodes>` whose
+        heartbeats in `data_node_heartbeats` reached zero.
+
+        Overrides:
+            :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
+        """
+        for node in off_nodes:
+            print(f"    [o] Evicted suspect {node.id}.")
+            self.suspicious_nodes.discard(node.id)
+            self.data_node_heartbeats.pop(node.id, -1)
+            self.data_node_files.pop(node.id, {})
+            self.members.pop(node.id, None)
+            self.file.logger.log_suspicous_node_detection_delay(node.id, 5)
+            node.remove_file_routing(self.file.name) # TODO: HERE
+        super().membership_maintenance()
