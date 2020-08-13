@@ -386,14 +386,11 @@ class BaseCluster:
         """
         self.setup_epoch(epoch)
 
-        try:
-            off_nodes = self.nodes_execute()
-            self.evaluate()
-            self.maintain(off_nodes)
-            if epoch == ms.Hivemind.MAX_EPOCHS:
-                self.running = False
-        except Exception as e:
-            self.set_fail(f"Exception caused simulation termination: {str(e)}")
+        off_nodes = self.nodes_execute()
+        self.evaluate()
+        self.maintain(off_nodes)
+        if epoch == ms.Hivemind.MAX_EPOCHS:
+            self.running = False
 
         self.file.logger.log_replication_delay(self._recovery_epoch_sum,
                                                self._recovery_epoch_calls,
@@ -940,14 +937,11 @@ class HDFSCluster(BaseCluster):
             :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
         """
         self.current_epoch = epoch
-        try:
-            off_nodes = self.nodes_execute()
-            self.evaluate()
-            self.maintain(off_nodes)
-            if epoch == ms.Hivemind.MAX_EPOCHS:
-                self.running = False
-        except Exception as e:
-            self.set_fail(f"Exception caused simulation termination: {str(e)}")
+        off_nodes = self.nodes_execute()
+        self.evaluate()
+        self.maintain(off_nodes)
+        if epoch == ms.Hivemind.MAX_EPOCHS:
+            self.running = False
 
         self.file.logger.log_replication_delay(self._recovery_epoch_sum,
                                                self._recovery_epoch_calls,
