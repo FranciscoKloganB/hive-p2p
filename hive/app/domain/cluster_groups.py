@@ -9,9 +9,10 @@ Classes:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance. Differs from `BaseCluster` in the
         sense that member eviction is based on the received complaints
-        from other P2P member nodes within the BaseCluster rather than having the
-        BaseCluster detecting the disconnection fault, i.e., BaseCluster role in the
-        simulation is more coordinative and less informative to nodes.
+        from other P2P member nodes within the BaseCluster rather than having
+        the BaseCluster detecting the disconnection fault, i.e., BaseCluster
+        role in the simulation is more coordinative and less informative to
+        nodes.
     Cluster:
         A group of reliable servers that ensure the durability of a file
         following a client-server model as seen in Google File System or
@@ -48,8 +49,9 @@ class BaseCluster:
 
     Attributes:
         id:
-            An uuid that uniquely identifies the BaseCluster. Usefull for when
-            there are multiple BaseCluster instances in a simulation environment.
+            An uuid that uniquely identifies the BaseCluster.
+            Usefull for when there are multiple BaseCluster instances in a
+            simulation environment.
         current_epoch:
             The simulation's current epoch.
         corruption_chances:
@@ -66,8 +68,8 @@ class BaseCluster:
             A reference to :py:class:`~domain.master_servers.Hivemind` that
             coordinates this BaseCluster instance.
         members:
-            A collection of network nodes that belong to the BaseCluster instance.
-            See also :py:class:`~domain.domain.BaseNode`.
+            A collection of network nodes that belong to the BaseCluster
+            instance. See also :py:class:`~domain.domain.BaseNode`.
         file:
             A reference to :py:class:`~domain.helpers.FileData` object that
             represents the file being persisted by the BaseCluster instance.
@@ -131,7 +133,9 @@ class BaseCluster:
         self.members: Dict[str, BaseNode] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
-        self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
+        self.sufficient_size: int = self.critical_size + math.ceil(
+            len(self.members) * 0.34
+        )
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
         self.running: bool = True
@@ -198,7 +202,8 @@ class BaseCluster:
             self.file.logger.log_lost_messages(1, self.current_epoch)
             return HttpCodes.TIME_OUT, destination
 
-        if not fresh_replica and np.random.choice(a=TRUE_FALSE, p=self.corruption_chances):
+        is_corrupted = np.random.choice(a=TRUE_FALSE, p=self.corruption_chances)
+        if not fresh_replica and is_corrupted:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST, destination
 
@@ -211,9 +216,9 @@ class BaseCluster:
     # endregion
 
     # region Swarm Guidance - Data Structure Management Only
-    def new_desired_distribution(self,
-                                 member_ids: List[str],
-                                 member_uptimes: List[float]) -> List[float]:
+    def new_desired_distribution(
+            self, member_ids: List[str], member_uptimes: List[float]
+    ) -> List[float]:
         """Sets a new desired distribution for the BaseCluster instance.
 
         Normalizes the received uptimes to create a stochastic representation
@@ -266,7 +271,8 @@ class BaseCluster:
         return pd.DataFrame(t, index=node_ids, columns=node_ids)
 
     def broadcast_transition_matrix(self, m: pd.DataFrame) -> None:
-        """Slices a transition matrix and delivers them to respective network nodes.
+        """Slices a transition matrix and delivers them to respective
+        network nodes.
 
         Gives each member his respective slice (vector column) of the
         transition matrix the BaseCluster is currently executing.
@@ -326,7 +332,8 @@ class BaseCluster:
         return [ploss_epoch, 1.0 - ploss_epoch]
 
     def setup_epoch(self, epoch: int) -> None:
-        """Initializes some attributes of the BaseCluster during its initialization.
+        """Initializes some attributes of the BaseCluster during
+        its initialization.
 
         The helper method is used to isolate the initialization of some
         simulation related attributes for eaasier comprehension.
@@ -345,17 +352,18 @@ class BaseCluster:
         Note:
             If the BaseCluster terminates early, i.e., if it terminates before
             reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
-            should be done in :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
+            should be done in
+            :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
         Args:
             epoch:
-                The epoch the BaseCluster should currently be in, according to it's
-                managing Hivemind.
+                The epoch the BaseCluster should currently be in, according
+                to it's managing Hivemind.
 
         Returns:
-            False if BaseCluster failed to persist the file it was responsible for,
-            otherwise True.
+            False if BaseCluster failed to persist the file it was
+            responsible for, otherwise True.
         """
         self.setup_epoch(epoch)
 
@@ -378,12 +386,14 @@ class BaseCluster:
         This method logs the amount of lost parts throughout the current
         epoch according to the members who went offline and the file blocks
         they posssed and is responsible for setting up a recovery epoch those
-        lost replicas (:py:meth:`domain.cluster_groups.BaseCluster.set_recovery_epoch`).
+        lost replicas
+        (:py:meth:`domain.cluster_groups.BaseCluster.set_recovery_epoch`).
         Similarly it logs the number of members who disconnected.
 
         Returns:
              A collection of members who disconnected during the current
-             epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+             epoch.
+             See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
         off_nodes: List[BaseNode] = []
@@ -412,8 +422,8 @@ class BaseCluster:
     def evaluate(self) -> None:
         """Verifies file block distribution and hive health status.
 
-        This method is invoked by every BaseCluster instance at every epoch time.
-        Among other things it compares the current file block distribution
+        This method is invoked by every BaseCluster instance at every epoch
+        time. Among other things it compares the current file block distribution
         to the desired distribution, evicts and recruits new network nodes
         for the BaseCluster and, performs logging invocations.
         """
@@ -449,8 +459,8 @@ class BaseCluster:
             self.file.logger.save_sets_and_reset()
 
     def maintain(self, off_nodes: List[BaseNode]) -> None:
-        """Evicts disconnected network_nodes from the BaseCluster and attempts to
-        recruit new ones.
+        """Evicts disconnected network_nodes from the BaseCluster and
+        attempts to recruit new ones.
 
         It implicitly creates a new `transition matrix` and `v_`.
 
@@ -466,7 +476,8 @@ class BaseCluster:
         self.membership_maintenance()
 
     def membership_maintenance(self) -> None:
-        """Attempts to recruit new :py:mod:`Network Nodes <domain.network_nodes>`"""
+        """Attempts to recruit new
+        :py:mod:`Network Nodes <domain.network_nodes>`"""
         damaged_hive_size = len(self.members)
         if damaged_hive_size >= self.sufficient_size:
             self.remove_cloud_reference()
@@ -531,7 +542,8 @@ class BaseCluster:
             strategy:
                 `u` - Distributed uniformly across network;
                 `a` - Give all file block replicas to N different network
-                nodes, where N is equal to :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
+                nodes, where N is equal to
+                :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
                 `i` - Distribute all file block replicas following such
                 that the simulation starts with all file blocks and their
                 replicas distributed with a bias towards the ideal steady
@@ -543,10 +555,12 @@ class BaseCluster:
         """
         self.file.logger.initial_spread = strategy
 
+        choices: List[BaseNode]
+        nodes: List[BaseNode]
         if strategy == "a":
-            choices: List[BaseNode] = [*self.members.values()]
-            nodes: List[BaseNode] = np.random.choice(a=choices,
-                                                     size=REPLICATION_LEVEL, replace=False)
+            choices = [*self.members.values()]
+            nodes = np.random.choice(a=choices,
+                                     size=REPLICATION_LEVEL, replace=False)
             for node in nodes:
                 for part in file_parts.values():
                     part.references += 1
@@ -554,8 +568,9 @@ class BaseCluster:
 
         elif strategy == "u":
             for part in file_parts.values():
-                choices: List[BaseNode] = [*self.members.values()]
-                nodes: List[BaseNode] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+                choices = [*self.members.values()]
+                nodes = np.random.choice(a=choices,
+                                         size=REPLICATION_LEVEL, replace=False)
                 for node in nodes:
                     part.references += 1
                     node.receive_part(part)
@@ -567,8 +582,9 @@ class BaseCluster:
                 desired_distribution.append(self.v_.loc[member_id, 0].item())
 
             for part in file_parts.values():
-                choices: List[BaseNode] = choices.copy()
-                nodes: List[BaseNode] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
+                choices = choices.copy()
+                nodes = np.random.choice(a=choices, p=desired_distribution,
+                                         size=REPLICATION_LEVEL, replace=False)
                 for node in nodes:
                     part.references += 1
                     node.receive_part(part)
@@ -617,7 +633,8 @@ class BaseCluster:
 
         Args:
             message:
-                A short explanation of why the BaseCluster suffered early termination.
+                A short explanation of why the BaseCluster suffered
+                early termination.
         """
         self.running = False
         self.file.logger.log_fail(self.current_epoch, message)
@@ -798,13 +815,14 @@ class Hive(BaseCluster):
             Differs the super class implementation because it considers nodes
             as Suspects until it receives enough complaints from member nodes.
             This is important because lost parts can not be logged multiple
-            times. Yet suspected network_nodes need to be contabilized as offline
-            for simulation purposes without being evicted from the group
+            times. Yet suspected network_nodes need to be contabilized as
+            offline for simulation purposes without being evicted from the group
             until said detection occurs.
 
         Returns:
              A collection of members who disconnected during the current
-             epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+             epoch.
+             See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
         off_nodes: List[HiveNode] = []
