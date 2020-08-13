@@ -5,7 +5,7 @@ Classes:
     BaseCluster:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance.
-    Hive:
+    HiveClusterExt:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance. Differs from `BaseCluster` in the
         sense that member eviction is based on the received complaints
@@ -754,25 +754,25 @@ class BaseCluster:
     # endregion
 
 
-class Hive(BaseCluster):
+class HiveClusterExt(BaseCluster):
     """Represents a group of network nodes persisting a file.
 
-    Hive instances differ from BaseCluster in the sense that the
+    HiveClusterExt instances differ from BaseCluster in the sense that the
     :py:class:`Network Nodes <domain.network_nodes.HiveNode>` are responsible
     detecting that their cluster companions are disconnected and reporting it
-    to the Hive for eviction after a certain quota is met.
+    to the HiveClusterExt for eviction after a certain quota is met.
 
     Attributes:
         complaint_threshold:
             Reference value that defines the maximum number of complaints a
             :py:mod:`Network Node <domain.network_nodes>` can receive before
-            it is evicted from the Hive.
+            it is evicted from the HiveClusterExt.
         nodes_complaints:
             A dictionary mapping :py:mod:`Network
             Nodes' <domain.network_nodes>` identifiers to their respective
             number of received complaints. When complaints becomes bigger than
             `complaint_threshold`, the respective complaintee is evicted
-            from the `Hive`.
+            from the `HiveClusterExt`.
         suspicious_nodes:
             A dict containing the unique identifiers of known suspicious
             nodes and how many epochs have passed since they changed to that
@@ -787,7 +787,7 @@ class Hive(BaseCluster):
     def __init__(self, hivemind: ms.Hivemind, file_name: str,
                  members: Dict[str, HiveNodeExt], sim_id: int = 0,
                  origin: str = "") -> None:
-        """Instantiates an `Hive` object.
+        """Instantiates an `HiveClusterExt` object.
 
         Extends:
             :py:class:`~domain.cluster_groups.BaseCluster`.
@@ -929,7 +929,7 @@ class HDFSCluster(BaseCluster):
     def __init__(self, hivemind: ms.Hivemind, file_name: str,
                  members: Dict[str, HiveNodeExt], sim_id: int = 0,
                  origin: str = "") -> None:
-        """Instantiates an `Hive` object.
+        """Instantiates an `HiveClusterExt` object.
 
         Extends:
             :py:class:`~domain.cluster_groups.BaseCluster`.
