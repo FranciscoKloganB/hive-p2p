@@ -430,7 +430,7 @@ class HiveNode(BaseNode):
         file_view: Dict[int, FileBlockData] = self.files.get(fid, {}).copy()
         for number, part in file_view.items():
             self.replicate_part(cluster, part)
-            destination = self.select_destination(part.id)
+            destination = self.select_destination(part.name)
             response_code = self.send_part(cluster, destination, part)
             if response_code == HttpCodes.OK:
                 self.discard_part(fid, number)
