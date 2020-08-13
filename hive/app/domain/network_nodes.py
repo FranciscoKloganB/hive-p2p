@@ -490,6 +490,11 @@ class HiveNodeExt(HiveNode):
     # endregion
 
 
-class HDFSNode:
+class HDFSNode(BaseNode):
     """Represents a data node in the Hadoop Distribute File System."""
-    pass
+
+    def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
+        # TODO:
+        #  1. Corrupt replicas stored at this node.
+        #  2. Regenerate replication levels when possible.
+        pass

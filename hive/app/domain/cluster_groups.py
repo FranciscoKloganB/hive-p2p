@@ -34,7 +34,7 @@ import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
-from domain.network_nodes import HiveNode, HiveNodeExt
+from domain.network_nodes import HiveNode, HiveNodeExt, HDFSNode
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
 from utils.convertions import truncate_float_value
@@ -879,6 +879,7 @@ class HiveClusterExt(BaseCluster):
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
 
+    # region Cluster API
     def complain(
             self, complainter: str, complainee: str, reason: HttpCodes) -> None:
         """Registers a complaint against a possibly offline node.
@@ -902,6 +903,7 @@ class HiveClusterExt(BaseCluster):
             print(f"    > Logged complaint {complaint_id}, "
                   f"complainee complaint count: "
                   f"{self.nodes_complaints[complainee]}")
+    # endregion
 
 
 class HDFSCluster(BaseCluster):
