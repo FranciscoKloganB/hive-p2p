@@ -436,6 +436,8 @@ class HiveNode(BaseNode):
                 self.discard_part(fid, number)
             elif response_code == HttpCodes.BAD_REQUEST:
                 self.discard_part(fid, number, corrupt=True, cluster=cluster)
+            elif response_code in self.suspicious_replies:
+                cluster.complain(self.id, destination, response_code)
             # Else keep file part for at least one more epoch
     # endregion
 
@@ -447,35 +449,6 @@ class HiveNodeExt(HiveNode):
     :py:class:`HiveClusterExt Nodes <domain.domain.HiveNode>` do not monitor their
     groups' peers, concerning suspicious behaviors.
     """
-
-    # region BaseNode overrides
-    def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
-        """Instructs the HiveNode instance to execute the epoch.
-
-        Overrides:
-            :py:meth:`~domain.network_nodes.HiveNode.execute_epoch` and
-            differs from it because it complaints about bad responses to the
-            managing `cluster` instance.
-
-        Args:
-            cluster:
-                BaseCluster instance that ordered execution of the epoch.
-            fid:
-                The identifier that determines which file blocks
-                replicas should be routed.
-        """
-        file_view: Dict[int, FileBlockData] = self.files.get(fid, {}).copy()
-        for number, part in file_view.items():
-            self.replicate_part(cluster, part)
-            destination = self.select_destination(part.id)
-            response_code = self.send_part(cluster, destination, part)
-            if response_code == HttpCodes.OK:
-                self.discard_part(fid, number)
-            elif response_code == HttpCodes.BAD_REQUEST:
-                self.discard_part(fid, number, corrupt=True, cluster=cluster)
-            elif response_code in self.suspicious_replies:
-                cluster.complain(self.id, destination, response_code)
-            # Else keep file part for at least one more epoch
 
     def get_status(self) -> int:
         """Used to obtain the status of the worker.
@@ -495,4 +468,3 @@ class HiveNodeExt(HiveNode):
                 print(f"    [x] {self.id} now offline (suspect status).")
                 self.status = Status.SUSPECT
         return self.status
-    # endregion
