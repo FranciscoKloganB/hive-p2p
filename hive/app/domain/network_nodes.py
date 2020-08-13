@@ -282,6 +282,16 @@ class BaseNode:
                                   "implement their own execute_epoch.")
 
 
+class HDFSNode(BaseNode):
+    """Represents a data node in the Hadoop Distribute File System."""
+
+    def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
+        # TODO:
+        #  1. Corrupt replicas stored at this node.
+        #  2. Regenerate replication levels when possible.
+        pass
+
+
 class HiveNode(BaseNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
@@ -488,13 +498,3 @@ class HiveNodeExt(HiveNode):
                 self.status = Status.SUSPECT
         return self.status
     # endregion
-
-
-class HDFSNode(BaseNode):
-    """Represents a data node in the Hadoop Distribute File System."""
-
-    def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
-        # TODO:
-        #  1. Corrupt replicas stored at this node.
-        #  2. Regenerate replication levels when possible.
-        pass
