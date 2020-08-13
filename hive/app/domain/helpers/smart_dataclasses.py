@@ -72,7 +72,7 @@ class FileData:
         """
         self.out_file.write(msg + "\n")
 
-    def jwrite(self, hive: cg.BaseHive, origin: str, epoch: int) -> None:
+    def jwrite(self, hive: cg.BaseCluster, origin: str, epoch: int) -> None:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
@@ -81,7 +81,7 @@ class FileData:
 
         Args:
             hive:
-                The :py:class:`BaseHive <domain.cluster_groups.BaseHive>` object that manages
+                The :py:class:`BaseCluster <domain.cluster_groups.BaseCluster>` object that manages
                 the simulated persistence of the referenced file.
             origin:
                 The name of the simulation file that started the simulation
@@ -347,7 +347,7 @@ class LoggingData:
         cswc:
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
-            :py:meth:`equal_distributions() <domain.cluster_groups.BaseHive.equal_distributions>`
+            :py:meth:`equal_distributions() <domain.cluster_groups.BaseCluster.equal_distributions>`
             this attribute is reseted to zero.
         largest_convergence_window:
             Stores the largest convergence window that occurred throughout

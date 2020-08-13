@@ -6,9 +6,9 @@ through out the simulation's lifetime including initialization and execution.
 Note:
     To configure the amount of available network nodes in a simulation (
     :py:class:`~domain.network_nodes.BaseNode`), the number of network nodes in a
-    group persisting a file (:py:class:`~domain.cluster_groups.BaseHive`),
+    group persisting a file (:py:class:`~domain.cluster_groups.BaseCluster`),
     the way files are initially distributed between network nodes of a
-    simulation (:py:meth:`~domain.cluster_groups.BaseHive.spread_files`) and,
+    simulation (:py:meth:`~domain.cluster_groups.BaseCluster.spread_files`) and,
     the actual name of the file whose persistence is being simulated,
     you should create a simulation file using
     :py:mod:`simulation_file_generator` and follow its instructions. To run
@@ -44,7 +44,7 @@ Attributes:
         The amount of replicas each file block has (default is 3)
     MIN_CONVERGENCE_THRESHOLD:
         The number of consecutive epoch time steps that an
-        :py:class:`~domain.cluster_groups.BaseHive` must converge before epochs
+        :py:class:`~domain.cluster_groups.BaseCluster` must converge before epochs
         start being marked with verified convergence in
         :py:attr:`~domain.helpers.smart_dataclasses.LoggingData.convergence_set`
          (default is 2).
@@ -53,16 +53,16 @@ Attributes:
         destination due to network link problems, in the simulation environment.
     ABS_TOLERANCE:
         Defines the maximum amount of absolute positive or negative deviation
-        that a current distribution :py:func:`~domain.cluster_groups.BaseHive.cv_`
+        that a current distribution :py:func:`~domain.cluster_groups.BaseCluster.cv_`
         can have from the desired steady state
-        :py:func:`~domain.cluster_groups.BaseHive.v_`, in order for the
+        :py:func:`~domain.cluster_groups.BaseCluster.v_`, in order for the
         distributions to be considered equal and thus marking the epoch as
         being in convergence in
         :py:attr:`~domain.helpers.smart_dataclasses.LoggingData.convergence_set`.
         This constant will be used by
-        :py:meth:`~domain.cluster_groups.BaseHive.equal_distributions` along with a
+        :py:meth:`~domain.cluster_groups.BaseCluster.equal_distributions` along with a
         relative tolerance that is the minimum value in
-        :py:func:`~domain.cluster_groups.BaseHive.v_`.
+        :py:func:`~domain.cluster_groups.BaseCluster.v_`.
 """
 
 import os

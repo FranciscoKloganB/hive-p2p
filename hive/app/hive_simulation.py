@@ -164,7 +164,7 @@ if __name__ == "__main__":
     duration = 720
 
     master_class = "Hivemind"
-    cluster_class = "BaseHive"
+    cluster_class = "BaseCluster"
     node_class = "BaseNode"
 
     try:

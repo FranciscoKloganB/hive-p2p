@@ -2,15 +2,15 @@
 storage nodes.
 
 Classes:
-    BaseHive:
+    BaseCluster:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance.
     Hive:
         A group of P2P nodes working together to ensure the durability of a
-        file using stochastic swarm guidance. Differs from `BaseHive` in the
+        file using stochastic swarm guidance. Differs from `BaseCluster` in the
         sense that member eviction is based on the received complaints
-        from other P2P member nodes within the BaseHive rather than having the
-        BaseHive detecting the disconnection fault, i.e., BaseHive role in the
+        from other P2P member nodes within the BaseCluster rather than having the
+        BaseCluster detecting the disconnection fault, i.e., BaseCluster role in the
         simulation is more coordinative and less informative to nodes.
     Cluster:
         A group of reliable servers that ensure the durability of a file
@@ -39,7 +39,7 @@ from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
 from utils.convertions import truncate_float_value
 
 
-class BaseHive:
+class BaseCluster:
     """Represents a group of network nodes persisting a file.
 
     Notes:
@@ -48,14 +48,14 @@ class BaseHive:
 
     Attributes:
         id:
-            An uuid that uniquely identifies the BaseHive. Usefull for when
-            there are multiple BaseHive instances in a simulation environment.
+            An uuid that uniquely identifies the BaseCluster. Usefull for when
+            there are multiple BaseCluster instances in a simulation environment.
         current_epoch:
             The simulation's current epoch.
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`~domain.cluster_groups.BaseHive.
+            :py:meth:`~domain.cluster_groups.BaseCluster.
             _assign_disk_error_chance` for corruption chance configuration.
         v_ (pandas DataFrame):
             Density distribution hive members must achieve with independent
@@ -64,26 +64,26 @@ class BaseHive:
             Tracks the file current density distribution, updated at each epoch.
         hivemind:
             A reference to :py:class:`~domain.master_servers.Hivemind` that
-            coordinates this BaseHive instance.
+            coordinates this BaseCluster instance.
         members:
-            A collection of network nodes that belong to the BaseHive instance.
+            A collection of network nodes that belong to the BaseCluster instance.
             See also :py:class:`~domain.domain.BaseNode`.
         file:
             A reference to :py:class:`~domain.helpers.FileData` object that
-            represents the file being persisted by the BaseHive instance.
+            represents the file being persisted by the BaseCluster instance.
         critical_size:
             Minimum number of network nodes plus required to exist in the
-            BaseHive to assure the target replication level.
+            BaseCluster to assure the target replication level.
         sufficient_size:
              Sum of :py:attr:`critical_size` and the number of nodes
              expected to fail between two successive recovery phases.
         original_size:
-            The initial and optimal BaseHive size.
+            The initial and optimal BaseCluster size.
         redundant_size:
             Application-specific parameter, which indicates that membership
-            of the BaseHive must be pruned.
+            of the BaseCluster must be pruned.
         running:
-            Indicates if the BaseHive instance is active. This attribute is
+            Indicates if the BaseCluster instance is active. This attribute is
             used by :py:class:`~domain.master_servers.Hivemind` to manage the
             simulation process.
         _recovery_epoch_sum:
@@ -101,17 +101,17 @@ class BaseHive:
                  members: Dict[str, BaseNode],
                  sim_id: int = 0,
                  origin: str = "") -> None:
-        """Instantiates an `BaseHive` object
+        """Instantiates an `BaseCluster` object
 
         Args:
             hivemind:
                 A reference to an :py:class:`~domain.master_servers.Hivemind`
-                object that manages the `BaseHive` being initialized.
+                object that manages the `BaseCluster` being initialized.
             file_name:
-                The name of the file this `BaseHive` is responsible
+                The name of the file this `BaseCluster` is responsible
                 for persisting.
             members:
-                A dictionary mapping unique identifiers to of the BaseHive's
+                A dictionary mapping unique identifiers to of the BaseCluster's
                 initial network nodes (:py:class:`~domain.domain.BaseNode`.)
                 to their instance objects.
             sim_id:
@@ -152,7 +152,7 @@ class BaseHive:
     def add_cloud_reference(self) -> None:
         """Adds a cloud server reference to the membership.
 
-        This method is used when BaseHive membership size becomes compromised
+        This method is used when BaseCluster membership size becomes compromised
         and a backup solution using cloud approaches is desired. The idea
         is that surviving members upload their replicas to the cloud server,
         e.g., an Amazon S3 instance. See Hivemind method
@@ -214,7 +214,7 @@ class BaseHive:
     def new_desired_distribution(self,
                                  member_ids: List[str],
                                  member_uptimes: List[float]) -> List[float]:
-        """Sets a new desired distribution for the BaseHive instance.
+        """Sets a new desired distribution for the BaseCluster instance.
 
         Normalizes the received uptimes to create a stochastic representation
         of the desired distribution, which can be used by the different
@@ -223,7 +223,7 @@ class BaseHive:
         Args:
             member_ids:
                 A list of network node identifiers currently belonging
-                to the BaseHive membership.
+                to the BaseCluster membership.
             member_uptimes:
                 A list in which each index contains the uptime of the network
                 node with the same index in `member_ids`.
@@ -269,21 +269,21 @@ class BaseHive:
         """Slices a transition matrix and delivers them to respective network nodes.
 
         Gives each member his respective slice (vector column) of the
-        transition matrix the BaseHive is currently executing.
+        transition matrix the BaseCluster is currently executing.
 
         Args:
             m:
                 A transition matrix to be broadcasted to the network nodes
-                belonging who are currently members of the BaseHive instance.
+                belonging who are currently members of the BaseCluster instance.
 
         Note:
             An optimization could be made that configures a transition matrix
-            for the hive, independent of of file names, i.e., turn BaseHive
+            for the hive, independent of of file names, i.e., turn BaseCluster
             groups into groups persisting multiple files instead of only one,
             thus reducing simulation spaceoverheads and in real-life
             scenarios, decreasing the load done to metadata servers, through
             queries and matrix calculations. For simplicity of implementation
-            each BaseHive only manages one file for now.
+            each BaseCluster only manages one file for now.
         """
         nodes_degrees: Dict[str, float] = {}
         out_degrees: pd.Series = m.apply(np.count_nonzero, axis=0)  # columns
@@ -326,7 +326,7 @@ class BaseHive:
         return [ploss_epoch, 1.0 - ploss_epoch]
 
     def setup_epoch(self, epoch: int) -> None:
-        """Initializes some attributes of the BaseHive during its initialization.
+        """Initializes some attributes of the BaseCluster during its initialization.
 
         The helper method is used to isolate the initialization of some
         simulation related attributes for eaasier comprehension.
@@ -343,18 +343,18 @@ class BaseHive:
         """Orders all network node members to execute their epoch
 
         Note:
-            If the BaseHive terminates early, i.e., if it terminates before
+            If the BaseCluster terminates early, i.e., if it terminates before
             reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
             should be done in :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
         Args:
             epoch:
-                The epoch the BaseHive should currently be in, according to it's
+                The epoch the BaseCluster should currently be in, according to it's
                 managing Hivemind.
 
         Returns:
-            False if BaseHive failed to persist the file it was responsible for,
+            False if BaseCluster failed to persist the file it was responsible for,
             otherwise True.
         """
         self.setup_epoch(epoch)
@@ -378,7 +378,7 @@ class BaseHive:
         This method logs the amount of lost parts throughout the current
         epoch according to the members who went offline and the file blocks
         they posssed and is responsible for setting up a recovery epoch those
-        lost replicas (:py:meth:`domain.cluster_groups.BaseHive.set_recovery_epoch`).
+        lost replicas (:py:meth:`domain.cluster_groups.BaseCluster.set_recovery_epoch`).
         Similarly it logs the number of members who disconnected.
 
         Returns:
@@ -412,10 +412,10 @@ class BaseHive:
     def evaluate(self) -> None:
         """Verifies file block distribution and hive health status.
 
-        This method is invoked by every BaseHive instance at every epoch time.
+        This method is invoked by every BaseCluster instance at every epoch time.
         Among other things it compares the current file block distribution
         to the desired distribution, evicts and recruits new network nodes
-        for the BaseHive and, performs logging invocations.
+        for the BaseCluster and, performs logging invocations.
         """
         if not self.members:
             self.set_fail("Cluster has no remaining members.")
@@ -449,7 +449,7 @@ class BaseHive:
             self.file.logger.save_sets_and_reset()
 
     def maintain(self, off_nodes: List[BaseNode]) -> None:
-        """Evicts disconnected network_nodes from the BaseHive and attempts to
+        """Evicts disconnected network_nodes from the BaseCluster and attempts to
         recruit new ones.
 
         It implicitly creates a new `transition matrix` and `v_`.
@@ -499,7 +499,7 @@ class BaseHive:
         """Registers a complaint against a possibly offline node.
 
         Note:
-            :py:meth:`~domain.cluster_groups.BaseHive.complain` method does
+            :py:meth:`~domain.cluster_groups.BaseCluster.complain` method does
             not implement any functionality and should be overridden by any
             subclass.
 
@@ -521,7 +521,7 @@ class BaseHive:
     def spread_files(
             self, strategy: str, file_parts: Dict[int, FileBlockData]
     ) -> None:
-        """Batch distributes files to BaseHive members.
+        """Batch distributes files to BaseCluster members.
 
         This method is used at the start of a simulation to give all file
         blocks including the replicas to members of the hive. Different
@@ -538,7 +538,7 @@ class BaseHive:
                 state distribution;
             file_parts:
                 A collection of file blocks, without replication, to be
-                distributed between the BaseHive members according to
+                distributed between the BaseCluster members according to
                 the desired `strategy`.
         """
         self.file.logger.initial_spread = strategy
@@ -597,7 +597,7 @@ class BaseHive:
 
     def __get_new_members__(self) -> Dict[str, BaseNode]:
         """Helper method that gets adds network nodes, if possible,
-        to the BaseHive.
+        to the BaseCluster.
 
         Returns:
             A dictionary mapping network node identifiers and their instance
@@ -607,7 +607,7 @@ class BaseHive:
             self.members, self.original_size - len(self.members))
 
     def set_fail(self, message: str) -> None:
-        """Ends the BaseHive instance simulation.
+        """Ends the BaseCluster instance simulation.
 
         Sets :py:attr:`running` to False and instructs
         :py:class:`~domain.helpers.smart_dataclasses.FileData` to persist
@@ -617,7 +617,7 @@ class BaseHive:
 
         Args:
             message:
-                A short explanation of why the BaseHive suffered early termination.
+                A short explanation of why the BaseCluster suffered early termination.
         """
         self.running = False
         self.file.logger.log_fail(self.current_epoch, message)
@@ -657,12 +657,12 @@ class BaseHive:
 
     def create_and_bcast_new_transition_matrix(self) -> None:
         """Tries to create a valid transition matrix and distributes between
-        members of the BaseHive.
+        members of the BaseCluster.
 
         After creating a transition matrix it ensures that the matrix is a
         markov matrix by invoking :py:meth:`~_validate_transition_matrix`.
         If this validation fails three times, simulation is resumed with an
-        invalid matrix until the BaseHive membership is changed again for any
+        invalid matrix until the BaseCluster membership is changed again for any
         reason.
         """
         tries = 1
@@ -737,10 +737,10 @@ class BaseHive:
     # endregion
 
 
-class Hive(BaseHive):
+class Hive(BaseCluster):
     """Represents a group of network nodes persisting a file.
 
-    Hive instances differ from BaseHive in the sense that the
+    Hive instances differ from BaseCluster in the sense that the
     :py:class:`~domain.domain.BaseNode` are responsible detecting that
     their cluster companions are disconnected and reporting it to the
     Hive for eviction after a certain quota is met.
@@ -773,7 +773,7 @@ class Hive(BaseHive):
         """Instantiates an `Hive` object.
 
         Extends:
-            :py:class:`~domain.cluster_groups.BaseHive`.
+            :py:class:`~domain.cluster_groups.BaseCluster`.
         """
         super().__init__(hivemind, file_name, members, sim_id, origin)
         self.complaint_threshold: float = len(members) * 0.5
@@ -785,7 +785,7 @@ class Hive(BaseHive):
         """Instructs the cluster to execute an epoch.
 
         Extends:
-            :py:meth:`~domain.cluster_groups.BaseHive.execute_epoch`.
+            :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
         """
         super().execute_epoch(epoch)
         self._epoch_complaints.clear()
@@ -794,7 +794,7 @@ class Hive(BaseHive):
         """Queries all network node members execute the epoch.
 
         Overrides:
-            :py:meth:`~domain.cluster_groups.BaseHive.nodes_execute`.
+            :py:meth:`~domain.cluster_groups.BaseCluster.nodes_execute`.
             Differs the super class implementation because it considers nodes
             as Suspects until it receives enough complaints from member nodes.
             This is important because lost parts can not be logged multiple
@@ -847,7 +847,7 @@ class Hive(BaseHive):
         `complaint_threshold`.
 
         Overrides:
-            :py:meth:`~domain.cluster_groups.BaseHive.execute_epoch`.
+            :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
             Functionality is largely the same, but `off_nodes` parameter is
             ignored and replaced by an iteration over `nodes_complaints`.
 
@@ -874,7 +874,7 @@ class Hive(BaseHive):
         of the complainter and the complainee unique identifiers.
 
         Overrides:
-            :py:meth:`~domain.cluster_groups.BaseHive.complain`.
+            :py:meth:`~domain.cluster_groups.BaseCluster.complain`.
         """
         if reason == HttpCodes.TIME_OUT:
             return
