@@ -5,13 +5,14 @@ Classes:
     BaseCluster:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance.
-    Hive:
+    HiveClusterExt:
         A group of P2P nodes working together to ensure the durability of a
         file using stochastic swarm guidance. Differs from `BaseCluster` in the
         sense that member eviction is based on the received complaints
-        from other P2P member nodes within the BaseCluster rather than having the
-        BaseCluster detecting the disconnection fault, i.e., BaseCluster role in the
-        simulation is more coordinative and less informative to nodes.
+        from other P2P member nodes within the BaseCluster rather than having
+        the BaseCluster detecting the disconnection fault, i.e., BaseCluster
+        role in the simulation is more coordinative and less informative to
+        nodes.
     Cluster:
         A group of reliable servers that ensure the durability of a file
         following a client-server model as seen in Google File System or
@@ -33,7 +34,7 @@ import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
-from domain.network_nodes import BaseNode, HiveNode
+from domain.network_nodes import HiveNode, HiveNodeExt, HDFSNode
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
 from utils.convertions import truncate_float_value
@@ -48,8 +49,9 @@ class BaseCluster:
 
     Attributes:
         id:
-            An uuid that uniquely identifies the BaseCluster. Usefull for when
-            there are multiple BaseCluster instances in a simulation environment.
+            An uuid that uniquely identifies the BaseCluster.
+            Usefull for when there are multiple BaseCluster instances in a
+            simulation environment.
         current_epoch:
             The simulation's current epoch.
         corruption_chances:
@@ -66,8 +68,8 @@ class BaseCluster:
             A reference to :py:class:`~domain.master_servers.Hivemind` that
             coordinates this BaseCluster instance.
         members:
-            A collection of network nodes that belong to the BaseCluster instance.
-            See also :py:class:`~domain.domain.BaseNode`.
+            A collection of network nodes that belong to the BaseCluster
+            instance. See also :py:class:`~domain.domain.HiveNode`.
         file:
             A reference to :py:class:`~domain.helpers.FileData` object that
             represents the file being persisted by the BaseCluster instance.
@@ -98,7 +100,7 @@ class BaseCluster:
 
     def __init__(self, hivemind: ms.Hivemind,
                  file_name: str,
-                 members: Dict[str, BaseNode],
+                 members: Dict[str, HiveNode],
                  sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `BaseCluster` object
@@ -112,7 +114,7 @@ class BaseCluster:
                 for persisting.
             members:
                 A dictionary mapping unique identifiers to of the BaseCluster's
-                initial network nodes (:py:class:`~domain.domain.BaseNode`.)
+                initial network nodes (:py:class:`~domain.domain.HiveNode`.)
                 to their instance objects.
             sim_id:
                 optional; Identifier that generates unique output file names,
@@ -128,10 +130,12 @@ class BaseCluster:
         self.v_: pd.DataFrame = pd.DataFrame()
         self.corruption_chances: List[float] = self._assign_disk_error_chance()
         self.hivemind = hivemind
-        self.members: Dict[str, BaseNode] = members
+        self.members: Dict[str, HiveNode] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
-        self.sufficient_size: int = self.critical_size + math.ceil(len(self.members) * 0.34)
+        self.sufficient_size: int = self.critical_size + math.ceil(
+            len(self.members) * 0.34
+        )
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
         self.running: bool = True
@@ -139,8 +143,7 @@ class BaseCluster:
         self._recovery_epoch_calls: int = 0
         self.create_and_bcast_new_transition_matrix()
 
-    # region Routing
-
+    # region Cluster API
     def remove_cloud_reference(self) -> None:
         """Remove cloud references and delete files within it
 
@@ -168,16 +171,16 @@ class BaseCluster:
 
     def route_part(self,
                    sender: str,
-                   destination: str,
+                   receiver: str,
                    part: FileBlockData,
                    fresh_replica: bool = False
-                   ) -> Tuple[Union[HttpCodes, int], str]:
+                   ) -> Union[int, HttpCodes]:
         """Sends one file block replica to some other network node.
 
         Args:
             sender:
                 An identifier of the network node who is sending the message.
-            destination:
+            receiver:
                 The destination network node identifier.
             part:
                 The file block replica send to specified destination.
@@ -189,31 +192,55 @@ class BaseCluster:
         Returns:
             An HTTP code sent by destination network node.
         """
-        if sender == destination:
-            return HttpCodes.DUMMY, destination
+        if sender == receiver:
+            return HttpCodes.DUMMY
 
         self.file.logger.log_bandwidth_units(1, self.current_epoch)
 
         if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):
             self.file.logger.log_lost_messages(1, self.current_epoch)
-            return HttpCodes.TIME_OUT, destination
+            return HttpCodes.TIME_OUT
 
-        if not fresh_replica and np.random.choice(a=TRUE_FALSE, p=self.corruption_chances):
+        is_corrupted = np.random.choice(a=TRUE_FALSE, p=self.corruption_chances)
+        if not fresh_replica and is_corrupted:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
-            return HttpCodes.BAD_REQUEST, destination
+            return HttpCodes.BAD_REQUEST
 
-        destination_node: BaseNode = self.members[destination]
+        destination_node: HiveNode = self.members[receiver]
         if destination_node.status == Status.ONLINE:
-            return destination_node.receive_part(part), destination
+            return destination_node.receive_part(part)
         else:
-            return HttpCodes.NOT_FOUND, destination
+            return HttpCodes.NOT_FOUND
 
+    def complain(
+            self, complainter: str, complainee: str, reason: HttpCodes) -> None:
+        """Registers a complaint against a possibly offline node.
+
+        A unique identifier for the complaint is generated by concatenation
+        of the complainter and the complainee unique identifiers.
+
+        Note:
+            This method provides no functionality and should be overridden in
+            base classes, but this is not enforced.
+
+        Args:
+            complainter:
+                The identifier of the complaining :py:mod:`Network Node
+                <domain.network_nodes>`.
+            complainee:
+                The identifier of the :py:mod:`Network Node
+                <domain.network_nodes>` being complained about.
+            reason:
+                The :py:class:`code <domain.helpers.enums.HttpCodes>` that
+                led to the complaint.
+        """
+        pass
     # endregion
 
     # region Swarm Guidance - Data Structure Management Only
-    def new_desired_distribution(self,
-                                 member_ids: List[str],
-                                 member_uptimes: List[float]) -> List[float]:
+    def new_desired_distribution(
+            self, member_ids: List[str], member_uptimes: List[float]
+    ) -> List[float]:
         """Sets a new desired distribution for the BaseCluster instance.
 
         Normalizes the received uptimes to create a stochastic representation
@@ -266,7 +293,8 @@ class BaseCluster:
         return pd.DataFrame(t, index=node_ids, columns=node_ids)
 
     def broadcast_transition_matrix(self, m: pd.DataFrame) -> None:
-        """Slices a transition matrix and delivers them to respective network nodes.
+        """Slices a transition matrix and delivers them to respective
+        network nodes.
 
         Gives each member his respective slice (vector column) of the
         transition matrix the BaseCluster is currently executing.
@@ -326,7 +354,8 @@ class BaseCluster:
         return [ploss_epoch, 1.0 - ploss_epoch]
 
     def setup_epoch(self, epoch: int) -> None:
-        """Initializes some attributes of the BaseCluster during its initialization.
+        """Initializes some attributes of the BaseCluster during
+        its initialization.
 
         The helper method is used to isolate the initialization of some
         simulation related attributes for eaasier comprehension.
@@ -345,50 +374,50 @@ class BaseCluster:
         Note:
             If the BaseCluster terminates early, i.e., if it terminates before
             reaching :py:code:`~environment_settings.MAX_EPOCHS`, no logging
-            should be done in :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
+            should be done in
+            :py:class:`~domain.helpers.smart_dataclasses.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
         Args:
             epoch:
-                The epoch the BaseCluster should currently be in, according to it's
-                managing Hivemind.
+                The epoch the BaseCluster should currently be in, according
+                to it's managing Hivemind.
 
         Returns:
-            False if BaseCluster failed to persist the file it was responsible for,
-            otherwise True.
+            False if BaseCluster failed to persist the file it was
+            responsible for, otherwise True.
         """
         self.setup_epoch(epoch)
 
-        try:
-            off_nodes = self.nodes_execute()
-            self.evaluate()
-            self.maintain(off_nodes)
-            if epoch == ms.Hivemind.MAX_EPOCHS:
-                self.running = False
-        except Exception as e:
-            self.set_fail(f"Exception caused simulation termination: {str(e)}")
+        off_nodes = self.nodes_execute()
+        self.evaluate()
+        self.maintain(off_nodes)
+        if epoch == ms.Hivemind.MAX_EPOCHS:
+            self.running = False
 
         self.file.logger.log_replication_delay(self._recovery_epoch_sum,
                                                self._recovery_epoch_calls,
                                                self.current_epoch)
 
-    def nodes_execute(self) -> List[BaseNode]:
+    def nodes_execute(self) -> List[HiveNode]:
         """Queries all network node members execute the epoch.
 
         This method logs the amount of lost parts throughout the current
         epoch according to the members who went offline and the file blocks
         they posssed and is responsible for setting up a recovery epoch those
-        lost replicas (:py:meth:`domain.cluster_groups.BaseCluster.set_recovery_epoch`).
+        lost replicas
+        (:py:meth:`domain.cluster_groups.BaseCluster.set_recovery_epoch`).
         Similarly it logs the number of members who disconnected.
 
         Returns:
              A collection of members who disconnected during the current
-             epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+             epoch.
+             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
-        off_nodes: List[BaseNode] = []
+        off_nodes: List[HiveNode] = []
         for node in self.members.values():
-            if node.get_epoch_status() == Status.ONLINE:
+            if node.get_status() == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
             else:
                 lost_parts = node.get_file_parts(self.file.name)
@@ -412,8 +441,8 @@ class BaseCluster:
     def evaluate(self) -> None:
         """Verifies file block distribution and hive health status.
 
-        This method is invoked by every BaseCluster instance at every epoch time.
-        Among other things it compares the current file block distribution
+        This method is invoked by every BaseCluster instance at every epoch
+        time. Among other things it compares the current file block distribution
         to the desired distribution, evicts and recruits new network nodes
         for the BaseCluster and, performs logging invocations.
         """
@@ -448,9 +477,9 @@ class BaseCluster:
         else:
             self.file.logger.save_sets_and_reset()
 
-    def maintain(self, off_nodes: List[BaseNode]) -> None:
-        """Evicts disconnected network_nodes from the BaseCluster and attempts to
-        recruit new ones.
+    def maintain(self, off_nodes: List[HiveNode]) -> None:
+        """Evicts disconnected network_nodes from the BaseCluster and
+        attempts to recruit new ones.
 
         It implicitly creates a new `transition matrix` and `v_`.
 
@@ -466,7 +495,8 @@ class BaseCluster:
         self.membership_maintenance()
 
     def membership_maintenance(self) -> None:
-        """Attempts to recruit new :py:mod:`Network Nodes <domain.network_nodes>`"""
+        """Attempts to recruit new
+        :py:mod:`Network Nodes <domain.network_nodes>`"""
         damaged_hive_size = len(self.members)
         if damaged_hive_size >= self.sufficient_size:
             self.remove_cloud_reference()
@@ -493,28 +523,6 @@ class BaseCluster:
 
         self.file.logger.log_maintenance(
             status_bm, damaged_hive_size, status_am, self.current_epoch)
-
-    def complain(
-            self, complainter: str, complainee: str, reason: HttpCodes) -> None:
-        """Registers a complaint against a possibly offline node.
-
-        Note:
-            :py:meth:`~domain.cluster_groups.BaseCluster.complain` method does
-            not implement any functionality and should be overridden by any
-            subclass.
-
-        Args:
-            complainter:
-                The identifier of the complaining :py:mod:`Network Node
-                <domain.network_nodes>`.
-            complainee:
-                The identifier of the :py:mod:`Network Node
-                <domain.network_nodes>` being complained about.
-            reason:
-                The :py:class:`code <domain.helpers.enums.HttpCodes>` that
-                led to the complaint.
-        """
-        pass
     # endregion
 
     # region Helpers
@@ -531,7 +539,8 @@ class BaseCluster:
             strategy:
                 `u` - Distributed uniformly across network;
                 `a` - Give all file block replicas to N different network
-                nodes, where N is equal to :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
+                nodes, where N is equal to
+                :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
                 `i` - Distribute all file block replicas following such
                 that the simulation starts with all file blocks and their
                 replicas distributed with a bias towards the ideal steady
@@ -543,10 +552,12 @@ class BaseCluster:
         """
         self.file.logger.initial_spread = strategy
 
+        choices: List[HiveNode]
+        nodes: List[HiveNode]
         if strategy == "a":
-            choices: List[BaseNode] = [*self.members.values()]
-            nodes: List[BaseNode] = np.random.choice(a=choices,
-                                                     size=REPLICATION_LEVEL, replace=False)
+            choices = [*self.members.values()]
+            nodes = np.random.choice(a=choices,
+                                     size=REPLICATION_LEVEL, replace=False)
             for node in nodes:
                 for part in file_parts.values():
                     part.references += 1
@@ -554,8 +565,9 @@ class BaseCluster:
 
         elif strategy == "u":
             for part in file_parts.values():
-                choices: List[BaseNode] = [*self.members.values()]
-                nodes: List[BaseNode] = np.random.choice(a=choices, size=REPLICATION_LEVEL, replace=False)
+                choices = [*self.members.values()]
+                nodes = np.random.choice(a=choices,
+                                         size=REPLICATION_LEVEL, replace=False)
                 for node in nodes:
                     part.references += 1
                     node.receive_part(part)
@@ -567,8 +579,9 @@ class BaseCluster:
                 desired_distribution.append(self.v_.loc[member_id, 0].item())
 
             for part in file_parts.values():
-                choices: List[BaseNode] = choices.copy()
-                nodes: List[BaseNode] = np.random.choice(a=choices, p=desired_distribution, size=REPLICATION_LEVEL, replace=False)
+                choices = choices.copy()
+                nodes = np.random.choice(a=choices, p=desired_distribution,
+                                         size=REPLICATION_LEVEL, replace=False)
                 for node in nodes:
                     part.references += 1
                     node.receive_part(part)
@@ -595,13 +608,13 @@ class BaseCluster:
 
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
-    def __get_new_members__(self) -> Dict[str, BaseNode]:
+    def __get_new_members__(self) -> Dict[str, HiveNode]:
         """Helper method that gets adds network nodes, if possible,
         to the BaseCluster.
 
         Returns:
             A dictionary mapping network node identifiers and their instance
-            objects (:py:class:`~domain.network_nodes.BaseNode`).
+            objects (:py:class:`~domain.network_nodes.HiveNode`).
         """
         return self.hivemind.find_replacement_node(
             self.members, self.original_size - len(self.members))
@@ -617,7 +630,8 @@ class BaseCluster:
 
         Args:
             message:
-                A short explanation of why the BaseCluster suffered early termination.
+                A short explanation of why the BaseCluster suffered
+                early termination.
         """
         self.running = False
         self.file.logger.log_fail(self.current_epoch, message)
@@ -737,40 +751,40 @@ class BaseCluster:
     # endregion
 
 
-class Hive(BaseCluster):
+class HiveClusterExt(BaseCluster):
     """Represents a group of network nodes persisting a file.
 
-    Hive instances differ from BaseCluster in the sense that the
-    :py:class:`~domain.domain.BaseNode` are responsible detecting that
-    their cluster companions are disconnected and reporting it to the
-    Hive for eviction after a certain quota is met.
+    HiveClusterExt instances differ from BaseCluster in the sense that the
+    :py:class:`Network Nodes <domain.network_nodes.HiveNode>` are responsible
+    detecting that their cluster companions are disconnected and reporting it
+    to the HiveClusterExt for eviction after a certain quota is met.
 
     Attributes:
         complaint_threshold:
             Reference value that defines the maximum number of complaints a
             :py:mod:`Network Node <domain.network_nodes>` can receive before
-            it is evicted from the Hive.
+            it is evicted from the HiveClusterExt.
         nodes_complaints:
             A dictionary mapping :py:mod:`Network
             Nodes' <domain.network_nodes>` identifiers to their respective
             number of received complaints. When complaints becomes bigger than
             `complaint_threshold`, the respective complaintee is evicted
-            from the `Hive`.
+            from the `HiveClusterExt`.
         suspicious_nodes:
             A dict containing the unique identifiers of known suspicious
             nodes and how many epochs have passed since they changed to that
             status.
         _epoch_complaints:
             A set of unique identifiers formed from the concatenation of
-            :py:attr:`node identifiers <domain.network_nodes.BaseNode.id>`,
+            :py:attr:`node identifiers <domain.network_nodes.HiveNode.id>`,
             to avoid multiple complaint registrations on the same epoch,
             done by the same source towards the same target. The set is
             reset every epoch.
     """
     def __init__(self, hivemind: ms.Hivemind, file_name: str,
-                 members: Dict[str, HiveNode], sim_id: int = 0,
+                 members: Dict[str, HiveNodeExt], sim_id: int = 0,
                  origin: str = "") -> None:
-        """Instantiates an `Hive` object.
+        """Instantiates an `HiveClusterExt` object.
 
         Extends:
             :py:class:`~domain.cluster_groups.BaseCluster`.
@@ -790,7 +804,7 @@ class Hive(BaseCluster):
         super().execute_epoch(epoch)
         self._epoch_complaints.clear()
 
-    def nodes_execute(self) -> List[HiveNode]:
+    def nodes_execute(self) -> List[HiveNodeExt]:
         """Queries all network node members execute the epoch.
 
         Overrides:
@@ -798,20 +812,21 @@ class Hive(BaseCluster):
             Differs the super class implementation because it considers nodes
             as Suspects until it receives enough complaints from member nodes.
             This is important because lost parts can not be logged multiple
-            times. Yet suspected network_nodes need to be contabilized as offline
-            for simulation purposes without being evicted from the group
+            times. Yet suspected network_nodes need to be contabilized as
+            offline for simulation purposes without being evicted from the group
             until said detection occurs.
 
         Returns:
              A collection of members who disconnected during the current
-             epoch. See :py:meth:`~domain.network_nodes.BaseNode.get_epoch_status`.
+             epoch.
+             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
-        off_nodes: List[HiveNode] = []
+        off_nodes = []
 
         members = self.members.values()
         for node in members:
-            node.get_epoch_status()
+            node.get_status()
         for node in members:
             if node.status == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
@@ -842,7 +857,7 @@ class Hive(BaseCluster):
 
         return off_nodes
 
-    def maintain(self, off_nodes: List[HiveNode]) -> None:
+    def maintain(self, off_nodes: List[HiveNodeExt]) -> None:
         """Evicts any node whose number of complaints as surpassed the
         `complaint_threshold`.
 
@@ -850,11 +865,6 @@ class Hive(BaseCluster):
             :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
             Functionality is largely the same, but `off_nodes` parameter is
             ignored and replaced by an iteration over `nodes_complaints`.
-
-        Args:
-            off_nodes:
-                optionalThe collection of members who disconnected during the
-                current epoch.
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
@@ -866,19 +876,16 @@ class Hive(BaseCluster):
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
 
+    # region Cluster API
     def complain(
             self, complainter: str, complainee: str, reason: HttpCodes) -> None:
         """Registers a complaint against a possibly offline node.
 
-        A unique identifier for the complaint is generated by concatenation
-        of the complainter and the complainee unique identifiers.
-
         Overrides:
-            :py:meth:`~domain.cluster_groups.BaseCluster.complain`.
+            :py:meth:`~domain.cluster_groups.BaseCluster.complain`
         """
         if reason == HttpCodes.TIME_OUT:
             return
-
         complaint_id = f"{complainter}|{complainee}"
         if complaint_id not in self._epoch_complaints:
             self._epoch_complaints.add(complaint_id)
@@ -889,3 +896,146 @@ class Hive(BaseCluster):
             print(f"    > Logged complaint {complaint_id}, "
                   f"complainee complaint count: "
                   f"{self.nodes_complaints[complainee]}")
+    # endregion
+
+
+class HDFSCluster(BaseCluster):
+    """Represents a group of network nodes persisting a file in a Hadoop
+    Distributed File System scenario.
+
+    Differ from BaseCluster in the sense that the
+    :py:class:`Network Nodes <domain.network_nodes.HiveNode>` are
+    do not perform swarm guidance behaviors and instead report with regular
+    heartbeats to their monitoring `HDFSCluster` instance. This class would
+    represent a NameNode Server in HDFS and a Master server in GFS.
+
+    Attributes:
+        suspicious_nodes:
+            A set containing the unique identifiers of known suspicious
+            nodes.
+        data_node_heartbeats:
+            A dictionary mapping :py:mod:`Network
+            Nodes' <domain.network_nodes>` identifiers to their respective
+            number of received complaints. Each node enters the dictionary
+            with at five beats. When they miss five beats in a row, i.e.,
+            when the dictionary value count is zero, they are evicted from the
+            cluster.
+    """
+    def __init__(self, hivemind: ms.Hivemind, file_name: str,
+                 members: Dict[str, HiveNodeExt], sim_id: int = 0,
+                 origin: str = "") -> None:
+        """Instantiates an `HiveClusterExt` object.
+
+        Extends:
+            :py:class:`~domain.cluster_groups.BaseCluster`.
+        """
+        super().__init__(hivemind, file_name, members, sim_id, origin)
+        self.suspicious_nodes: set = set()
+        self.data_node_heartbeats: Dict[str, int] = {}
+
+    def execute_epoch(self, epoch: int) -> None:
+        """Instructs the cluster to execute an epoch.
+
+        Extends:
+            :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
+        """
+        self.current_epoch = epoch
+        off_nodes = self.nodes_execute()
+        self.evaluate()
+        self.maintain(off_nodes)
+        if epoch == ms.Hivemind.MAX_EPOCHS:
+            self.running = False
+
+        self.file.logger.log_replication_delay(self._recovery_epoch_sum,
+                                               self._recovery_epoch_calls,
+                                               self.current_epoch)
+
+    def nodes_execute(self) -> List[HDFSNode]:
+        """Queries all network node members execute the epoch.
+
+        Overrides:
+            :py:meth:`~domain.cluster_groups.BaseCluster.nodes_execute`
+            regarding the behavior of :py:mod:`Network Nodes
+            <domain.network_nodes>`. They only send heartbeats to the
+            `HDFSCluster` and do nothing else in their epochs unless
+            specifically asked to do so.
+
+        Returns:
+             A collection of members who disconnected during the current
+             epoch.
+             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
+        """
+        off_nodes = []
+        lost_replicas_count: int = 0
+
+        members = self.members.values()
+        for node in members:
+            node.get_status()
+        for node in members:
+            if node.status == Status.ONLINE:
+                node.execute_epoch(self, self.file.name)
+            elif node.status == Status.SUSPECT:
+                # Register lost replicas the moment the node disconnects.
+                if node.id not in self.suspicious_nodes:
+                    self.suspicious_nodes.add(node.id)
+                    node_replicas = node.get_file_parts(self.file.name)
+                    lost_replicas_count += len(node_replicas)
+                    for replica in node_replicas.values():
+                        if replica.decrement_and_get_references() <= 0:
+                            self.set_fail(f"Lost all replicas of file part "
+                                          f"with id: {replica.id}")
+                # Simulate missed heartbeats.
+                if node.id in self.data_node_heartbeats:
+                    self.data_node_heartbeats[node.id] -= 1
+                    if self.data_node_heartbeats[node.id] <= 0:
+                        off_nodes.append(node)
+                        node_replicas = node.get_file_parts(self.file.name)
+                        for replica in node_replicas.values():
+                            self.set_replication_epoch(replica)
+
+        if len(self.suspicious_nodes) >= len(self.members):
+            self.set_fail("All data nodes disconnected before maintenance.")
+
+        sf: LoggingData = self.file.logger
+        sf.log_off_nodes(len(off_nodes), self.current_epoch)
+        sf.log_lost_file_blocks(lost_replicas_count, self.current_epoch)
+
+        return off_nodes
+
+    def evaluate(self) -> None:
+        """`HDFSCluster evaluate method merely logs the number of existing
+        replicas in the system.
+
+        Overrides:
+            :py:meth:`~domain.cluster_groups.BaseCluster.evaluate`.
+        """
+        if not self.members:
+            self.set_fail("Cluster has no remaining members.")
+
+        pcount: int = 0
+        members = self.members.values()
+        for node in members:
+            if node.status == Status.ONLINE:
+                node_replicas = node.get_file_parts_count(self.file.name)
+                pcount += len(node_replicas)
+        self.log_evaluation(pcount)
+
+    def maintain(self, off_nodes: List[HDFSNode]) -> None:
+        """Evicts any :py:mod:`Network Node <domain.network_nodes>` whose
+        heartbeats in `data_node_heartbeats` reached zero.
+
+        Overrides:
+            :py:meth:`~domain.cluster_groups.BaseCluster.execute_epoch`.
+        """
+        for node in off_nodes:
+            print(f"    [o] Evicted suspect {node.id}.")
+            self.suspicious_nodes.discard(node.id)
+            self.data_node_heartbeats.pop(node.id, -1)
+            self.members.pop(node.id, None)
+            node.remove_file_routing(self.file.name)
+            self.file.logger.log_suspicous_node_detection_delay(node.id, 5)
+        super().membership_maintenance()
+
+    def complain(self, complainter: str, complainee: str,
+                 reason: HttpCodes) -> None:
+        pass

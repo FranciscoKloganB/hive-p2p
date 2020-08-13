@@ -71,7 +71,7 @@ def __can_exec_simfile(sname: str) -> None:
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
 
 
-def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
+def __start_simulation(sname: str, sid: int, epochs: int) -> None:
     """Executes one instance of the simulation
 
     Args:
@@ -97,11 +97,11 @@ def __parallel_main(
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
                 for i in range(iters):
-                    executor.submit(__execute_simulation, sn, i, epochs)
+                    executor.submit(__start_simulation, sn, i, epochs)
         else:
             __can_exec_simfile(sname)
             for i in range(iters):
-                executor.submit(__execute_simulation, sname, i, epochs)
+                executor.submit(__start_simulation, sname, i, epochs)
 
 
 def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
@@ -110,11 +110,11 @@ def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
             for i in range(iters):
-                __execute_simulation(sn, i, epochs)
+                __start_simulation(sn, i, epochs)
     else:
         __can_exec_simfile(sname)
         for i in range(iters):
-            __execute_simulation(sname, i, epochs)
+            __start_simulation(sname, i, epochs)
 # endregion
 
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
     master_class = "Hivemind"
     cluster_class = "BaseCluster"
-    node_class = "BaseNode"
+    node_class = "HiveNode"
 
     try:
         short_opts = "df:i:t:e:m:c:n:"

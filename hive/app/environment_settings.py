@@ -5,7 +5,7 @@ through out the simulation's lifetime including initialization and execution.
 
 Note:
     To configure the amount of available network nodes in a simulation (
-    :py:class:`~domain.network_nodes.BaseNode`), the number of network nodes in a
+    :py:class:`~domain.network_nodes.HiveNode`), the number of network nodes in a
     group persisting a file (:py:class:`~domain.cluster_groups.BaseCluster`),
     the way files are initially distributed between network nodes of a
     simulation (:py:meth:`~domain.cluster_groups.BaseCluster.spread_files`) and,
