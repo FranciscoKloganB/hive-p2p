@@ -134,7 +134,6 @@ class Cluster:
         self.running: bool = True
         self._recovery_epoch_sum: int = 0
         self._recovery_epoch_calls: int = 0
-        self.create_and_bcast_new_transition_matrix()
 
     # region Cluster API
     def remove_cloud_reference(self) -> None:
@@ -768,6 +767,7 @@ class HiveCluster(Cluster):
         super().__init__(master, file_name, members, sim_id, origin)
         self.cv_: pd.DataFrame = pd.DataFrame()
         self.v_: pd.DataFrame = pd.DataFrame()
+        self.create_and_bcast_new_transition_matrix()
 
 
 class HiveClusterExt(Cluster):
