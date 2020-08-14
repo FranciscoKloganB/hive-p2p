@@ -8,13 +8,13 @@ import sys
 import traceback
 from typing import Union, Dict, List
 
-import numpy as np
-import pandas as pd
-
-import domain.cluster_groups as cg
+import domain.helpers.smart_dataclasses as sd
+import domain.helpers.enums as e
 import domain.master_servers as ms
-from domain.helpers.enums import Status, HttpCodes
-from domain.helpers.smart_dataclasses import FileBlockData
+import type_hints as th
+import pandas as pd
+import numpy as np
+
 from utils import crypto
 
 
@@ -71,16 +71,16 @@ class Node:
 
         self.id: str = uid
         self.uptime: float = uptime
-        self.status: int = Status.ONLINE
+        self.status: int = e.Status.ONLINE
         self.suspicious_replies = {
-            HttpCodes.NOT_FOUND,
-            HttpCodes.TIME_OUT,
-            HttpCodes.SERVER_DOWN,
+            e.HttpCodes.NOT_FOUND,
+            e.HttpCodes.TIME_OUT,
+            e.HttpCodes.SERVER_DOWN,
         }
-        self.files: Dict[str, Dict[int, FileBlockData]] = {}
+        self.files: Dict[str, th.ReplicasDict] = {}
 
     # region File block management
-    def receive_part(self, replica: FileBlockData) -> int:
+    def receive_part(self, replica: sd.FileBlockData) -> int:
         """Endpoint for file block replica reception.
 
         Invoking this method results in the worker keeping store a new
@@ -107,17 +107,17 @@ class Node:
         if crypto.sha256(replica.data) != replica.sha256:
             # inform sender that his part is corrupt,
             # don't initiate recovery protocol - avoid DoS at current worker.
-            return HttpCodes.BAD_REQUEST
+            return e.HttpCodes.BAD_REQUEST
         elif replica.number in self.files[replica.name]:
             # reject repeated blocks even if they are correct
-            return HttpCodes.NOT_ACCEPTABLE
+            return e.HttpCodes.NOT_ACCEPTABLE
         else:
             # accepted file part
             self.files[replica.name][replica.number] = replica
-            return HttpCodes.OK
+            return e.HttpCodes.OK
 
     def replicate_part(
-            self, cluster: cg.Cluster, replica: FileBlockData) -> None:
+            self, cluster: th.ClusterType, replica: sd.FileBlockData) -> None:
         """Equal to :py:meth:`~send_part` but with different delivery semantics.
 
         The file block replica is sent selectively in descending order to the
@@ -146,7 +146,7 @@ class Node:
                 code = cluster.route_part(self.id, node_id, replica,
                                           fresh_replica=True)
 
-                if code == HttpCodes.OK:
+                if code == e.HttpCodes.OK:
                     lost_replicas -= 1
                     replica.references += 1
                 elif code in self.suspicious_replies:
@@ -155,9 +155,9 @@ class Node:
             replica.update_epochs_to_recover(cluster.current_epoch)
 
     def send_part(self,
-                  cluster: cg.Cluster,
+                  cluster: th.ClusterType,
                   destination: str,
-                  replica: FileBlockData) -> Union[int, HttpCodes]:
+                  replica: sd.FileBlockData) -> th.HttpResponse:
         """Attempts to send a replica to some other network node.
 
         Args:
@@ -184,7 +184,7 @@ class Node:
                      fid: str,
                      number: int,
                      corrupt: bool = False,
-                     cluster: cg.Cluster = None) -> None:
+                     cluster: th.ClusterType = None) -> None:
         """Safely deletes a part from the HiveNode instance's disk.
 
         Args:
@@ -201,17 +201,17 @@ class Node:
                 :py:meth:`~domain.cluster_groups.Cluster.set_recovery_epoch`
                 or mark the simulation as failed.
         """
-        part: FileBlockData = self.files.get(fid, {}).pop(number, None)
-        if part and corrupt:
-            if part.decrement_and_get_references() > 0:
-                cluster.set_replication_epoch(part)
+        replica: sd.FileBlockData = self.files.get(fid, {}).pop(number, None)
+        if replica and corrupt:
+            if replica.decrement_and_get_references() > 0:
+                cluster.set_replication_epoch(replica)
             else:
                 cluster._set_fail(f"Lost last file block replica with id "
-                                 f"{part.id} due to corruption.")
+                                  f"{replica.id} due to corruption.")
     # endregion
 
     # region Get methods
-    def get_file_parts(self, fid: str) -> Dict[int, FileBlockData]:
+    def get_file_parts(self, fid: str) -> th.ReplicasDict:
         """Gets collection of file parts that correspond to the named file.
 
         Args:
@@ -247,12 +247,12 @@ class Node:
 
         Returns:
             The status of the worker. See
-            :py:class:`~domain.helpers.enums.Status`.
+            :py:class:`~domain.helpers.enums.e.Status`.
         """
-        if self.status == Status.ONLINE:
+        if self.status == e.Status.ONLINE:
             self.uptime -= 1
             if self.uptime <= 0:
-                self.status = Status.OFFLINE
+                self.status = e.Status.OFFLINE
         return self.status
     # endregion
 
@@ -269,7 +269,7 @@ class Node:
         return not(self == other)
     # endregion
 
-    def execute_epoch(self, cluster: cg.Cluster, fid: str) -> None:
+    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
         """Instructs the HiveNode instance to execute the epoch.
 
         Raises:
@@ -284,7 +284,7 @@ class Node:
 class HDFSNode(Node):
     """Represents a data node in the Hadoop Distribute File System."""
 
-    def execute_epoch(self, cluster: cg.Cluster, fid: str) -> None:
+    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
         # TODO:
         #  1. Corrupt blocks stored at this node.
         #  2. Regenerate replication levels when possible.
@@ -328,7 +328,7 @@ class HiveNode(Node):
                 The availability of the worker instance.
         """
         super().__init__(uid, uptime)
-        self.hives: Dict[str, cg.Cluster] = {}
+        self.hives: Dict[str, th.ClusterType] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
 
     # region Routing table management
@@ -399,7 +399,7 @@ class HiveNode(Node):
     # endregion
 
     # region Node overrides
-    def execute_epoch(self, cluster: cg.Cluster, fid: str) -> None:
+    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
         """Instructs the HiveNode instance to execute the epoch.
 
         The method iterates all file block blocks in :py:attr:`~files` and
@@ -428,14 +428,14 @@ class HiveNode(Node):
                 The identifier that determines which file blocks 
                 blocks should be routed.
         """
-        file_view: Dict[int, FileBlockData] = self.files.get(fid, {}).copy()
+        file_view: th.ReplicasDict = self.files.get(fid, {}).copy()
         for number, replica in file_view.items():
             self.replicate_part(cluster, replica)
             destination = self.select_destination(replica.name)
             response_code = self.send_part(cluster, destination, replica)
-            if response_code == HttpCodes.OK:
+            if response_code == e.HttpCodes.OK:
                 self.discard_part(fid, number)
-            elif response_code == HttpCodes.BAD_REQUEST:
+            elif response_code == e.HttpCodes.BAD_REQUEST:
                 self.discard_part(fid, number, corrupt=True, cluster=cluster)
             elif response_code in self.suspicious_replies:
                 cluster.complain(self.id, destination, response_code)
@@ -463,9 +463,9 @@ class HiveNodeExt(HiveNode):
             The status of the worker. See
             :py:class:`~domain.helpers.enums.Status`.
         """
-        if self.status == Status.ONLINE:
+        if self.status == e.Status.ONLINE:
             self.uptime -= 1
             if self.uptime <= 0:
                 print(f"    [x] {self.id} now offline (suspect status).")
-                self.status = Status.SUSPECT
+                self.status = e.Status.SUSPECT
         return self.status

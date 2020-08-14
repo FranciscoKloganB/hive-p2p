@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 import json
-import os
 from typing import List, Union, Dict, Any
 
+import domain.helpers.smart_dataclasses as sd
+import domain.helpers.matrices as mm
+import domain.helpers.enums as e
+import type_hints as th
+import pandas as pd
 import numpy as np
 
-from domain.cluster_groups import Cluster
-from domain.helpers.enums import Status
-from domain.helpers.smart_dataclasses import FileBlockData
-from domain.network_nodes import HiveNode
-from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
-    NETWORK_NODES, CLUSTER_GROUPS
 from utils.convertions import class_name_to_obj
+from domain.helpers.smart_dataclasses import FileBlockData
+from environment_settings import *
 
 _PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 
@@ -95,8 +95,8 @@ class Master:
             json_obj: Any = json.load(input_file)
 
             # Init basic simulation variables
-            self.cluster_groups: Dict[str, Cluster] = {}
-            self.network_nodes: Dict[str, HiveNode] = {}
+            self.cluster_groups: th.ClusterDict = {}
+            self.network_nodes: th.NodeDict = {}
 
             # Instantiaite jobless Workers
             for node_id, node_uptime in json_obj['nodes_uptime'].items():
@@ -106,8 +106,8 @@ class Master:
 
             # Read and split all shareable files specified on the input
             files_spreads: Dict[str, str] = {}
-            files_blocks: Dict[str, Dict[int, FileBlockData]] = {}
-            blocks: Dict[int, FileBlockData]
+            files_blocks: Dict[str, th.ReplicasDict] = {}
+            blocks: th.ReplicasDict
 
             persisting: _PersistentingDict = json_obj['persisting']
             for file_name in persisting:
@@ -153,26 +153,9 @@ class Master:
             self.epoch += 1
     # endregion
 
-    # region Keeper Interface
-
-    def receive_complaint(self, suspects_name: str) -> None:
-        """Registers a complain against a network node, if enough complaints
-        are received, target is evicted from the complainters Cluster.
-
-        Note:
-            This method needs implementation at the user descretion.
-
-        Args:
-            suspects_name:
-                A unique identifier of the suspicious network node.
-        """
-        # TODO future-iterations:
-        #   Move cluster_groups complaint method to this method..
-        raise NotImplementedError()
-
+    # region Master server interface
     def find_replacement_node(
-            self, exclusion_dict: Dict[str, HiveNode], n: int
-    ) -> Dict[str, HiveNode]:
+            self, exclusion_dict: th.NodeDict, n: int) -> th.NodeDict:
         """Finds a collection of online network nodes that can be used to
         replace offline ones in an Cluster.
 
@@ -188,12 +171,12 @@ class Master:
         Returns:
             A collection of replacements which is smaller or equal than `n`.
         """
-        selected: Dict[str, HiveNode] = {}
+        selected: th.NodeDict = {}
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
             if len(selected) == n:
                 return selected
-            elif node.status != Status.ONLINE:
+            elif node.status != e.Status.ONLINE:
                 # TODO: future-iterations review this code.
                 self.network_nodes.pop(node.id, None)
             elif node.id not in exclusion_dict:
@@ -214,18 +197,17 @@ class Master:
             A pointer to thhe cloud server, e.g., an IP Address.
         """
         return ""
-
     # endregion
 
     # region Helpers
 
     def __new_cluster_group(
             self, cclass: str, persisting: _PersistentingDict, fname: str
-    ) -> Cluster:
+    ) -> th.ClusterType:
         """
         Helper method that initializes a new hive.
         """
-        cluster_members: Dict[str, HiveNode] = {}
+        cluster_members: th.NodeDict = {}
         size = persisting[fname]['cluster_size']
         nodes = np.random.choice(
             a=[*self.network_nodes.keys()], size=size, replace=False)
