@@ -751,13 +751,23 @@ class Cluster:
     # endregion
 
 
+class HiveCluster(Cluster):
+    """Represents a group of network nodes persisting a file using swarm
+    guidance algorithm.
+
+    Attributes:
+    """
+
+
 class HiveClusterExt(Cluster):
     """Represents a group of network nodes persisting a file.
 
-    HiveClusterExt instances differ from Cluster in the sense that the
-    :py:class:`Network Nodes <domain.network_nodes.HiveNode>` are responsible
-    detecting that their cluster companions are disconnected and reporting it
-    to the HiveClusterExt for eviction after a certain quota is met.
+    HiveClusterExt instances differ from
+    :py:class:`~domain.cluster_groups.HiveCluster` because their members are
+    of type :py:class:`Network Nodes <domain.network_nodes.HiveNodeExt>`
+    . When combined these classes give nodes the responsibility of
+    collaborating in the detection of faulty members of the `HiveClusterExt`
+    and eventually kicking them out of the group.
 
     Attributes:
         complaint_threshold:
