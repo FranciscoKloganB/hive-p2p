@@ -229,93 +229,6 @@ class Cluster:
         pass
     # endregion
 
-    # region Swarm Guidance - Data Structure Management Only
-    def new_desired_distribution(
-            self, member_ids: List[str], member_uptimes: List[float]
-    ) -> List[float]:
-        """Sets a new desired distribution for the Cluster instance.
-
-        Normalizes the received uptimes to create a stochastic representation
-        of the desired distribution, which can be used by the different
-        transition matrix generation strategies.
-
-        Args:
-            member_ids:
-                A list of network node identifiers currently belonging
-                to the Cluster membership.
-            member_uptimes:
-                A list in which each index contains the uptime of the network
-                node with the same index in `member_ids`.
-
-        Returns:
-            A list of floats with normalized uptimes which represent the
-            'reliability' of network nodes.
-        """
-        uptime_sum = sum(member_uptimes)
-        uptimes_normalized = \
-            [member_uptime / uptime_sum for member_uptime in member_uptimes]
-
-        v_ = pd.DataFrame(data=uptimes_normalized, index=member_ids)
-        self.v_ = v_
-        cv_ = pd.DataFrame(data=[0] * len(v_), index=member_ids)
-        self.cv_ = cv_
-
-        return uptimes_normalized
-
-    def new_transition_matrix(self) -> pd.DataFrame:
-        """Creates a new transition matrix to be distributed among hive members.
-
-        Returns:
-            The labeled matrix that has the fastests mixing rate from all
-            the pondered strategies.
-        """
-        node_uptimes: List[float] = []
-        node_ids: List[str] = []
-
-        for node in self.members.values():
-            node_uptimes.append(node.uptime)
-            node_ids.append(node.id)
-
-        size = len(node_ids)
-        a = mm.new_symmetric_connected_matrix(size)
-        v_ = np.asarray(self.new_desired_distribution(node_ids, node_uptimes))
-
-        t = self.select_fastest_topology(a, v_)
-
-        return pd.DataFrame(t, index=node_ids, columns=node_ids)
-
-    def broadcast_transition_matrix(self, m: pd.DataFrame) -> None:
-        """Slices a transition matrix and delivers them to respective
-        network nodes.
-
-        Gives each member his respective slice (vector column) of the
-        transition matrix the Cluster is currently executing.
-
-        Args:
-            m:
-                A transition matrix to be broadcasted to the network nodes
-                belonging who are currently members of the Cluster instance.
-
-        Note:
-            An optimization could be made that configures a transition matrix
-            for the hive, independent of of file names, i.e., turn Cluster
-            groups into groups persisting multiple files instead of only one,
-            thus reducing simulation spaceoverheads and in real-life
-            scenarios, decreasing the load done to metadata servers, through
-            queries and matrix calculations. For simplicity of implementation
-            each Cluster only manages one file for now.
-        """
-        nodes_degrees: Dict[str, float] = {}
-        out_degrees: pd.Series = m.apply(np.count_nonzero, axis=0)  # columns
-        in_degrees: pd.Series = m.apply(np.count_nonzero, axis=1)  # rows
-        for node in self.members.values():
-            nid = node.id
-            nodes_degrees[nid] = float(f"{in_degrees[nid]}.{out_degrees[nid]}")
-            transition_vector: pd.DataFrame = m.loc[:, nid]
-            node.set_file_routing(self.file.name, transition_vector)
-        self.file.logger.log_matrices_degrees(nodes_degrees)
-    # endregion
-
     # region Simulation Interface
     def _assign_disk_error_chance(self) -> List[float]:
         """Defines the probability of a file block being corrupted while stored
@@ -431,26 +344,14 @@ class Cluster:
         return off_nodes
 
     def evaluate(self) -> None:
-        """Verifies file block distribution and hive health status.
+        """Abstract method that requires implementation in children of this
+        class.
 
-        This method is invoked by every Cluster instance at every epoch
-        time. Among other things it compares the current file block distribution
-        to the desired distribution, evicts and recruits new network nodes
-        for the Cluster and, performs logging invocations.
+        This method functionality is to log the simulation status and verify
+        properties specified by the user and should be invoked by every
+        Cluster instance at every epoch time.
         """
-        if not self.members:
-            self.set_fail("Cluster has no remaining members.")
-
-        pcount: int = 0
-        members = self.members.values()
-        for node in members:
-            if node.status == Status.ONLINE:
-                node_parts_count = node.get_file_parts_count(self.file.name)
-                self.cv_.at[node.id, 0] = node_parts_count
-                pcount += node_parts_count
-            else:
-                self.cv_.at[node.id, 0] = 0
-        self.log_evaluation(pcount)
+        raise NotImplementedError("")
 
     def log_evaluation(self, pcount: int) -> None:
         """Helper method that performs evaluate step related logging.
@@ -639,27 +540,143 @@ class Cluster:
         self._recovery_epoch_sum += part.set_replication_epoch(self.current_epoch)
         self._recovery_epoch_calls += 1
 
-    def _validate_transition_matrix(self,
-                                    transition_matrix: pd.DataFrame,
-                                    target_distribution: pd.DataFrame) -> bool:
-        """Verifies that a selected transition matrix is a Markov Matrix.
 
-        Verification is done by raising the matrix to the power of 4096
-        (just a large number) and checking if all column vectors are equal
-        to the :py:attr:`~v_`.
+class HiveCluster(Cluster):
+    """Represents a group of network nodes persisting a file using swarm
+    guidance algorithm.
+
+    Attributes:
+        v_ (pandas DataFrame):
+            Density distribution hive members must achieve with independent
+            realizations for ideal persistence of the file.
+        cv_ (pandas DataFrame):
+            Tracks the file current density distribution, updated at each epoch.
+    """
+
+    def evaluate(self) -> None:
+        """Verifies file block distribution and hive health status.
+
+        Overrides:
+            :py:meth:`domain.cluster_groups.Cluster.evaluate`.
+
+        Among other things it compares the current file block distribution
+        to the desired distribution, evicts and recruits new network nodes
+        for the Cluster and, performs logging invocations.
+        """
+        if not self.members:
+            self.set_fail("Cluster has no remaining members.")
+
+        pcount: int = 0
+        members = self.members.values()
+        for node in members:
+            if node.status == Status.ONLINE:
+                node_parts_count = node.get_file_parts_count(self.file.name)
+                self.cv_.at[node.id, 0] = node_parts_count
+                pcount += node_parts_count
+            else:
+                self.cv_.at[node.id, 0] = 0
+        self.log_evaluation(pcount)
+
+    def __init__(self, master: ms.Hivemind,
+                 file_name: str,
+                 members: Dict[str, HiveNode],
+                 sim_id: int = 0,
+                 origin: str = "") -> None:
+        """Instantiates an `HiveClusterExt` object.
+
+        Extends:
+            :py:class:`~domain.cluster_groups.Cluster`.
+        """
+        super().__init__(master, file_name, members, sim_id, origin)
+        self.cv_: pd.DataFrame = pd.DataFrame()
+        self.v_: pd.DataFrame = pd.DataFrame()
+        self.create_and_bcast_new_transition_matrix()
+
+    # region Swarm guidance structure management
+    def new_desired_distribution(
+            self, member_ids: List[str], member_uptimes: List[float]
+    ) -> List[float]:
+        """Sets a new desired distribution for the Cluster instance.
+
+        Normalizes the received uptimes to create a stochastic representation
+        of the desired distribution, which can be used by the different
+        transition matrix generation strategies.
+
+        Args:
+            member_ids:
+                A list of network node identifiers currently belonging
+                to the Cluster membership.
+            member_uptimes:
+                A list in which each index contains the uptime of the network
+                node with the same index in `member_ids`.
 
         Returns:
-            True if the matrix can converge to the desired steady state,
-            otherwise False.
+            A list of floats with normalized uptimes which represent the
+            'reliability' of network nodes.
         """
-        t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)
-        column_count = t_pow.shape[1]
-        for j in range(column_count):
-            test_target = t_pow[:, j]  # gets array column j
-            if not np.allclose(
-                    test_target, target_distribution[0].values, atol=1e-02):
-                return False
-        return True
+        uptime_sum = sum(member_uptimes)
+        uptimes_normalized = \
+            [member_uptime / uptime_sum for member_uptime in member_uptimes]
+
+        v_ = pd.DataFrame(data=uptimes_normalized, index=member_ids)
+        self.v_ = v_
+        cv_ = pd.DataFrame(data=[0] * len(v_), index=member_ids)
+        self.cv_ = cv_
+
+        return uptimes_normalized
+
+    def new_transition_matrix(self) -> pd.DataFrame:
+        """Creates a new transition matrix to be distributed among hive members.
+
+        Returns:
+            The labeled matrix that has the fastests mixing rate from all
+            the pondered strategies.
+        """
+        node_uptimes: List[float] = []
+        node_ids: List[str] = []
+
+        for node in self.members.values():
+            node_uptimes.append(node.uptime)
+            node_ids.append(node.id)
+
+        size = len(node_ids)
+        a = mm.new_symmetric_connected_matrix(size)
+        v_ = np.asarray(self.new_desired_distribution(node_ids, node_uptimes))
+
+        t = self.select_fastest_topology(a, v_)
+
+        return pd.DataFrame(t, index=node_ids, columns=node_ids)
+
+    def broadcast_transition_matrix(self, m: pd.DataFrame) -> None:
+        """Slices a transition matrix and delivers them to respective
+        network nodes.
+
+        Gives each member his respective slice (vector column) of the
+        transition matrix the Cluster is currently executing.
+
+        Args:
+            m:
+                A transition matrix to be broadcasted to the network nodes
+                belonging who are currently members of the Cluster instance.
+
+        Note:
+            An optimization could be made that configures a transition matrix
+            for the hive, independent of of file names, i.e., turn Cluster
+            groups into groups persisting multiple files instead of only one,
+            thus reducing simulation spaceoverheads and in real-life
+            scenarios, decreasing the load done to metadata servers, through
+            queries and matrix calculations. For simplicity of implementation
+            each Cluster only manages one file for now.
+        """
+        nodes_degrees: Dict[str, float] = {}
+        out_degrees: pd.Series = m.apply(np.count_nonzero, axis=0)  # columns
+        in_degrees: pd.Series = m.apply(np.count_nonzero, axis=1)  # rows
+        for node in self.members.values():
+            nid = node.id
+            nodes_degrees[nid] = float(f"{in_degrees[nid]}.{out_degrees[nid]}")
+            transition_vector: pd.DataFrame = m.loc[:, nid]
+            node.set_file_routing(self.file.name, transition_vector)
+        self.file.logger.log_matrices_degrees(nodes_degrees)
 
     def create_and_bcast_new_transition_matrix(self) -> None:
         """Tries to create a valid transition matrix and distributes between
@@ -728,7 +745,31 @@ class Cluster:
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
 
-    def __vector_comparison_table__(
+    def _validate_transition_matrix(self,
+                                    transition_matrix: pd.DataFrame,
+                                    target_distribution: pd.DataFrame) -> bool:
+        """Verifies that a selected transition matrix is a Markov Matrix.
+
+        Verification is done by raising the matrix to the power of 4096
+        (just a large number) and checking if all column vectors are equal
+        to the :py:attr:`~v_`.
+
+        Returns:
+            True if the matrix can converge to the desired steady state,
+            otherwise False.
+        """
+        t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)
+        column_count = t_pow.shape[1]
+        for j in range(column_count):
+            test_target = t_pow[:, j]  # gets array column j
+            if not np.allclose(
+                    test_target, target_distribution[0].values, atol=1e-02):
+                return False
+        return True
+    # endregion
+
+    # region Helpers
+    def __pretty_print_eq_distr_table__(
             self, target: pd.DataFrame, atol: float, rtol: float
     ) -> Union[JupyterHTMLStr, str]:
         """Pretty prints a PSQL formatted table for visual vector comparison."""
@@ -741,33 +782,6 @@ class Cluster:
         df['is_close'] = [x < y for x, y in zipped]
         return tabulate(df, headers='keys', tablefmt='psql')
     # endregion
-
-
-class HiveCluster(Cluster):
-    """Represents a group of network nodes persisting a file using swarm
-    guidance algorithm.
-
-    Attributes:
-        v_ (pandas DataFrame):
-            Density distribution hive members must achieve with independent
-            realizations for ideal persistence of the file.
-        cv_ (pandas DataFrame):
-            Tracks the file current density distribution, updated at each epoch.
-    """
-    def __init__(self, master: ms.Hivemind,
-                 file_name: str,
-                 members: Dict[str, HiveNode],
-                 sim_id: int = 0,
-                 origin: str = "") -> None:
-        """Instantiates an `HiveClusterExt` object.
-
-        Extends:
-            :py:class:`~domain.cluster_groups.Cluster`.
-        """
-        super().__init__(master, file_name, members, sim_id, origin)
-        self.cv_: pd.DataFrame = pd.DataFrame()
-        self.v_: pd.DataFrame = pd.DataFrame()
-        self.create_and_bcast_new_transition_matrix()
 
 
 class HiveClusterExt(Cluster):
