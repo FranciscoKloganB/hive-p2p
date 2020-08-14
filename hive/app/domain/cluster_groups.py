@@ -833,7 +833,7 @@ class HiveCluster(Cluster):
     # endregion
 
 
-class HiveClusterExt(Cluster):
+class HiveClusterExt(HiveCluster):
     """Represents a group of network nodes persisting a file.
 
     HiveClusterExt instances differ from
@@ -905,11 +905,6 @@ class HiveClusterExt(Cluster):
                   f"{self.nodes_complaints[complainee]}")
     # endregion
 
-    # region Simulation setup
-    def _spread_files(self, strat: str, replicas: ReplicasDict) -> None:
-        super()._spread_files(strat, replicas)
-    # endregion
-
     # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
         """Instructs the cluster to execute an epoch.
@@ -924,7 +919,7 @@ class HiveClusterExt(Cluster):
         """Queries all network node members execute the epoch.
 
         Overrides:
-            :py:meth:`~domain.cluster_groups.HiveCluster.nodes_execute`.It
+            :py:meth:`~domain.cluster_groups.HiveCluster.nodes_execute`. It
             considers nodes as Suspects until it receives enough complaints
             from member nodes. This is important because lost parts can not
             be logged multiple times. Yet suspected network_nodes need to be
@@ -972,9 +967,6 @@ class HiveClusterExt(Cluster):
 
         return off_nodes
 
-    def evaluate(self) -> None:
-        super().evaluate()
-
     def maintain(self, off_nodes: List[NodeType]) -> None:
         """Evicts any node whose number of complaints as surpassed the
         `complaint_threshold`.
@@ -995,9 +987,6 @@ class HiveClusterExt(Cluster):
             node.remove_file_routing(self.file.name)
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
-
-    def membership_maintenance(self) -> None:
-        super().membership_maintenance()
     # endregion
 
 
