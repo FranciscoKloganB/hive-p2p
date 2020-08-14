@@ -85,7 +85,8 @@ class Cluster:
             method calls throughout the :py:attr:`~current_epoch`.
     """
 
-    def __init__(self, master: ms.Hivemind,
+    def __init__(self,
+                 master: ms.Hivemind,
                  file_name: str,
                  members: Dict[str, NodeType],
                  sim_id: int = 0,
@@ -191,7 +192,7 @@ class Cluster:
                 The :py:class:`code <domain.helpers.enums.HttpCodes>` that
                 led to the complaint.
         """
-        pass
+        raise NotImplementedError("")
     # endregion
 
     # region Simulation setup
@@ -302,41 +303,18 @@ class Cluster:
     def nodes_execute(self) -> List[NodeType]:
         """Queries all network node members execute the epoch.
 
-        This method logs the amount of lost parts throughout the current
+        This method logs the amount of lost replicas throughout the current
         epoch according to the members who went offline and the file blocks
-        they posssed and is responsible for setting up a recovery epoch those
-        lost blocks
+        replicas they posssed and is responsible for setting up a recovery
+        epoch for those replicas. See
         (:py:meth:`domain.cluster_groups.Cluster.set_recovery_epoch`).
         Similarly it logs the number of members who disconnected.
 
         Returns:
              A collection of members who disconnected during the current
-             epoch.
-             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
+             epoch. See :py:meth:`~domain.network_nodes.Node.get_epoch_status`.
         """
-        lost_parts_count: int = 0
-        off_nodes: List[NodeType] = []
-        for node in self.members.values():
-            if node.get_status() == Status.ONLINE:
-                node.execute_epoch(self, self.file.name)
-            else:
-                lost_parts = node.get_file_parts(self.file.name)
-                lost_parts_count += len(lost_parts)
-                off_nodes.append(node)
-                for replica in lost_parts.values():
-                    self.set_replication_epoch(replica)
-                    if replica.decrement_and_get_references() == 0:
-                        self.set_fail(f"Lost all blocks of file replica with "
-                                      f"id: {replica.id}.")
-
-        if len(off_nodes) >= len(self.members):
-            self.set_fail("All hive members disconnected before maintenance.")
-
-        sf: LoggingData = self.file.logger
-        sf.log_off_nodes(len(off_nodes), self.current_epoch)
-        sf.log_lost_file_blocks(lost_parts_count, self.current_epoch)
-
-        return off_nodes
+        raise NotImplementedError("")
 
     def evaluate(self) -> None:
         """Abstract method that requires implementation in children of this
@@ -360,7 +338,7 @@ class Cluster:
         raise NotImplementedError("")
 
     def membership_maintenance(self) -> None:
-        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`"""
+        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`."""
         raise NotImplementedError("")
     # endregion
 
@@ -375,10 +353,10 @@ class Cluster:
         """
         self.file.logger.log_existing_file_blocks(pcount, self.current_epoch)
         if pcount <= 0:
-            self.set_fail("Cluster has no remaining parts.")
+            self._set_fail("Cluster has no remaining parts.")
         self.file.parts_in_hive = pcount
 
-    def __get_new_members__(self) -> Dict[str, NodeType]:
+    def _get_new_members(self) -> Dict[str, NodeType]:
         """Helper method that gets adds network nodes, if possible,
         to the Cluster.
 
@@ -389,7 +367,7 @@ class Cluster:
         return self.master.find_replacement_node(
             self.members, self.original_size - len(self.members))
 
-    def set_fail(self, message: str) -> None:
+    def _set_fail(self, message: str) -> None:
         """Ends the Cluster instance simulation.
 
         Sets :py:attr:`running` to False and instructs
@@ -417,6 +395,7 @@ class Cluster:
         s = replica.set_replication_epoch(self.current_epoch)
         self._recovery_epoch_sum += s
         self._recovery_epoch_calls += 1
+    # endregion
 
 
 class HiveCluster(Cluster):
@@ -430,7 +409,8 @@ class HiveCluster(Cluster):
         cv_ (pandas DataFrame):
             Tracks the file current density distribution, updated at each epoch.
     """
-    def __init__(self, master: ms.Hivemind,
+    def __init__(self,
+                 master: ms.Hivemind,
                  file_name: str,
                  members: Dict[str, HiveNode],
                  sim_id: int = 0,
@@ -444,6 +424,12 @@ class HiveCluster(Cluster):
         self.cv_: pd.DataFrame = pd.DataFrame()
         self.v_: pd.DataFrame = pd.DataFrame()
         self.create_and_bcast_new_transition_matrix()
+
+    # region Cluster API
+    def complain(
+            self, complainter: str, complainee: str, reason: HttpCodes) -> None:
+        pass
+    # endregion
 
     # region Simulation setup
     def _spread_files(self, strat: str, blocks: ReplicasDict) -> None:
@@ -491,18 +477,52 @@ class HiveCluster(Cluster):
     # endregion
 
     # region Simulation steps
-    def evaluate(self) -> None:
-        """Verifies file block distribution and hive health status.
+    def nodes_execute(self) -> List[NodeType]:
+        """Queries all network node members execute the epoch.
 
         Overrides:
-            :py:meth:`domain.cluster_groups.Cluster.evaluate`.
+            :py:meth:`~domain.cluster_groups.Cluster.nodes_execute`.
+
+        Returns:
+             A collection of members who disconnected during the current
+             epoch. See :py:meth:`~domain.network_nodes.Node.get_epoch_status`.
+        """
+        lost_parts_count: int = 0
+        off_nodes: List[NodeType] = []
+        for node in self.members.values():
+            if node.get_status() == Status.ONLINE:
+                node.execute_epoch(self, self.file.name)
+            else:
+                node_replicas = node.get_file_parts(self.file.name)
+                lost_parts_count += len(node_replicas)
+                off_nodes.append(node)
+                for replica in node_replicas.values():
+                    self.set_replication_epoch(replica)
+                    if replica.decrement_and_get_references() == 0:
+                        self._set_fail(f"Lost all blocks of file replica with "
+                                       f"id: {replica.id}.")
+
+        if len(off_nodes) >= len(self.members):
+            self._set_fail("All hive members disconnected before maintenance.")
+
+        sf: LoggingData = self.file.logger
+        sf.log_off_nodes(len(off_nodes), self.current_epoch)
+        sf.log_lost_file_blocks(lost_parts_count, self.current_epoch)
+
+        return off_nodes
+
+    def evaluate(self) -> None:
+        """Verifies file block distribution and hive health status.
 
         Among other things it compares the current file block distribution
         to the desired distribution, evicts and recruits new network nodes
         for the Cluster and, performs logging invocations.
+
+        Overrides:
+            :py:meth:`domain.cluster_groups.Cluster.evaluate`.
         """
         if not self.members:
-            self.set_fail("Cluster has no remaining members.")
+            self._set_fail("Cluster has no remaining members.")
 
         pcount: int = 0
         members = self.members.values()
@@ -516,13 +536,23 @@ class HiveCluster(Cluster):
         self.__log_evaluation__(pcount)
 
     def maintain(self, off_nodes: List[HiveNode]) -> None:
-        # remove all disconnected network_nodes from the hive
+        """Evicts disconnected network_nodes from the Cluster and
+        attempts to recruit new ones.
+
+        Overrides:
+            :py:meth:`domain.cluster_groups.Cluster.maintain`.
+        """
         for node in off_nodes:
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
         self.membership_maintenance()
 
     def membership_maintenance(self) -> None:
+        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
+
+        Overrides:
+            :py:meth:`domain.cluster_groups.Cluster.membership_maintenance`.
+        """
         damaged_hive_size = len(self.members)
         if damaged_hive_size >= self.sufficient_size:
             self.remove_cloud_reference()
@@ -532,13 +562,13 @@ class HiveCluster(Cluster):
             status_bm = "stable"
         elif self.sufficient_size <= damaged_hive_size < self.original_size:
             status_bm = "sufficient"
-            self.members.update(self.__get_new_members__())
+            self.members.update(self._get_new_members())
         elif self.critical_size < damaged_hive_size < self.sufficient_size:
             status_bm = "unstable"
-            self.members.update(self.__get_new_members__())
+            self.members.update(self._get_new_members())
         elif 0 < damaged_hive_size <= self.critical_size:
             status_bm = "critical"
-            self.members.update(self.__get_new_members__())
+            self.members.update(self._get_new_members())
             self.add_cloud_reference()
         else:
             status_bm = "dead"
@@ -836,7 +866,8 @@ class HiveClusterExt(Cluster):
             reset every epoch.
     """
 
-    def __init__(self, master: ms.Hivemind,
+    def __init__(self,
+                 master: ms.Hivemind,
                  file_name: str,
                  members: Dict[str, NodeType],
                  sim_id: int = 0,
@@ -851,100 +882,6 @@ class HiveClusterExt(Cluster):
         self.nodes_complaints: Dict[str, int] = {}
         self.suspicious_nodes: Dict[str, int] = {}
         self._epoch_complaints: set = set()
-
-    # region Simulation setup
-    def _spread_files(self, strat: str, replicas: ReplicasDict) -> None:
-        super()._spread_files(strat, replicas)
-    # endregion
-
-    # region Simulation steps
-    def execute_epoch(self, epoch: int) -> None:
-        """Instructs the cluster to execute an epoch.
-
-        Extends:
-            :py:meth:`~domain.cluster_groups.Cluster.execute_epoch`.
-        """
-        super().execute_epoch(epoch)
-        self._epoch_complaints.clear()
-
-    def nodes_execute(self) -> List[NodeType]:
-        """Queries all network node members execute the epoch.
-
-        Overrides:
-            :py:meth:`~domain.cluster_groups.Cluster.nodes_execute`.
-            Differs the super class implementation because it considers nodes
-            as Suspects until it receives enough complaints from member nodes.
-            This is important because lost parts can not be logged multiple
-            times. Yet suspected network_nodes need to be contabilized as
-            offline for simulation purposes without being evicted from the group
-            until said detection occurs.
-
-        Returns:
-             A collection of members who disconnected during the current
-             epoch.
-             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
-        """
-        lost_parts_count: int = 0
-        off_nodes = []
-
-        members = self.members.values()
-        for node in members:
-            node.get_status()
-        for node in members:
-            if node.status == Status.ONLINE:
-                node.execute_epoch(self, self.file.name)
-            elif node.status == Status.SUSPECT:
-                lost_parts = node.get_file_parts(self.file.name)
-                if node.id not in self.suspicious_nodes:
-                    self.suspicious_nodes[node.id] = 1
-                    lost_parts_count += len(lost_parts)
-                    for replica in lost_parts.values():
-                        if replica.decrement_and_get_references() == 0:
-                            self.set_fail(f"Lost all blocks of file replica "
-                                          f"with id: {replica.id}")
-                else:
-                    self.suspicious_nodes[node.id] += 1
-
-                ccount = self.nodes_complaints.get(node.id, -1)
-                if ccount >= self.complaint_threshold:
-                    off_nodes.append(node)
-                    for replica in lost_parts.values():
-                        self.set_replication_epoch(replica)
-
-        if len(self.suspicious_nodes) >= len(self.members):
-            self.set_fail("All hive members disconnected before maintenance.")
-
-        sf: LoggingData = self.file.logger
-        sf.log_off_nodes(len(off_nodes), self.current_epoch)
-        sf.log_lost_file_blocks(lost_parts_count, self.current_epoch)
-
-        return off_nodes
-
-    def evaluate(self) -> None:
-        super().evaluate()
-
-    def maintain(self, off_nodes: List[NodeType]) -> None:
-        """Evicts any node whose number of complaints as surpassed the
-        `complaint_threshold`.
-
-        Overrides:
-            :py:meth:`~domain.cluster_groups.Cluster.execute_epoch`.
-            Functionality is largely the same, but `off_nodes` parameter is
-            ignored and replaced by an iteration over `nodes_complaints`.
-        """
-        for node in off_nodes:
-            print(f"    [o] Evicted suspect {node.id}.")
-            tte = self.suspicious_nodes.pop(node.id, -1)
-            self.file.logger.log_suspicous_node_detection_delay(node.id, tte)
-            self.nodes_complaints.pop(node.id, -1)
-            self.members.pop(node.id, None)
-            node.remove_file_routing(self.file.name)
-        super().membership_maintenance()
-        self.complaint_threshold = len(self.members) * 0.5
-
-    def membership_maintenance(self) -> None:
-        super().membership_maintenance()
-    # endregion
 
     # region Cluster API
     def complain(
@@ -966,6 +903,101 @@ class HiveClusterExt(Cluster):
             print(f"    > Logged complaint {complaint_id}, "
                   f"complainee complaint count: "
                   f"{self.nodes_complaints[complainee]}")
+    # endregion
+
+    # region Simulation setup
+    def _spread_files(self, strat: str, replicas: ReplicasDict) -> None:
+        super()._spread_files(strat, replicas)
+    # endregion
+
+    # region Simulation steps
+    def execute_epoch(self, epoch: int) -> None:
+        """Instructs the cluster to execute an epoch.
+
+        Extends:
+            :py:meth:`~domain.cluster_groups.Cluster.execute_epoch`.
+        """
+        super().execute_epoch(epoch)
+        self._epoch_complaints.clear()
+
+    def nodes_execute(self) -> List[NodeType]:
+        """Queries all network node members execute the epoch.
+
+        Overrides:
+            :py:meth:`~domain.cluster_groups.HiveCluster.nodes_execute`.It
+            considers nodes as Suspects until it receives enough complaints
+            from member nodes. This is important because lost parts can not
+            be logged multiple times. Yet suspected network_nodes need to be
+            contabilized as offline for simulation purposes without being
+            evicted from the group until said detection occurs.
+
+        Returns:
+             A collection of members who disconnected during the current
+             epoch.
+             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
+        """
+        lost_parts_count: int = 0
+        off_nodes = []
+
+        members = self.members.values()
+        for node in members:
+            node.get_status()
+        for node in members:
+            if node.status == Status.ONLINE:
+                node.execute_epoch(self, self.file.name)
+            elif node.status == Status.SUSPECT:
+                node_replicas = node.get_file_parts(self.file.name)
+                if node.id not in self.suspicious_nodes:
+                    self.suspicious_nodes[node.id] = 1
+                    lost_parts_count += len(node_replicas)
+                    for replica in node_replicas.values():
+                        if replica.decrement_and_get_references() == 0:
+                            self._set_fail(f"Lost all blocks of file replica "
+                                           f"with id: {replica.id}")
+                else:
+                    self.suspicious_nodes[node.id] += 1
+
+                ccount = self.nodes_complaints.get(node.id, -1)
+                if ccount >= self.complaint_threshold:
+                    off_nodes.append(node)
+                    for replica in node_replicas.values():
+                        self.set_replication_epoch(replica)
+
+        if len(self.suspicious_nodes) >= len(self.members):
+            self._set_fail("All hive members disconnected before maintenance.")
+
+        sf: LoggingData = self.file.logger
+        sf.log_off_nodes(len(off_nodes), self.current_epoch)
+        sf.log_lost_file_blocks(lost_parts_count, self.current_epoch)
+
+        return off_nodes
+
+    def evaluate(self) -> None:
+        super().evaluate()
+
+    def maintain(self, off_nodes: List[NodeType]) -> None:
+        """Evicts any node whose number of complaints as surpassed the
+        `complaint_threshold`.
+
+        Overrides:
+            :py:meth:`~domain.cluster_groups.HiveCluster.maintain`.
+            Considers parameters that belong HiveClusterExt. Such as
+            :py:attr:`~domain.cluster_groups.HiveClusterExt.suspicious_nodes`
+            and
+          :py:attr:`~domain.cluster_groups.HiveClusterExt.nodes_complaints`
+        """
+        for node in off_nodes:
+            print(f"    [o] Evicted suspect {node.id}.")
+            tte = self.suspicious_nodes.pop(node.id, -1)
+            self.file.logger.log_suspicous_node_detection_delay(node.id, tte)
+            self.nodes_complaints.pop(node.id, -1)
+            self.members.pop(node.id, None)
+            node.remove_file_routing(self.file.name)
+        super().membership_maintenance()
+        self.complaint_threshold = len(self.members) * 0.5
+
+    def membership_maintenance(self) -> None:
+        super().membership_maintenance()
     # endregion
 
 
@@ -991,8 +1023,11 @@ class HDFSCluster(Cluster):
             when the dictionary value count is zero, they are evicted from the
             cluster.
     """
-    def __init__(self, master: ms.Hivemind, file_name: str,
-                 members: Dict[str, NodeType], sim_id: int = 0,
+    def __init__(self,
+                 master: ms.Hivemind,
+                 file_name: str,
+                 members: Dict[str, NodeType],
+                 sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `HiveClusterExt` object.
 
@@ -1003,29 +1038,18 @@ class HDFSCluster(Cluster):
         self.suspicious_nodes: set = set()
         self.data_node_heartbeats: Dict[str, int] = {}
 
+    # region Cluster API
+    def complain(
+            self, complainter: str, complainee: str, reason: HttpCodes) -> None:
+        pass
+    # endregion
+
     # region Simulation setup
     def _spread_files(self, strat: str, replicas: ReplicasDict) -> None:
         pass
     # endregion
 
     # region Simulation steps
-    def execute_epoch(self, epoch: int) -> None:
-        """Instructs the cluster to execute an epoch.
-
-        Extends:
-            :py:meth:`~domain.cluster_groups.Cluster.execute_epoch`.
-        """
-        self.current_epoch = epoch
-        off_nodes = self.nodes_execute()
-        self.evaluate()
-        self.maintain(off_nodes)
-        if epoch == ms.Hivemind.MAX_EPOCHS:
-            self.running = False
-
-        self.file.logger.log_replication_delay(self._recovery_epoch_sum,
-                                               self._recovery_epoch_calls,
-                                               self.current_epoch)
-
     def nodes_execute(self) -> List[HDFSNode]:
         """Queries all network node members execute the epoch.
 
@@ -1058,8 +1082,8 @@ class HDFSCluster(Cluster):
                     lost_replicas_count += len(node_replicas)
                     for replica in node_replicas.values():
                         if replica.decrement_and_get_references() <= 0:
-                            self.set_fail(f"Lost all blocks of file replica "
-                                          f"with id: {replica.id}")
+                            self._set_fail(f"Lost all blocks of file replica "
+                                           f"with id: {replica.id}")
                 # Simulate missed heartbeats.
                 if node.id in self.data_node_heartbeats:
                     self.data_node_heartbeats[node.id] -= 1
@@ -1070,7 +1094,7 @@ class HDFSCluster(Cluster):
                             self.set_replication_epoch(replica)
 
         if len(self.suspicious_nodes) >= len(self.members):
-            self.set_fail("All data nodes disconnected before maintenance.")
+            self._set_fail("All data nodes disconnected before maintenance.")
 
         sf: LoggingData = self.file.logger
         sf.log_off_nodes(len(off_nodes), self.current_epoch)
@@ -1086,7 +1110,7 @@ class HDFSCluster(Cluster):
             :py:meth:`~domain.cluster_groups.Cluster.evaluate`.
         """
         if not self.members:
-            self.set_fail("Cluster has no remaining members.")
+            self._set_fail("Cluster has no remaining members.")
 
         pcount: int = 0
         members = self.members.values()
@@ -1109,8 +1133,9 @@ class HDFSCluster(Cluster):
             self.data_node_heartbeats.pop(node.id, -1)
             self.members.pop(node.id, None)
             self.file.logger.log_suspicous_node_detection_delay(node.id, 5)
-        super().membership_maintenance()
+        self.membership_maintenance()
 
     def membership_maintenance(self) -> None:
+        # TODO: This
         pass
     # endregion

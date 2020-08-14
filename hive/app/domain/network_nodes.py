@@ -206,7 +206,7 @@ class Node:
             if part.decrement_and_get_references() > 0:
                 cluster.set_replication_epoch(part)
             else:
-                cluster.set_fail(f"Lost last file block replica with id "
+                cluster._set_fail(f"Lost last file block replica with id "
                                  f"{part.id} due to corruption.")
     # endregion
 
