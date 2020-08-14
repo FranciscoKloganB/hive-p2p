@@ -3,14 +3,15 @@ encapsulating attribute and method behaviour."""
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from random import randint
-from typing import Any, Dict, IO, List, Union
 
 import domain.cluster_groups as cg
 import domain.master_servers as ms
-from environment_settings import *
+
+from pathlib import Path
+from random import randint
+from typing import Any, Dict, IO, List
 from utils import convertions, crypto
+from environment_settings import *
 
 
 class FileData:
