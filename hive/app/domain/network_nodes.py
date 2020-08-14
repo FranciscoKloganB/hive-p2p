@@ -67,7 +67,7 @@ class Node:
         if uptime == 1.0:
             uptime = float('inf')
         else:
-            uptime = math.floor(uptime * ms.Hivemind.MAX_EPOCHS)
+            uptime = math.floor(uptime * ms.Master.MAX_EPOCHS)
 
         self.id: str = uid
         self.uptime: float = uptime

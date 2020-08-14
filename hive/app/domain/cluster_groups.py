@@ -52,7 +52,7 @@ class Cluster:
             :py:meth:`~domain.cluster_groups.Cluster.
             _assign_disk_error_chance` for corruption chance configuration.
         master:
-            A reference to :py:class:`~domain.master_servers.Hivemind` that
+            A reference to :py:class:`~domain.master_servers.Master` that
             coordinates this Cluster instance.
         members:
             A collection of network nodes that belong to the Cluster
@@ -73,7 +73,7 @@ class Cluster:
             of the Cluster must be pruned.
         running:
             Indicates if the Cluster instance is active. This attribute is
-            used by :py:class:`~domain.master_servers.Hivemind` to manage the
+            used by :py:class:`~domain.master_servers.Master` to manage the
             simulation process.
         _recovery_epoch_sum:
             Helper attribute that facilitates the storage of the sum of the
@@ -86,7 +86,7 @@ class Cluster:
     """
 
     def __init__(self,
-                 master: ms.Hivemind,
+                 master: ms.Master,
                  file_name: str,
                  members: Dict[str, NodeType],
                  sim_id: int = 0,
@@ -95,7 +95,7 @@ class Cluster:
 
         Args:
             master:
-                A reference to an :py:class:`~domain.master_servers.Hivemind`
+                A reference to an :py:class:`~domain.master_servers.Master`
                 object that manages the `Cluster` being initialized.
             file_name:
                 The name of the file this `Cluster` is responsible
@@ -206,7 +206,7 @@ class Cluster:
             <http://www.cs.toronto.edu/~bianca/papers/fast08.pdf>`. Thus
             the current implementation follows this formula::
 
-                :py:const:`~domain.master_servers.Hivemind.MAX_EPOCHS` * P(Xt ≥
+                :py:const:`~domain.master_servers.Master.MAX_EPOCHS` * P(Xt ≥
                 L) * / :py:const:`~environment_settings.MONTH_EPOCHS`
 
             The notation P(Xt ≥ L) denotes the probability of a disk
@@ -220,7 +220,7 @@ class Cluster:
             errors, at an epoch basis.
         """
         ploss_month = 0.0086
-        ploss_epoch = (ms.Hivemind.MAX_EPOCHS * ploss_month) / MONTH_EPOCHS
+        ploss_epoch = (ms.Master.MAX_EPOCHS * ploss_month) / MONTH_EPOCHS
         ploss_epoch = truncate_float_value(ploss_epoch, 6)
         return [ploss_epoch, 1.0 - ploss_epoch]
 
@@ -282,7 +282,7 @@ class Cluster:
         Args:
             epoch:
                 The epoch the Cluster should currently be in, according
-                to it's managing Hivemind.
+                to it's managing Master.
 
         Returns:
             False if Cluster failed to persist the file it was
@@ -293,7 +293,7 @@ class Cluster:
         off_nodes = self.nodes_execute()
         self.evaluate()
         self.maintain(off_nodes)
-        if epoch == ms.Hivemind.MAX_EPOCHS:
+        if epoch == ms.Master.MAX_EPOCHS:
             self.running = False
 
         self.file.logger.log_replication_delay(self._recovery_epoch_sum,
@@ -410,7 +410,7 @@ class HiveCluster(Cluster):
             Tracks the file current density distribution, updated at each epoch.
     """
     def __init__(self,
-                 master: ms.Hivemind,
+                 master: ms.Master,
                  file_name: str,
                  members: Dict[str, HiveNode],
                  sim_id: int = 0,
@@ -772,8 +772,8 @@ class HiveCluster(Cluster):
         This method is used when Cluster membership size becomes compromised
         and a backup solution using cloud approaches is desired. The idea
         is that surviving members upload their blocks to the cloud server,
-        e.g., an Amazon S3 instance. See Hivemind method
-        :py:meth:`~domain.master_servers.Hivemind.get_cloud_reference` for more
+        e.g., an Amazon S3 instance. See Master method
+        :py:meth:`~domain.master_servers.Master.get_cloud_reference` for more
         details.
 
         Notes:
@@ -867,7 +867,7 @@ class HiveClusterExt(HiveCluster):
     """
 
     def __init__(self,
-                 master: ms.Hivemind,
+                 master: ms.Master,
                  file_name: str,
                  members: Dict[str, NodeType],
                  sim_id: int = 0,
@@ -1013,7 +1013,7 @@ class HDFSCluster(Cluster):
             cluster.
     """
     def __init__(self,
-                 master: ms.Hivemind,
+                 master: ms.Master,
                  file_name: str,
                  members: Dict[str, NodeType],
                  sim_id: int = 0,

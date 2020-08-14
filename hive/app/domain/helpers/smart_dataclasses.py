@@ -122,7 +122,7 @@ class FileData:
             "sufficient_size_threshold": hive.sufficient_size,
             "original_hive_size": hive.original_size,
             "redundant_size": hive.redundant_size,
-            "max_epochs": ms.Hivemind.MAX_EPOCHS,
+            "max_epochs": ms.Master.MAX_EPOCHS,
             "min_replication_delay": MIN_REPLICATION_DELAY,
             "max_replication_delay": MAX_REPLICATION_DELAY,
             "replication_level": REPLICATION_LEVEL,
@@ -370,8 +370,8 @@ class LoggingData:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
             to persist the file throughout
-            :py:const:`ms.Hivemind.MAX_EPOCHS
-            <environment_settings.ms.Hivemind.MAX_EPOCHS>` time
+            :py:const:`ms.Master.MAX_EPOCHS
+            <environment_settings.ms.Master.MAX_EPOCHS>` time
             steps.
         blocks_corrupted:
             The number of file block repllicas lost at each epoch due
@@ -417,8 +417,8 @@ class LoggingData:
     def __init__(self) -> None:
         """Instanciates a LoggingData object for simulation event logging."""
 
-        max_epochs = ms.Hivemind.MAX_EPOCHS
-        max_epochs_plus_one = ms.Hivemind.MAX_EPOCHS_PLUS_ONE
+        max_epochs = ms.Master.MAX_EPOCHS
+        max_epochs_plus_one = ms.Master.MAX_EPOCHS_PLUS_ONE
 
         ###############################
         # Do not alter these

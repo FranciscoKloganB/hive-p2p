@@ -19,7 +19,7 @@ from utils.convertions import class_name_to_obj
 _PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 
 
-class Hivemind:
+class Master:
     """Simulation manager class. Plays the role of a master server for all
     Hives of the distributed backup system.
 
@@ -42,7 +42,7 @@ class Hivemind:
             The simulation's current epoch.
         cluster_groups:
             A collection of :py:class:`~domain.cluster_groups.Cluster`
-            instances managed by the Hivemind.
+            instances managed by the Master.
         network_nodes:
             A dictionary mapping network node identifiers names to their
             object instances (:py:class:`~domain.network_nodes.HiveNode`).
@@ -63,7 +63,7 @@ class Hivemind:
                  epochs: int,
                  cluster_class: str,
                  node_class: str) -> None:
-        """Instantiates an Hivemind object.
+        """Instantiates an Master object.
 
         Args:
             simfile_name:
@@ -83,8 +83,8 @@ class Hivemind:
                 instances through reflection. See :py:mod:`Network Node
                 <domain.network_nodes>`.
         """
-        Hivemind.MAX_EPOCHS = epochs
-        Hivemind.MAX_EPOCHS_PLUS_ONE = epochs + 1
+        Master.MAX_EPOCHS = epochs
+        Master.MAX_EPOCHS_PLUS_ONE = epochs + 1
 
         self.origin = simfile_name
         self.sim_id = sid
@@ -135,12 +135,11 @@ class Hivemind:
 
     # endregion
 
-    # region Simulation Interface
-
+    # region Simulation steps
     def execute_simulation(self) -> None:
         """Runs a stochastic swarm guidance algorithm applied
         to a P2P network"""
-        while self.epoch < Hivemind.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
+        while self.epoch < Master.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
             print("epoch: {}".format(self.epoch))
             terminated_clusters: List[str] = []
             for cluster in self.cluster_groups.values():
@@ -152,7 +151,6 @@ class Hivemind:
                 print(f"Cluster: {cid} terminated at epoch {self.epoch}")
                 self.cluster_groups.pop(cid)
             self.epoch += 1
-
     # endregion
 
     # region Keeper Interface

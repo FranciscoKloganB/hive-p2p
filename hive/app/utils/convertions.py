@@ -137,11 +137,11 @@ def class_name_to_obj(module_name: str, class_name: str, args: List[Any]) -> Any
     Examples:
         You could call this function like so::
 
-            h = class_name_to_obj(MASTER_SERVERS, "Hivemind", ["f.jpg", 1, 80])
+            h = class_name_to_obj(MASTER_SERVERS, "Master", ["f.jpg", 1, 80])
 
         This would be equivalent to calling::
 
-            h = Hivemind("f.jpg", 1, 80)
+            h = Master("f.jpg", 1, 80)
     """
     try:
         module_ = importlib.import_module(module_name)
