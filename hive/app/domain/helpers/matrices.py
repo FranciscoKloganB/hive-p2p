@@ -6,20 +6,18 @@ as well as any steady-state or transition matrix optimization algorithms in
 this module.
 """
 
-from typing import Tuple, Any, Optional, List
+from typing import Tuple, Any, Optional
 
 import random
-import cvxpy as cvx
 import numpy as np
-from cvxpy import SolverError, DCPError
+import cvxpy as cvx
+
 from matlab.engine import EngineError
-
-from utils.randoms import random_index
-
-from domain.helpers.exceptions import DistributionShapeError, MatrixError
-from domain.helpers.exceptions import MatrixNotSquareError
-from domain.helpers.matlab_utils import MatlabEngineContainer
 from scipy.sparse.csgraph import connected_components
+
+from domain.helpers.matlab_utils import MatlabEngineContainer
+from domain.helpers.exceptions import *
+from utils.randoms import random_index
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
@@ -79,7 +77,7 @@ def new_sdp_mh_transition_matrix(
             return t, get_mixing_rate(t)
         else:
             return None, float('inf')
-    except (SolverError, DCPError):
+    except (cvx.SolverError, cvx.DCPError):
         return None, float('inf')
 
 
@@ -133,7 +131,7 @@ def new_go_transition_matrix(
             return t.value.transpose(), get_mixing_rate(t.value)
         else:
             return None, float('inf')
-    except (SolverError, DCPError):
+    except (cvx.SolverError, cvx.DCPError):
         return None, float('inf')
 
 
