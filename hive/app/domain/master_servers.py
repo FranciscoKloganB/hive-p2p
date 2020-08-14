@@ -98,7 +98,10 @@ class Master:
             # Instantiaite jobless Workers
             for node_id, node_uptime in json_obj['nodes_uptime'].items():
                 node = class_name_to_obj(
-                    NETWORK_NODES, node_class, [node_id, node_uptime])
+                    NETWORK_NODES,
+                    node_class,
+                    [node_id, node_uptime]
+                )
                 self.network_nodes[node.id] = node
 
             # Read and split all shareable files specified on the input
@@ -213,8 +216,10 @@ class Master:
             cluster_members[node_id] = self.network_nodes[node_id]
 
         cluster = class_name_to_obj(
-            CLUSTER_GROUPS, cclass,
-            [self, fname, cluster_members, self.sim_id, self.origin])
+            CLUSTER_GROUPS,
+            cclass,
+            [self, fname, cluster_members, self.sim_id, self.origin]
+        )
 
         self.cluster_groups[cluster.id] = cluster
         return cluster
