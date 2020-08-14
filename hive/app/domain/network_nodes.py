@@ -77,7 +77,7 @@ class Node:
             e.HttpCodes.TIME_OUT,
             e.HttpCodes.SERVER_DOWN,
         }
-        self.files: th.FileReplicasDicts = {}
+        self.files: Dict[str, th.ReplicasDict] = {}
 
     # region File block management
     def receive_part(self, replica: sd.FileBlockData) -> int:

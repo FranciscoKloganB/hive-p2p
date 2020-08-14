@@ -106,7 +106,7 @@ class Master:
 
             # Read and split all shareable files specified on the input
             files_spreads: Dict[str, str] = {}
-            files_blocks: th.FileReplicasDicts = {}
+            files_blocks: Dict[str, th.ReplicasDict] = {}
             blocks: th.ReplicasDict
 
             persisting: _PersistentingDict = json_obj['persisting']

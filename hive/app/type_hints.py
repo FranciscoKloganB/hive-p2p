@@ -24,8 +24,7 @@ NodeType: Union[
     nn.HDFSNode
 ]
 
-HttpResponse: Union[int, e.HttpCodes]
 NodeDict: Dict[str, NodeType]
 ClusterDict: Dict[str, ClusterType]
 ReplicasDict: Dict[int, sd.FileBlockData]
-FileReplicasDicts: Dict[str, ReplicasDict]
+HttpResponse: Union[int, e.HttpCodes]
