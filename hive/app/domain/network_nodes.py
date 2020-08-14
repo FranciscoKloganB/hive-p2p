@@ -18,7 +18,7 @@ from domain.helpers.smart_dataclasses import FileBlockData
 from utils import crypto
 
 
-class BaseNode:
+class Node:
     """This class contains basic network node functionality that should
     always be useful.
 
@@ -258,11 +258,11 @@ class BaseNode:
 
     # region Python dunder methods' overrides
     def __hash__(self):
-        """Can use BaseNode instance or id as dictionary key."""
+        """Can use Node instance or id as dictionary key."""
         return hash(str(self.id))
 
     def __eq__(self, other):
-        """BaseNode equality is based solely on HiveNode id."""
+        """Node equality is based solely on HiveNode id."""
         return self.id == other
 
     def __ne__(self, other):
@@ -277,11 +277,11 @@ class BaseNode:
                 When the class or one of its children does not implement
                 their own `execute_epoch` method.
         """
-        raise NotImplementedError("All children of class BaseNode must "
+        raise NotImplementedError("All children of class Node must "
                                   "implement their own execute_epoch.")
 
 
-class HDFSNode(BaseNode):
+class HDFSNode(Node):
     """Represents a data node in the Hadoop Distribute File System."""
 
     def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
@@ -291,7 +291,7 @@ class HDFSNode(BaseNode):
         pass
 
 
-class HiveNode(BaseNode):
+class HiveNode(Node):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     Workers work in one or more cluster_groups
@@ -398,7 +398,7 @@ class HiveNode(BaseNode):
                     etype=type(vE), value=vE, tb=vE.__traceback__)))
     # endregion
 
-    # region BaseNode overrides
+    # region Node overrides
     def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
         """Instructs the HiveNode instance to execute the epoch.
 
@@ -419,7 +419,7 @@ class HiveNode(BaseNode):
         possible HTTP Codes.
 
         Overrides:
-            :py:meth:`~domain.network_nodes.BaseNode.execute_epoch`.
+            :py:meth:`~domain.network_nodes.Node.execute_epoch`.
 
         Args:
             cluster:
