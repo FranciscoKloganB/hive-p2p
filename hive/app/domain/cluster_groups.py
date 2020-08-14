@@ -23,18 +23,18 @@ from __future__ import annotations
 
 import math
 import uuid
-from typing import Dict, List, Tuple, Optional, Union
+from typing import Dict, List, Tuple, Optional, Union, Any
 
 import numpy as np
 import pandas as pd
-from tabulate import tabulate, JupyterHTMLStr
+from tabulate import tabulate
 
 import domain.helpers.matrices as mm
 import domain.master_servers as ms
 from domain.helpers.enums import Status, HttpCodes
 from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
     LoggingData
-from domain.network_nodes import HiveNode, HiveNodeExt, HDFSNode
+from domain.network_nodes import HiveNode, HiveNodeExt, HDFSNode, Node
 from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
     COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
 from utils.convertions import truncate_float_value
@@ -42,10 +42,6 @@ from utils.convertions import truncate_float_value
 
 class Cluster:
     """Represents a group of network nodes persisting a file.
-
-    Notes:
-        If you do not have a valid MatLab license you should comment
-        all :py:attr:`~eng` related calls.
 
     Attributes:
         id:
@@ -123,7 +119,7 @@ class Cluster:
         self.current_epoch: int = 0
         self.corruption_chances: List[float] = self._assign_disk_error_chance()
         self.master = master
-        self.members: Dict[str, HiveNode] = members
+        self.members: Dict[str, Node] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + math.ceil(
@@ -552,7 +548,22 @@ class HiveCluster(Cluster):
         cv_ (pandas DataFrame):
             Tracks the file current density distribution, updated at each epoch.
     """
+    def __init__(self, master: ms.Hivemind,
+                 file_name: str,
+                 members: Dict[str, HiveNode],
+                 sim_id: int = 0,
+                 origin: str = "") -> None:
+        """Instantiates an `HiveClusterExt` object.
 
+        Extends:
+            :py:class:`~domain.cluster_groups.Cluster`.
+        """
+        super().__init__(master, file_name, members, sim_id, origin)
+        self.cv_: pd.DataFrame = pd.DataFrame()
+        self.v_: pd.DataFrame = pd.DataFrame()
+        self.create_and_bcast_new_transition_matrix()
+
+    # region Simulation steps
     def evaluate(self) -> None:
         """Verifies file block distribution and hive health status.
 
@@ -576,21 +587,7 @@ class HiveCluster(Cluster):
             else:
                 self.cv_.at[node.id, 0] = 0
         self.log_evaluation(pcount)
-
-    def __init__(self, master: ms.Hivemind,
-                 file_name: str,
-                 members: Dict[str, HiveNode],
-                 sim_id: int = 0,
-                 origin: str = "") -> None:
-        """Instantiates an `HiveClusterExt` object.
-
-        Extends:
-            :py:class:`~domain.cluster_groups.Cluster`.
-        """
-        super().__init__(master, file_name, members, sim_id, origin)
-        self.cv_: pd.DataFrame = pd.DataFrame()
-        self.v_: pd.DataFrame = pd.DataFrame()
-        self.create_and_bcast_new_transition_matrix()
+    # endregion
 
     # region Swarm guidance structure management
     def new_desired_distribution(
@@ -770,8 +767,7 @@ class HiveCluster(Cluster):
 
     # region Helpers
     def __pretty_print_eq_distr_table__(
-            self, target: pd.DataFrame, atol: float, rtol: float
-    ) -> Union[JupyterHTMLStr, str]:
+            self, target: pd.DataFrame, atol: float, rtol: float) -> Any:
         """Pretty prints a PSQL formatted table for visual vector comparison."""
         df = pd.DataFrame()
         df['cv_'] = self.cv_[0].values
@@ -832,6 +828,7 @@ class HiveClusterExt(Cluster):
         self.suspicious_nodes: Dict[str, int] = {}
         self._epoch_complaints: set = set()
 
+    # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
         """Instructs the cluster to execute an epoch.
 
@@ -894,6 +891,9 @@ class HiveClusterExt(Cluster):
 
         return off_nodes
 
+    def evaluate(self) -> None:
+        super().evaluate()
+
     def maintain(self, off_nodes: List[HiveNodeExt]) -> None:
         """Evicts any node whose number of complaints as surpassed the
         `complaint_threshold`.
@@ -912,6 +912,7 @@ class HiveClusterExt(Cluster):
             node.remove_file_routing(self.file.name)
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
+    # endregion
 
     # region Cluster API
     def complain(
