@@ -35,13 +35,13 @@ Attributes:
         with (default is 21600, one epoch per two minutes). See 
         py:meth:`~domain.cluster_groups._assign_disk_error_chance`.
     MIN_REPLICATION_DELAY:
-        The minimum amount of epoch time steps replica file block replicas
+        The minimum amount of epoch time steps replica file block blocks
         take to be regenerated after their are lost (default is 1)
     MAX_REPLICATION_DELAY:
-        The maximum amount of epoch time steps replica file block replicas
+        The maximum amount of epoch time steps replica file block blocks
         take to be regenerated after their are lost (default is 4)
     REPLICATION_LEVEL:
-        The amount of replicas each file block has (default is 3)
+        The amount of blocks each file block has (default is 3)
     MIN_CONVERGENCE_THRESHOLD:
         The number of consecutive epoch time steps that an
         :py:class:`~domain.cluster_groups.Cluster` must converge before epochs

@@ -21,23 +21,19 @@ Classes:
 
 from __future__ import annotations
 
-import math
 import uuid
-from typing import Dict, List, Tuple, Optional, Union, Any
+from typing import Tuple, Optional
 
-import numpy as np
-import pandas as pd
 from tabulate import tabulate
 
 import domain.helpers.matrices as mm
-import domain.master_servers as ms
-from domain.helpers.enums import Status, HttpCodes
-from domain.helpers.smart_dataclasses import FileData, FileBlockData, \
-    LoggingData
-from domain.network_nodes import HiveNode, HiveNodeExt, HDFSNode, Node
-from environment_settings import REPLICATION_LEVEL, TRUE_FALSE, \
-    COMMUNICATION_CHANCES, DEBUG, ABS_TOLERANCE, MONTH_EPOCHS
+from domain.helpers.smart_dataclasses import *
+from domain.network_nodes import *
+from environment_settings import *
 from utils.convertions import truncate_float_value
+
+NodeType: Union[Node, HiveNode, HiveNodeExt, HDFSNode]
+ReplicasDict: Dict[int, FileBlockData]
 
 
 class Cluster:
@@ -91,7 +87,7 @@ class Cluster:
 
     def __init__(self, master: ms.Hivemind,
                  file_name: str,
-                 members: Dict[str, HiveNode],
+                 members: Dict[str, NodeType],
                  sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `Cluster` object
@@ -117,14 +113,13 @@ class Cluster:
         """
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-        self.corruption_chances: List[float] = self._assign_disk_error_chance()
+        self.corruption_chances: List[float] = self.__assign_disk_error_chance__()
         self.master = master
-        self.members: Dict[str, Node] = members
+        self.members: Dict[str, NodeType] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
-        self.sufficient_size: int = self.critical_size + math.ceil(
-            len(self.members) * 0.34
-        )
+        expected_fails = math.ceil(len(self.members) * 0.34)
+        self.sufficient_size: int = self.critical_size + expected_fails
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
         self.running: bool = True
@@ -132,37 +127,11 @@ class Cluster:
         self._recovery_epoch_calls: int = 0
 
     # region Cluster API
-    def remove_cloud_reference(self) -> None:
-        """Remove cloud references and delete files within it
-
-        Notes:
-            TODO: This method requires implementation at the user descretion.
-        """
-        pass
-
-    def add_cloud_reference(self) -> None:
-        """Adds a cloud server reference to the membership.
-
-        This method is used when Cluster membership size becomes compromised
-        and a backup solution using cloud approaches is desired. The idea
-        is that surviving members upload their replicas to the cloud server,
-        e.g., an Amazon S3 instance. See Hivemind method
-        :py:meth:`~domain.master_servers.Hivemind.get_cloud_reference` for more
-        details.
-
-        Notes:
-            TODO: This method requires implementation at the user descretion.
-        """
-        pass
-        # noinspection PyUnusedLocal
-        cloud_ref: str = self.master.get_cloud_reference()
-
     def route_part(self,
                    sender: str,
                    receiver: str,
-                   part: FileBlockData,
-                   fresh_replica: bool = False
-                   ) -> Union[int, HttpCodes]:
+                   replica: FileBlockData,
+                   fresh_replica: bool = False) -> Union[int, HttpCodes]:
         """Sends one file block replica to some other network node.
 
         Args:
@@ -170,10 +139,10 @@ class Cluster:
                 An identifier of the network node who is sending the message.
             receiver:
                 The destination network node identifier.
-            part:
+            replica:
                 The file block replica send to specified destination.
             fresh_replica:
-                optional; Prevents recently created replicas from being
+                optional; Prevents recently created blocks from being
                 corrupted, since they are not likely to be corrupted in disk.
                 This argument facilitates simulation. (default: False)
 
@@ -194,9 +163,9 @@ class Cluster:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return HttpCodes.BAD_REQUEST
 
-        destination_node: HiveNode = self.members[receiver]
+        destination_node: NodeType = self.members[receiver]
         if destination_node.status == Status.ONLINE:
-            return destination_node.receive_part(part)
+            return destination_node.receive_part(replica)
         else:
             return HttpCodes.NOT_FOUND
 
@@ -225,8 +194,8 @@ class Cluster:
         pass
     # endregion
 
-    # region Simulation Interface
-    def _assign_disk_error_chance(self) -> List[float]:
+    # region Simulation setup
+    def __assign_disk_error_chance__(self) -> List[float]:
         """Defines the probability of a file block being corrupted while stored
         at the disk of a :py:mod:`Network Node <domain.network nodes>`.
 
@@ -254,7 +223,7 @@ class Cluster:
         ploss_epoch = truncate_float_value(ploss_epoch, 6)
         return [ploss_epoch, 1.0 - ploss_epoch]
 
-    def setup_epoch(self, epoch: int) -> None:
+    def __setup_epoch__(self, epoch: int) -> None:
         """Initializes some attributes of the Cluster during
         its initialization.
 
@@ -269,6 +238,36 @@ class Cluster:
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
 
+    def _spread_files(self, strat: str, replicas: ReplicasDict) -> None:
+        """Distributes files among members of the cluster. Members are
+        instances of classes belonging to module
+        :py:mod:`~domain.network_nodes`.
+
+        Args:
+            strat:
+                A user defined way of identifying the way files are initially
+                distributed among members of the cluster. For example::
+
+                    `u` - Distributed uniformly across network;
+
+                    `a` - Give all file block blocks to N different network
+                    nodes, where N is equal to
+                    :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
+
+                    `i` - Distribute all file block blocks following such
+                    that the simulation starts with all file blocks and their
+                    blocks distributed with a bias towards the ideal steady
+                    state distribution;
+
+            replicas:
+                A collection of file blocks, without replication, to be
+                distributed between the Cluster members according to
+                the desired `strategy`.
+        """
+        raise NotImplementedError("")
+    # endregion
+
+    # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
         """Orders all network node members to execute their epoch
 
@@ -288,7 +287,7 @@ class Cluster:
             False if Cluster failed to persist the file it was
             responsible for, otherwise True.
         """
-        self.setup_epoch(epoch)
+        self.__setup_epoch__(epoch)
 
         off_nodes = self.nodes_execute()
         self.evaluate()
@@ -300,13 +299,13 @@ class Cluster:
                                                self._recovery_epoch_calls,
                                                self.current_epoch)
 
-    def nodes_execute(self) -> List[HiveNode]:
+    def nodes_execute(self) -> List[NodeType]:
         """Queries all network node members execute the epoch.
 
         This method logs the amount of lost parts throughout the current
         epoch according to the members who went offline and the file blocks
         they posssed and is responsible for setting up a recovery epoch those
-        lost replicas
+        lost blocks
         (:py:meth:`domain.cluster_groups.Cluster.set_recovery_epoch`).
         Similarly it logs the number of members who disconnected.
 
@@ -316,7 +315,7 @@ class Cluster:
              See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
-        off_nodes: List[HiveNode] = []
+        off_nodes: List[NodeType] = []
         for node in self.members.values():
             if node.get_status() == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
@@ -324,11 +323,11 @@ class Cluster:
                 lost_parts = node.get_file_parts(self.file.name)
                 lost_parts_count += len(lost_parts)
                 off_nodes.append(node)
-                for part in lost_parts.values():
-                    self.set_replication_epoch(part)
-                    if part.decrement_and_get_references() == 0:
-                        self.set_fail(f"Lost all replicas of file part with "
-                                      f"id: {part.id}.")
+                for replica in lost_parts.values():
+                    self.set_replication_epoch(replica)
+                    if replica.decrement_and_get_references() == 0:
+                        self.set_fail(f"Lost all blocks of file replica with "
+                                      f"id: {replica.id}.")
 
         if len(off_nodes) >= len(self.members):
             self.set_fail("All hive members disconnected before maintenance.")
@@ -349,7 +348,24 @@ class Cluster:
         """
         raise NotImplementedError("")
 
-    def log_evaluation(self, pcount: int) -> None:
+    def maintain(self, off_nodes: List[NodeType]) -> None:
+        """Evicts disconnected network_nodes from the Cluster and
+        attempts to recruit new ones.
+
+        Args:
+            off_nodes:
+                The collection of members who disconnected during the
+                current epoch.
+        """
+        raise NotImplementedError("")
+
+    def membership_maintenance(self) -> None:
+        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`"""
+        raise NotImplementedError("")
+    # endregion
+
+    # region Helpers
+    def __log_evaluation__(self, pcount: int) -> None:
         """Helper method that performs evaluate step related logging.
 
         Args:
@@ -361,149 +377,14 @@ class Cluster:
         if pcount <= 0:
             self.set_fail("Cluster has no remaining parts.")
         self.file.parts_in_hive = pcount
-        if self.equal_distributions():
-            self.file.logger.register_convergence(self.current_epoch)
-        else:
-            self.file.logger.save_sets_and_reset()
 
-    def maintain(self, off_nodes: List[HiveNode]) -> None:
-        """Evicts disconnected network_nodes from the Cluster and
-        attempts to recruit new ones.
-
-        It implicitly creates a new `transition matrix` and `v_`.
-
-        Args:
-            off_nodes:
-                The collection of members who disconnected during the
-                current epoch.
-        """
-        # remove all disconnected network_nodes from the hive
-        for node in off_nodes:
-            self.members.pop(node.id, None)
-            node.remove_file_routing(self.file.name)
-        self.membership_maintenance()
-
-    def membership_maintenance(self) -> None:
-        """Attempts to recruit new
-        :py:mod:`Network Nodes <domain.network_nodes>`"""
-        damaged_hive_size = len(self.members)
-        if damaged_hive_size >= self.sufficient_size:
-            self.remove_cloud_reference()
-        if damaged_hive_size >= self.redundant_size:
-            status_bm = "redundant"
-        elif self.original_size <= damaged_hive_size < self.redundant_size:
-            status_bm = "stable"
-        elif self.sufficient_size <= damaged_hive_size < self.original_size:
-            status_bm = "sufficient"
-            self.members.update(self.__get_new_members__())
-        elif self.critical_size < damaged_hive_size < self.sufficient_size:
-            status_bm = "unstable"
-            self.members.update(self.__get_new_members__())
-        elif 0 < damaged_hive_size <= self.critical_size:
-            status_bm = "critical"
-            self.members.update(self.__get_new_members__())
-            self.add_cloud_reference()
-        else:
-            status_bm = "dead"
-
-        status_am = len(self.members)
-        if damaged_hive_size != status_am:
-            self.create_and_bcast_new_transition_matrix()
-
-        self.file.logger.log_maintenance(
-            status_bm, damaged_hive_size, status_am, self.current_epoch)
-    # endregion
-
-    # region Helpers
-    def spread_files(
-            self, strategy: str, file_parts: Dict[int, FileBlockData]
-    ) -> None:
-        """Batch distributes files to Cluster members.
-
-        This method is used at the start of a simulation to give all file
-        blocks including the replicas to members of the hive. Different
-        distribution options can be used depending on the selected `strategy`.
-
-        Args:
-            strategy:
-                `u` - Distributed uniformly across network;
-                `a` - Give all file block replicas to N different network
-                nodes, where N is equal to
-                :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
-                `i` - Distribute all file block replicas following such
-                that the simulation starts with all file blocks and their
-                replicas distributed with a bias towards the ideal steady
-                state distribution;
-            file_parts:
-                A collection of file blocks, without replication, to be
-                distributed between the Cluster members according to
-                the desired `strategy`.
-        """
-        self.file.logger.initial_spread = strategy
-
-        choices: List[HiveNode]
-        nodes: List[HiveNode]
-        if strategy == "a":
-            choices = [*self.members.values()]
-            nodes = np.random.choice(a=choices,
-                                     size=REPLICATION_LEVEL, replace=False)
-            for node in nodes:
-                for part in file_parts.values():
-                    part.references += 1
-                    node.receive_part(part)
-
-        elif strategy == "u":
-            for part in file_parts.values():
-                choices = [*self.members.values()]
-                nodes = np.random.choice(a=choices,
-                                         size=REPLICATION_LEVEL, replace=False)
-                for node in nodes:
-                    part.references += 1
-                    node.receive_part(part)
-
-        elif strategy == 'i':
-            choices = [*self.members.values()]
-            desired_distribution: List[float] = []
-            for member_id in choices:
-                desired_distribution.append(self.v_.loc[member_id, 0].item())
-
-            for part in file_parts.values():
-                choices = choices.copy()
-                nodes = np.random.choice(a=choices, p=desired_distribution,
-                                         size=REPLICATION_LEVEL, replace=False)
-                for node in nodes:
-                    part.references += 1
-                    node.receive_part(part)
-
-    def equal_distributions(self) -> bool:
-        """Infers if v_ and cv_ are equal.
-
-        Equalility is calculated using numpy allclose function which has the
-        following formula::
-
-            $ absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
-
-        Returns:
-            True if distributions are close enough to be considered equal,
-            otherwise, it returns False.
-        """
-        pcount = self.file.parts_in_hive
-        target = self.v_.multiply(pcount)
-        rtol = self.v_[0].min()
-        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
-
-        if DEBUG:
-            print(self.__vector_comparison_table__(target, atol, rtol))
-
-        return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
-
-    def __get_new_members__(self) -> Dict[str, HiveNode]:
+    def __get_new_members__(self) -> Dict[str, NodeType]:
         """Helper method that gets adds network nodes, if possible,
         to the Cluster.
 
         Returns:
             A dictionary mapping network node identifiers and their instance
-            objects (:py:class:`~domain.network_nodes.HiveNode`).
+            objects (:py:mod:`Network Node <domain.network_nodes>`).
         """
         return self.master.find_replacement_node(
             self.members, self.original_size - len(self.members))
@@ -525,15 +406,16 @@ class Cluster:
         self.running = False
         self.file.logger.log_fail(self.current_epoch, message)
 
-    def set_replication_epoch(self, part: FileBlockData) -> None:
+    def set_replication_epoch(self, replica: FileBlockData) -> None:
         """Delegates to :py:meth:
         `~domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
 
         Args:
-            part: A :py:class:`~domain.helpers.smart_dataclasses.FileBlockData`
+            replica: A :py:class:`~domain.helpers.smart_dataclasses.FileBlockData`
             instance that represents a file block replica that was lost.
         """
-        self._recovery_epoch_sum += part.set_replication_epoch(self.current_epoch)
+        s = replica.set_replication_epoch(self.current_epoch)
+        self._recovery_epoch_sum += s
         self._recovery_epoch_calls += 1
 
 
@@ -563,6 +445,51 @@ class HiveCluster(Cluster):
         self.v_: pd.DataFrame = pd.DataFrame()
         self.create_and_bcast_new_transition_matrix()
 
+    # region Simulation setup
+    def _spread_files(self, strat: str, blocks: ReplicasDict) -> None:
+        """Batch distributes files to Cluster members.
+
+        This method is used at the start of a simulation to give all file
+        blocks including the blocks to members of the hive. Different
+        distribution options can be used depending on the selected `strategy`.
+        """
+        self.file.logger.initial_spread = strat
+
+        choices: List[NodeType]
+        nodes: List[NodeType]
+        if strat == "a":
+            choices = [*self.members.values()]
+            nodes = np.random.choice(a=choices,
+                                     size=REPLICATION_LEVEL, replace=False)
+            for node in nodes:
+                for block in blocks.values():
+                    block.references += 1
+                    node.receive_part(block)
+
+        elif strat == "u":
+            for block in blocks.values():
+                choices = [*self.members.values()]
+                nodes = np.random.choice(a=choices,
+                                         size=REPLICATION_LEVEL, replace=False)
+                for node in nodes:
+                    block.references += 1
+                    node.receive_part(block)
+
+        elif strat == 'i':
+            choices = [*self.members.values()]
+            desired_distribution: List[float] = []
+            for member_id in choices:
+                desired_distribution.append(self.v_.loc[member_id, 0].item())
+
+            for block in blocks.values():
+                choices = choices.copy()
+                nodes = np.random.choice(a=choices, p=desired_distribution,
+                                         size=REPLICATION_LEVEL, replace=False)
+                for node in nodes:
+                    block.references += 1
+                    node.receive_part(block)
+    # endregion
+
     # region Simulation steps
     def evaluate(self) -> None:
         """Verifies file block distribution and hive health status.
@@ -586,7 +513,42 @@ class HiveCluster(Cluster):
                 pcount += node_parts_count
             else:
                 self.cv_.at[node.id, 0] = 0
-        self.log_evaluation(pcount)
+        self.__log_evaluation__(pcount)
+
+    def maintain(self, off_nodes: List[HiveNode]) -> None:
+        # remove all disconnected network_nodes from the hive
+        for node in off_nodes:
+            self.members.pop(node.id, None)
+            node.remove_file_routing(self.file.name)
+        self.membership_maintenance()
+
+    def membership_maintenance(self) -> None:
+        damaged_hive_size = len(self.members)
+        if damaged_hive_size >= self.sufficient_size:
+            self.remove_cloud_reference()
+        if damaged_hive_size >= self.redundant_size:
+            status_bm = "redundant"
+        elif self.original_size <= damaged_hive_size < self.redundant_size:
+            status_bm = "stable"
+        elif self.sufficient_size <= damaged_hive_size < self.original_size:
+            status_bm = "sufficient"
+            self.members.update(self.__get_new_members__())
+        elif self.critical_size < damaged_hive_size < self.sufficient_size:
+            status_bm = "unstable"
+            self.members.update(self.__get_new_members__())
+        elif 0 < damaged_hive_size <= self.critical_size:
+            status_bm = "critical"
+            self.members.update(self.__get_new_members__())
+            self.add_cloud_reference()
+        else:
+            status_bm = "dead"
+
+        status_am = len(self.members)
+        if damaged_hive_size != status_am:
+            self.create_and_bcast_new_transition_matrix()
+
+        self.file.logger.log_maintenance(
+            status_bm, damaged_hive_size, status_am, self.current_epoch)
     # endregion
 
     # region Swarm guidance structure management
@@ -765,7 +727,68 @@ class HiveCluster(Cluster):
         return True
     # endregion
 
+    # region Cloud management
+    def remove_cloud_reference(self) -> None:
+        """Remove cloud references and delete files within it
+
+        Notes:
+            TODO: This method requires implementation at the user descretion.
+        """
+        pass
+
+    def add_cloud_reference(self) -> None:
+        """Adds a cloud server reference to the membership.
+
+        This method is used when Cluster membership size becomes compromised
+        and a backup solution using cloud approaches is desired. The idea
+        is that surviving members upload their blocks to the cloud server,
+        e.g., an Amazon S3 instance. See Hivemind method
+        :py:meth:`~domain.master_servers.Hivemind.get_cloud_reference` for more
+        details.
+
+        Notes:
+            TODO: This method requires implementation at the user descretion.
+        """
+        pass
+        # noinspection PyUnusedLocal
+        cloud_ref: str = self.master.get_cloud_reference()
+    # endregion
+
     # region Helpers
+    def equal_distributions(self) -> bool:
+        """Infers if v_ and cv_ are equal.
+
+        Equalility is calculated using numpy allclose function which has the
+        following formula::
+
+            $ absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
+
+        Returns:
+            True if distributions are close enough to be considered equal,
+            otherwise, it returns False.
+        """
+        pcount = self.file.parts_in_hive
+        target = self.v_.multiply(pcount)
+        rtol = self.v_[0].min()
+        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
+
+        if DEBUG:
+            print(self.__pretty_print_eq_distr_table__(target, atol, rtol))
+
+        return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
+
+    def __log_evaluation__(self, pcount: int) -> None:
+        """Helper method that performs evaluate step related logging.
+
+        Extends:
+            :py:meth:`~domain.cluster_groups.Cluster.__log_evaluation__`
+        """
+        super().__log_evaluation__(pcount)
+        if self.equal_distributions():
+            self.file.logger.register_convergence(self.current_epoch)
+        else:
+            self.file.logger.save_sets_and_reset()
+
     def __pretty_print_eq_distr_table__(
             self, target: pd.DataFrame, atol: float, rtol: float) -> Any:
         """Pretty prints a PSQL formatted table for visual vector comparison."""
@@ -812,9 +835,10 @@ class HiveClusterExt(Cluster):
             done by the same source towards the same target. The set is
             reset every epoch.
     """
+
     def __init__(self, master: ms.Hivemind,
                  file_name: str,
-                 members: Dict[str, HiveNodeExt],
+                 members: Dict[str, NodeType],
                  sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `HiveClusterExt` object.
@@ -828,6 +852,11 @@ class HiveClusterExt(Cluster):
         self.suspicious_nodes: Dict[str, int] = {}
         self._epoch_complaints: set = set()
 
+    # region Simulation setup
+    def _spread_files(self, strat: str, replicas: ReplicasDict) -> None:
+        super()._spread_files(strat, replicas)
+    # endregion
+
     # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
         """Instructs the cluster to execute an epoch.
@@ -838,7 +867,7 @@ class HiveClusterExt(Cluster):
         super().execute_epoch(epoch)
         self._epoch_complaints.clear()
 
-    def nodes_execute(self) -> List[HiveNodeExt]:
+    def nodes_execute(self) -> List[NodeType]:
         """Queries all network node members execute the epoch.
 
         Overrides:
@@ -869,18 +898,18 @@ class HiveClusterExt(Cluster):
                 if node.id not in self.suspicious_nodes:
                     self.suspicious_nodes[node.id] = 1
                     lost_parts_count += len(lost_parts)
-                    for part in lost_parts.values():
-                        if part.decrement_and_get_references() == 0:
-                            self.set_fail(f"Lost all replicas of file part "
-                                          f"with id: {part.id}")
+                    for replica in lost_parts.values():
+                        if replica.decrement_and_get_references() == 0:
+                            self.set_fail(f"Lost all blocks of file replica "
+                                          f"with id: {replica.id}")
                 else:
                     self.suspicious_nodes[node.id] += 1
 
                 ccount = self.nodes_complaints.get(node.id, -1)
                 if ccount >= self.complaint_threshold:
                     off_nodes.append(node)
-                    for part in lost_parts.values():
-                        self.set_replication_epoch(part)
+                    for replica in lost_parts.values():
+                        self.set_replication_epoch(replica)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self.set_fail("All hive members disconnected before maintenance.")
@@ -894,7 +923,7 @@ class HiveClusterExt(Cluster):
     def evaluate(self) -> None:
         super().evaluate()
 
-    def maintain(self, off_nodes: List[HiveNodeExt]) -> None:
+    def maintain(self, off_nodes: List[NodeType]) -> None:
         """Evicts any node whose number of complaints as surpassed the
         `complaint_threshold`.
 
@@ -912,6 +941,9 @@ class HiveClusterExt(Cluster):
             node.remove_file_routing(self.file.name)
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
+
+    def membership_maintenance(self) -> None:
+        super().membership_maintenance()
     # endregion
 
     # region Cluster API
@@ -960,7 +992,7 @@ class HDFSCluster(Cluster):
             cluster.
     """
     def __init__(self, master: ms.Hivemind, file_name: str,
-                 members: Dict[str, HiveNodeExt], sim_id: int = 0,
+                 members: Dict[str, NodeType], sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `HiveClusterExt` object.
 
@@ -971,6 +1003,12 @@ class HDFSCluster(Cluster):
         self.suspicious_nodes: set = set()
         self.data_node_heartbeats: Dict[str, int] = {}
 
+    # region Simulation setup
+    def _spread_files(self, strat: str, replicas: ReplicasDict) -> None:
+        pass
+    # endregion
+
+    # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
         """Instructs the cluster to execute an epoch.
 
@@ -1013,14 +1051,14 @@ class HDFSCluster(Cluster):
             if node.status == Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
             elif node.status == Status.SUSPECT:
-                # Register lost replicas the moment the node disconnects.
+                # Register lost blocks the moment the node disconnects.
                 if node.id not in self.suspicious_nodes:
                     self.suspicious_nodes.add(node.id)
                     node_replicas = node.get_file_parts(self.file.name)
                     lost_replicas_count += len(node_replicas)
                     for replica in node_replicas.values():
                         if replica.decrement_and_get_references() <= 0:
-                            self.set_fail(f"Lost all replicas of file part "
+                            self.set_fail(f"Lost all blocks of file replica "
                                           f"with id: {replica.id}")
                 # Simulate missed heartbeats.
                 if node.id in self.data_node_heartbeats:
@@ -1042,7 +1080,7 @@ class HDFSCluster(Cluster):
 
     def evaluate(self) -> None:
         """`HDFSCluster evaluate method merely logs the number of existing
-        replicas in the system.
+        blocks in the system.
 
         Overrides:
             :py:meth:`~domain.cluster_groups.Cluster.evaluate`.
@@ -1056,7 +1094,7 @@ class HDFSCluster(Cluster):
             if node.status == Status.ONLINE:
                 node_replicas = node.get_file_parts_count(self.file.name)
                 pcount += len(node_replicas)
-        self.log_evaluation(pcount)
+        self.__log_evaluation__(pcount)
 
     def maintain(self, off_nodes: List[HDFSNode]) -> None:
         """Evicts any :py:mod:`Network Node <domain.network_nodes>` whose
@@ -1073,6 +1111,6 @@ class HDFSCluster(Cluster):
             self.file.logger.log_suspicous_node_detection_delay(node.id, 5)
         super().membership_maintenance()
 
-    def complain(self, complainter: str, complainee: str,
-                 reason: HttpCodes) -> None:
+    def membership_maintenance(self) -> None:
         pass
+    # endregion

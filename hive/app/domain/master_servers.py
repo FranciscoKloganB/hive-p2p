@@ -130,8 +130,8 @@ class Hivemind:
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
-                cluster.spread_files(files_spreads[cluster.file.name],
-                                     files_blocks[cluster.file.name])
+                cluster._spread_files(files_spreads[cluster.file.name],
+                                      files_blocks[cluster.file.name])
 
     # endregion
 
