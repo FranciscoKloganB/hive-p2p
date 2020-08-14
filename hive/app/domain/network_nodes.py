@@ -32,10 +32,10 @@ class Node:
             The amount of time the worker is expected to remain online
             without disconnection. Current uptime implementation is based on
             availability percentages. Furthermore, when a HiveNode joins
-            an BaseCluster as a replacement for some other HiveNode, in
-            :py:meth:`~domain.cluster_groups.BaseCluster._membership_maintenance`,
+            an Cluster as a replacement for some other HiveNode, in
+            :py:meth:`~domain.cluster_groups.Cluster._membership_maintenance`,
             the time the worker has been online is not considered. Thus,
-            if a HiveNode belongs to only one BaseCluster he is guaranteed
+            if a HiveNode belongs to only one Cluster he is guaranteed
              to remain online for exactly `uptime` *
             :py:attr:`~environment_settings.MAX_EPOCHS`. If he belongs to
             multiple Hives in the simulation, than there is a possibility
@@ -117,11 +117,11 @@ class Node:
             return HttpCodes.OK
 
     def replicate_part(
-            self, cluster: cg.BaseCluster, replica: FileBlockData) -> None:
+            self, cluster: cg.Cluster, replica: FileBlockData) -> None:
         """Equal to :py:meth:`~send_part` but with different delivery semantics.
 
         The file block replica is sent selectively in descending order to the
-        most reliable Workers in the BaseCluster down to the least
+        most reliable Workers in the Cluster down to the least
         reliable. Whereas the first delivers the replicas according to the
         routing column vector for the file id that the block replica belongs to.
 
@@ -130,7 +130,7 @@ class Node:
 
         Args:
             cluster:
-                Gateway BaseCluster that will deliver the file block replica to
+                Gateway Cluster that will deliver the file block replica to
                 some destination HiveNode.
             replica:
                 The file block replica to be delivered.
@@ -155,7 +155,7 @@ class Node:
             replica.update_epochs_to_recover(cluster.current_epoch)
 
     def send_part(self,
-                  cluster: cg.BaseCluster,
+                  cluster: cg.Cluster,
                   destination: str,
                   replica: FileBlockData) -> Union[int, HttpCodes]:
         """Attempts to send a replica to some other network node.
@@ -184,7 +184,7 @@ class Node:
                      fid: str,
                      number: int,
                      corrupt: bool = False,
-                     cluster: cg.BaseCluster = None) -> None:
+                     cluster: cg.Cluster = None) -> None:
         """Safely deletes a part from the HiveNode instance's disk.
 
         Args:
@@ -197,8 +197,8 @@ class Node:
                 block corruption, e.g., Sha256 does not match the expected (
                 default False).
             cluster:
-                Gateway BaseCluster that will set the recovery epoch (see
-                :py:meth:`~domain.cluster_groups.BaseCluster.set_recovery_epoch`
+                Gateway Cluster that will set the recovery epoch (see
+                :py:meth:`~domain.cluster_groups.Cluster.set_recovery_epoch`
                 or mark the simulation as failed.
         """
         part: FileBlockData = self.files.get(fid, {}).pop(number, None)
@@ -243,7 +243,7 @@ class Node:
 
         This method simulates a ping. When invoked, the HiveNode instance
         decides if it should switch its status from ONLINE to some other
-        depending on the time it has been active in the BaseCluster.
+        depending on the time it has been active in the Cluster.
 
         Returns:
             The status of the worker. See
@@ -269,7 +269,7 @@ class Node:
         return not(self == other)
     # endregion
 
-    def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
+    def execute_epoch(self, cluster: cg.Cluster, fid: str) -> None:
         """Instructs the HiveNode instance to execute the epoch.
 
         Raises:
@@ -284,7 +284,7 @@ class Node:
 class HDFSNode(Node):
     """Represents a data node in the Hadoop Distribute File System."""
 
-    def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
+    def execute_epoch(self, cluster: cg.Cluster, fid: str) -> None:
         # TODO:
         #  1. Corrupt replicas stored at this node.
         #  2. Regenerate replication levels when possible.
@@ -295,21 +295,21 @@ class HiveNode(Node):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     Workers work in one or more cluster_groups
-    (:py:class:`~domain.cluster_groups.BaseCluster`) to try to ensure the
+    (:py:class:`~domain.cluster_groups.Cluster`) to try to ensure the
     durability of files belonging to the distributed backup system. Their
     route file block replicas to other network_nodes at every epoch
     time according to the routing table of the file that block belongs to,
     i.e., according to the column vector of the transition matrix that is
     generated by
-    (:py:meth:`~domain.cluster_groups.BaseCluster.new_transition_matrix`).
-    If every worker in the BaseCluster shares their blocks with other members by
+    (:py:meth:`~domain.cluster_groups.Cluster.new_transition_matrix`).
+    If every worker in the Cluster shares their blocks with other members by
     following their respective vector then eventually, the whole
-    BaseCluster will reach the desired steady state distribution of file
-    block replicas (:py:attr:`~domain.cluster_groups.BaseCluster.v_`).
+    Cluster will reach the desired steady state distribution of file
+    block replicas (:py:attr:`~domain.cluster_groups.Cluster.v_`).
 
     Attributes:
         hives:
-            A collection of :py:class:`~domain.cluster_groups.BaseCluster` this
+            A collection of :py:class:`~domain.cluster_groups.Cluster` this
             HiveNode is a member of.
         routing_table:
             Contains the information required to appropriately route file
@@ -328,7 +328,7 @@ class HiveNode(Node):
                 The availability of the worker instance.
         """
         super().__init__(uid, uptime)
-        self.hives: Dict[str, cg.BaseCluster] = {}
+        self.hives: Dict[str, cg.Cluster] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
 
     # region Routing table management
@@ -339,11 +339,11 @@ class HiveNode(Node):
 
         Args:
             fid:
-                The identifier of the file the BaseCluster is persisting.
+                The identifier of the file the Cluster is persisting.
             transition_vector:
                 A column vector with probabilities that dictate the odds of
                 sending file block replicas belonging to the file with
-                specified id to other BaseCluster members also working on the
+                specified id to other Cluster members also working on the
                 persistence of the file block replicas.
 
         Raises:
@@ -361,7 +361,7 @@ class HiveNode(Node):
     def remove_file_routing(self, fid: str) -> None:
         """Removes a file id from the routing table.
 
-        This method is called when a HiveNode is evicted from the BaseCluster
+        This method is called when a HiveNode is evicted from the Cluster
         and results in the complete deletion of all file blocks with that
         file id.
 
@@ -399,7 +399,7 @@ class HiveNode(Node):
     # endregion
 
     # region Node overrides
-    def execute_epoch(self, cluster: cg.BaseCluster, fid: str) -> None:
+    def execute_epoch(self, cluster: cg.Cluster, fid: str) -> None:
         """Instructs the HiveNode instance to execute the epoch.
 
         The method iterates all file block replicas in :py:attr:`~files` and 
@@ -412,7 +412,7 @@ class HiveNode(Node):
         destination replies with OK, meaning it accepted the replica,
         this HiveNode instance deletes the replica from his disk. If it
         replies with a BAD_REQUEST the replica is discarded and the worker
-        starts a recovery process in the BaseCluster. Any other code response
+        starts a recovery process in the Cluster. Any other code response
         results in the HiveNode instance keeping replica in his disk
         for at least one more epoch times. See
         :py:class:`~domain.helpers.enums.HttpCodes` for more information on
@@ -423,7 +423,7 @@ class HiveNode(Node):
 
         Args:
             cluster:
-                BaseCluster instance that ordered execution of the epoch.
+                Cluster instance that ordered execution of the epoch.
             fid:
                 The identifier that determines which file blocks 
                 replicas should be routed.

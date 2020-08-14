@@ -8,7 +8,7 @@ from typing import List, Union, Dict, Any
 
 import numpy as np
 
-from domain.cluster_groups import BaseCluster
+from domain.cluster_groups import Cluster
 from domain.helpers.enums import Status
 from domain.helpers.smart_dataclasses import FileBlockData
 from domain.network_nodes import HiveNode
@@ -41,17 +41,17 @@ class Hivemind:
         epoch:
             The simulation's current epoch.
         cluster_groups:
-            A collection of :py:class:`~domain.cluster_groups.BaseCluster`
+            A collection of :py:class:`~domain.cluster_groups.Cluster`
             instances managed by the Hivemind.
         network_nodes:
             A dictionary mapping network node identifiers names to their
             object instances (:py:class:`~domain.network_nodes.HiveNode`).
             This collection differs from the
-            :py:class:`~domain.cluster_groups.BaseCluster`s' attribute
-            :py:attr:`~domain.cluster_groups.BaseCluster.members` in the sense that
+            :py:class:`~domain.cluster_groups.Cluster`s' attribute
+            :py:attr:`~domain.cluster_groups.Cluster.members` in the sense that
             the latter is only a subset of `workers`, which includes all
             network nodes of the distributed backup system. Regardless of
-            their participation on any BaseCluster.
+            their participation on any Cluster.
     """
 
     MAX_EPOCHS = None
@@ -95,7 +95,7 @@ class Hivemind:
             json_obj: Any = json.load(input_file)
 
             # Init basic simulation variables
-            self.cluster_groups: Dict[str, BaseCluster] = {}
+            self.cluster_groups: Dict[str, Cluster] = {}
             self.network_nodes: Dict[str, HiveNode] = {}
 
             # Instantiaite jobless Workers
@@ -149,7 +149,7 @@ class Hivemind:
                     terminated_clusters.append(cluster.id)
                     cluster.file.jwrite(cluster, self.origin, self.epoch)
             for cid in terminated_clusters:
-                print(f"BaseCluster: {cid} terminated at epoch {self.epoch}")
+                print(f"Cluster: {cid} terminated at epoch {self.epoch}")
                 self.cluster_groups.pop(cid)
             self.epoch += 1
 
@@ -159,7 +159,7 @@ class Hivemind:
 
     def receive_complaint(self, suspects_name: str) -> None:
         """Registers a complain against a network node, if enough complaints
-        are received, target is evicted from the complainters BaseCluster.
+        are received, target is evicted from the complainters Cluster.
 
         Note:
             This method needs implementation at the user descretion.
@@ -176,16 +176,16 @@ class Hivemind:
             self, exclusion_dict: Dict[str, HiveNode], n: int
     ) -> Dict[str, HiveNode]:
         """Finds a collection of online network nodes that can be used to
-        replace offline ones in an BaseCluster.
+        replace offline ones in an Cluster.
 
         Args:
             exclusion_dict:
                 A dictionary of network nodes identifiers and their object
                 instances (:py:class:`~domain.network_nodes.HiveNode`),
-                which represent the nodes the BaseCluster is not interested in,
+                which represent the nodes the Cluster is not interested in,
                 i.e., this argument is a blacklist.
             n:
-                How many replacements the calling BaseCluster desires to find.
+                How many replacements the calling Cluster desires to find.
 
         Returns:
             A collection of replacements which is smaller or equal than `n`.
@@ -223,7 +223,7 @@ class Hivemind:
 
     def __new_cluster_group(
             self, cclass: str, persisting: _PersistentingDict, fname: str
-    ) -> BaseCluster:
+    ) -> Cluster:
         """
         Helper method that initializes a new hive.
         """
