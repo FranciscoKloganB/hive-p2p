@@ -64,7 +64,7 @@ class Cluster:
             realizations for ideal persistence of the file.
         cv_ (pandas DataFrame):
             Tracks the file current density distribution, updated at each epoch.
-        hivemind:
+        master:
             A reference to :py:class:`~domain.master_servers.Hivemind` that
             coordinates this Cluster instance.
         members:
@@ -98,7 +98,7 @@ class Cluster:
             method calls throughout the :py:attr:`~current_epoch`.
     """
 
-    def __init__(self, hivemind: ms.Hivemind,
+    def __init__(self, master: ms.Hivemind,
                  file_name: str,
                  members: Dict[str, HiveNode],
                  sim_id: int = 0,
@@ -106,7 +106,7 @@ class Cluster:
         """Instantiates an `Cluster` object
 
         Args:
-            hivemind:
+            master:
                 A reference to an :py:class:`~domain.master_servers.Hivemind`
                 object that manages the `Cluster` being initialized.
             file_name:
@@ -126,10 +126,9 @@ class Cluster:
         """
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-        self.cv_: pd.DataFrame = pd.DataFrame()
-        self.v_: pd.DataFrame = pd.DataFrame()
+
         self.corruption_chances: List[float] = self._assign_disk_error_chance()
-        self.hivemind = hivemind
+        self.master = master
         self.members: Dict[str, HiveNode] = members
         self.file: FileData = FileData(file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
@@ -167,7 +166,7 @@ class Cluster:
         """
         pass
         # noinspection PyUnusedLocal
-        cloud_ref: str = self.hivemind.get_cloud_reference()
+        cloud_ref: str = self.master.get_cloud_reference()
 
     def route_part(self,
                    sender: str,
@@ -616,7 +615,7 @@ class Cluster:
             A dictionary mapping network node identifiers and their instance
             objects (:py:class:`~domain.network_nodes.HiveNode`).
         """
-        return self.hivemind.find_replacement_node(
+        return self.master.find_replacement_node(
             self.members, self.original_size - len(self.members))
 
     def set_fail(self, message: str) -> None:
@@ -757,6 +756,17 @@ class HiveCluster(Cluster):
 
     Attributes:
     """
+    def __init__(self, master: ms.Hivemind, file_name: str,
+                 members: Dict[str, HiveNode], sim_id: int = 0,
+                 origin: str = "") -> None:
+        """Instantiates an `HiveClusterExt` object.
+
+        Extends:
+            :py:class:`~domain.cluster_groups.Cluster`.
+        """
+        super().__init__(master, file_name, members, sim_id, origin)
+        self.cv_: pd.DataFrame = pd.DataFrame()
+        self.v_: pd.DataFrame = pd.DataFrame()
 
 
 class HiveClusterExt(Cluster):
@@ -791,7 +801,7 @@ class HiveClusterExt(Cluster):
             done by the same source towards the same target. The set is
             reset every epoch.
     """
-    def __init__(self, hivemind: ms.Hivemind, file_name: str,
+    def __init__(self, master: ms.Hivemind, file_name: str,
                  members: Dict[str, HiveNodeExt], sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `HiveClusterExt` object.
@@ -799,7 +809,7 @@ class HiveClusterExt(Cluster):
         Extends:
             :py:class:`~domain.cluster_groups.Cluster`.
         """
-        super().__init__(hivemind, file_name, members, sim_id, origin)
+        super().__init__(master, file_name, members, sim_id, origin)
         self.complaint_threshold: float = len(members) * 0.5
         self.nodes_complaints: Dict[str, int] = {}
         self.suspicious_nodes: Dict[str, int] = {}
@@ -931,7 +941,7 @@ class HDFSCluster(Cluster):
             when the dictionary value count is zero, they are evicted from the
             cluster.
     """
-    def __init__(self, hivemind: ms.Hivemind, file_name: str,
+    def __init__(self, master: ms.Hivemind, file_name: str,
                  members: Dict[str, HiveNodeExt], sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `HiveClusterExt` object.
@@ -939,7 +949,7 @@ class HDFSCluster(Cluster):
         Extends:
             :py:class:`~domain.cluster_groups.Cluster`.
         """
-        super().__init__(hivemind, file_name, members, sim_id, origin)
+        super().__init__(master, file_name, members, sim_id, origin)
         self.suspicious_nodes: set = set()
         self.data_node_heartbeats: Dict[str, int] = {}
 
