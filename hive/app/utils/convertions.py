@@ -134,6 +134,12 @@ def class_name_to_obj(module_name: str, class_name: str, args: List[Any]) -> Any
     Returns:
         An object of the named class.
 
+    Raises:
+        AttributeError:
+            When `class_name` does not exist or when `module_name` to be
+            imported causes cyclic import errors.
+        ImportError:
+            When `module_name` is not a valid module.
     Examples:
         You could call this function like so::
 
@@ -143,16 +149,9 @@ def class_name_to_obj(module_name: str, class_name: str, args: List[Any]) -> Any
 
             h = Master("f.jpg", 1, 80)
     """
-    try:
-        module_ = importlib.import_module(module_name)
-        try:
-            instance = getattr(module_, class_name)(*args)
-            return instance
-        except AttributeError:
-            print(f"Class {class_name} does not exist.")
-    except ImportError:
-        print(f"Module {module_name} does not exist.")
-    return None
+    module_ = importlib.import_module(module_name)
+    instance = getattr(module_, class_name)(*args)
+    return instance
 
 
 def truncate_float_value(f: float, d: int) -> float:
