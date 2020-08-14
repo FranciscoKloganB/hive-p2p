@@ -59,11 +59,6 @@ class Cluster:
             being corrupted and not being corrupted, respectively. See
             :py:meth:`~domain.cluster_groups.Cluster.
             _assign_disk_error_chance` for corruption chance configuration.
-        v_ (pandas DataFrame):
-            Density distribution hive members must achieve with independent
-            realizations for ideal persistence of the file.
-        cv_ (pandas DataFrame):
-            Tracks the file current density distribution, updated at each epoch.
         master:
             A reference to :py:class:`~domain.master_servers.Hivemind` that
             coordinates this Cluster instance.
@@ -126,7 +121,6 @@ class Cluster:
         """
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-
         self.corruption_chances: List[float] = self._assign_disk_error_chance()
         self.master = master
         self.members: Dict[str, HiveNode] = members
@@ -755,9 +749,16 @@ class HiveCluster(Cluster):
     guidance algorithm.
 
     Attributes:
+        v_ (pandas DataFrame):
+            Density distribution hive members must achieve with independent
+            realizations for ideal persistence of the file.
+        cv_ (pandas DataFrame):
+            Tracks the file current density distribution, updated at each epoch.
     """
-    def __init__(self, master: ms.Hivemind, file_name: str,
-                 members: Dict[str, HiveNode], sim_id: int = 0,
+    def __init__(self, master: ms.Hivemind,
+                 file_name: str,
+                 members: Dict[str, HiveNode],
+                 sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `HiveClusterExt` object.
 
@@ -801,8 +802,10 @@ class HiveClusterExt(Cluster):
             done by the same source towards the same target. The set is
             reset every epoch.
     """
-    def __init__(self, master: ms.Hivemind, file_name: str,
-                 members: Dict[str, HiveNodeExt], sim_id: int = 0,
+    def __init__(self, master: ms.Hivemind,
+                 file_name: str,
+                 members: Dict[str, HiveNodeExt],
+                 sim_id: int = 0,
                  origin: str = "") -> None:
         """Instantiates an `HiveClusterExt` object.
 
