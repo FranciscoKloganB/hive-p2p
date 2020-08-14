@@ -3,23 +3,20 @@
 from __future__ import annotations
 
 import json
-import os
 from typing import List, Union, Dict, Any
 
+import domain.helpers.enums as e
+import type_hints as th
 import numpy as np
 
-from domain.cluster_groups import BaseCluster
-from domain.helpers.enums import Status
-from domain.helpers.smart_dataclasses import FileBlockData
-from domain.network_nodes import HiveNode
-from environment_settings import SHARED_ROOT, SIMULATION_ROOT, READ_SIZE, \
-    NETWORK_NODES, CLUSTER_GROUPS
 from utils.convertions import class_name_to_obj
+from domain.helpers.smart_dataclasses import FileBlockData
+from environment_settings import *
 
 _PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 
 
-class Hivemind:
+class Master:
     """Simulation manager class. Plays the role of a master server for all
     Hives of the distributed backup system.
 
@@ -41,17 +38,17 @@ class Hivemind:
         epoch:
             The simulation's current epoch.
         cluster_groups:
-            A collection of :py:class:`~domain.cluster_groups.BaseCluster`
-            instances managed by the Hivemind.
+            A collection of :py:class:`~domain.cluster_groups.Cluster`
+            instances managed by the Master.
         network_nodes:
             A dictionary mapping network node identifiers names to their
             object instances (:py:class:`~domain.network_nodes.HiveNode`).
             This collection differs from the
-            :py:class:`~domain.cluster_groups.BaseCluster`s' attribute
-            :py:attr:`~domain.cluster_groups.BaseCluster.members` in the sense that
+            :py:class:`~domain.cluster_groups.Cluster`s' attribute
+            :py:attr:`~domain.cluster_groups.Cluster.members` in the sense that
             the latter is only a subset of `workers`, which includes all
             network nodes of the distributed backup system. Regardless of
-            their participation on any BaseCluster.
+            their participation on any Cluster.
     """
 
     MAX_EPOCHS = None
@@ -63,7 +60,7 @@ class Hivemind:
                  epochs: int,
                  cluster_class: str,
                  node_class: str) -> None:
-        """Instantiates an Hivemind object.
+        """Instantiates an Master object.
 
         Args:
             simfile_name:
@@ -83,8 +80,8 @@ class Hivemind:
                 instances through reflection. See :py:mod:`Network Node
                 <domain.network_nodes>`.
         """
-        Hivemind.MAX_EPOCHS = epochs
-        Hivemind.MAX_EPOCHS_PLUS_ONE = epochs + 1
+        Master.MAX_EPOCHS = epochs
+        Master.MAX_EPOCHS_PLUS_ONE = epochs + 1
 
         self.origin = simfile_name
         self.sim_id = sid
@@ -95,8 +92,8 @@ class Hivemind:
             json_obj: Any = json.load(input_file)
 
             # Init basic simulation variables
-            self.cluster_groups: Dict[str, BaseCluster] = {}
-            self.network_nodes: Dict[str, HiveNode] = {}
+            self.cluster_groups: th.ClusterDict = {}
+            self.network_nodes: th.NodeDict = {}
 
             # Instantiaite jobless Workers
             for node_id, node_uptime in json_obj['nodes_uptime'].items():
@@ -106,8 +103,8 @@ class Hivemind:
 
             # Read and split all shareable files specified on the input
             files_spreads: Dict[str, str] = {}
-            files_blocks: Dict[str, Dict[int, FileBlockData]] = {}
-            blocks: Dict[int, FileBlockData]
+            files_blocks: Dict[str, th.ReplicasDict] = {}
+            blocks: th.ReplicasDict
 
             persisting: _PersistentingDict = json_obj['persisting']
             for file_name in persisting:
@@ -130,17 +127,16 @@ class Hivemind:
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
-                cluster.spread_files(files_spreads[cluster.file.name],
-                                     files_blocks[cluster.file.name])
+                cluster._spread_files(files_spreads[cluster.file.name],
+                                      files_blocks[cluster.file.name])
 
     # endregion
 
-    # region Simulation Interface
-
+    # region Simulation steps
     def execute_simulation(self) -> None:
         """Runs a stochastic swarm guidance algorithm applied
         to a P2P network"""
-        while self.epoch < Hivemind.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
+        while self.epoch < Master.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
             print("epoch: {}".format(self.epoch))
             terminated_clusters: List[str] = []
             for cluster in self.cluster_groups.values():
@@ -149,53 +145,35 @@ class Hivemind:
                     terminated_clusters.append(cluster.id)
                     cluster.file.jwrite(cluster, self.origin, self.epoch)
             for cid in terminated_clusters:
-                print(f"BaseCluster: {cid} terminated at epoch {self.epoch}")
+                print(f"Cluster: {cid} terminated at epoch {self.epoch}")
                 self.cluster_groups.pop(cid)
             self.epoch += 1
-
     # endregion
 
-    # region Keeper Interface
-
-    def receive_complaint(self, suspects_name: str) -> None:
-        """Registers a complain against a network node, if enough complaints
-        are received, target is evicted from the complainters BaseCluster.
-
-        Note:
-            This method needs implementation at the user descretion.
-
-        Args:
-            suspects_name:
-                A unique identifier of the suspicious network node.
-        """
-        # TODO future-iterations:
-        #   Move cluster_groups complaint method to this method..
-        raise NotImplementedError()
-
+    # region Master server interface
     def find_replacement_node(
-            self, exclusion_dict: Dict[str, HiveNode], n: int
-    ) -> Dict[str, HiveNode]:
+            self, exclusion_dict: th.NodeDict, n: int) -> th.NodeDict:
         """Finds a collection of online network nodes that can be used to
-        replace offline ones in an BaseCluster.
+        replace offline ones in an Cluster.
 
         Args:
             exclusion_dict:
                 A dictionary of network nodes identifiers and their object
                 instances (:py:class:`~domain.network_nodes.HiveNode`),
-                which represent the nodes the BaseCluster is not interested in,
+                which represent the nodes the Cluster is not interested in,
                 i.e., this argument is a blacklist.
             n:
-                How many replacements the calling BaseCluster desires to find.
+                How many replacements the calling Cluster desires to find.
 
         Returns:
             A collection of replacements which is smaller or equal than `n`.
         """
-        selected: Dict[str, HiveNode] = {}
+        selected: th.NodeDict = {}
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
             if len(selected) == n:
                 return selected
-            elif node.status != Status.ONLINE:
+            elif node.status != e.Status.ONLINE:
                 # TODO: future-iterations review this code.
                 self.network_nodes.pop(node.id, None)
             elif node.id not in exclusion_dict:
@@ -216,18 +194,17 @@ class Hivemind:
             A pointer to thhe cloud server, e.g., an IP Address.
         """
         return ""
-
     # endregion
 
     # region Helpers
 
     def __new_cluster_group(
             self, cclass: str, persisting: _PersistentingDict, fname: str
-    ) -> BaseCluster:
+    ) -> th.ClusterType:
         """
         Helper method that initializes a new hive.
         """
-        cluster_members: Dict[str, HiveNode] = {}
+        cluster_members: th.NodeDict = {}
         size = persisting[fname]['cluster_size']
         nodes = np.random.choice(
             a=[*self.network_nodes.keys()], size=size, replace=False)

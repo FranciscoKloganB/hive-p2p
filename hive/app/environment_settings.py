@@ -6,9 +6,9 @@ through out the simulation's lifetime including initialization and execution.
 Note:
     To configure the amount of available network nodes in a simulation (
     :py:class:`~domain.network_nodes.HiveNode`), the number of network nodes in a
-    group persisting a file (:py:class:`~domain.cluster_groups.BaseCluster`),
+    group persisting a file (:py:class:`~domain.cluster_groups.Cluster`),
     the way files are initially distributed between network nodes of a
-    simulation (:py:meth:`~domain.cluster_groups.BaseCluster.spread_files`) and,
+    simulation (:py:meth:`~domain.cluster_groups.Cluster.spread_files`) and,
     the actual name of the file whose persistence is being simulated,
     you should create a simulation file using
     :py:mod:`simulation_file_generator` and follow its instructions. To run
@@ -35,16 +35,16 @@ Attributes:
         with (default is 21600, one epoch per two minutes). See 
         py:meth:`~domain.cluster_groups._assign_disk_error_chance`.
     MIN_REPLICATION_DELAY:
-        The minimum amount of epoch time steps replica file block replicas
+        The minimum amount of epoch time steps replica file block blocks
         take to be regenerated after their are lost (default is 1)
     MAX_REPLICATION_DELAY:
-        The maximum amount of epoch time steps replica file block replicas
+        The maximum amount of epoch time steps replica file block blocks
         take to be regenerated after their are lost (default is 4)
     REPLICATION_LEVEL:
-        The amount of replicas each file block has (default is 3)
+        The amount of blocks each file block has (default is 3)
     MIN_CONVERGENCE_THRESHOLD:
         The number of consecutive epoch time steps that an
-        :py:class:`~domain.cluster_groups.BaseCluster` must converge before epochs
+        :py:class:`~domain.cluster_groups.Cluster` must converge before epochs
         start being marked with verified convergence in
         :py:attr:`~domain.helpers.smart_dataclasses.LoggingData.convergence_set`
          (default is 2).
@@ -53,16 +53,16 @@ Attributes:
         destination due to network link problems, in the simulation environment.
     ABS_TOLERANCE:
         Defines the maximum amount of absolute positive or negative deviation
-        that a current distribution :py:func:`~domain.cluster_groups.BaseCluster.cv_`
+        that a current distribution :py:func:`~domain.cluster_groups.Cluster.cv_`
         can have from the desired steady state
-        :py:func:`~domain.cluster_groups.BaseCluster.v_`, in order for the
+        :py:func:`~domain.cluster_groups.Cluster.v_`, in order for the
         distributions to be considered equal and thus marking the epoch as
         being in convergence in
         :py:attr:`~domain.helpers.smart_dataclasses.LoggingData.convergence_set`.
         This constant will be used by
-        :py:meth:`~domain.cluster_groups.BaseCluster.equal_distributions` along with a
+        :py:meth:`~domain.cluster_groups.Cluster.equal_distributions` along with a
         relative tolerance that is the minimum value in
-        :py:func:`~domain.cluster_groups.BaseCluster.v_`.
+        :py:func:`~domain.cluster_groups.Cluster.v_`.
 """
 
 import os

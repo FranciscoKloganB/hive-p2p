@@ -163,8 +163,8 @@ if __name__ == "__main__":
     iterations = 30
     duration = 720
 
-    master_class = "Hivemind"
-    cluster_class = "BaseCluster"
+    master_class = "Master"
+    cluster_class = "HiveCluster"
     node_class = "HiveNode"
 
     try:

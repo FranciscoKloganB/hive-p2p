@@ -236,7 +236,7 @@ def __init_persisting_dict() -> Dict[str, Any]:
                            "clusters at the start of the simulation: {\n"
                            "   u: uniform distribution among network nodes,\n"
                            "   i: near steady-state distribution,\n"
-                           "   a: all files concentrated on N replicas\n}\n")
+                           "   a: all files concentrated on N blocks\n}\n")
         options_list = ["u", "U", "i", "I", "a", "A"]
         option_choice = __input_character_option(options_message, options_list)
 

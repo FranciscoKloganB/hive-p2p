@@ -17,14 +17,14 @@ class FileData:
     """Holds essential simulation data concerning files being persisted.
 
     FileData is a helper class which has responsabilities such as tracking
-    how many parts including replicas exist of the named file and managing
+    how many parts including blocks exist of the named file and managing
     the persistence of logged simulation data to disk.
 
     Attributes:
         name (str):
             The name of the original file.
         parts_in_hive (int):
-            The number of file parts including replicas that exist for the
+            The number of file parts including blocks that exist for the
             named file that exist in the simulation. Updated every epoch.
         logger (LoggingData):
             Object that stores captured simulation data. Stored data can be
@@ -72,7 +72,7 @@ class FileData:
         """
         self.out_file.write(msg + "\n")
 
-    def jwrite(self, hive: cg.BaseCluster, origin: str, epoch: int) -> None:
+    def jwrite(self, hive: cg.Cluster, origin: str, epoch: int) -> None:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
@@ -81,7 +81,7 @@ class FileData:
 
         Args:
             hive:
-                The :py:class:`BaseCluster <domain.cluster_groups.BaseCluster>` object that manages
+                The :py:class:`Cluster <domain.cluster_groups.Cluster>` object that manages
                 the simulated persistence of the referenced file.
             origin:
                 The name of the simulation file that started the simulation
@@ -122,7 +122,7 @@ class FileData:
             "sufficient_size_threshold": hive.sufficient_size,
             "original_hive_size": hive.original_size,
             "redundant_size": hive.redundant_size,
-            "max_epochs": ms.Hivemind.MAX_EPOCHS,
+            "max_epochs": ms.Master.MAX_EPOCHS,
             "min_replication_delay": MIN_REPLICATION_DELAY,
             "max_replication_delay": MAX_REPLICATION_DELAY,
             "replication_level": REPLICATION_LEVEL,
@@ -201,7 +201,7 @@ class FileBlockData:
             to exist and the simulation fails.
         replication_epoch (float):
             When a reference to the file block is lost, i.e., decremented,
-            a replication epoch that simulates time to copy replicas from one
+            a replication epoch that simulates time to copy blocks from one
             node to another is assigned to this attribute.
             Until a loss occurs and after a loss is recovered,
             `recovery_epoch` is set to positive infinity.
@@ -296,7 +296,7 @@ class FileBlockData:
 
         Returns:
             How many times the caller should replicate the block. The network
-            node knows how many replicas he needs to create and distribute if
+            node knows how many blocks he needs to create and distribute if
             returned value is bigger than zero.
         """
         if self.replication_epoch == float('inf'):
@@ -347,7 +347,7 @@ class LoggingData:
         cswc:
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
-            :py:meth:`equal_distributions() <domain.cluster_groups.BaseCluster.equal_distributions>`
+            :py:meth:`equal_distributions() <domain.cluster_groups.Cluster.equal_distributions>`
             this attribute is reseted to zero.
         largest_convergence_window:
             Stores the largest convergence window that occurred throughout
@@ -370,8 +370,8 @@ class LoggingData:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
             to persist the file throughout
-            :py:const:`ms.Hivemind.MAX_EPOCHS
-            <environment_settings.ms.Hivemind.MAX_EPOCHS>` time
+            :py:const:`ms.Master.MAX_EPOCHS
+            <environment_settings.ms.Master.MAX_EPOCHS>` time
             steps.
         blocks_corrupted:
             The number of file block repllicas lost at each epoch due
@@ -381,15 +381,15 @@ class LoggingData:
             :py:mod:`Cluster Group <domain.cluster_group>` members' storage
             disks at each epoch.
         blocks_lost:
-            The number of file block replicas that were lost at each epoch
+            The number of file block blocks that were lost at each epoch
             due to :py:mod:`Network Nodes <domain.network_nodes>` going offline.
         blocks_moved:
-            The number of messages containing file block replicas that were
+            The number of messages containing file block blocks that were
             transmited, including those that were not delivered or
             acknowledged, at each epoch.
         delay_replication:
             Log of the average time it took to recover one or more lost file
-            block replicas during each epoch.
+            block blocks during each epoch.
         delay_suspects_detection:
             Log of the time it took for each suspicious
             :py:mod:`Network Node <domain.network_nodes>` to be evicted
@@ -417,8 +417,8 @@ class LoggingData:
     def __init__(self) -> None:
         """Instanciates a LoggingData object for simulation event logging."""
 
-        max_epochs = ms.Hivemind.MAX_EPOCHS
-        max_epochs_plus_one = ms.Hivemind.MAX_EPOCHS_PLUS_ONE
+        max_epochs = ms.Master.MAX_EPOCHS
+        max_epochs_plus_one = ms.Master.MAX_EPOCHS_PLUS_ONE
 
         ###############################
         # Do not alter these
@@ -578,11 +578,11 @@ class LoggingData:
         self.off_node_count[epoch - 1] += n
 
     def log_lost_file_blocks(self, n: int, epoch: int) -> None:
-        """Logs the amount of permanently lost file block replicas at an epoch.
+        """Logs the amount of permanently lost file block blocks at an epoch.
 
         Args:
             n:
-                Number of replicas that were lost.
+                Number of blocks that were lost.
             epoch:
                 A simulation epoch index.
         """
@@ -600,7 +600,7 @@ class LoggingData:
         self.transmissions_failed[epoch - 1] += n
 
     def log_corrupted_file_blocks(self, n: int, epoch: int) -> None:
-        """Logs the amount of corrupted file block replicas at an epoch.
+        """Logs the amount of corrupted file block blocks at an epoch.
 
         Args:
             n:
@@ -615,7 +615,7 @@ class LoggingData:
 
         Note:
             This method should only be called when simulation terminates due
-            to a failure such as a the loss of all replicas of a file block
+            to a failure such as a the loss of all blocks of a file block
             or the simultaneous disconnection of all network nodes in the hive.
 
         Args:
