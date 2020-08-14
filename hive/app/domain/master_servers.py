@@ -115,7 +115,7 @@ class Master:
                     part_number: int = 0
                     blocks = {}
                     files_spreads[file_name] = persisting[file_name]['spread']
-                    cluster = self.__new_cluster_group(
+                    cluster = self.__new_cluster_group__(
                         cluster_class, persisting, file_name)
                     while True:
                         read_buffer = file.read(READ_SIZE)
@@ -200,8 +200,7 @@ class Master:
     # endregion
 
     # region Helpers
-
-    def __new_cluster_group(
+    def __new_cluster_group__(
             self, cclass: str, persisting: _PersistentingDict, fname: str
     ) -> th.ClusterType:
         """
@@ -223,5 +222,4 @@ class Master:
 
         self.cluster_groups[cluster.id] = cluster
         return cluster
-
     # endregion
