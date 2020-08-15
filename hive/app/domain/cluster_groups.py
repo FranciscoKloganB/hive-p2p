@@ -26,6 +26,7 @@ import uuid
 from typing import Tuple, Optional, List, Dict, Any
 
 from tabulate import tabulate
+from functools import reduce
 
 import domain.helpers.smart_dataclasses as sd
 import domain.helpers.matrices as mm
@@ -448,38 +449,36 @@ class HiveCluster(Cluster):
         self.file.logger.initial_spread = strat
 
         choices: List[th.NodeType]
-        nodes: List[th.NodeType]
+        selected_nodes: List[th.NodeType]
         if strat == "a":
             choices = [*self.members.values()]
-            nodes = np.random.choice(a=choices,
-                                     size=REPLICATION_LEVEL, replace=False)
-            for node in nodes:
-                for block in blocks.values():
-                    block.references += 1
-                    node.receive_part(block)
+            selected_nodes = np.random.choice(
+                a=choices, size=REPLICATION_LEVEL, replace=False)
+            for node in selected_nodes:
+                for replica in blocks.values():
+                    replica.references += 1
+                    node.receive_part(replica)
 
         elif strat == "u":
-            for block in blocks.values():
+            for replica in blocks.values():
                 choices = [*self.members.values()]
-                nodes = np.random.choice(a=choices,
-                                         size=REPLICATION_LEVEL, replace=False)
-                for node in nodes:
-                    block.references += 1
-                    node.receive_part(block)
+                selected_nodes = np.random.choice(
+                    a=choices, size=REPLICATION_LEVEL, replace=False)
+                for node in selected_nodes:
+                    replica.references += 1
+                    node.receive_part(replica)
 
         elif strat == 'i':
             choices = [*self.members.values()]
-            desired_distribution: List[float] = []
-            for member_id in choices:
-                desired_distribution.append(self.v_.loc[member_id, 0].item())
-
-            for block in blocks.values():
-                choices = choices.copy()
-                nodes = np.random.choice(a=choices, p=desired_distribution,
-                                         size=REPLICATION_LEVEL, replace=False)
-                for node in nodes:
-                    block.references += 1
-                    node.receive_part(block)
+            desired_distribution = [self.v_.loc[c.id, 0] for c in choices]
+            for replica in blocks.values():
+                choices_view = choices.copy()
+                selected_nodes = np.random.choice(
+                    a=choices_view, p=desired_distribution,
+                    size=REPLICATION_LEVEL, replace=False)
+                for node in selected_nodes:
+                    replica.references += 1
+                    node.receive_part(replica)
     # endregion
 
     # region Simulation steps
@@ -610,15 +609,14 @@ class HiveCluster(Cluster):
             'reliability' of network nodes.
         """
         uptime_sum = sum(member_uptimes)
-        uptimes_normalized = \
-            [member_uptime / uptime_sum for member_uptime in member_uptimes]
+        u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]
 
-        v_ = pd.DataFrame(data=uptimes_normalized, index=member_ids)
+        v_ = pd.DataFrame(data=u_, index=member_ids)
         self.v_ = v_
         cv_ = pd.DataFrame(data=[0] * len(v_), index=member_ids)
         self.cv_ = cv_
 
-        return uptimes_normalized
+        return u_
 
     def new_transition_matrix(self) -> pd.DataFrame:
         """Creates a new transition matrix to be distributed among hive members.
@@ -1043,7 +1041,23 @@ class HDFSCluster(Cluster):
 
     # region Simulation setup
     def spread_files(self, strat: str, replicas: th.ReplicasDict) -> None:
-        pass
+        self.file.logger.initial_spread = "i"
+
+        choices: List[th.NodeType]
+        selected_nodes: List[th.NodeType]
+
+        choices = [*self.members.values()]
+        uptime_sum = sum(c.uptime for c in choices)
+        chances = [c.uptime / uptime_sum for c in choices]
+
+        for block in replicas.values():
+            choices_view = choices.copy()
+            selected_nodes = np.random.choice(
+                a=choices_view, p=chances,
+                size=REPLICATION_LEVEL, replace=False)
+            for node in selected_nodes:
+                block.references += 1
+                node.receive_part(block)
     # endregion
 
     # region Simulation steps
