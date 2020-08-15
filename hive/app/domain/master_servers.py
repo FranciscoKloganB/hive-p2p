@@ -353,7 +353,13 @@ class HDFSMaster(Master):
                 <https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size>`.
                 For this reason, we make HDFSMaster split files into 1MB chunks,
                 as that is the closest we would get to our Hive's default
-                block size in the real wourld.
+                block size in the real wourld
+
+            The other difference, is that spread strategy is ignored as we
+            are not interested in knowing if the way the files are initially
+            spread affect the time the time it takes for hives to achieve a
+            steady state distribution, since in HDFS file block replicas are
+            stationary on data nodes until they die.
         """
         with open(path) as input_file:
             simfile_json: Any = json.load(input_file)
@@ -373,7 +379,6 @@ class HDFSMaster(Master):
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
-                spread_strategy = fspreads[cluster.file.name]
                 file_blocks = fblocks[cluster.file.name]
-                cluster.spread_files(file_blocks, spread_strategy)
+                cluster.spread_files(file_blocks)
     # endregion
