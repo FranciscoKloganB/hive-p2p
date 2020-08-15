@@ -118,10 +118,74 @@ class Master:
                 The name of the class used to instantiate network node
                 instances through reflection. See :py:mod:`Network Node
                 <domain.network_nodes>`.
+        """
+        with open(path) as input_file:
+            simfile_json: Any = json.load(input_file)
+
+            fspreads: Dict[str, str] = {}
+            fblocks: Dict[str, th.ReplicasDict] = {}
+
+            self.__create_network_nodes__(simfile_json, node_class)
+
+            d: _PersistentingDict = simfile_json['persisting']
+            for fname in d:
+                spread_strategy = d[fname]['spread']
+                fspreads[fname] = spread_strategy
+                size = d[fname]['cluster_size']
+                cluster = self.__new_cluster_group__(cluster_class, size, fname)
+                fblocks[fname] = self.__split_files__(fname, cluster, READ_SIZE)
+
+            # Distribute files before starting simulation
+            for cluster in self.cluster_groups.values():
+                spread_strategy = fspreads[cluster.file.name]
+                file_blocks = fblocks[cluster.file.name]
+                cluster.spread_files(spread_strategy, file_blocks)
+
+    def __create_network_nodes__(
+            self, json: Dict[str, Any], node_class: str) -> None:
+        """Helper method that instantiates all
+        :py:class:`Network Nodes<domain.network_nodes.Node> that are
+        specified in the simulation file.
+
+        Args:
+            json:
+                The simulation file in JSON dictionary object format.
+            node_class:
+                The type of network node to create.
+        """
+        for nid, nuptime in json['nodes_uptime'].items():
+            node = self.__new_network_node__(node_class, nid, nuptime)
+            self.network_nodes[nid] = node
+
+    def __split_files__(
+            self, fname: str, cluster: th.ClusterType, bsize: int
+    ) -> th.ReplicasDict:
+        """Helper method that splits the files into multiple blocks to be
+        persisted in a :py:class:`~domain.cluster_group.Cluster`.
+
+        Args:
+            fname:
+                The name of the file located in
+                :py:const:`~environment_settings.SHARED_ROOT` folder to be
+                read and splitted.
+            bsize:
+                The maximum amount of bytes each file block can have.
+
         Returns:
 
         """
-        raise NotImplementedError("")
+        with open(os.path.join(SHARED_ROOT, fname), "rb") as file:
+            bid: int = 0
+            d: th.ReplicasDict = {}
+            while True:
+                read_buffer = file.read(bsize)
+                if read_buffer:
+                    bid += 1
+                    d[bid] = FileBlockData(cluster.id, fname, bid, read_buffer)
+                else:
+                    break
+            cluster.file.parts_count = bid
+            return d
     # endregion
 
     # region Simulation steps
@@ -176,7 +240,7 @@ class Master:
 
     # region Helpers
     def __new_cluster_group__(
-            self, cluster_class: str, persisting: _PersistentingDict, fname: str
+            self, cluster_class: str, size: int, fname: str
     ) -> th.ClusterType:
         """Helper method that initializes a new Cluster group.
 
@@ -185,12 +249,15 @@ class Master:
                 The name of the class used to instantiate cluster group
                 instances through reflection. See :py:mod:`Cluster Group
                 <domain.cluster_groups>`.
+            size:
+                The cluster's initial member size.
+            fname:
+                The name of the fille being stored in the cluster.
 
         Returns:
             The :py:class:`~domain.cluster_groups.Cluster` instance.
         """
         cluster_members: th.NodeDict = {}
-        size = persisting[fname]['cluster_size']
         nodes = np.random.choice(
             a=[*self.network_nodes.keys()], size=size, replace=False)
 
@@ -237,50 +304,6 @@ class HiveMaster(Master):
                  node_class: str) -> None:
         super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
 
-    # region Simulation setup
-    def __process_simfile__(
-            self, path: str, cluster_class: str, node_class: str) -> None:
-        """Opens and processes the simulation filed referenced in `path`.
-
-        Overrides:
-            py:mod:`~domain.master_servers.Master.__process_simfile__`
-        """
-        with open(path) as input_file:
-            json_obj: Any = json.load(input_file)
-
-            # Create network nodes.
-            for nid, nuptime in json_obj['nodes_uptime'].items():
-                node = self.__new_network_node__(node_class, nid, nuptime)
-                self.network_nodes[nid] = node
-
-            # Read and split all shareable files specified on the input
-            files_spreads: Dict[str, str] = {}
-            files_blocks: Dict[str, th.ReplicasDict] = {}
-
-            d: _PersistentingDict = json_obj['persisting']
-            for fname in d:
-                bid: int = 0
-                blocks: th.ReplicasDict = {}
-                files_spreads[fname] = d[fname]['spread']
-                cluster = self.__new_cluster_group__(cluster_class, d, fname)
-                with open(os.path.join(SHARED_ROOT, fname), "rb") as file:
-                    while True:
-                        read_buffer = file.read(READ_SIZE)
-                        if read_buffer:
-                            bid += 1
-                            blocks[bid] = FileBlockData(
-                                cluster.id, fname, bid, read_buffer)
-                        else:
-                            files_blocks[fname] = blocks
-                            break
-                    cluster.file.parts_count = bid
-
-            # Distribute files before starting simulation
-            for cluster in self.cluster_groups.values():
-                cluster._spread_files(files_spreads[cluster.file.name],
-                                      files_blocks[cluster.file.name])
-    # endregion
-
     # region Master API
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
@@ -314,40 +337,43 @@ class HDFSMaster(Master):
         """Opens and processes the simulation filed referenced in `path`.
 
         Overrides:
-            py:mod:`~domain.master_servers.Master.__process_simfile__`
+            py:mod:`~domain.master_servers.Master.__process_simfile__`. The
+            method is exactly the same except for one instruction. The
+            :py:mod:`~domain.master_servers.Master.__split_files__` is
+            invoked with fixed `bsize` = 1MB. The reason for this is twofold::
+
+                - The default and, thus recommended, block/chunk size for the
+                hadoop distributed file system is 128MB. The system is not
+                designed to perform well with small file blocks, but Hives
+                requires many file blocks for stochastic swarm guidance to
+                work, hence being more effective with small block sizes. By
+                default Hives runs with 128KB blocks.
+                - Hadoop limits the minimum block size to be 1MB,
+                `dfs.namenode.fs-limits.min-block-size
+                <https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size>`.
+                For this reason, we make HDFSMaster split files into 1MB chunks,
+                as that is the closest we would get to our Hive's default
+                block size in the real wourld.
         """
         with open(path) as input_file:
-            json_obj: Any = json.load(input_file)
+            simfile_json: Any = json.load(input_file)
 
-            # Create network nodes.
-            for nid, nuptime in json_obj['nodes_uptime'].items():
-                node = self.__new_network_node__(node_class, nid, nuptime)
-                self.network_nodes[nid] = node
+            fspreads: Dict[str, str] = {}
+            fblocks: Dict[str, th.ReplicasDict] = {}
 
-            # Read and split all shareable files specified on the input
-            files_spreads: Dict[str, str] = {}
-            files_blocks: Dict[str, th.ReplicasDict] = {}
+            self.__create_network_nodes__(simfile_json, node_class)
 
-            d: _PersistentingDict = json_obj['persisting']
+            d: _PersistentingDict = simfile_json['persisting']
             for fname in d:
-                bid: int = 0
-                blocks: th.ReplicasDict = {}
-                files_spreads[fname] = d[fname]['spread']
-                cluster = self.__new_cluster_group__(cluster_class, d, fname)
-                with open(os.path.join(SHARED_ROOT, fname), "rb") as file:
-                    while True:
-                        read_buffer = file.read(READ_SIZE)
-                        if read_buffer:
-                            bid += 1
-                            blocks[bid] = FileBlockData(
-                                cluster.id, fname, bid, read_buffer)
-                        else:
-                            files_blocks[fname] = blocks
-                            break
-                    cluster.file.parts_count = bid
+                spread_strategy = d[fname]['spread']
+                fspreads[fname] = spread_strategy
+                size = d[fname]['cluster_size']
+                cluster = self.__new_cluster_group__(cluster_class, size, fname)
+                fblocks[fname] = self.__split_files__(fname, cluster, 1048576)
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
-                cluster._spread_files(files_spreads[cluster.file.name],
-                                      files_blocks[cluster.file.name])
+                spread_strategy = fspreads[cluster.file.name]
+                file_blocks = fblocks[cluster.file.name]
+                cluster.spread_files(spread_strategy, file_blocks)
     # endregion
