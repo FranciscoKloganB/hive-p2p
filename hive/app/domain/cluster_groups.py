@@ -245,12 +245,16 @@ class Cluster:
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
 
-    def spread_files(self, strat: str, replicas: th.ReplicasDict) -> None:
+    def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
         """Distributes files among members of the cluster. Members are
         instances of classes belonging to module
         :py:mod:`~domain.network_nodes`.
 
         Args:
+            replicas:
+                A collection of file blocks, without replication, to be
+                distributed between the Cluster members according to
+                the desired `strategy`.
             strat:
                 A user defined way of identifying the way files are initially
                 distributed among members of the cluster. For example::
@@ -264,12 +268,8 @@ class Cluster:
                     `i` - Distribute all file block blocks following such
                     that the simulation starts with all file blocks and their
                     blocks distributed with a bias towards the ideal steady
-                    state distribution;
+                    state distribution (default);
 
-            replicas:
-                A collection of file blocks, without replication, to be
-                distributed between the Cluster members according to
-                the desired `strategy`.
         """
         raise NotImplementedError("")
     # endregion
@@ -439,7 +439,7 @@ class HiveCluster(Cluster):
     # endregion
 
     # region Simulation setup
-    def spread_files(self, strat: str, blocks: th.ReplicasDict) -> None:
+    def spread_files(self, blocks: th.ReplicasDict, strat: str = "i") -> None:
         """Batch distributes files to Cluster members.
 
         This method is used at the start of a simulation to give all file
@@ -1040,7 +1040,7 @@ class HDFSCluster(Cluster):
     # endregion
 
     # region Simulation setup
-    def spread_files(self, strat: str, replicas: th.ReplicasDict) -> None:
+    def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
         self.file.logger.initial_spread = "i"
 
         choices: List[th.NodeType]
