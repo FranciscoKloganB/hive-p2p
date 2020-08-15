@@ -1159,5 +1159,5 @@ class HDFSCluster(Cluster):
             self.data_node_heartbeats.pop(node.id, -1)
             self.members.pop(node.id, None)
             self.file.logger.log_suspicous_node_detection_delay(node.id, 5)
-        self.membership_maintenance()
+        super().membership_maintenance()
     # endregion

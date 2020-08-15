@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 
 from utils import crypto
+from environment_settings import TRUE_FALSE
 
 
 class Node:
@@ -79,6 +80,19 @@ class Node:
         }
         self.files: Dict[str, th.ReplicasDict] = {}
 
+    # region Simulation steps
+    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
+        """Instructs the HiveNode instance to execute the epoch.
+
+        Raises:
+            NotImplementedError:
+                When the class or one of its children does not implement
+                their own `execute_epoch` method.
+        """
+        raise NotImplementedError("All children of class Node must "
+                                  "implement their own execute_epoch.")
+    # endregion
+
     # region File block management
     def receive_part(self, replica: sd.FileBlockData) -> int:
         """Endpoint for file block replica reception.
@@ -118,15 +132,12 @@ class Node:
 
     def replicate_part(
             self, cluster: th.ClusterType, replica: sd.FileBlockData) -> None:
-        """Equal to :py:meth:`~send_part` but with different delivery semantics.
+        """Tries to restore the `replica`'s
+        :py:const:`~environment_settings.REPLICATION_LEVEL`.
 
-        The file block replica is sent selectively in descending order to the
-        most reliable Workers in the Cluster down to the least
-        reliable. Whereas the first delivers the blocks according to the
-        routing column vector for the file id that the block replica belongs to.
-
-        Note:
-            This method only makes sense in a simulation environment.
+        Similar to :py:meth:`~domain.network_nodes.Node.send_part` but with
+        slightly different instructions. In particular newly replicate
+        replicas can not be corrupted at the current node, at the current epoch.
 
         Args:
             cluster:
@@ -135,24 +146,7 @@ class Node:
             replica:
                 The file block replica to be delivered.
         """
-        # Number of times the block needs to be replicated.
-        lost_replicas: int = replica.can_replicate(cluster.current_epoch)
-        if lost_replicas > 0:
-            sorted_members = [*cluster.v_.sort_values(0, ascending=False).index]
-            for node_id in sorted_members:
-                if lost_replicas == 0:
-                    break
-
-                code = cluster.route_part(self.id, node_id, replica,
-                                          fresh_replica=True)
-
-                if code == e.HttpCodes.OK:
-                    lost_replicas -= 1
-                    replica.references += 1
-                elif code in self.suspicious_replies:
-                    cluster.complain(self.id, node_id, code)
-            # replication level may have not been completely restored
-            replica.update_epochs_to_recover(cluster.current_epoch)
+        raise NotImplementedError("")
 
     def send_part(self,
                   cluster: th.ClusterType,
@@ -269,27 +263,6 @@ class Node:
         return not(self == other)
     # endregion
 
-    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
-        """Instructs the HiveNode instance to execute the epoch.
-
-        Raises:
-            NotImplementedError:
-                When the class or one of its children does not implement
-                their own `execute_epoch` method.
-        """
-        raise NotImplementedError("All children of class Node must "
-                                  "implement their own execute_epoch.")
-
-
-class HDFSNode(Node):
-    """Represents a data node in the Hadoop Distribute File System."""
-
-    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
-        # TODO:
-        #  1. Corrupt blocks stored at this node.
-        #  2. Regenerate replication levels when possible.
-        pass
-
 
 class HiveNode(Node):
     """Represents a network node that executes a Swarm Guidance algorithm.
@@ -330,6 +303,83 @@ class HiveNode(Node):
         super().__init__(uid, uptime)
         self.hives: Dict[str, th.ClusterType] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
+
+    # region Simulation steps
+    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
+        """Instructs the HiveNode instance to execute the epoch.
+
+        The method iterates all file block blocks in :py:attr:`~files` and
+        independently decides if they should be sent to other HiveNode
+        instances by following :py:attr:`~routing_table` column vectors.
+
+        When a file block is sent to some other HiveNode a reply is
+        awaited. In real world environments this should be assynchronous,
+        but for simulation purposes it's synchronous and instantaneous. When the
+        destination replies with OK, meaning it accepted the replica,
+        this HiveNode instance deletes the replica from his disk. If it
+        replies with a BAD_REQUEST the replica is discarded and the worker
+        starts a recovery process in the Cluster. Any other code response
+        results in the HiveNode instance keeping replica in his disk
+        for at least one more epoch times. See
+        :py:class:`~domain.helpers.enums.HttpCodes` for more information on
+        possible HTTP Codes.
+
+        Overrides:
+            :py:meth:`~domain.network_nodes.Node.execute_epoch`.
+
+        Args:
+            cluster:
+                Cluster instance that ordered execution of the epoch.
+            fid:
+                The identifier that determines which file blocks
+                blocks should be routed.
+        """
+        file_view: th.ReplicasDict = self.files.get(fid, {}).copy()
+        for number, replica in file_view.items():
+            self.replicate_part(cluster, replica)
+            destination = self.select_destination(replica.name)
+            response_code = self.send_part(cluster, destination, replica)
+            if response_code == e.HttpCodes.OK:
+                self.discard_part(fid, number)
+            elif response_code == e.HttpCodes.BAD_REQUEST:
+                self.discard_part(fid, number, corrupt=True, cluster=cluster)
+            elif response_code in self.suspicious_replies:
+                cluster.complain(self.id, destination, response_code)
+            # Else keep file part for at least one more epoch
+    # endregion
+
+    # region File block management
+    def replicate_part(
+            self, cluster: th.ClusterType, replica: sd.FileBlockData) -> None:
+        """Tries to restore the `replica`'s
+        :py:const:`~environment_settings.REPLICATION_LEVEL`.
+
+        The file block replica is sent selectively in descending order to the
+        most reliable Nodes in the Cluster down to the least
+        reliable. Whereas
+        :py:meth:`~domain.network_nodes.HiveNode.send_part`. follows
+        stochastic swarm guidance routing.
+
+        Overrides:
+            :py:meth:`~domain.network_nodes.Node.replicate_part`.
+        """
+        # Number of times the block needs to be replicated.
+        lost_replicas: int = replica.can_replicate(cluster.current_epoch)
+        if lost_replicas > 0:
+            sorted_members = [*cluster.v_.sort_values(0, ascending=False).index]
+            for destination in sorted_members:
+                if lost_replicas == 0:
+                    break
+                code = cluster.route_part(
+                    self.id, destination, replica, fresh_replica=True)
+                if code == e.HttpCodes.OK:
+                    lost_replicas -= 1
+                    replica.references += 1
+                elif code in self.suspicious_replies:
+                    cluster.complain(self.id, destination, code)
+            # replication level may have not been completely restored
+            replica.update_epochs_to_recover(cluster.current_epoch)
+    # endregion
 
     # region Routing table management
     def set_file_routing(
@@ -398,50 +448,6 @@ class HiveNode(Node):
                     etype=type(vE), value=vE, tb=vE.__traceback__)))
     # endregion
 
-    # region Node overrides
-    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
-        """Instructs the HiveNode instance to execute the epoch.
-
-        The method iterates all file block blocks in :py:attr:`~files` and
-        independently decides if they should be sent to other HiveNode
-        instances by following :py:attr:`~routing_table` column vectors.
-
-        When a file block is sent to some other HiveNode a reply is
-        awaited. In real world environments this should be assynchronous,
-        but for simulation purposes it's synchronous and instantaneous. When the
-        destination replies with OK, meaning it accepted the replica,
-        this HiveNode instance deletes the replica from his disk. If it
-        replies with a BAD_REQUEST the replica is discarded and the worker
-        starts a recovery process in the Cluster. Any other code response
-        results in the HiveNode instance keeping replica in his disk
-        for at least one more epoch times. See
-        :py:class:`~domain.helpers.enums.HttpCodes` for more information on
-        possible HTTP Codes.
-
-        Overrides:
-            :py:meth:`~domain.network_nodes.Node.execute_epoch`.
-
-        Args:
-            cluster:
-                Cluster instance that ordered execution of the epoch.
-            fid:
-                The identifier that determines which file blocks 
-                blocks should be routed.
-        """
-        file_view: th.ReplicasDict = self.files.get(fid, {}).copy()
-        for number, replica in file_view.items():
-            self.replicate_part(cluster, replica)
-            destination = self.select_destination(replica.name)
-            response_code = self.send_part(cluster, destination, replica)
-            if response_code == e.HttpCodes.OK:
-                self.discard_part(fid, number)
-            elif response_code == e.HttpCodes.BAD_REQUEST:
-                self.discard_part(fid, number, corrupt=True, cluster=cluster)
-            elif response_code in self.suspicious_replies:
-                cluster.complain(self.id, destination, response_code)
-            # Else keep file part for at least one more epoch
-    # endregion
-
 
 class HiveNodeExt(HiveNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
@@ -469,3 +475,80 @@ class HiveNodeExt(HiveNode):
                 print(f"    [x] {self.id} now offline (suspect status).")
                 self.status = e.Status.SUSPECT
         return self.status
+
+
+class HDFSNode(Node):
+    """Represents a data node in the Hadoop Distribute File System."""
+    def __init__(self, uid: str, uptime: float) -> None:
+        """Instantiates a HDFSNode object.
+
+        These represent hadoop distributed file system data nodes.
+
+        Args:
+            uid:
+                An unique identifier for the worker instance.
+            uptime:
+                The availability of the worker instance.
+        """
+        super().__init__(uid, uptime)
+
+    # region Simulation steps
+    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
+        """Instructs the Node instance to execute the epoch.
+
+        The method iterates all file block blocks in :py:attr:`~files` and
+        silentry tries to corrupt them. In HDFS files' Sha256 is only
+        verified when a user or client accesses the remote replica. Thus,
+        no recovery epoch is not setted up when a corruption occurs. The
+        corruption is still logged in the output file.
+
+        Overrides:
+            :py:meth:`~domain.network_nodes.Node.execute_epoch`.
+
+        Args:
+            cluster:
+                Cluster instance that ordered execution of the epoch.
+            fid:
+                The identifier that determines which file blocks
+                blocks should be routed.
+        """
+        file_view: th.ReplicasDict = self.files.get(fid, {}).copy()
+        for number, replica in file_view.items():
+            self.replicate_part(cluster, replica)
+            if np.random.choice(a=TRUE_FALSE, p=cluster.corruption_chances):
+                # Don't set corrupt flag to True, doing so causes
+                # set_recovery_epoch to be called. HDFS Corruption is silent.
+                self.discard_part(fid, number)
+                # Log the corruption in output file.
+                epoch = cluster.current_epoch
+                cluster.file.logger.log_corrupted_file_blocks(1, epoch)
+    # endregion
+
+    # region File block management
+    def replicate_part(
+            self, cluster: th.ClusterType, replica: sd.FileBlockData) -> None:
+        """Tries to restore the `replica`'s
+        :py:const:`~environment_settings.REPLICATION_LEVEL`.
+
+        The file block replica is sent selectively in descending order to the
+        most reliable Nodes in the Cluster down to the least reliable.
+
+        Overrides:
+            :py:meth:`~domain.network_nodes.Node.replicate_part`.
+        """
+        # Number of times the block needs to be replicated.
+        lost_replicas: int = replica.can_replicate(cluster.current_epoch)
+        if lost_replicas > 0:
+            choices = [*cluster.members.values()]
+            choices.sort(key=lambda node: node.uptime, reverse=True)
+            for destination in choices:
+                if lost_replicas == 0:
+                    break
+                code = cluster.route_part(
+                    self.id, destination, replica, fresh_replica=True)
+                if code == e.HttpCodes.OK:
+                    lost_replicas -= 1
+                    replica.references += 1
+            # replication level may have not been completely restored
+            replica.update_epochs_to_recover(cluster.current_epoch)
+    # endregion
