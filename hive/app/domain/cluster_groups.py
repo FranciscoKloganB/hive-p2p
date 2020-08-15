@@ -244,7 +244,7 @@ class Cluster:
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
 
-    def _spread_files(self, strat: str, replicas: th.ReplicasDict) -> None:
+    def spread_files(self, strat: str, replicas: th.ReplicasDict) -> None:
         """Distributes files among members of the cluster. Members are
         instances of classes belonging to module
         :py:mod:`~domain.network_nodes`.
@@ -438,7 +438,7 @@ class HiveCluster(Cluster):
     # endregion
 
     # region Simulation setup
-    def _spread_files(self, strat: str, blocks: th.ReplicasDict) -> None:
+    def spread_files(self, strat: str, blocks: th.ReplicasDict) -> None:
         """Batch distributes files to Cluster members.
 
         This method is used at the start of a simulation to give all file
@@ -1042,7 +1042,7 @@ class HDFSCluster(Cluster):
     # endregion
 
     # region Simulation setup
-    def _spread_files(self, strat: str, replicas: th.ReplicasDict) -> None:
+    def spread_files(self, strat: str, replicas: th.ReplicasDict) -> None:
         pass
     # endregion
 
