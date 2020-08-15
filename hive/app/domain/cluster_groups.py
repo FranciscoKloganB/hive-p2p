@@ -343,36 +343,28 @@ class Cluster:
         """
         raise NotImplementedError("")
 
-    def membership_maintenance(self) -> bool:
+    def membership_maintenance(self) -> th.NodeDict:
         """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
 
         Returns:
-            True if the membership of the Cluster changed throughout the
-            maintenance operation, otherwise False.
+            A collection of new members, that is empty if membership did not
+            change.
         """
-        size_bm = len(self.members)
+        sbm = len(self.members)
+        status_bm = self.get_cluster_status()
 
-        if size_bm >= self.redundant_size:
-            status_bm = "redundant"
-        elif self.original_size <= size_bm < self.redundant_size:
-            status_bm = "stable"
-        elif self.sufficient_size <= size_bm < self.original_size:
-            status_bm = "sufficient"
-            self.members.update(self._get_new_members())
-        elif self.critical_size < size_bm < self.sufficient_size:
-            status_bm = "unstable"
-            self.members.update(self._get_new_members())
-        elif 0 < size_bm <= self.critical_size:
-            status_bm = "critical"
-            self.members.update(self._get_new_members())
-        else:
-            status_bm = "dead"
+        new_members: th.NodeDict = {}
+        if sbm < self.original_size:
+            new_members = self._get_new_members()
+            self.members.update(new_members)
 
-        size_am = len(self.members)
+        sam = len(self.members)
+        status_am = self.get_cluster_status()
+
         epoch = self.current_epoch
-        self.file.logger.log_maintenance(status_bm, size_bm, size_am, epoch)
+        self.file.logger.log_maintenance(status_bm, status_am, sbm, sam, epoch)
 
-        return size_am != size_bm
+        return new_members
     # endregion
 
     # region Helpers
@@ -388,17 +380,6 @@ class Cluster:
         if pcount <= 0:
             self._set_fail("Cluster has no remaining parts.")
         self.file.parts_in_hive = pcount
-
-    def _get_new_members(self) -> th.NodeDict:
-        """Helper method that gets adds network nodes, if possible,
-        to the Cluster.
-
-        Returns:
-            A dictionary mapping network node identifiers and their instance
-            objects (:py:mod:`Network Node <domain.network_nodes>`).
-        """
-        return self.master.find_replacement_node(
-            self.members, self.original_size - len(self.members))
 
     def _set_fail(self, message: str) -> None:
         """Ends the Cluster instance simulation.
@@ -416,6 +397,38 @@ class Cluster:
         """
         self.running = False
         self.file.logger.log_fail(self.current_epoch, message)
+
+    def _get_new_members(self) -> th.NodeDict:
+        """Helper method that gets adds network nodes, if possible,
+        to the Cluster.
+
+        Returns:
+            A dictionary mapping network node identifiers and their instance
+            objects (:py:mod:`Network Node <domain.network_nodes>`).
+        """
+        return self.master.find_replacement_node(
+            self.members, self.original_size - len(self.members))
+
+    def get_cluster_status(self) -> str:
+        """Evaluates the cluster status.
+
+        Returns:
+            The status of the cluster as a string.
+        """
+        s = len(self.members)
+
+        if s >= self.redundant_size:
+            return "redundant"
+        elif self.original_size <= s < self.redundant_size:
+            return "stable"
+        elif self.sufficient_size <= s < self.original_size:
+            return "sufficient"
+        elif self.critical_size < s < self.sufficient_size:
+            return "unstable"
+        elif 0 < s <= self.critical_size:
+            return "critical"
+        else:
+            return "dead"
 
     def set_replication_epoch(self, replica: sd.FileBlockData) -> None:
         """Delegates to :py:meth:
@@ -579,7 +592,7 @@ class HiveCluster(Cluster):
             node.remove_file_routing(self.file.name)
         self.membership_maintenance()
 
-    def membership_maintenance(self) -> bool:
+    def membership_maintenance(self) -> th.NodeDict:
         """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
 
         Extends:
@@ -589,16 +602,16 @@ class HiveCluster(Cluster):
             number of network nodes active in the membership before
             maintenance is performed.
         """
-        size_bm = len(self.members)
-        if size_bm <= self.critical_size:
+        s = len(self.members)
+        if s <= self.critical_size:
             self.add_cloud_reference()
-        elif size_bm >= self.sufficient_size:
+        elif s >= self.sufficient_size:
             self.remove_cloud_reference()
 
-        membership_changed = super().membership_maintenance()
-        if membership_changed:
+        new_members = super().membership_maintenance()
+        if new_members:
             self.create_and_bcast_new_transition_matrix()
-        return membership_changed
+        return new_members
     # endregion
 
     # region Swarm guidance structure management
@@ -1045,7 +1058,9 @@ class HDFSCluster(Cluster):
         """
         super().__init__(master, file_name, members, sim_id, origin)
         self.suspicious_nodes: set = set()
-        self.data_node_heartbeats: Dict[str, int] = {}
+        self.data_node_heartbeats: Dict[str, int] = {
+            node.id: 5 for node in members.values()
+        }
 
     # region Cluster API
     def complain(
@@ -1162,5 +1177,18 @@ class HDFSCluster(Cluster):
             self.data_node_heartbeats.pop(node.id, -1)
             self.members.pop(node.id, None)
             self.file.logger.log_suspicous_node_detection_delay(node.id, 5)
-        super().membership_maintenance()
+        self.membership_maintenance()
+
+    def membership_maintenance(self) -> th.NodeDict:
+        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
+
+        Extends:
+            :py:meth:`~domain.cluster_groups.Cluster.membership_maintenance`.
+            New members are given five lives in
+            :py:attr:`~domain.cluster_groups.HDFSCluster.data_node_heartbeats`.
+        """
+        new_members = super().membership_maintenance()
+        for nid in new_members.keys():
+            if nid not in self.data_node_heartbeats:
+                self.data_node_heartbeats[nid] = 5
     # endregion
