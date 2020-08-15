@@ -558,32 +558,33 @@ class HiveCluster(Cluster):
         Overrides:
             :py:meth:`domain.cluster_groups.Cluster.membership_maintenance`.
         """
-        damaged_hive_size = len(self.members)
-        if damaged_hive_size >= self.sufficient_size:
+        size_bm = len(self.members)
+        if size_bm >= self.sufficient_size:
             self.remove_cloud_reference()
-        if damaged_hive_size >= self.redundant_size:
+
+        if size_bm >= self.redundant_size:
             status_bm = "redundant"
-        elif self.original_size <= damaged_hive_size < self.redundant_size:
+        elif self.original_size <= size_bm < self.redundant_size:
             status_bm = "stable"
-        elif self.sufficient_size <= damaged_hive_size < self.original_size:
+        elif self.sufficient_size <= size_bm < self.original_size:
             status_bm = "sufficient"
             self.members.update(self._get_new_members())
-        elif self.critical_size < damaged_hive_size < self.sufficient_size:
+        elif self.critical_size < size_bm < self.sufficient_size:
             status_bm = "unstable"
             self.members.update(self._get_new_members())
-        elif 0 < damaged_hive_size <= self.critical_size:
+        elif 0 < size_bm <= self.critical_size:
             status_bm = "critical"
             self.members.update(self._get_new_members())
             self.add_cloud_reference()
         else:
             status_bm = "dead"
 
-        status_am = len(self.members)
-        if damaged_hive_size != status_am:
+        size_am = len(self.members)
+        if size_bm != size_am:
             self.create_and_bcast_new_transition_matrix()
 
         self.file.logger.log_maintenance(
-            status_bm, damaged_hive_size, status_am, self.current_epoch)
+            status_bm, size_bm, size_am, self.current_epoch)
     # endregion
 
     # region Swarm guidance structure management
@@ -1050,14 +1051,14 @@ class HDFSCluster(Cluster):
         uptime_sum = sum(c.uptime for c in choices)
         chances = [c.uptime / uptime_sum for c in choices]
 
-        for block in replicas.values():
+        for replica in replicas.values():
             choices_view = choices.copy()
             selected_nodes = np.random.choice(
                 a=choices_view, p=chances,
                 size=REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
-                block.references += 1
-                node.receive_part(block)
+                replica.references += 1
+                node.receive_part(replica)
     # endregion
 
     # region Simulation steps
@@ -1147,6 +1148,33 @@ class HDFSCluster(Cluster):
         self.membership_maintenance()
 
     def membership_maintenance(self) -> None:
-        # TODO: This
-        pass
+        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
+
+        Overrides:
+            :py:meth:`domain.cluster_groups.Cluster.membership_maintenance`.
+        """
+        size_bm = len(self.members)
+
+        if size_bm >= self.redundant_size:
+            status_bm = "redundant"
+        elif self.original_size <= size_bm < self.redundant_size:
+            status_bm = "stable"
+        elif self.sufficient_size <= size_bm < self.original_size:
+            status_bm = "sufficient"
+            self.members.update(self._get_new_members())
+        elif self.critical_size < size_bm < self.sufficient_size:
+            status_bm = "unstable"
+            self.members.update(self._get_new_members())
+        elif 0 < size_bm <= self.critical_size:
+            status_bm = "critical"
+            self.members.update(self._get_new_members())
+        else:
+            status_bm = "dead"
+
+        size_am = len(self.members)
+        if size_bm != size_am:
+            self.create_and_bcast_new_transition_matrix()
+
+        self.file.logger.log_maintenance(
+            status_bm, size_bm, size_am, self.current_epoch)
     # endregion
