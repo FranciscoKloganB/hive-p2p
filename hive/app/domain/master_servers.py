@@ -226,6 +226,9 @@ class Master:
             A collection of replacements which is smaller or equal than `n`.
         """
         selected: th.NodeDict = {}
+        if n <= 0:
+            return selected
+
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
             if len(selected) == n:
