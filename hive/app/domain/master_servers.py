@@ -139,7 +139,7 @@ class Master:
             for cluster in self.cluster_groups.values():
                 spread_strategy = fspreads[cluster.file.name]
                 file_blocks = fblocks[cluster.file.name]
-                cluster.spread_files(spread_strategy, file_blocks)
+                cluster.spread_files(file_blocks, spread_strategy)
 
     def __create_network_nodes__(
             self, json: Dict[str, Any], node_class: str) -> None:
@@ -375,5 +375,5 @@ class HDFSMaster(Master):
             for cluster in self.cluster_groups.values():
                 spread_strategy = fspreads[cluster.file.name]
                 file_blocks = fblocks[cluster.file.name]
-                cluster.spread_files(spread_strategy, file_blocks)
+                cluster.spread_files(file_blocks, spread_strategy)
     # endregion
