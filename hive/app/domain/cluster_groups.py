@@ -1113,6 +1113,9 @@ class HDFSCluster(Cluster):
                 # Simulate missed heartbeats.
                 if node.id in self.data_node_heartbeats:
                     self.data_node_heartbeats[node.id] -= 1
+                    print(f"    > Logged missed heartbeat {node.id}, "
+                          f"complainee complaint count: "
+                          f"{self.data_node_heartbeats[node.id]}")
                     if self.data_node_heartbeats[node.id] <= 0:
                         off_nodes.append(node)
                         node_replicas = node.get_file_parts(self.file.name)
@@ -1143,7 +1146,7 @@ class HDFSCluster(Cluster):
         for node in members:
             if node.status == e.Status.ONLINE:
                 node_replicas = node.get_file_parts_count(self.file.name)
-                pcount += len(node_replicas)
+                pcount += node_replicas
         self.__log_evaluation__(pcount)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
