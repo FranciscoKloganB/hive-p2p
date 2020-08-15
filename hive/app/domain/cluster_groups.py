@@ -343,9 +343,36 @@ class Cluster:
         """
         raise NotImplementedError("")
 
-    def membership_maintenance(self) -> None:
-        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`."""
-        raise NotImplementedError("")
+    def membership_maintenance(self) -> bool:
+        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
+
+        Returns:
+            True if the membership of the Cluster changed throughout the
+            maintenance operation, otherwise False.
+        """
+        size_bm = len(self.members)
+
+        if size_bm >= self.redundant_size:
+            status_bm = "redundant"
+        elif self.original_size <= size_bm < self.redundant_size:
+            status_bm = "stable"
+        elif self.sufficient_size <= size_bm < self.original_size:
+            status_bm = "sufficient"
+            self.members.update(self._get_new_members())
+        elif self.critical_size < size_bm < self.sufficient_size:
+            status_bm = "unstable"
+            self.members.update(self._get_new_members())
+        elif 0 < size_bm <= self.critical_size:
+            status_bm = "critical"
+            self.members.update(self._get_new_members())
+        else:
+            status_bm = "dead"
+
+        size_am = len(self.members)
+        epoch = self.current_epoch
+        self.file.logger.log_maintenance(status_bm, size_bm, size_am, epoch)
+
+        return size_am != size_bm
     # endregion
 
     # region Helpers
@@ -552,39 +579,26 @@ class HiveCluster(Cluster):
             node.remove_file_routing(self.file.name)
         self.membership_maintenance()
 
-    def membership_maintenance(self) -> None:
+    def membership_maintenance(self) -> bool:
         """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
 
-        Overrides:
+        Extends:
             :py:meth:`domain.cluster_groups.Cluster.membership_maintenance`.
+            The implementation of membership_maintenance in `HiveCluster`
+            class also adds and removes cloud references depending on the
+            number of network nodes active in the membership before
+            maintenance is performed.
         """
         size_bm = len(self.members)
-        if size_bm >= self.sufficient_size:
+        if size_bm <= self.critical_size:
+            self.add_cloud_reference()
+        elif size_bm >= self.sufficient_size:
             self.remove_cloud_reference()
 
-        if size_bm >= self.redundant_size:
-            status_bm = "redundant"
-        elif self.original_size <= size_bm < self.redundant_size:
-            status_bm = "stable"
-        elif self.sufficient_size <= size_bm < self.original_size:
-            status_bm = "sufficient"
-            self.members.update(self._get_new_members())
-        elif self.critical_size < size_bm < self.sufficient_size:
-            status_bm = "unstable"
-            self.members.update(self._get_new_members())
-        elif 0 < size_bm <= self.critical_size:
-            status_bm = "critical"
-            self.members.update(self._get_new_members())
-            self.add_cloud_reference()
-        else:
-            status_bm = "dead"
-
-        size_am = len(self.members)
-        if size_bm != size_am:
+        membership_changed = super().membership_maintenance()
+        if membership_changed:
             self.create_and_bcast_new_transition_matrix()
-
-        self.file.logger.log_maintenance(
-            status_bm, size_bm, size_am, self.current_epoch)
+        return membership_changed
     # endregion
 
     # region Swarm guidance structure management
@@ -1146,35 +1160,4 @@ class HDFSCluster(Cluster):
             self.members.pop(node.id, None)
             self.file.logger.log_suspicous_node_detection_delay(node.id, 5)
         self.membership_maintenance()
-
-    def membership_maintenance(self) -> None:
-        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
-
-        Overrides:
-            :py:meth:`domain.cluster_groups.Cluster.membership_maintenance`.
-        """
-        size_bm = len(self.members)
-
-        if size_bm >= self.redundant_size:
-            status_bm = "redundant"
-        elif self.original_size <= size_bm < self.redundant_size:
-            status_bm = "stable"
-        elif self.sufficient_size <= size_bm < self.original_size:
-            status_bm = "sufficient"
-            self.members.update(self._get_new_members())
-        elif self.critical_size < size_bm < self.sufficient_size:
-            status_bm = "unstable"
-            self.members.update(self._get_new_members())
-        elif 0 < size_bm <= self.critical_size:
-            status_bm = "critical"
-            self.members.update(self._get_new_members())
-        else:
-            status_bm = "dead"
-
-        size_am = len(self.members)
-        if size_bm != size_am:
-            self.create_and_bcast_new_transition_matrix()
-
-        self.file.logger.log_maintenance(
-            status_bm, size_bm, size_am, self.current_epoch)
     # endregion
