@@ -148,7 +148,7 @@ class Cluster:
             replica:
                 The file block replica send to specified destination.
             fresh_replica:
-                optional; Prevents recently created blocks from being
+                optional; Prevents recently created replicas from being
                 corrupted, since they are not likely to be corrupted in disk.
                 This argument facilitates simulation. (default: False)
 
@@ -252,7 +252,7 @@ class Cluster:
 
         Args:
             replicas:
-                A collection of file blocks, without replication, to be
+                A collection of file replicas, without replication, to be
                 distributed between the Cluster members according to
                 the desired `strategy`.
             strat:
@@ -261,13 +261,13 @@ class Cluster:
 
                     `u` - Distributed uniformly across network;
 
-                    `a` - Give all file block blocks to N different network
+                    `a` - Give all file block replicas to N different network
                     nodes, where N is equal to
                     :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
 
-                    `i` - Distribute all file block blocks following such
-                    that the simulation starts with all file blocks and their
-                    blocks distributed with a bias towards the ideal steady
+                    `i` - Distribute all file block replicas following such
+                    that the simulation starts with all file replicas and their
+                    replicas distributed with a bias towards the ideal steady
                     state distribution (default);
 
         """
@@ -310,7 +310,7 @@ class Cluster:
         """Queries all network node members execute the epoch.
 
         This method logs the amount of lost replicas throughout the current
-        epoch according to the members who went offline and the file blocks
+        epoch according to the members who went offline and the file replicas
         replicas they posssed and is responsible for setting up a recovery
         epoch for those replicas. See
         (:py:meth:`domain.cluster_groups.Cluster.set_recovery_epoch`).
@@ -439,11 +439,11 @@ class HiveCluster(Cluster):
     # endregion
 
     # region Simulation setup
-    def spread_files(self, blocks: th.ReplicasDict, strat: str = "i") -> None:
+    def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
         """Batch distributes files to Cluster members.
 
         This method is used at the start of a simulation to give all file
-        blocks including the blocks to members of the hive. Different
+        replicas including the replicas to members of the hive. Different
         distribution options can be used depending on the selected `strategy`.
         """
         self.file.logger.initial_spread = strat
@@ -455,12 +455,12 @@ class HiveCluster(Cluster):
             selected_nodes = np.random.choice(
                 a=choices, size=REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
-                for replica in blocks.values():
+                for replica in replicas.values():
                     replica.references += 1
                     node.receive_part(replica)
 
         elif strat == "u":
-            for replica in blocks.values():
+            for replica in replicas.values():
                 choices = [*self.members.values()]
                 selected_nodes = np.random.choice(
                     a=choices, size=REPLICATION_LEVEL, replace=False)
@@ -471,7 +471,7 @@ class HiveCluster(Cluster):
         elif strat == 'i':
             choices = [*self.members.values()]
             desired_distribution = [self.v_.loc[c.id, 0] for c in choices]
-            for replica in blocks.values():
+            for replica in replicas.values():
                 choices_view = choices.copy()
                 selected_nodes = np.random.choice(
                     a=choices_view, p=desired_distribution,
@@ -504,7 +504,7 @@ class HiveCluster(Cluster):
                 for replica in node_replicas.values():
                     self.set_replication_epoch(replica)
                     if replica.decrement_and_get_references() == 0:
-                        self._set_fail(f"Lost all blocks of file replica with "
+                        self._set_fail(f"Lost all replicas of file replica with "
                                        f"id: {replica.id}.")
 
         if len(off_nodes) >= len(self.members):
@@ -775,7 +775,7 @@ class HiveCluster(Cluster):
 
         This method is used when Cluster membership size becomes compromised
         and a backup solution using cloud approaches is desired. The idea
-        is that surviving members upload their blocks to the cloud server,
+        is that surviving members upload their replicas to the cloud server,
         e.g., an Amazon S3 instance. See Master method
         :py:meth:`~domain.master_servers.Master.get_cloud_reference` for more
         details.
@@ -952,7 +952,7 @@ class HiveClusterExt(HiveCluster):
                     lost_parts_count += len(node_replicas)
                     for replica in node_replicas.values():
                         if replica.decrement_and_get_references() == 0:
-                            self._set_fail(f"Lost all blocks of file replica "
+                            self._set_fail(f"Lost all replicas of file replica "
                                            f"with id: {replica.id}")
                 else:
                     self.suspicious_nodes[node.id] += 1
@@ -1086,14 +1086,14 @@ class HDFSCluster(Cluster):
             if node.status == e.Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
             elif node.status == e.Status.SUSPECT:
-                # Register lost blocks the moment the node disconnects.
+                # Register lost replicas the moment the node disconnects.
                 if node.id not in self.suspicious_nodes:
                     self.suspicious_nodes.add(node.id)
                     node_replicas = node.get_file_parts(self.file.name)
                     lost_replicas_count += len(node_replicas)
                     for replica in node_replicas.values():
                         if replica.decrement_and_get_references() <= 0:
-                            self._set_fail(f"Lost all blocks of file replica "
+                            self._set_fail(f"Lost all replicas of file replica "
                                            f"with id: {replica.id}")
                 # Simulate missed heartbeats.
                 if node.id in self.data_node_heartbeats:
@@ -1115,7 +1115,7 @@ class HDFSCluster(Cluster):
 
     def evaluate(self) -> None:
         """`HDFSCluster evaluate method merely logs the number of existing
-        blocks in the system.
+        replicas in the system.
 
         Overrides:
             :py:meth:`~domain.cluster_groups.Cluster.evaluate`.
