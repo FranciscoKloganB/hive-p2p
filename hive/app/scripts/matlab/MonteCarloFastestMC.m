@@ -11,6 +11,7 @@ results = containers.Map('KeyType','char', 'ValueType','any');
 for i = 1:length(network_sizes)
     size = network_sizes{i};
     size_results = containers.Map('KeyType', 'char', 'ValueType', 'any');
+    s = sprintf("Current network size: %d", size)
 
     for j = 1:length(function_labels)
         label = function_labels{j};
@@ -24,6 +25,8 @@ for i = 1:length(network_sizes)
         % Create random steady-state vector for the topology.
         v_ = rand(1, size);
         v_ = v_./sum(v_);
+
+        s = sprintf("    [o] At sample: %d", j)
         % Test all functions in functions array.
         for k = 1:length(function_labels)
             % Mixing rate default value is 1.0. Meaning that when infeasible
@@ -31,6 +34,8 @@ for i = 1:length(network_sizes)
             % is slow.
             label = function_labels{k};
             mixing_rate = 1.0;
+
+            s = sprintf("        > Label: %s", label)
             switch label
                 case 'mh'
                     Msrw = sym_topology ./ sum(sym_topology);
