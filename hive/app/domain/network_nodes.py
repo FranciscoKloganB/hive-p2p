@@ -457,6 +457,7 @@ class HiveNodeExt(HiveNode):
     groups' peers, concerning suspicious behaviors.
     """
 
+    # region Get methods
     def get_status(self) -> int:
         """Used to obtain the status of the worker.
 
@@ -475,6 +476,7 @@ class HiveNodeExt(HiveNode):
                 print(f"    [x] {self.id} now offline (suspect status).")
                 self.status = e.Status.SUSPECT
         return self.status
+    # endregion
 
 
 class HDFSNode(Node):
@@ -551,4 +553,25 @@ class HDFSNode(Node):
                     replica.references += 1
             # replication level may have not been completely restored
             replica.update_epochs_to_recover(cluster.current_epoch)
+    # endregion
+
+    # region Get Methods
+    def get_status(self) -> int:
+        """Used to obtain the status of the worker.
+
+        Overrides:
+            :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
+            When not ONLINE the node sets itself as Suspect and will only become
+            offline when the monitor marks him as so (e.g.: due to complaints).
+
+        Returns:
+            The status of the worker. See
+            :py:class:`~domain.helpers.enums.Status`.
+        """
+        if self.status == e.Status.ONLINE:
+            self.uptime -= 1
+            if self.uptime <= 0:
+                print(f"    [x] {self.id} now offline (suspect status).")
+                self.status = e.Status.SUSPECT
+        return self.status
     # endregion

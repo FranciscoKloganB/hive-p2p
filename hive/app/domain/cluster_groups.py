@@ -1129,7 +1129,7 @@ class HDFSCluster(Cluster):
                 if node.id in self.data_node_heartbeats:
                     self.data_node_heartbeats[node.id] -= 1
                     print(f"    > Logged missed heartbeat {node.id}, "
-                          f"complainee complaint count: "
+                          f"node remaining lives: "
                           f"{self.data_node_heartbeats[node.id]}")
                     if self.data_node_heartbeats[node.id] <= 0:
                         off_nodes.append(node)
