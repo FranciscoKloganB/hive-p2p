@@ -76,6 +76,7 @@ def main():
                     size_results[name].append(mixing_rate)
                 except (DCPError, SolverError, EngineError):
                     size_results[name].append(float('inf'))
+
         results[str(size)] = size_results
 
     json_string = json.dumps(results, indent=4)
