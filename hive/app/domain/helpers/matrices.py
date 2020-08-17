@@ -381,8 +381,8 @@ def get_mixing_rate(m: np.ndarray) -> float:
     if size != m.shape[1]:
         raise MatrixNotSquareError(
             "Can not compute eigenvalues/vectors with non-square matrix")
-
-    eigenvalues, eigenvectors = np.linalg.eig(m - np.ones((size, size)) / size)
+    m = m - (np.ones((size, size)) / size)
+    eigenvalues, eigenvectors = np.linalg.eig(m)
     mixing_rate = np.max(np.abs(eigenvalues))
     return mixing_rate.item()
 
