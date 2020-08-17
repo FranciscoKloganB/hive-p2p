@@ -422,7 +422,7 @@ def new_symmetric_matrix(
     """
     if not allow_sloops and force_sloops:
         raise IllegalArgumentError("Can not invoke new_symmetric_matrix with:\n"
-                                   "    [x] allow_sloops=False"
+                                   "    [x] allow_sloops=False\n"
                                    "    [x] force_sloops=True")
     secure_random = random.SystemRandom()
     m = np.zeros((size, size))
