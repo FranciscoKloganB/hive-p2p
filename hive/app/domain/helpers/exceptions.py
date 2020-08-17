@@ -30,3 +30,13 @@ class MatrixError(Exception):
 
     def __str__(self):
         return self.value
+
+
+class IllegalArgumentError(ValueError):
+    """Generic error used to indicate a parameter is not valid or expected.
+
+    Inherits:
+        ValueError
+    """
+    def __init__(self, value=""):
+        super().__init__(value)
