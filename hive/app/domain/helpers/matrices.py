@@ -387,7 +387,9 @@ def get_mixing_rate(m: np.ndarray) -> float:
     return mixing_rate.item()
 
 
-def new_symmetric_matrix(size: int) -> np.ndarray:
+def new_symmetric_matrix(
+        size: int, allow_sloops: bool = True, force_sloops: bool = True
+) -> np.ndarray:
     """Generates a random symmetric matrix.
 
      The generated adjacency matrix does not have transient state sets or
@@ -397,18 +399,44 @@ def new_symmetric_matrix(size: int) -> np.ndarray:
      Args:
          size:
             The length of the square matrix.
+         allow_sloops:
+            Indicates if the generated adjacency matrix allows diagonal
+            entries representing self-loops. If false, then, all diagonal
+                entries must be zeros. Otherwise, they can be zeros or ones (
+                default is True).
+         force_sloops:
+            Indicates if the diagonal of the generated matrix should be
+            filled with ones. If false, valid diagonal entries are decided by
+            `allow_self_loops` param. Otherwise, diagonal entries are filled
+            with ones. If `allow_self_loops` is False and `enforce_loops` is
+            True, an error is raised (default is True).
 
     Returns:
         The adjency matrix representing the connections between a
         groups of network nodes.
+
+    Raises:
+        IllegalArgumentError:
+            When `allow_self_loops` (False) conflicts with
+            `enforce_loops` (True).
     """
+    if not allow_sloops and force_sloops:
+        raise IllegalArgumentError("Can not invoke new_symmetric_matrix with:\n"
+                                   "    [x] allow_sloops=False"
+                                   "    [x] force_sloops=True")
     secure_random = random.SystemRandom()
     m = np.zeros((size, size))
     for i in range(size):
         for j in range(i, size):
-            p = secure_random.uniform(0.0, 1.0)
-            edge_val = np.ceil(p) if p >= 0.5 else np.floor(p)
-            m[i, j] = m[j, i] = edge_val
+            if i == j:
+                if not allow_sloops:
+                    m[i, i] = 0
+                elif force_sloops:
+                    m[i, i] = 1
+                else:
+                    m[i, i] = __new_edge_val__(secure_random)
+            else:
+                m[i, j] = m[j, i] = __new_edge_val__(secure_random)
     return m
 
 
@@ -490,4 +518,9 @@ def is_connected(m: np.ndarray, directed: bool = False) -> bool:
     """
     n, cc_labels = connected_components(m, directed=directed)
     return n == 1
+
+
+def __new_edge_val__(random_generator: random.SystemRandom) -> np.float64:
+    p = random_generator.uniform(0.0, 1.0)
+    return np.ceil(p) if p >= 0.5 else np.floor(p)
 # endregion
