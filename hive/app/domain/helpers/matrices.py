@@ -440,7 +440,9 @@ def new_symmetric_matrix(
     return m
 
 
-def new_symmetric_connected_matrix(size: int) -> np.ndarray:
+def new_symmetric_connected_matrix(
+        size: int, allow_sloops: bool = True, force_sloops: bool = True
+) -> np.ndarray:
     """Generates a random symmetric matrix which is also connected.
 
     See :py:func:`~domain.helpers.matrices.new_symmetric_matrix` and
@@ -449,6 +451,10 @@ def new_symmetric_connected_matrix(size: int) -> np.ndarray:
      Args:
          size:
             The length of the square matrix.
+         allow_sloops:
+            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.
+         force_sloops:
+            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.
 
     Returns:
         A matrix that represents an adjacency matrix that is also connected.
