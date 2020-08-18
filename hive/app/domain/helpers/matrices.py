@@ -226,7 +226,6 @@ def _adjency_matrix_sdp_optimization(
 # region Metropolis Hastings
 def _metropolis_hastings(a: np.ndarray,
                          v_: np.ndarray,
-                         column_major_in: bool = False,
                          column_major_out: bool = True) -> np.ndarray:
     """ Constructs a transition matrix using metropolis-hastings algorithm.
 
@@ -240,9 +239,6 @@ def _metropolis_hastings(a: np.ndarray,
         v_:
             A stochastic vector that is the steady state of the resulting
             transition matrix.
-        column_major_in:
-            optional; Indicates whether adj_matrix given in input is in row
-            or column major form.
         column_major_out:
             optional; Indicates whether to return transition_matrix output
             is in row or column major form.
@@ -296,17 +292,20 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     Returns:
         A matrix representing the performed random walk.
     """
-    # Old Code
-    shape = a.shape
-    size = shape[0]
-    rw: np.ndarray = np.zeros(shape=shape)
-    for i in range(size):
-        # all possible states reachable from state i, including self
-        degree: Any = np.sum(a[i, :])
-        for j in range(size):
-            rw[i, j] = a[i, j] / degree
-    return rw
+    # Old Code - Version 1.
+    # shape = a.shape
+    # size = shape[0]
+    # rw: np.ndarray = np.zeros(shape=shape)
+    # for i in range(size):
+    #     # all possible states reachable from state i, including self
+    #     degree: Any = np.sum(a[i, :])
+    #     for j in range(size):
+    #         rw[i, j] = a[i, j] / degree
+    # return rw
+    # Old Code - Version 2 - This line of code is 100% equivalent to Version 1.
     # return (a / np.sum(a, axis=0)).transpose()
+    # New Code - Version 3 - Returns Column Major Random Walk, like MatLab does.
+    return a / np.sum(a, axis=1)
 
 
 def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
