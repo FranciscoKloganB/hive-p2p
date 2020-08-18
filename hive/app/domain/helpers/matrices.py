@@ -226,7 +226,8 @@ def _adjency_matrix_sdp_optimization(
 # region Metropolis Hastings
 def _metropolis_hastings(a: np.ndarray,
                          v_: np.ndarray,
-                         column_major_out: bool = True) -> np.ndarray:
+                         column_major_out: bool = True,
+                         version: int = 2) -> np.ndarray:
     """ Constructs a transition matrix using metropolis-hastings algorithm.
 
     Note:
@@ -242,6 +243,9 @@ def _metropolis_hastings(a: np.ndarray,
         column_major_out:
             optional; Indicates whether to return transition_matrix output
             is in row or column major form.
+        version:
+            optional; Indicates which version of the algorith should be used
+            (default is 2, for version 2).
 
     Returns:
         An unlabeled transition matrix with steady state v_.
@@ -252,7 +256,7 @@ def _metropolis_hastings(a: np.ndarray,
         MatrixNotSquareError:
             When matrix a is not a square matrix.
     """
-    # Input checking
+
     if v_.shape[0] != a.shape[1]:
         raise DistributionShapeError(
             "distribution shape: {}, proposal matrix shape: {}".format(
@@ -266,22 +270,25 @@ def _metropolis_hastings(a: np.ndarray,
     size: int = a.shape[0]
 
     rw: np.ndarray = _construct_random_walk_matrix(a)
+    if version == 1:
+        rw = rw.transpose()
+
     r: np.ndarray = _construct_rejection_matrix(rw, v_)
 
-    transition_matrix: np.ndarray = np.zeros(shape=shape)
-
+    m: np.ndarray = np.zeros(shape=shape)
     for i in range(size):
         for j in range(size):
             if i != j:
-                transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
-        # transition_matrix[i, i] is only assigned after all other entries are
-        # Old Code - Version 1 and 2.
-        # transition_matrix[i, i] = __get_diagonal_entry_probability(rw, r, i)
-        # New Code - Version 3 - MH algorithm without Rejections in Diagonal.
-        transition_matrix[i, i] = 1 - np.sum(transition_matrix[i, :])
+                m[i, j] = rw[i, j] * min(1, r[i, j])
+        if version == 1:
+            m[i, i] = __get_diagonal_entry_probability(rw, r, i)
+        elif version == 2:
+            m[i, i] = __get_diagonal_entry_probability_v2(m, i)
+
     if column_major_out:
-        return transition_matrix.transpose()
-    return transition_matrix
+        return m.transpose()
+
+    return m
 
 
 def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
