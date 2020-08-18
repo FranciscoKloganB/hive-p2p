@@ -355,7 +355,7 @@ def __get_diagonal_entry_probability(
         outputed by the _metropolis_hastings function.
     """
     size: int = rw.shape[0]
-    pii: np.int32 = rw[i, i]
+    pii: np.float64 = rw[i, i]
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
