@@ -274,9 +274,12 @@ def _metropolis_hastings(a: np.ndarray,
         for j in range(size):
             if i != j:
                 transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
-        # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
-        transition_matrix[i, i] = __get_diagonal_entry_probability(rw, r, i)
-
+        # transition_matrix[i, i] is only assigned after all other entries are
+        # Old Code - Version 1 and 2.
+        # transition_matrix[i, i] = __get_diagonal_entry_probability(rw, r, i)
+        # New Code - Version 3 - MH algorithm without Rejections in Diagonal.
+        transition_matrix[i, i] = __get_diagonal_entry_probability_v2(
+            transition_matrix, i)
     if column_major_out:
         return transition_matrix.transpose()
     return transition_matrix
@@ -331,7 +334,7 @@ def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
 
 
 def __get_diagonal_entry_probability(
-        rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
+        rw: np.ndarray, r: np.ndarray, i: int) -> np.float64:
     """Helper function used by _metropolis_hastings function.
 
     Calculates the value that should be assigned to the entry (i, i) of the
@@ -357,6 +360,27 @@ def __get_diagonal_entry_probability(
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
+
+
+def __get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
+    """Helper function used by _metropolis_hastings function.
+
+        Calculates the value that should be assigned to the entry (i, i) of the
+        transition matrix being calculated by the metropolis hastings algorithm
+        by considering the rejection probability over the random walk that was
+        performed on an adjacency matrix.
+
+        Args:
+            m:
+                The matrix to receive the diagonal entry value.
+            i:
+                The diagonal entry index. E.g.: m[i, i].
+
+        Returns:
+            A probability to be inserted at entry (i, i) of the transition matrix
+            outputed by the _metropolis_hastings function.
+        """
+    return 1 - np.sum(m[i, :])
 # endregion
 
 
