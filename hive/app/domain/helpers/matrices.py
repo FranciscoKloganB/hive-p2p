@@ -266,9 +266,6 @@ def _metropolis_hastings(a: np.ndarray,
             "rows: {}, columns: {}, expected square matrix".format(
                 a.shape[0], a.shape[1]))
 
-    if column_major_in:
-        a = a.transpose()
-
     shape: Tuple[int, int] = a.shape
     size: int = a.shape[0]
 
@@ -299,14 +296,17 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     Returns:
         A matrix representing the performed random walk.
     """
+    # Old Code
     shape = a.shape
     size = shape[0]
     rw: np.ndarray = np.zeros(shape=shape)
     for i in range(size):
-        degree: Any = np.sum(a[i, :])  # all possible states reachable from state i, including self
+        # all possible states reachable from state i, including self
+        degree: Any = np.sum(a[i, :])
         for j in range(size):
             rw[i, j] = a[i, j] / degree
     return rw
+    # return (a / np.sum(a, axis=0)).transpose()
 
 
 def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
