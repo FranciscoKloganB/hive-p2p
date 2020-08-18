@@ -301,7 +301,7 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     Returns:
         A matrix representing the performed random walk.
     """
-    # Old Code - Version 1.
+    # Version 1.
     # shape = a.shape
     # size = shape[0]
     # rw: np.ndarray = np.zeros(shape=shape)
@@ -311,9 +311,8 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     #     for j in range(size):
     #         rw[i, j] = a[i, j] / degree
     # return rw
-    # Old Code - Version 2 - This line of code is 100% equivalent to Version 1.
-    # return (a / np.sum(a, axis=0)).transpose()
-    # New Code - Version 3 - Returns Column Major Random Walk, like MatLab does.
+    # Version 2 - Returns Column Major Random Walk, similar to MatLab.
+    #   To return a equivalent of version 1 output, transpose the result.
     return a / np.sum(a, axis=1)
 
 
