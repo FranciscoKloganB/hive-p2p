@@ -278,8 +278,7 @@ def _metropolis_hastings(a: np.ndarray,
         # Old Code - Version 1 and 2.
         # transition_matrix[i, i] = __get_diagonal_entry_probability(rw, r, i)
         # New Code - Version 3 - MH algorithm without Rejections in Diagonal.
-        transition_matrix[i, i] = __get_diagonal_entry_probability_v2(
-            transition_matrix, i)
+        transition_matrix[i, i] = 1 - np.sum(transition_matrix[i, :])
     if column_major_out:
         return transition_matrix.transpose()
     return transition_matrix
