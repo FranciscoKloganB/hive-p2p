@@ -71,7 +71,7 @@ def __can_exec_simfile(sname: str) -> None:
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
 
 
-def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
+def __start_simulation(sname: str, sid: int, epochs: int) -> None:
     """Executes one instance of the simulation
 
     Args:
@@ -83,8 +83,10 @@ def __execute_simulation(sname: str, sid: int, epochs: int) -> None:
             The number of discrete time steps the simulation lasts.
     """
     master_server = class_name_to_obj(
-        MASTER_SERVERS, master_class,
-        [sname, sid, epochs, cluster_class, node_class])
+        MASTER_SERVERS,
+        master_class,
+        [sname, sid, epochs, cluster_class, node_class]
+    )
     master_server.execute_simulation()
 
 
@@ -97,11 +99,11 @@ def __parallel_main(
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
                 for i in range(iters):
-                    executor.submit(__execute_simulation, sn, i, epochs)
+                    executor.submit(__start_simulation, sn, i, epochs)
         else:
             __can_exec_simfile(sname)
             for i in range(iters):
-                executor.submit(__execute_simulation, sname, i, epochs)
+                executor.submit(__start_simulation, sname, i, epochs)
 
 
 def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
@@ -110,11 +112,11 @@ def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
             for i in range(iters):
-                __execute_simulation(sn, i, epochs)
+                __start_simulation(sn, i, epochs)
     else:
         __can_exec_simfile(sname)
         for i in range(iters):
-            __execute_simulation(sname, i, epochs)
+            __start_simulation(sname, i, epochs)
 # endregion
 
 
@@ -163,9 +165,9 @@ if __name__ == "__main__":
     iterations = 30
     duration = 720
 
-    master_class = "Hivemind"
-    cluster_class = "BaseHive"
-    node_class = "BaseNode"
+    master_class = "Master"
+    cluster_class = "HiveCluster"
+    node_class = "HiveNode"
 
     try:
         short_opts = "df:i:t:e:m:c:n:"

@@ -1,4 +1,4 @@
-"""Module used by :py:class:`~domain.cluster_groups.BaseHive to create transition
+"""Module used by :py:class:`~domain.cluster_groups.Cluster to create transition
 matrices for the simulation.
 
 You should implement your own metropolis-hastings or alternative algorithms
@@ -6,20 +6,18 @@ as well as any steady-state or transition matrix optimization algorithms in
 this module.
 """
 
-from typing import Tuple, Any, Optional, List
+from typing import Tuple, Any, Optional
 
 import random
-import cvxpy as cvx
 import numpy as np
-from cvxpy import SolverError, DCPError
+import cvxpy as cvx
+
 from matlab.engine import EngineError
-
-from utils.randoms import random_index
-
-from domain.helpers.exceptions import DistributionShapeError, MatrixError
-from domain.helpers.exceptions import MatrixNotSquareError
-from domain.helpers.matlab_utils import MatlabEngineContainer
 from scipy.sparse.csgraph import connected_components
+
+from domain.helpers.matlab_utils import MatlabEngineContainer
+from domain.helpers.exceptions import *
+from utils.randoms import random_index
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
@@ -79,7 +77,7 @@ def new_sdp_mh_transition_matrix(
             return t, get_mixing_rate(t)
         else:
             return None, float('inf')
-    except (SolverError, DCPError):
+    except (cvx.SolverError, cvx.DCPError):
         return None, float('inf')
 
 
@@ -133,7 +131,7 @@ def new_go_transition_matrix(
             return t.value.transpose(), get_mixing_rate(t.value)
         else:
             return None, float('inf')
-    except (SolverError, DCPError):
+    except (cvx.SolverError, cvx.DCPError):
         return None, float('inf')
 
 
@@ -228,8 +226,8 @@ def _adjency_matrix_sdp_optimization(
 # region Metropolis Hastings
 def _metropolis_hastings(a: np.ndarray,
                          v_: np.ndarray,
-                         column_major_in: bool = False,
-                         column_major_out: bool = True) -> np.ndarray:
+                         column_major_out: bool = True,
+                         version: int = 2) -> np.ndarray:
     """ Constructs a transition matrix using metropolis-hastings algorithm.
 
     Note:
@@ -242,12 +240,12 @@ def _metropolis_hastings(a: np.ndarray,
         v_:
             A stochastic vector that is the steady state of the resulting
             transition matrix.
-        column_major_in:
-            optional; Indicates whether adj_matrix given in input is in row
-            or column major form.
         column_major_out:
             optional; Indicates whether to return transition_matrix output
             is in row or column major form.
+        version:
+            optional; Indicates which version of the algorith should be used
+            (default is 2, for version 2).
 
     Returns:
         An unlabeled transition matrix with steady state v_.
@@ -258,7 +256,7 @@ def _metropolis_hastings(a: np.ndarray,
         MatrixNotSquareError:
             When matrix a is not a square matrix.
     """
-    # Input checking
+
     if v_.shape[0] != a.shape[1]:
         raise DistributionShapeError(
             "distribution shape: {}, proposal matrix shape: {}".format(
@@ -268,27 +266,29 @@ def _metropolis_hastings(a: np.ndarray,
             "rows: {}, columns: {}, expected square matrix".format(
                 a.shape[0], a.shape[1]))
 
-    if column_major_in:
-        a = a.transpose()
-
     shape: Tuple[int, int] = a.shape
     size: int = a.shape[0]
 
     rw: np.ndarray = _construct_random_walk_matrix(a)
+    if version == 1:
+        rw = rw.transpose()
+
     r: np.ndarray = _construct_rejection_matrix(rw, v_)
 
-    transition_matrix: np.ndarray = np.zeros(shape=shape)
-
+    m: np.ndarray = np.zeros(shape=shape)
     for i in range(size):
         for j in range(size):
             if i != j:
-                transition_matrix[i, j] = rw[i, j] * min(1, r[i, j])
-        # after defining all p[i, j] we can safely defined p[i, i], i.e.: define p[i, j] when i = j
-        transition_matrix[i, i] = __get_diagonal_entry_probability(rw, r, i)
+                m[i, j] = rw[i, j] * min(1, r[i, j])
+        if version == 1:
+            m[i, i] = __get_diagonal_entry_probability(rw, r, i)
+        elif version == 2:
+            m[i, i] = __get_diagonal_entry_probability_v2(m, i)
 
     if column_major_out:
-        return transition_matrix.transpose()
-    return transition_matrix
+        return m.transpose()
+
+    return m
 
 
 def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
@@ -301,14 +301,19 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     Returns:
         A matrix representing the performed random walk.
     """
-    shape = a.shape
-    size = shape[0]
-    rw: np.ndarray = np.zeros(shape=shape)
-    for i in range(size):
-        degree: Any = np.sum(a[i, :])  # all possible states reachable from state i, including self
-        for j in range(size):
-            rw[i, j] = a[i, j] / degree
-    return rw
+    # Version 1.
+    # shape = a.shape
+    # size = shape[0]
+    # rw: np.ndarray = np.zeros(shape=shape)
+    # for i in range(size):
+    #     # all possible states reachable from state i, including self
+    #     degree: Any = np.sum(a[i, :])
+    #     for j in range(size):
+    #         rw[i, j] = a[i, j] / degree
+    # return rw
+    # Version 2 - Returns Column Major Random Walk, similar to MatLab.
+    #   To return a equivalent of version 1 output, transpose the result.
+    return a / np.sum(a, axis=1)
 
 
 def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
@@ -334,7 +339,7 @@ def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
 
 
 def __get_diagonal_entry_probability(
-        rw: np.ndarray, r: np.ndarray, i: int) -> np.int32:
+        rw: np.ndarray, r: np.ndarray, i: int) -> np.float64:
     """Helper function used by _metropolis_hastings function.
 
     Calculates the value that should be assigned to the entry (i, i) of the
@@ -356,10 +361,31 @@ def __get_diagonal_entry_probability(
         outputed by the _metropolis_hastings function.
     """
     size: int = rw.shape[0]
-    pii: np.int32 = rw[i, i]
+    pii: np.float64 = rw[i, i]
     for k in range(size):
         pii += rw[i, k] * (1 - min(1, r[i, k]))
     return pii
+
+
+def __get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
+    """Helper function used by _metropolis_hastings function.
+
+        Calculates the value that should be assigned to the entry (i, i) of the
+        transition matrix being calculated by the metropolis hastings algorithm
+        by considering the rejection probability over the random walk that was
+        performed on an adjacency matrix.
+
+        Args:
+            m:
+                The matrix to receive the diagonal entry value.
+            i:
+                The diagonal entry index. E.g.: m[i, i].
+
+        Returns:
+            A probability to be inserted at entry (i, i) of the transition matrix
+            outputed by the _metropolis_hastings function.
+        """
+    return 1 - np.sum(m[i, :])
 # endregion
 
 
@@ -383,13 +409,15 @@ def get_mixing_rate(m: np.ndarray) -> float:
     if size != m.shape[1]:
         raise MatrixNotSquareError(
             "Can not compute eigenvalues/vectors with non-square matrix")
-
-    eigenvalues, eigenvectors = np.linalg.eig(m - np.ones((size, size)) / size)
+    m = m - (np.ones((size, size)) / size)
+    eigenvalues, eigenvectors = np.linalg.eig(m)
     mixing_rate = np.max(np.abs(eigenvalues))
     return mixing_rate.item()
 
 
-def new_symmetric_matrix(size: int) -> np.ndarray:
+def new_symmetric_matrix(
+        size: int, allow_sloops: bool = True, force_sloops: bool = True
+) -> np.ndarray:
     """Generates a random symmetric matrix.
 
      The generated adjacency matrix does not have transient state sets or
@@ -399,22 +427,50 @@ def new_symmetric_matrix(size: int) -> np.ndarray:
      Args:
          size:
             The length of the square matrix.
+         allow_sloops:
+            Indicates if the generated adjacency matrix allows diagonal
+            entries representing self-loops. If false, then, all diagonal
+                entries must be zeros. Otherwise, they can be zeros or ones (
+                default is True).
+         force_sloops:
+            Indicates if the diagonal of the generated matrix should be
+            filled with ones. If false, valid diagonal entries are decided by
+            `allow_self_loops` param. Otherwise, diagonal entries are filled
+            with ones. If `allow_self_loops` is False and `enforce_loops` is
+            True, an error is raised (default is True).
 
     Returns:
         The adjency matrix representing the connections between a
         groups of network nodes.
+
+    Raises:
+        IllegalArgumentError:
+            When `allow_self_loops` (False) conflicts with
+            `enforce_loops` (True).
     """
+    if not allow_sloops and force_sloops:
+        raise IllegalArgumentError("Can not invoke new_symmetric_matrix with:\n"
+                                   "    [x] allow_sloops=False\n"
+                                   "    [x] force_sloops=True")
     secure_random = random.SystemRandom()
     m = np.zeros((size, size))
     for i in range(size):
         for j in range(i, size):
-            p = secure_random.uniform(0.0, 1.0)
-            edge_val = np.ceil(p) if p >= 0.5 else np.floor(p)
-            m[i, j] = m[j, i] = edge_val
+            if i == j:
+                if not allow_sloops:
+                    m[i, i] = 0
+                elif force_sloops:
+                    m[i, i] = 1
+                else:
+                    m[i, i] = __new_edge_val__(secure_random)
+            else:
+                m[i, j] = m[j, i] = __new_edge_val__(secure_random)
     return m
 
 
-def new_symmetric_connected_matrix(size: int) -> np.ndarray:
+def new_symmetric_connected_matrix(
+        size: int, allow_sloops: bool = True, force_sloops: bool = True
+) -> np.ndarray:
     """Generates a random symmetric matrix which is also connected.
 
     See :py:func:`~domain.helpers.matrices.new_symmetric_matrix` and
@@ -423,6 +479,10 @@ def new_symmetric_connected_matrix(size: int) -> np.ndarray:
      Args:
          size:
             The length of the square matrix.
+         allow_sloops:
+            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.
+         force_sloops:
+            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.
 
     Returns:
         A matrix that represents an adjacency matrix that is also connected.
@@ -492,4 +552,9 @@ def is_connected(m: np.ndarray, directed: bool = False) -> bool:
     """
     n, cc_labels = connected_components(m, directed=directed)
     return n == 1
+
+
+def __new_edge_val__(random_generator: random.SystemRandom) -> np.float64:
+    p = random_generator.uniform(0.0, 1.0)
+    return np.ceil(p) if p >= 0.5 else np.floor(p)
 # endregion

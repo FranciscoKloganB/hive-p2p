@@ -66,7 +66,8 @@ def main():
             size_results[name] = []
         for i in range(1, samples + 1):
             print(f"    Sample {i}.")
-            m = mm.new_symmetric_connected_matrix(size)
+            m = mm.new_symmetric_connected_matrix(
+                size, allow_sloops, enforce_sloops)
             v_ = np.abs(np.random.uniform(0, 100, size))
             v_ /= v_.sum()
 
@@ -76,6 +77,7 @@ def main():
                     size_results[name].append(mixing_rate)
                 except (DCPError, SolverError, EngineError):
                     size_results[name].append(float('inf'))
+
         results[str(size)] = size_results
 
     json_string = json.dumps(results, indent=4)
@@ -97,9 +99,14 @@ if __name__ == "__main__":
         "new_mgo_transition_matrix"
     ]
 
+    allow_sloops = True
+    enforce_sloops = True
+
     try:
         short_opts = "s:n:m:f:"
-        long_opts = ["samples=", "network_sizes=", "module=", "functions="]
+        long_opts = ["samples=", "network_sizes=", "module=", "functions=",
+                     "allow_self_loops=", "enforce_loops="]
+
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
         for options, args in options:
             if options in ("-s", "--samples"):
@@ -110,6 +117,10 @@ if __name__ == "__main__":
                 module = str(args).strip()
             if options in ("-f", "--functions"):
                 function_names = str(args).strip().split(',')
+            if options in ("--allow_self_loops"):
+                allow_sloops = int(str(args).strip()) or allow_sloops
+            if options in ("--enforce_loops"):
+                enforce_sloops = int(str(args).strip()) or enforce_sloops
 
         module = importlib.import_module(module)
         main()
@@ -120,7 +131,9 @@ if __name__ == "__main__":
                  "  --samples -s (int)\n"
                  "  --network_size -n (comma seperated list of int)\n"
                  "  --module -m (str)\n"
-                 "  --functions -f (comma seperated list of str)\n")
+                 "  --functions -f (comma seperated list of str)\n"
+                 "  --allow_self_loops (int) in {0, 1}\n"
+                 "  --enforce_loops (int) in {0, 1}\n")
     except (ModuleNotFoundError, ImportError):
         sys.exit(f"Module '{module}' does not exist or can not be imported.")
     except AttributeError:
