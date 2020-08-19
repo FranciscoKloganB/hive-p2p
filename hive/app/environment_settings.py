@@ -28,8 +28,8 @@ Attributes:
     READ_SIZE:
         Defines the raw size of each file block before it's wrapped in a
         :py:class:`~domain.helpers.smart_dataclasses.FileBlockData` instance
-        object (default is 131072). Example values: 32KB = 32768b;
-        128KB = 131072b; 512KB = 524288b; 20MB = 20971520b.
+        object (default is 131072). Example values: 32KB = 32768B;
+        128KB = 131072B; 512KB = 524288B; 1MB = 1048576B; 20MB = 20971520B.
     MONTH_EPOCHS:
         Defines how many epochs (discrete time steps) a month is represented
         with (default is 21600, one epoch per two minutes). See 

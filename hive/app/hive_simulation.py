@@ -83,8 +83,10 @@ def __start_simulation(sname: str, sid: int, epochs: int) -> None:
             The number of discrete time steps the simulation lasts.
     """
     master_server = class_name_to_obj(
-        MASTER_SERVERS, master_class,
-        [sname, sid, epochs, cluster_class, node_class])
+        MASTER_SERVERS,
+        master_class,
+        [sname, sid, epochs, cluster_class, node_class]
+    )
     master_server.execute_simulation()
 
 

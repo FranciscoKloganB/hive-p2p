@@ -2,18 +2,16 @@ from __future__ import annotations
 
 import getopt
 import json
+import math
 import os
 import sys
 
 import numpy as np
+import pathlib as pl
 import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
-from json import JSONDecodeError
 from typing import OrderedDict, List, Any, Dict
-
-from utils.convertions import truncate_float_value
-
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
 
@@ -84,7 +82,8 @@ def __create_box_plot__(
     plt.xlim(-2, func_count * 2)
     plt.ylim(0.1, 1.1)
 
-    fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_sk{skey}-samples{slen}"
+    src = pl.Path(file_name).stem
+    fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_f{src}-n{skey}_s{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
 # endregion
 
@@ -126,7 +125,7 @@ def __format_pct__(pct: np.float64) -> str:
             The size of the wedge relative to the remaining ones. Default pie
             value is likely to be in [0.0, 100.0].
     """
-    return "" if (pct < 1.0) else f"{truncate_float_value(pct, 2)}%"
+    return "" if (pct < 1.0) else f"{math.floor(pct * 10 ** 2) / 10 ** 2}%"
 
 
 def __create_pie_chart__(
@@ -180,7 +179,8 @@ def __create_pie_chart__(
     leg._legend_box.sep = cfg.legends_pad
     ax.axis('equal')
 
-    fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_sk{skey}-samples{slen}"
+    src = pl.Path(file_name).stem
+    fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_f{src}-n{skey}_s{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
 # endregion
 
@@ -227,7 +227,6 @@ def __set_box_color__(bp: Any, color: str) -> None:
 
 if __name__ == "__main__":
     __makedirs__()
-
     file_name = ""
     try:
         short_opts = "bpf:"
@@ -251,7 +250,7 @@ if __name__ == "__main__":
     except getopt.GetoptError:
         sys.exit(
             "Usage: python mixing_rate_sampler.py -s 1000 -f a_matrix_generator")
-    except JSONDecodeError:
+    except json.JSONDecodeError:
         sys.exit("Specified file exists, but seems to be an invalid JSON.")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"

@@ -3,14 +3,15 @@ encapsulating attribute and method behaviour."""
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from random import randint
-from typing import Any, Dict, IO, List, Union
 
 import domain.cluster_groups as cg
 import domain.master_servers as ms
-from environment_settings import *
+
+from pathlib import Path
+from random import randint
+from typing import Any, Dict, IO, List
 from utils import convertions, crypto
+from environment_settings import *
 
 
 class FileData:
@@ -629,24 +630,28 @@ class LoggingData:
         self.terminated_messages.append(message)
 
     def log_maintenance(self,
-                        status: str,
-                        size_before: int,
-                        size_after: int,
+                        status_bm: str,
+                        status_am: str,
+                        size_bm: int,
+                        size_am: int,
                         epoch: int) -> None:
         """Logs hive membership status and size at an epoch.
 
         Args:
-            status:
-                A string that describes the status of the hive after
+            status_bm:
+                A string that describes the status of the cluster before
                 maintenance.
-            size_before:
+            status_am:
+                A string that describes the status of the cluster after
+                maintenance.
+            size_bm:
                 The number of network nodes in the hive before maintenance.
-            size_after:
+            size_am:
                 The number of network nodes in the hive after maintenance.
             epoch:
                 A simulation epoch at which termination occurred.
         """
-        self.cluster_status_bm[epoch - 1] = status
-        self.cluster_size_bm[epoch - 1] = size_before
-        self.cluster_size_am[epoch - 1] = size_after
+        self.cluster_status_bm[epoch - 1] = status_bm
+        self.cluster_size_bm[epoch - 1] = size_bm
+        self.cluster_size_am[epoch - 1] = size_am
     # endregion
