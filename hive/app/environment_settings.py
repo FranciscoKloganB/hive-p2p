@@ -60,9 +60,10 @@ Attributes:
         being in convergence in
         :py:attr:`~domain.helpers.smart_dataclasses.LoggingData.convergence_set`.
         This constant will be used by
-        :py:meth:`~domain.cluster_groups.Cluster.equal_distributions` along with a
-        relative tolerance that is the minimum value in
+        :py:meth:`~domain.cluster_groups.Cluster.equal_distributions`
+        along with a relative tolerance that is the minimum value in
         :py:func:`~domain.cluster_groups.Cluster.v_`.
+
 """
 
 import os
