@@ -10,6 +10,8 @@ cycler==0.10.0
 decorator==4.4.2
 docutils==0.16
 ecos==2.0.7.post1
+flake8==3.8.3
+flake8-docstrings==1.5.0
 future==0.18.2
 idna==2.10
 imagesize==1.2.0
@@ -42,6 +44,9 @@ pickleshare==0.7.5
 prompt-toolkit==3.0.5
 psutil==5.7.0
 ptyprocess==0.6.0
+pycodestyle==2.6.0
+pydocstyle==5.1.0
+pyflakes==2.2.0
 Pygments==2.6.1
 pylint==2.5.3
 pyparsing==2.4.7
