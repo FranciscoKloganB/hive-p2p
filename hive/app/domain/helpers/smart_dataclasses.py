@@ -184,7 +184,7 @@ class FileData:
 class FileBlockData:
     """Wrapping class for the contents of a file block.
 
-    Among other responsabilities FileBlockData helps managing simulation
+    Among other responsabilities `FileBlockData` helps managing simulation
     parameters, e.g., replica control such or file block integrity.
 
     Attributes:
@@ -215,7 +215,7 @@ class FileBlockData:
     def __init__(
             self, hive_id: str, name: str, number: int, data: bytes
     ) -> None:
-        """Creates an instance of FileBlockData.
+        """Creates an instance of `FileBlockData`.
 
         Args:
             hive_id:
@@ -253,7 +253,7 @@ class FileBlockData:
             peers, which is not our case. We assume peers only report their
             suspicions to a small number of trusted of monitors who then
             decide if the reported network node is disconnected, consequently
-            losing the instance of FileBlockData and possibly others.
+            losing the instance of `FileBlockData` and possibly others.
 
         Args:
             epoch:
@@ -313,12 +313,16 @@ class FileBlockData:
     # region Overrides
 
     def __str__(self):
-        """Overrides default string representation of FileBlockData instances.
+        """Overrides default string representation of `FileBlockData` instances.
 
         Returns:
             A dictionary representation of the object.
         """
-        return "part_name: {},\npart_number: {},\npart_id: {},\npart_data: {},\nsha256: {}\n".format(self.name, self.number, self.id, self.data, self.sha256)
+        return (f"part_name: {self.name},\n"
+                f"part_number: {self.number},\n"
+                f"part_id: {self.id},\n"
+                f"part_data: {self.data},\n"
+                f"sha256: { self.sha256}\n")
 
     # endregionss
 
