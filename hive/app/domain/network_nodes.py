@@ -36,8 +36,8 @@ class Node:
             an Cluster as a replacement for some other HiveNode, in
             :py:meth:`domain.cluster_groups.Cluster._membership_maintenance`,
             the time the worker has been online is not considered. Thus,
-            if a HiveNode belongs to only one Cluster he is guaranteed
-             to remain online for exactly `uptime` *
+            if a HiveNode belongs to only one Cluster he is guaranteed to
+            remain online for exactly `uptime` *
             :py:attr:`environment_settings.MAX_EPOCHS`. If he belongs to
             multiple Hives in the simulation, than there is a possibility
             that he may go offline earlier.

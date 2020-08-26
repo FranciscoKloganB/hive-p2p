@@ -62,7 +62,7 @@
 <li><a class="reference internal" href="#module-app.domain.helpers.exceptions">app.domain.helpers.exceptions module</a></li>
 <li><a class="reference internal" href="#module-app.domain.helpers.matlab_utils">app.domain.helpers.matlab_utils module</a></li>
 <li><a class="reference internal" href="#module-app.domain.helpers.matrices">app.domain.helpers.matrices module</a></li>
-<li><a class="reference internal" href="#app-domain-helpers-smart-dataclasses-module">app.domain.helpers.smart_dataclasses module</a></li>
+<li><a class="reference internal" href="#module-app.domain.helpers.smart_dataclasses">app.domain.helpers.smart_dataclasses module</a></li>
 </ul>
 </li>
 </ul>
@@ -675,8 +675,597 @@ groups of network nodes.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="app-domain-helpers-smart-dataclasses-module">
-<h2>app.domain.helpers.smart_dataclasses module<a class="headerlink" href="#app-domain-helpers-smart-dataclasses-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-app.domain.helpers.smart_dataclasses">
+<span id="app-domain-helpers-smart-dataclasses-module"></span><h2>app.domain.helpers.smart_dataclasses module<a class="headerlink" href="#module-app.domain.helpers.smart_dataclasses" title="Permalink to this headline">¶</a></h2>
+<p>Module with classes that help to avoid domain class polution by
+encapsulating attribute and method behaviour.</p>
+<dl class="py class">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData">
+<em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.smart_dataclasses.</code><code class="sig-name descname">FileBlockData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive_id</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">number</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n">bytes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Wrapping class for the contents of a file block.</p>
+<p>Among other responsabilities <cite>FileBlockData</cite> helps managing simulation
+parameters, e.g., replica control such or file block integrity.</p>
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.hive_id">
+<code class="sig-name descname">hive_id</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.hive_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unique identifier of the hive that manages the file block.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the file the file block belongs to.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.number">
+<code class="sig-name descname">number</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.number" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number that uniquely identifies the file block.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenation the the <cite>name</cite> and <cite>number</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.references">
+<code class="sig-name descname">references</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.references" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tracks how many references exist to the file block in the
+simulation environment. When it reaches 0 the file block ceases
+to exist and the simulation fails.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.replication_epoch">
+<code class="sig-name descname">replication_epoch</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.replication_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>When a reference to the file block is lost, i.e., decremented,
+a replication epoch that simulates time to copy blocks from one
+node to another is assigned to this attribute.
+Until a loss occurs and after a loss is recovered,
+<cite>recovery_epoch</cite> is set to positive infinity.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.data">
+<code class="sig-name descname">data</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>A base64-encoded string representation of the file block bytes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.sha256">
+<code class="sig-name descname">sha256</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.sha256" title="Permalink to this definition">¶</a></dt>
+<dd><p>The hash value of data resulting from a SHA256 digest.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.can_replicate">
+<code class="sig-name descname">can_replicate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.can_replicate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.can_replicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Informs the calling network node if file block needs replication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epoch</strong> – Simulation’s current epoch.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>How many times the caller should replicate the block. The network
+node knows how many blocks he needs to create and distribute if
+returned value is bigger than zero.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.decrement_and_get_references">
+<code class="sig-name descname">decrement_and_get_references</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.decrement_and_get_references"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.decrement_and_get_references" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decreases by one and gets the number of file block references.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The number of file block references existing in the simulation
+environment.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">
+<code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.set_replication_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the epoch in which replication levels should be restored.</p>
+<p>This method tries to assign a new epoch, in the future, at which
+recovery should be performed. If the proposition is sooner than the
+previous proposition then assignment is accepted, else, it’s rejected.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method of calculating the <cite>replication_epoch</cite> may seem
+controversial, but the justification lies in the assumption that
+if there are more network nodes monitoring file parts,
+than failure detections should be in theory, faster, unless
+complex consensus algorithms are being used between volatile
+peers, which is not our case. We assume peers only report their
+suspicions to a small number of trusted of monitors who then
+decide if the reported network node is disconnected, consequently
+losing the instance of <cite>FileBlockData</cite> and possibly others.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epoch</strong> – Simulation’s current epoch.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Zero if the current <cite>replication_epoch</cite> is positive infinity,
+otherwise the expected delay_replication is returned. This value
+can be used to log, for example, the average recovery
+delay_replication in a simulation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.update_epochs_to_recover">
+<code class="sig-name descname">update_epochs_to_recover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.update_epochs_to_recover"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.update_epochs_to_recover" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the <cite>replication_epoch</cite> after a recovery attempt was carried out.</p>
+<p>If the recovery attempt performed by some network node successfully
+managed to restore the replication levels to the original target, then,
+<cite>replication_epoch</cite> is set to positive infinity, otherwise, another
+attempt will be done in the next epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epoch</strong> – Simulation’s current epoch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="app.domain.helpers.smart_dataclasses.FileData">
+<em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.smart_dataclasses.</code><code class="sig-name descname">FileData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holds essential simulation data concerning files being persisted.</p>
+<p>FileData is a helper class which has responsabilities such as tracking
+how many parts including blocks exist of the named file and managing
+the persistence of logged simulation data to disk.</p>
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileData.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the original file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileData.parts_in_hive">
+<code class="sig-name descname">parts_in_hive</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.parts_in_hive" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of file parts including blocks that exist for the
+named file that exist in the simulation. Updated every epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileData.logger">
+<code class="sig-name descname">logger</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object that stores captured simulation data. Stored data can be
+post-processed using user defined scripts to create items such
+has graphs and figures. See
+<code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.SimulationData</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData">LoggingData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.FileData.out_file">
+<code class="sig-name descname">out_file</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.out_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>File output stream to where captured data is written in append mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str/bytes/int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.FileData.fclose">
+<code class="sig-name descname">fclose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fclose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.fclose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the output file controlled by the FileData instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>msg</strong> – optional; If filled, a termination message is logged into the
+output file that is being closed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.FileData.fwrite">
+<code class="sig-name descname">fwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.fwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a message to the output file referenced by the FileData object.</p>
+<p>The method fwrite automatically adds a new line to the inputted message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>msg</strong> – The message to be logged on the output file.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.FileData.jwrite">
+<code class="sig-name descname">jwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive</span><span class="p">:</span> <span class="n">domain.cluster_groups.Cluster</span></em>, <em class="sig-param"><span class="n">origin</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.jwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.jwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a JSON string of the LoggingData instance to the output file.</p>
+<p>The logged data is defined by the attributes of the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">LoggingData</span> <span class="pre">&lt;app.domain.helpers.smart_dataclasses.LoggingData</span></code></p>
+<blockquote>
+<div><p>class.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hive</strong> – The <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a> object that manages
+the simulated persistence of the referenced file.</p></li>
+<li><p><strong>origin</strong> – The name of the simulation file that started the simulation
+process.</p></li>
+<li><p><strong>epoch</strong> – The epoch at which the LoggingData was logged into the
+output file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData">
+<em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.smart_dataclasses.</code><code class="sig-name descname">LoggingData</code><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Logging class that registers simulation state per epoch basis.</p>
+<p class="rubric">Notes</p>
+<p>Some attributes might not be documented, but should be straight
+forward to understand after inspecting their usage in the source code.</p>
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.cswc">
+<code class="sig-name descname">cswc</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates how many consecutive steps a file as been in
+convergence. Once convergence is not verified by
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">equal_distributions()</span></code>
+this attribute is reseted to zero.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.largest_convergence_window">
+<code class="sig-name descname">largest_convergence_window</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.largest_convergence_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores the largest convergence window that occurred throughout
+the simulation, i.e., it stores the highest verified
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="app.domain.helpers.smart_dataclasses.LoggingData.cswc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cswc</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set">
+<code class="sig-name descname">convergence_set</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of consecutive epochs in which convergence was verified.
+This list only stores the most up to date convergence set and like
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="app.domain.helpers.smart_dataclasses.LoggingData.cswc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cswc</span></code></a> is cleared once convergence is not verified,
+after being appended to <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets">
+<code class="sig-name descname">convergence_sets</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores all previous convergence sets. See <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.terminated">
+<code class="sig-name descname">terminated</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates the epoch at which the simulation was terminated.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.terminated_messages">
+<code class="sig-name descname">terminated_messages</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated_messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set of at least one error message that led to the failure
+of the simulation or one success message, at termination epoch
+(<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated" title="app.domain.helpers.smart_dataclasses.LoggingData.terminated"><code class="xref py py-attr docutils literal notranslate"><span class="pre">terminated</span></code></a>)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.successfull">
+<code class="sig-name descname">successfull</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.successfull" title="Permalink to this definition">¶</a></dt>
+<dd><p>When the simulation is terminated this value is set to True if
+no errors or failures occurred, i.e., if the simulation managed
+to persist the file throughout
+<code class="xref py py-const docutils literal notranslate"><span class="pre">ms.Master.MAX_EPOCHS</span></code> time
+steps.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.blocks_corrupted">
+<code class="sig-name descname">blocks_corrupted</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.blocks_corrupted" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of file block repllicas lost at each epoch due
+to disk errors.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.blocks_existing">
+<code class="sig-name descname">blocks_existing</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.blocks_existing" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of existing file block repllicas inside the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code> members’ storage
+disks at each epoch.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.blocks_lost">
+<code class="sig-name descname">blocks_lost</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.blocks_lost" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of file block blocks that were lost at each epoch
+due to <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a> going offline.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.blocks_moved">
+<code class="sig-name descname">blocks_moved</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.blocks_moved" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of messages containing file block blocks that were
+transmited, including those that were not delivered or
+acknowledged, at each epoch.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.delay_replication">
+<code class="sig-name descname">delay_replication</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.delay_replication" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log of the average time it took to recover one or more lost file
+block blocks during each epoch.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.delay_suspects_detection">
+<code class="sig-name descname">delay_suspects_detection</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.delay_suspects_detection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log of the time it took for each suspicious
+<a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> to be evicted
+from the <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.initial_spread">
+<code class="sig-name descname">initial_spread</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.initial_spread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the strategy used distribute file blocks in the
+beggining of the simulation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.matrices_nodes_degrees">
+<code class="sig-name descname">matrices_nodes_degrees</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.matrices_nodes_degrees" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores the in-degree and out-degree of each
+<a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> in the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>. One dictionary
+is kept in the list for each transition matrix used throughout
+the simulation. The integral part of the float value is the
+in-degree, the decimal part is the out-degree.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.off_node_count">
+<code class="sig-name descname">off_node_count</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.off_node_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a>
+whose status changed to offline at each epoch.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.transmissions_failed">
+<code class="sig-name descname">transmissions_failed</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.transmissions_failed" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of messages transmissions that were lost in the
+network at each epoch.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData._recursive_len">
+<code class="sig-name descname">_recursive_len</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData._recursive_len"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData._recursive_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recusively sums the length of all lists in <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> – A sub list of <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a> that needs that</p></li>
+<li><p><strong>not yet been counted.</strong> (<em>as</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of epochs that were registered at the inputed sub list.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_bandwidth_units">
+<code class="sig-name descname">log_bandwidth_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_bandwidth_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_bandwidth_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the amount of moved file blocks moved at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – Number of parts moved at epoch.</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_corrupted_file_blocks">
+<code class="sig-name descname">log_corrupted_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_corrupted_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_corrupted_file_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the amount of corrupted file block blocks at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – Number of corrupted blocks</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_existing_file_blocks">
+<code class="sig-name descname">log_existing_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_existing_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_existing_file_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the amount of existing file blocks in the simulation environment at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – Number of file blocks in the system.</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_fail">
+<code class="sig-name descname">log_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">message</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_fail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_fail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the epoch at which a simulation terminated due to a failure.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method should only be called when simulation terminates due
+to a failure such as a the loss of all blocks of a file block
+or the simultaneous disconnection of all network nodes in the hive.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message</strong> – optional; A log error message.</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch at which termination occurred.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_lost_file_blocks">
+<code class="sig-name descname">log_lost_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_lost_file_blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the amount of permanently lost file block blocks at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – Number of blocks that were lost.</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_lost_messages">
+<code class="sig-name descname">log_lost_messages</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_messages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_lost_messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the amount of failed message transmissions at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – Number of lost terminated_messages.</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance">
+<code class="sig-name descname">log_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">status_bm</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">status_am</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">size_bm</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">size_am</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_maintenance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs hive membership status and size at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>status_bm</strong> – A string that describes the status of the cluster before
+maintenance.</p></li>
+<li><p><strong>status_am</strong> – A string that describes the status of the cluster after
+maintenance.</p></li>
+<li><p><strong>size_bm</strong> – The number of network nodes in the hive before maintenance.</p></li>
+<li><p><strong>size_am</strong> – The number of network nodes in the hive after maintenance.</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch at which termination occurred.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">
+<code class="sig-name descname">log_matrices_degrees</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_matrices_degrees"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_off_nodes">
+<code class="sig-name descname">log_off_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_off_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_off_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the amount of disconnected network_nodes at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – Number of disconnected network_nodes in the system.</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_replication_delay">
+<code class="sig-name descname">log_replication_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">delay</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">calls</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_replication_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_replication_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the expected delay_replication at epoch at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>delay</strong> – The delay sum.</p></li>
+<li><p><strong>calls</strong> – Number of times a delay_replication was generated.</p></li>
+<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_suspicous_node_detection_delay">
+<code class="sig-name descname">log_suspicous_node_detection_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_id</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">delay</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_suspicous_node_detection_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_suspicous_node_detection_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs the expected delay_replication at epoch at an epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>delay</strong> – The time it took until the specified node was evicted from a
+<a class="reference internal" href="app.domain.html#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span></code></a> after it was known
+to be offline by the perfect failure detector.</p></li>
+<li><p><strong>node_id</strong> – A unique <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> identifier.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.register_convergence">
+<code class="sig-name descname">register_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.register_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.register_convergence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increments <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="app.domain.helpers.smart_dataclasses.LoggingData.cswc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cswc</span></code></a> by one and tries to update the <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a></p>
+<p>Checks if the counter for consecutive epoch convergence is bigger
+than the minimum threshold for verified convergence (see
+<code class="xref py py-const docutils literal notranslate"><span class="pre">MIN_CONVERGENCE_THRESHOLD</span></code>
+and if it is, it marks the epoch as part of the current
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epoch</strong> – The A simulation epoch index.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset">
+<code class="sig-name descname">save_sets_and_reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.save_sets_and_reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resets all convergence variables</p>
+<p>Tries to update <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.largest_convergence_window" title="app.domain.helpers.smart_dataclasses.LoggingData.largest_convergence_window"><code class="xref py py-attr docutils literal notranslate"><span class="pre">largest_convergence_window</span></code></a> and
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a> when <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>
+is not an empty list.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 

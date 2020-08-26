@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <title>app.domain.helpers.smart_dataclasses</title>
+    
+
+    <link rel="stylesheet" href="../../../../_static/css/redactor.css" type="text/css" />
+    
+    
+    <link rel="index" title="Index" href="../../../../genindex.html"/>
+    <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="Hives 1.0 documentation" href="../../../../index.html"/>
+    <link rel="up" title="Module code" href="../../../index.html"/> 
+</head>
+
+<body role="document">
+     
+
+    
+<a href="#" id="js-navigation-toggle" class="navigation-toggle">
+    <i class="mdi mdi-menu"></i><i class="mdi mdi-close"></i>
+</a>
+
+<section class="site-sidebar">
+
+<nav>
+
+
+    <a href="../../../../index.html" class="branding-link">
+    
+        Hives
+    
+    
+    
+        
+        
+    
+    </a>
+
+    
+<section role="search">
+    <form action="../../../../search.html" method="get" class="site-searchform">
+        <input type="text" name="q" placeholder="Search docs" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+</section>
+
+
+
+    <section class="site-nav">
+    
+    
+        <div></div>
+    
+    </section>
+
+</nav>
+
+</section>
+
+    <main class="site-main" role="main">
+        
+
+
+
+
+
+
+
+
+
+
+
+<nav class="site-breadcrumbs">
+    <ul>
+    
+        <li>
+            <a href="../../../../index.html">Docs</a> /
+        </li>
+        
+        <li>
+            <a href="../../../index.html">Module code</a> /
+        </li>
+        
+        <li class="site-breadcrumbs__leaf">app.domain.helpers.smart_dataclasses</li>
+    
+    </ul>
+</nav>
+        <section class="site-content">
+            <div class="container">
+                
+  <h1>Source code for app.domain.helpers.smart_dataclasses</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module with classes that help to avoid domain class polution by</span>
+<span class="sd">encapsulating attribute and method behaviour.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">domain.cluster_groups</span> <span class="k">as</span> <span class="nn">cg</span>
+<span class="kn">import</span> <span class="nn">domain.master_servers</span> <span class="k">as</span> <span class="nn">ms</span>
+
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">IO</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">convertions</span><span class="p">,</span> <span class="n">crypto</span>
+<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="FileData"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData">[docs]</a><span class="k">class</span> <span class="nc">FileData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Holds essential simulation data concerning files being persisted.</span>
+
+<span class="sd">    FileData is a helper class which has responsabilities such as tracking</span>
+<span class="sd">    how many parts including blocks exist of the named file and managing</span>
+<span class="sd">    the persistence of logged simulation data to disk.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name (str):</span>
+<span class="sd">            The name of the original file.</span>
+<span class="sd">        parts_in_hive (int):</span>
+<span class="sd">            The number of file parts including blocks that exist for the</span>
+<span class="sd">            named file that exist in the simulation. Updated every epoch.</span>
+<span class="sd">        logger (LoggingData):</span>
+<span class="sd">            Object that stores captured simulation data. Stored data can be</span>
+<span class="sd">            post-processed using user defined scripts to create items such</span>
+<span class="sd">            has graphs and figures. See</span>
+<span class="sd">            :py:class:`app.domain.helpers.smart_dataclasses.SimulationData`</span>
+<span class="sd">        out_file (str/bytes/int):</span>
+<span class="sd">            File output stream to where captured data is written in append mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates an instance of FileData</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name:</span>
+<span class="sd">                Name of the file to be referenced by the FileData object.</span>
+<span class="sd">            sim_id:</span>
+<span class="sd">                optional; Identifier that generates unique output file names,</span>
+<span class="sd">                thus guaranteeing that different simulation instances do not</span>
+<span class="sd">                overwrite previous out files.</span>
+<span class="sd">            origin:</span>
+<span class="sd">                optional; The name of the simulation file name that started</span>
+<span class="sd">                the simulation process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parts_in_hive</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span> <span class="n">LoggingData</span> <span class="o">=</span> <span class="n">LoggingData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">:</span> <span class="n">IO</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
+                    <span class="n">Path</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
+                    <span class="n">sim_id</span><span class="p">,</span>
+                    <span class="s2">&quot;json&quot;</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FileData.fwrite"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.fwrite">[docs]</a>    <span class="k">def</span> <span class="nf">fwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Writes a message to the output file referenced by the FileData object.</span>
+
+<span class="sd">        The method fwrite automatically adds a new line to the inputted message.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            msg:</span>
+<span class="sd">                The message to be logged on the output file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FileData.jwrite"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.jwrite">[docs]</a>    <span class="k">def</span> <span class="nf">jwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hive</span><span class="p">:</span> <span class="n">cg</span><span class="o">.</span><span class="n">Cluster</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Writes a JSON string of the LoggingData instance to the output file.</span>
+
+<span class="sd">        The logged data is defined by the attributes of the</span>
+<span class="sd">        :py:class:`LoggingData &lt;app.domain.helpers.smart_dataclasses.LoggingData`</span>
+<span class="sd">         class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hive:</span>
+<span class="sd">                The :py:class:`Cluster &lt;app.domain.cluster_groups.Cluster&gt;` object that manages</span>
+<span class="sd">                the simulated persistence of the referenced file.</span>
+<span class="sd">            origin:</span>
+<span class="sd">                The name of the simulation file that started the simulation</span>
+<span class="sd">                process.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                The epoch at which the LoggingData was logged into the</span>
+<span class="sd">                output file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sd</span><span class="p">:</span> <span class="n">LoggingData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span>
+
+        <span class="n">sd</span><span class="o">.</span><span class="n">save_sets_and_reset</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sd</span><span class="o">.</span><span class="n">terminated_messages</span><span class="p">:</span>
+            <span class="n">sd</span><span class="o">.</span><span class="n">terminated_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;completed simulation successfully&quot;</span><span class="p">)</span>
+
+        <span class="n">sd</span><span class="o">.</span><span class="n">blocks_existing</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">blocks_existing</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+
+        <span class="n">sd</span><span class="o">.</span><span class="n">off_node_count</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">off_node_count</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+        <span class="n">sd</span><span class="o">.</span><span class="n">blocks_lost</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">blocks_lost</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+
+        <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_bm</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_bm</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+        <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_bm</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_bm</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+        <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_am</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_am</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+
+        <span class="n">sd</span><span class="o">.</span><span class="n">delay_replication</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">delay_replication</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+
+        <span class="n">sd</span><span class="o">.</span><span class="n">blocks_moved</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">blocks_moved</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+        <span class="n">sd</span><span class="o">.</span><span class="n">blocks_corrupted</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">blocks_corrupted</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+        <span class="n">sd</span><span class="o">.</span><span class="n">transmissions_failed</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">transmissions_failed</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+
+        <span class="n">extras</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;simfile_name&quot;</span><span class="p">:</span> <span class="n">origin</span><span class="p">,</span>
+            <span class="s2">&quot;hive_id&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;read_size&quot;</span><span class="p">:</span> <span class="n">READ_SIZE</span><span class="p">,</span>
+            <span class="s2">&quot;critical_size_threshold&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">critical_size</span><span class="p">,</span>
+            <span class="s2">&quot;sufficient_size_threshold&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">sufficient_size</span><span class="p">,</span>
+            <span class="s2">&quot;original_hive_size&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span>
+            <span class="s2">&quot;redundant_size&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">,</span>
+            <span class="s2">&quot;max_epochs&quot;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">,</span>
+            <span class="s2">&quot;min_replication_delay&quot;</span><span class="p">:</span> <span class="n">MIN_REPLICATION_DELAY</span><span class="p">,</span>
+            <span class="s2">&quot;max_replication_delay&quot;</span><span class="p">:</span> <span class="n">MAX_REPLICATION_DELAY</span><span class="p">,</span>
+            <span class="s2">&quot;replication_level&quot;</span><span class="p">:</span> <span class="n">REPLICATION_LEVEL</span><span class="p">,</span>
+            <span class="s2">&quot;convergence_treshold&quot;</span><span class="p">:</span> <span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">,</span>
+            <span class="s2">&quot;channel_loss&quot;</span><span class="p">:</span> <span class="n">LOSS_CHANCE</span><span class="p">,</span>
+            <span class="s2">&quot;corruption_chance_tod&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">}</span>
+
+        <span class="n">sim_data_dict</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="vm">__dict__</span>
+        <span class="n">sim_data_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span>
+        <span class="n">json_string</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+            <span class="n">sim_data_dict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fwrite</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FileData.fclose"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.fclose">[docs]</a>    <span class="k">def</span> <span class="nf">fclose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Closes the output file controlled by the FileData instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">             msg:</span>
+<span class="sd">                optional; If filled, a termination message is logged into the</span>
+<span class="sd">                output file that is being closed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fwrite</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="c1"># region Overrides</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Override to allows a network node object to be used as a dict key</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The hash of value of the referenced file :py:attr:`name`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compares if two instances of FileData are equal.</span>
+
+<span class="sd">        Equality is based on name equality.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the name attribute of both instances is the same,</span>
+<span class="sd">            otherwise False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">FileData</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Compares if two instances of FileData are not equal.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span> <span class="o">==</span> <span class="n">other</span><span class="p">)</span></div>
+
+    <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="FileBlockData"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData">[docs]</a><span class="k">class</span> <span class="nc">FileBlockData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Wrapping class for the contents of a file block.</span>
+
+<span class="sd">    Among other responsabilities `FileBlockData` helps managing simulation</span>
+<span class="sd">    parameters, e.g., replica control such or file block integrity.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        hive_id:</span>
+<span class="sd">            Unique identifier of the hive that manages the file block.</span>
+<span class="sd">        name:</span>
+<span class="sd">            The name of the file the file block belongs to.</span>
+<span class="sd">        number:</span>
+<span class="sd">            The number that uniquely identifies the file block.</span>
+<span class="sd">        id:</span>
+<span class="sd">            Concatenation the the `name` and `number`.</span>
+<span class="sd">        references:</span>
+<span class="sd">            Tracks how many references exist to the file block in the</span>
+<span class="sd">            simulation environment. When it reaches 0 the file block ceases</span>
+<span class="sd">            to exist and the simulation fails.</span>
+<span class="sd">        replication_epoch:</span>
+<span class="sd">            When a reference to the file block is lost, i.e., decremented,</span>
+<span class="sd">            a replication epoch that simulates time to copy blocks from one</span>
+<span class="sd">            node to another is assigned to this attribute.</span>
+<span class="sd">            Until a loss occurs and after a loss is recovered,</span>
+<span class="sd">            `recovery_epoch` is set to positive infinity.</span>
+<span class="sd">        data:</span>
+<span class="sd">            A base64-encoded string representation of the file block bytes.</span>
+<span class="sd">        sha256:</span>
+<span class="sd">            The hash value of data resulting from a SHA256 digest.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">hive_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates an instance of `FileBlockData`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hive_id:</span>
+<span class="sd">                Unique identifier of the hive that manages the file block.</span>
+<span class="sd">            name:</span>
+<span class="sd">                The name of the file the file block belongs to.</span>
+<span class="sd">            number:</span>
+<span class="sd">                The number that uniquely identifies the file block.</span>
+<span class="sd">            data:</span>
+<span class="sd">                Actual file block data as a sequence of bytes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hive_id</span> <span class="o">=</span> <span class="n">hive_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">number</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_#_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">convertions</span><span class="o">.</span><span class="n">bytes_to_base64_string</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">crypto</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># region Simulation Interface</span>
+<div class="viewcode-block" id="FileBlockData.set_replication_epoch"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Sets the epoch in which replication levels should be restored.</span>
+
+<span class="sd">        This method tries to assign a new epoch, in the future, at which</span>
+<span class="sd">        recovery should be performed. If the proposition is sooner than the</span>
+<span class="sd">        previous proposition then assignment is accepted, else, it&#39;s rejected.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method of calculating the `replication_epoch` may seem</span>
+<span class="sd">            controversial, but the justification lies in the assumption that</span>
+<span class="sd">            if there are more network nodes monitoring file parts,</span>
+<span class="sd">            than failure detections should be in theory, faster, unless</span>
+<span class="sd">            complex consensus algorithms are being used between volatile</span>
+<span class="sd">            peers, which is not our case. We assume peers only report their</span>
+<span class="sd">            suspicions to a small number of trusted of monitors who then</span>
+<span class="sd">            decide if the reported network node is disconnected, consequently</span>
+<span class="sd">            losing the instance of `FileBlockData` and possibly others.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                Simulation&#39;s current epoch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Zero if the current `replication_epoch` is positive infinity,</span>
+<span class="sd">            otherwise the expected delay_replication is returned. This value</span>
+<span class="sd">            can be used to log, for example, the average recovery</span>
+<span class="sd">            delay_replication in a simulation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_proposed_epoch</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="n">epoch</span> <span class="o">+</span> <span class="n">randint</span><span class="p">(</span><span class="n">MIN_REPLICATION_DELAY</span><span class="p">,</span> <span class="n">MAX_REPLICATION_DELAY</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">new_proposed_epoch</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">=</span> <span class="n">new_proposed_epoch</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FileBlockData.update_epochs_to_recover"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.update_epochs_to_recover">[docs]</a>    <span class="k">def</span> <span class="nf">update_epochs_to_recover</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Update the `replication_epoch` after a recovery attempt was carried out.</span>
+
+<span class="sd">        If the recovery attempt performed by some network node successfully</span>
+<span class="sd">        managed to restore the replication levels to the original target, then,</span>
+<span class="sd">        `replication_epoch` is set to positive infinity, otherwise, another</span>
+<span class="sd">        attempt will be done in the next epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                Simulation&#39;s current epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span> <span class="o">==</span> <span class="n">REPLICATION_LEVEL</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FileBlockData.can_replicate"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.can_replicate">[docs]</a>    <span class="k">def</span> <span class="nf">can_replicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Informs the calling network node if file block needs replication.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                Simulation&#39;s current epoch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            How many times the caller should replicate the block. The network</span>
+<span class="sd">            node knows how many blocks he needs to create and distribute if</span>
+<span class="sd">            returned value is bigger than zero.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span> <span class="o">&lt;</span> <span class="n">REPLICATION_LEVEL</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">REPLICATION_LEVEL</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span>
+
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Overrides</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Overrides default string representation of `FileBlockData` instances.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary representation of the object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;part_name: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;part_number: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;part_id: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;part_data: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;sha256: </span><span class="si">{</span> <span class="bp">self</span><span class="o">.</span><span class="n">sha256</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># endregionss</span>
+
+    <span class="c1"># region Helpers</span>
+
+<div class="viewcode-block" id="FileBlockData.decrement_and_get_references"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.decrement_and_get_references">[docs]</a>    <span class="k">def</span> <span class="nf">decrement_and_get_references</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decreases by one and gets the number of file block references.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The number of file block references existing in the simulation</span>
+<span class="sd">            environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">references</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span></div></div>
+
+    <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="LoggingData"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData">[docs]</a><span class="k">class</span> <span class="nc">LoggingData</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Logging class that registers simulation state per epoch basis.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        Some attributes might not be documented, but should be straight</span>
+<span class="sd">        forward to understand after inspecting their usage in the source code.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        cswc:</span>
+<span class="sd">            Indicates how many consecutive steps a file as been in</span>
+<span class="sd">            convergence. Once convergence is not verified by</span>
+<span class="sd">            :py:meth:`equal_distributions() &lt;app.domain.cluster_groups.Cluster.equal_distributions&gt;`</span>
+<span class="sd">            this attribute is reseted to zero.</span>
+<span class="sd">        largest_convergence_window:</span>
+<span class="sd">            Stores the largest convergence window that occurred throughout</span>
+<span class="sd">            the simulation, i.e., it stores the highest verified</span>
+<span class="sd">            :py:attr:`cswc`.</span>
+<span class="sd">        convergence_set:</span>
+<span class="sd">            Set of consecutive epochs in which convergence was verified.</span>
+<span class="sd">            This list only stores the most up to date convergence set and like</span>
+<span class="sd">            :py:attr:`cswc` is cleared once convergence is not verified,</span>
+<span class="sd">            after being appended to :py:attr:`convergence_sets`.</span>
+<span class="sd">        convergence_sets:</span>
+<span class="sd">            Stores all previous convergence sets. See :py:attr:`convergence_set`.</span>
+<span class="sd">        terminated:</span>
+<span class="sd">            Indicates the epoch at which the simulation was terminated.</span>
+<span class="sd">        terminated_messages:</span>
+<span class="sd">            Set of at least one error message that led to the failure</span>
+<span class="sd">            of the simulation or one success message, at termination epoch</span>
+<span class="sd">            (:py:attr:`terminated`)</span>
+<span class="sd">        successfull:</span>
+<span class="sd">            When the simulation is terminated this value is set to True if</span>
+<span class="sd">            no errors or failures occurred, i.e., if the simulation managed</span>
+<span class="sd">            to persist the file throughout</span>
+<span class="sd">            :py:const:`ms.Master.MAX_EPOCHS</span>
+<span class="sd">            &lt;environment_settings.ms.Master.MAX_EPOCHS&gt;` time</span>
+<span class="sd">            steps.</span>
+<span class="sd">        blocks_corrupted:</span>
+<span class="sd">            The number of file block repllicas lost at each epoch due</span>
+<span class="sd">            to disk errors.</span>
+<span class="sd">        blocks_existing:</span>
+<span class="sd">            The number of existing file block repllicas inside the</span>
+<span class="sd">            :py:mod:`Cluster Group &lt;app.domain.cluster_group&gt;` members&#39; storage</span>
+<span class="sd">            disks at each epoch.</span>
+<span class="sd">        blocks_lost:</span>
+<span class="sd">            The number of file block blocks that were lost at each epoch</span>
+<span class="sd">            due to :py:mod:`Network Nodes &lt;app.domain.network_nodes&gt;` going offline.</span>
+<span class="sd">        blocks_moved:</span>
+<span class="sd">            The number of messages containing file block blocks that were</span>
+<span class="sd">            transmited, including those that were not delivered or</span>
+<span class="sd">            acknowledged, at each epoch.</span>
+<span class="sd">        delay_replication:</span>
+<span class="sd">            Log of the average time it took to recover one or more lost file</span>
+<span class="sd">            block blocks during each epoch.</span>
+<span class="sd">        delay_suspects_detection:</span>
+<span class="sd">            Log of the time it took for each suspicious</span>
+<span class="sd">            :py:mod:`Network Node &lt;app.domain.network_nodes&gt;` to be evicted</span>
+<span class="sd">            from the :py:mod:`Cluster Group &lt;app.domain.cluster_group&gt;`.</span>
+<span class="sd">        initial_spread:</span>
+<span class="sd">            Records the strategy used distribute file blocks in the</span>
+<span class="sd">            beggining of the simulation.</span>
+<span class="sd">        matrices_nodes_degrees:</span>
+<span class="sd">            Stores the in-degree and out-degree of each</span>
+<span class="sd">            :py:mod:`Network Node &lt;app.domain.network_nodes&gt;` in the</span>
+<span class="sd">            :py:mod:`Cluster Group &lt;app.domain.cluster_group&gt;`. One dictionary</span>
+<span class="sd">            is kept in the list for each transition matrix used throughout</span>
+<span class="sd">            the simulation. The integral part of the float value is the</span>
+<span class="sd">            in-degree, the decimal part is the out-degree.</span>
+<span class="sd">        off_node_count:</span>
+<span class="sd">            The number of :py:mod:`Network Nodes &lt;app.domain.network_nodes&gt;`</span>
+<span class="sd">            whose status changed to offline at each epoch.</span>
+<span class="sd">        transmissions_failed:</span>
+<span class="sd">            The number of messages transmissions that were lost in the</span>
+<span class="sd">            network at each epoch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># region Class Variables, Instance Variables and Constructors</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instanciates a LoggingData object for simulation event logging.&quot;&quot;&quot;</span>
+
+        <span class="n">max_epochs</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span>
+        <span class="n">max_epochs_plus_one</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS_PLUS_ONE</span>
+
+        <span class="c1">###############################</span>
+        <span class="c1"># Do not alter these</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">largest_convergence_window</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">convergence_sets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminated</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminated_messages</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">successfull</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1">###############################</span>
+
+        <span class="c1">###############################</span>
+        <span class="c1"># Alter these at will</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_corrupted</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_existing</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_lost</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs_plus_one</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_moved</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_status_bm</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_size_bm</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_size_am</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_replication</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs_plus_one</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_suspects_detection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matrices_nodes_degrees</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">off_node_count</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transmissions_failed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="c1">###############################</span>
+
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Instance Methods</span>
+
+<div class="viewcode-block" id="LoggingData.register_convergence"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.register_convergence">[docs]</a>    <span class="k">def</span> <span class="nf">register_convergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Increments :py:attr:`~cswc` by one and tries to update the :py:attr:`~convergence_set`</span>
+
+<span class="sd">        Checks if the counter for consecutive epoch convergence is bigger</span>
+<span class="sd">        than the minimum threshold for verified convergence (see</span>
+<span class="sd">        :py:const:`MIN_CONVERGENCE_THRESHOLD &lt;environment_settings.MIN_CONVERGENCE_THRESHOLD&gt;`</span>
+<span class="sd">        and if it is, it marks the epoch as part of the current</span>
+<span class="sd">        :py:attr:`~convergence_set`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                The A simulation epoch index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span> <span class="o">&gt;=</span> <span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LoggingData.save_sets_and_reset"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset">[docs]</a>    <span class="k">def</span> <span class="nf">save_sets_and_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Resets all convergence variables</span>
+
+<span class="sd">        Tries to update :py:attr:`~largest_convergence_window` and</span>
+<span class="sd">        :py:attr:`~convergence_sets` when :py:attr:`~convergence_set`</span>
+<span class="sd">        is not an empty list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">set_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">set_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convergence_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">set_len</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">largest_convergence_window</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">largest_convergence_window</span> <span class="o">=</span> <span class="n">set_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="LoggingData._recursive_len"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData._recursive_len">[docs]</a>    <span class="k">def</span> <span class="nf">_recursive_len</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Recusively sums the length of all lists in :py:attr:`~convergence_sets`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            item: A sub list of :py:attr:`~convergence_sets` that needs that</span>
+<span class="sd">            as not yet been counted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The number of epochs that were registered at the inputed sub list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_recursive_len</span><span class="p">(</span><span class="n">sub_item</span><span class="p">)</span> <span class="k">for</span> <span class="n">sub_item</span> <span class="ow">in</span> <span class="n">item</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span></div>
+
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Overrides</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rlen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_recursive_len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convergence_sets</span><span class="p">)</span>
+        <span class="n">cw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">largest_convergence_window</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;time in convergence: </span><span class="si">{</span><span class="n">rlen</span><span class="si">}</span><span class="se">\n</span><span class="s2">largest_convergence_window: </span><span class="si">{</span><span class="n">cw</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Helpers</span>
+<div class="viewcode-block" id="LoggingData.log_matrices_degrees"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">[docs]</a>    <span class="k">def</span> <span class="nf">log_matrices_degrees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matrices_nodes_degrees</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nodes_degrees</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_replication_delay"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_replication_delay">[docs]</a>    <span class="k">def</span> <span class="nf">log_replication_delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">calls</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the expected delay_replication at epoch at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            delay:</span>
+<span class="sd">                The delay sum.</span>
+<span class="sd">            calls:</span>
+<span class="sd">                Number of times a delay_replication was generated.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_replication</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">calls</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">delay</span> <span class="o">/</span> <span class="n">calls</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_suspicous_node_detection_delay"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_suspicous_node_detection_delay">[docs]</a>    <span class="k">def</span> <span class="nf">log_suspicous_node_detection_delay</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">delay</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the expected delay_replication at epoch at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            delay:</span>
+<span class="sd">                The time it took until the specified node was evicted from a</span>
+<span class="sd">                :py:mod:`Cluster &lt;app.domain.cluster_groups&gt;` after it was known</span>
+<span class="sd">                to be offline by the perfect failure detector.</span>
+<span class="sd">            node_id:</span>
+<span class="sd">                A unique :py:mod:`Network Node</span>
+<span class="sd">                &lt;app.domain.network_nodes&gt;` identifier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_suspects_detection</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">delay</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_bandwidth_units"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_bandwidth_units">[docs]</a>    <span class="k">def</span> <span class="nf">log_bandwidth_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the amount of moved file blocks moved at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n:</span>
+<span class="sd">                Number of parts moved at epoch.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_moved</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">n</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_existing_file_blocks"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_existing_file_blocks">[docs]</a>    <span class="k">def</span> <span class="nf">log_existing_file_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the amount of existing file blocks in the simulation environment at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n:</span>
+<span class="sd">                Number of file blocks in the system.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_existing</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">n</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_off_nodes"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_off_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">log_off_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the amount of disconnected network_nodes at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n:</span>
+<span class="sd">                Number of disconnected network_nodes in the system.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">off_node_count</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">n</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_lost_file_blocks"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_lost_file_blocks">[docs]</a>    <span class="k">def</span> <span class="nf">log_lost_file_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the amount of permanently lost file block blocks at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n:</span>
+<span class="sd">                Number of blocks that were lost.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_lost</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">n</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_lost_messages"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_lost_messages">[docs]</a>    <span class="k">def</span> <span class="nf">log_lost_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the amount of failed message transmissions at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n:</span>
+<span class="sd">                Number of lost terminated_messages.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transmissions_failed</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">n</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_corrupted_file_blocks"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_corrupted_file_blocks">[docs]</a>    <span class="k">def</span> <span class="nf">log_corrupted_file_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the amount of corrupted file block blocks at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            n:</span>
+<span class="sd">                Number of corrupted blocks</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks_corrupted</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">n</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_fail"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_fail">[docs]</a>    <span class="k">def</span> <span class="nf">log_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the epoch at which a simulation terminated due to a failure.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This method should only be called when simulation terminates due</span>
+<span class="sd">            to a failure such as a the loss of all blocks of a file block</span>
+<span class="sd">            or the simultaneous disconnection of all network nodes in the hive.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            message:</span>
+<span class="sd">                optional; A log error message.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch at which termination occurred.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminated</span> <span class="o">=</span> <span class="n">epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">successfull</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminated_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LoggingData.log_maintenance"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">log_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">status_bm</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                        <span class="n">status_am</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                        <span class="n">size_bm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                        <span class="n">size_am</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                        <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs hive membership status and size at an epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            status_bm:</span>
+<span class="sd">                A string that describes the status of the cluster before</span>
+<span class="sd">                maintenance.</span>
+<span class="sd">            status_am:</span>
+<span class="sd">                A string that describes the status of the cluster after</span>
+<span class="sd">                maintenance.</span>
+<span class="sd">            size_bm:</span>
+<span class="sd">                The number of network nodes in the hive before maintenance.</span>
+<span class="sd">            size_am:</span>
+<span class="sd">                The number of network nodes in the hive after maintenance.</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                A simulation epoch at which termination occurred.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_status_bm</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">status_bm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_size_bm</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">size_bm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_size_am</span><span class="p">[</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">size_am</span></div></div>
+    <span class="c1"># endregion</span>
+</pre></div>
+
+            </div>
+
+        </section>
+
+        
+
+        
+            <div class="source-link">
+            
+                
+            
+            </div>
+        
+
+
+
+    </main>
+
+    <footer class="site-footer">
+<div class="container">
+
+    <div role="contentinfo">
+        <p>
+                &copy; Copyright 2020, Francisco Barros.
+        </p>
+    </div>
+        <p>Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+        <a href="https://github.com/testthedocs/sphinx_ttd_theme">theme</a>
+        provided by <a href="https://testthedocs">TestTheDocs</a>. 
+
+</div>
+</footer>
+
+    
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../../../_static/js/theme-min.js"></script> 
+</body>
+</html>

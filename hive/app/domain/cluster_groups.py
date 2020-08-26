@@ -286,7 +286,7 @@ class Cluster:
 
         Note:
             If the Cluster terminates early, i.e., if it terminates before
-            reaching :py:code:`app.environment_settings.MAX_EPOCHS`,
+            reaching :py:const:`app.environment_settings.MAX_EPOCHS`,
             no logging should be done in
             :py:class:`app.domain.helpers.smart_dataclasses.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
@@ -442,9 +442,9 @@ class Cluster:
         `app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
 
         Args:
-            replica: A
-            :py:class:`app.domain.helpers.smart_dataclasses.FileBlockData`
-            instance that represents a file block replica that was lost.
+            replica:
+                A :py:class:`app.domain.helpers.smart_dataclasses.FileBlockData`
+                instance that represents a file block replica that was lost.
         """
         s = replica.set_replication_epoch(self.current_epoch)
         self._recovery_epoch_sum += s
@@ -827,7 +827,8 @@ class HiveCluster(Cluster):
 
     # region Helpers
     def equal_distributions(self) -> bool:
-        """Infers if v_ and cv_ are equal.
+        """Infers if :py:attr:`~app.domain.cluster_groups.HiveCluster.v_` and
+        :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` are equal.
 
         Equalility is calculated using numpy allclose function which has the
         following formula::
@@ -1017,8 +1018,7 @@ class HiveClusterExt(HiveCluster):
             :py:meth:`domain.cluster_groups.HiveCluster.maintain`.
             Considers parameters that belong HiveClusterExt. Such as
             :py:attr:`domain.cluster_groups.HiveClusterExt.suspicious_nodes`
-            and
-          :py:attr:`domain.cluster_groups.HiveClusterExt.nodes_complaints`
+            and :py:attr:`domain.cluster_groups.HiveClusterExt.nodes_complaints`
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
@@ -1156,7 +1156,7 @@ class HDFSCluster(Cluster):
         return off_nodes
 
     def evaluate(self) -> None:
-        """`HDFSCluster evaluate method merely logs the number of existing
+        """`HDFSCluster` evaluate method merely logs the number of existing
         replicas in the system.
 
         Overrides:
