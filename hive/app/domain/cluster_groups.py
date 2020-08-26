@@ -53,8 +53,8 @@ class Cluster:
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`app.domain.cluster_groups.Cluster.
-            _assign_disk_error_chance` for corruption chance configuration.
+            :py:meth:`~app.domain.cluster_groups.Cluster.__assign_disk_error_chance__`
+            for corruption chance configuration.
         master:
             A reference to :py:class:`app.domain.master_servers.Master` that
             coordinates this Cluster instance.
@@ -88,9 +88,9 @@ class Cluster:
             .set_recovery_epoch` method calls. Important for logging purposes.
         _recovery_epoch_calls:
             Helper attribute that facilitates the storage of the sum of the
-            values returned by all :py:meth:`app.domain.helpers.
-            smart_dataclasses.FileBlockData.set_recovery_epoch` method calls
-            throughout the :py:attr:`current_epoch`.
+            values returned by all
+            :py:meth:`app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
+            method calls throughout the :py:attr:`current_epoch`.
     """
 
     def __init__(self,

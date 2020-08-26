@@ -151,8 +151,8 @@
 <span class="sd">        corruption_chances:</span>
 <span class="sd">            A two-element list containing the probability of file block replica</span>
 <span class="sd">            being corrupted and not being corrupted, respectively. See</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.</span>
-<span class="sd">            _assign_disk_error_chance` for corruption chance configuration.</span>
+<span class="sd">            :py:meth:`~app.domain.cluster_groups.Cluster.__assign_disk_error_chance__`</span>
+<span class="sd">            for corruption chance configuration.</span>
 <span class="sd">        master:</span>
 <span class="sd">            A reference to :py:class:`app.domain.master_servers.Master` that</span>
 <span class="sd">            coordinates this Cluster instance.</span>
@@ -186,9 +186,9 @@
 <span class="sd">            .set_recovery_epoch` method calls. Important for logging purposes.</span>
 <span class="sd">        _recovery_epoch_calls:</span>
 <span class="sd">            Helper attribute that facilitates the storage of the sum of the</span>
-<span class="sd">            values returned by all :py:meth:`app.domain.helpers.</span>
-<span class="sd">            smart_dataclasses.FileBlockData.set_recovery_epoch` method calls</span>
-<span class="sd">            throughout the :py:attr:`current_epoch`.</span>
+<span class="sd">            values returned by all</span>
+<span class="sd">            :py:meth:`app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`</span>
+<span class="sd">            method calls throughout the :py:attr:`current_epoch`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>

@@ -44,10 +44,10 @@ class Master:
             A dictionary mapping network node identifiers names to their
             object instances (:py:class:`domain.network_nodes.HiveNode`).
             This collection differs from the
-            :py:class:`domain.cluster_groups.Cluster`s' attribute
-            :py:attr:`domain.cluster_groups.Cluster.members` in the sense that
-            the latter is only a subset of `workers`, which includes all
-            network nodes of the distributed backup system. Regardless of
+            :py:class:`Cluster's <app.domain.cluster_groups.Cluster>` attribute
+            :py:attr:`~app.domain.cluster_groups.Cluster.members` in the sense
+            that the latter is only a subset of `workers`, which includes all
+            network nodes of the distributed backup system, regardless of
             their participation on any Cluster.
     """
 

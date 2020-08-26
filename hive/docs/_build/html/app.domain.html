@@ -169,8 +169,8 @@ simulation environment.</p>
 <code class="sig-name descname">corruption_chances</code><a class="headerlink" href="#app.domain.cluster_groups.Cluster.corruption_chances" title="Permalink to this definition">¶</a></dt>
 <dd><p>A two-element list containing the probability of file block replica
 being corrupted and not being corrupted, respectively. See
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.</span>
-<span class="pre">_assign_disk_error_chance()</span></code> for corruption chance configuration.</p>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">__assign_disk_error_chance__()</span></code>
+for corruption chance configuration.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -244,9 +244,9 @@ values returned by all
 <dt id="app.domain.cluster_groups.Cluster._recovery_epoch_calls">
 <code class="sig-name descname">_recovery_epoch_calls</code><a class="headerlink" href="#app.domain.cluster_groups.Cluster._recovery_epoch_calls" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper attribute that facilitates the storage of the sum of the
-values returned by all <code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.helpers.</span>
-<span class="pre">smart_dataclasses.FileBlockData.set_recovery_epoch()</span></code> method calls
-throughout the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.current_epoch" title="app.domain.cluster_groups.Cluster.current_epoch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code></a>.</p>
+values returned by all
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch()</span></code>
+method calls throughout the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.current_epoch" title="app.domain.cluster_groups.Cluster.current_epoch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1230,10 +1230,10 @@ instances managed by the Master.</p>
 <dd><p>A dictionary mapping network node identifiers names to their
 object instances (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.network_nodes.HiveNode</span></code>).
 This collection differs from the
-<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster`s'</span> <span class="pre">attribute</span>
-<span class="pre">:py:attr:`domain.cluster_groups.Cluster.members</span></code> in the sense that
-the latter is only a subset of <cite>workers</cite>, which includes all
-network nodes of the distributed backup system. Regardless of
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster's</span></code></a> attribute
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> in the sense
+that the latter is only a subset of <cite>workers</cite>, which includes all
+network nodes of the distributed backup system, regardless of
 their participation on any Cluster.</p>
 </dd></dl>
 
