@@ -1186,16 +1186,6 @@ in the system.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simulation manager class. Plays the role of a master server for all
 Hives of the distributed backup system.</p>
-<dl class="simple">
-<dt>Class Attributes:</dt><dd><dl class="simple">
-<dt>MAX_EPOCHS:</dt><dd><p>The number of time steps a simulation should have.
-On a 24 hour day, 720 means one epoch should occur every two minutes.</p>
-</dd>
-<dt>MAX_EPOCHS_PLUS_ONE:</dt><dd><p>do not alter.</p>
-</dd>
-</dl>
-</dd>
-</dl>
 <dl class="py attribute">
 <dt id="app.domain.master_servers.Master.origin">
 <code class="sig-name descname">origin</code><a class="headerlink" href="#app.domain.master_servers.Master.origin" title="Permalink to this definition">¶</a></dt>
@@ -1239,12 +1229,12 @@ their participation on any Cluster.</p>
 
 <dl class="py attribute">
 <dt id="app.domain.master_servers.Master.MAX_EPOCHS">
-<code class="sig-name descname">MAX_EPOCHS</code><em class="property"> = None</em><a class="headerlink" href="#app.domain.master_servers.Master.MAX_EPOCHS" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">MAX_EPOCHS</code><em class="property">: Optional<span class="p">[</span>int<span class="p">]</span></em><em class="property"> = None</em><a class="headerlink" href="#app.domain.master_servers.Master.MAX_EPOCHS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.master_servers.Master.MAX_EPOCHS_PLUS_ONE">
-<code class="sig-name descname">MAX_EPOCHS_PLUS_ONE</code><em class="property"> = None</em><a class="headerlink" href="#app.domain.master_servers.Master.MAX_EPOCHS_PLUS_ONE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">MAX_EPOCHS_PLUS_ONE</code><em class="property">: Optional<span class="p">[</span>int<span class="p">]</span></em><em class="property"> = None</em><a class="headerlink" href="#app.domain.master_servers.Master.MAX_EPOCHS_PLUS_ONE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

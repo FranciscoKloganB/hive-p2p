@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Optional
 
 import domain.helpers.enums as e
 import type_hints as th
@@ -19,13 +19,6 @@ _PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 class Master:
     """Simulation manager class. Plays the role of a master server for all
     Hives of the distributed backup system.
-
-    Class Attributes:
-        MAX_EPOCHS:
-            The number of time steps a simulation should have.
-            On a 24 hour day, 720 means one epoch should occur every two minutes.
-        MAX_EPOCHS_PLUS_ONE:
-            do not alter.
 
     Attributes:
         origin:
@@ -51,8 +44,8 @@ class Master:
             their participation on any Cluster.
     """
 
-    MAX_EPOCHS = None
-    MAX_EPOCHS_PLUS_ONE = None
+    MAX_EPOCHS: Optional[int] = None
+    MAX_EPOCHS_PLUS_ONE: Optional[int] = None
 
     def __init__(self,
                  simfile_name: str,

@@ -101,7 +101,7 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">domain.helpers.enums</span> <span class="k">as</span> <span class="nn">e</span>
 <span class="kn">import</span> <span class="nn">type_hints</span> <span class="k">as</span> <span class="nn">th</span>
@@ -117,13 +117,6 @@
 <div class="viewcode-block" id="Master"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master">[docs]</a><span class="k">class</span> <span class="nc">Master</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Simulation manager class. Plays the role of a master server for all</span>
 <span class="sd">    Hives of the distributed backup system.</span>
-
-<span class="sd">    Class Attributes:</span>
-<span class="sd">        MAX_EPOCHS:</span>
-<span class="sd">            The number of time steps a simulation should have.</span>
-<span class="sd">            On a 24 hour day, 720 means one epoch should occur every two minutes.</span>
-<span class="sd">        MAX_EPOCHS_PLUS_ONE:</span>
-<span class="sd">            do not alter.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        origin:</span>
@@ -149,8 +142,8 @@
 <span class="sd">            their participation on any Cluster.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">MAX_EPOCHS</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">MAX_EPOCHS_PLUS_ONE</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">MAX_EPOCHS</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">MAX_EPOCHS_PLUS_ONE</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
