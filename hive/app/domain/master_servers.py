@@ -1,5 +1,5 @@
 """This module contains domain specific classes that coordinate all
-:py:mod:`~domain.cluster_groups` of a simulation instance."""
+:py:mod:`domain.cluster_groups` of a simulation instance."""
 from __future__ import annotations
 
 import json
@@ -38,14 +38,14 @@ class Master:
         epoch:
             The simulation's current epoch.
         cluster_groups:
-            A collection of :py:class:`~domain.cluster_groups.Cluster`
+            A collection of :py:class:`domain.cluster_groups.Cluster`
             instances managed by the Master.
         network_nodes:
             A dictionary mapping network node identifiers names to their
-            object instances (:py:class:`~domain.network_nodes.HiveNode`).
+            object instances (:py:class:`domain.network_nodes.HiveNode`).
             This collection differs from the
-            :py:class:`~domain.cluster_groups.Cluster`s' attribute
-            :py:attr:`~domain.cluster_groups.Cluster.members` in the sense that
+            :py:class:`domain.cluster_groups.Cluster`s' attribute
+            :py:attr:`domain.cluster_groups.Cluster.members` in the sense that
             the latter is only a subset of `workers`, which includes all
             network nodes of the distributed backup system. Regardless of
             their participation on any Cluster.
@@ -98,13 +98,13 @@ class Master:
         """Opens and processes the simulation filed referenced in `path`.
 
         This method opens the file reads the json data inside it and combined
-        with :py:mod:`~environment_settings`, sets up the class instances to
+        with :py:mod:`environment_settings`, sets up the class instances to
         be used during the simulation (e.g., :py:class:`Clusters
         <domain.network_nodes.Cluster>` and :py:class:`Nodes
         <domain.network_nodes.Node>`). This method should also be responsible
         for splitting the file into multiple chunks/blocks/parts and
         distributing them over the initial clusters'
-        :py:attr:`~domain.cluster_groups.Cluster.members`.
+        :py:attr:`domain.cluster_groups.Cluster.members`.
 
         Args:
             path:
@@ -161,12 +161,12 @@ class Master:
             self, fname: str, cluster: th.ClusterType, bsize: int
     ) -> th.ReplicasDict:
         """Helper method that splits the files into multiple blocks to be
-        persisted in a :py:class:`~domain.cluster_group.Cluster`.
+        persisted in a :py:class:`domain.cluster_group.Cluster`.
 
         Args:
             fname:
                 The name of the file located in
-                :py:const:`~environment_settings.SHARED_ROOT` folder to be
+                :py:const:`environment_settings.SHARED_ROOT` folder to be
                 read and splitted.
             bsize:
                 The maximum amount of bytes each file block can have.

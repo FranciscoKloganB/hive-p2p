@@ -16,7 +16,7 @@ def generate_samples(surveys: int = 10,
         If you use this sample generation, simply select pick up the elements
         and assign them to a label in sequence. In this case sample_count is
         just the number of samples I wish to take. See also
-        :py:func:`~generate_samples_extended`.
+        :py:func:`generate_samples_extended`.
 
     Args:
         surveys:

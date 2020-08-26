@@ -5,11 +5,11 @@ through out the simulation's lifetime including initialization and execution.
 
 Note:
     To configure the amount of available network nodes in a simulation (
-    :py:class:`~app.domain.network_nodes.HiveNode`), the number of network
+    :py:class:`app.domain.network_nodes.HiveNode`), the number of network
     nodes in a group persisting a file (
-    :py:class:`~app.domain.cluster_groups.Cluster`),
+    :py:class:`app.domain.cluster_groups.Cluster`),
     the way files are initially distributed between network nodes of a
-    simulation (:py:meth:`~app.domain.cluster_groups.Cluster.spread_files`)
+    simulation (:py:meth:`app.domain.cluster_groups.Cluster.spread_files`)
     and, the actual name of the file whose persistence is being simulated,
     you should create a simulation file using
     :py:mod:`simulation_file_generator` and follow its instructions. To run
@@ -28,7 +28,7 @@ Attributes:
         should be performed (default is False).
     READ_SIZE:
         Defines the raw size of each file block before it's wrapped in a
-        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+        :py:class:`app.domain.helpers.smart_dataclasses.FileBlockData`
         instance object (default is 131072). Example values: 32KB = 32768B;
         128KB = 131072B; 512KB = 524288B; 1MB = 1048576B; 20MB = 20971520B.
     MONTH_EPOCHS:
@@ -45,9 +45,9 @@ Attributes:
         The amount of blocks each file block has (default is 3).
     MIN_CONVERGENCE_THRESHOLD:
         The number of consecutive epoch time steps that an
-        :py:class:`~app.domain.cluster_groups.Cluster` must converge before
+        :py:class:`app.domain.cluster_groups.Cluster` must converge before
         epochs start being marked with verified convergence in
-        :py:attr:`~app.domain.helpers.smart_dataclasses.LoggingData
+        :py:attr:`app.domain.helpers.smart_dataclasses.LoggingData
         .convergence_set` (default is 2).
     LOSS_CHANCE:
         Defines the probability of a message not being delivered to a
