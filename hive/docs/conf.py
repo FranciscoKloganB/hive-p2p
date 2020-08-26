@@ -5,6 +5,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import sphinx_redactor_theme
+import sphinx_rtd_theme
 
 # -- Path setup --------------------------------------------------------------
 
@@ -48,7 +49,8 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'sphinx.ext.autodoc.typehints',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx_rtd_theme'
 ]
 
 autodoc_typehints = 'description'
@@ -111,6 +113,7 @@ html_static_path = ['_static']
 
 # -- Sphinx Themes -----------------------------------------------------------
 
-html_theme = 'sphinx_redactor_theme'
-html_theme_path = [sphinx_redactor_theme.get_html_theme_path()]
+# html_theme = 'sphinx_redactor_theme'
+# html_theme_path = [sphinx_redactor_theme.get_html_theme_path()]
+html_theme = 'sphinx_rtd_theme'
 html_show_sourcelink = False
