@@ -22,6 +22,7 @@ If you don't have a simulation file yet, run the following instead::
 
 Note:
     For the simulation to run without errors you must ensurue that::
+
         1. The specified simulation files exist in
         :py:const:`environment_settings.SIMULATION_ROOT`.
 
@@ -66,7 +67,8 @@ def __makedirs() -> None:
 
 
 def __can_exec_simfile(sname: str) -> None:
-    """Verifies if input simulation file name exists in /*/SIMULATION_ROOT"""
+    """Verifies if input simulation file name exists in
+    :py:const:`app.environment_settings.SIMULATION_ROOT`."""
     spath = os.path.join(SIMULATION_ROOT, sname)
     if not os.path.exists(spath):
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")

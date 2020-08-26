@@ -60,8 +60,8 @@
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-app.domain.helpers.enums">app.domain.helpers.enums module</a></li>
 <li><a class="reference internal" href="#module-app.domain.helpers.exceptions">app.domain.helpers.exceptions module</a></li>
-<li><a class="reference internal" href="#app-domain-helpers-matlab-utils-module">app.domain.helpers.matlab_utils module</a></li>
-<li><a class="reference internal" href="#app-domain-helpers-matrices-module">app.domain.helpers.matrices module</a></li>
+<li><a class="reference internal" href="#module-app.domain.helpers.matlab_utils">app.domain.helpers.matlab_utils module</a></li>
+<li><a class="reference internal" href="#module-app.domain.helpers.matrices">app.domain.helpers.matrices module</a></li>
 <li><a class="reference internal" href="#app-domain-helpers-smart-dataclasses-module">app.domain.helpers.smart_dataclasses module</a></li>
 </ul>
 </li>
@@ -234,11 +234,464 @@ representation and some other dimensions are given.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="app-domain-helpers-matlab-utils-module">
-<h2>app.domain.helpers.matlab_utils module<a class="headerlink" href="#app-domain-helpers-matlab-utils-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-app.domain.helpers.matlab_utils">
+<span id="app-domain-helpers-matlab-utils-module"></span><h2>app.domain.helpers.matlab_utils module<a class="headerlink" href="#module-app.domain.helpers.matlab_utils" title="Permalink to this headline">¶</a></h2>
+<p>Module with Matlab related classes.</p>
+<dl class="py class">
+<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer">
+<em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.matlab_utils.</code><code class="sig-name descname">MatlabEngineContainer</code><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Singleton class wrapper containing thread safe access to a MatlabEngine.</p>
+<p>The purpose of this class is to provide a thread-safe way to access the
+matlab engine instance object when running simulations in threaded mode.</p>
+<dl class="py attribute">
+<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.eng">
+<code class="sig-name descname">eng</code><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.eng" title="Permalink to this definition">¶</a></dt>
+<dd><p>A matlab engine instance object used for matrix and vector
+optimization operations throughout the simulations.
+Do not access this directly. MatlabEngine objects are not
+officially thread safe, thus it is recommended that you utilize
+the wrapped function, unless you are not running the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">hive_simulation</span></code> with -t flag, i.e., you are not using
+the multithreaded mode to speed up simulations.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.__LOCK">
+<code class="sig-name descname">__LOCK</code><em class="property"> = &lt;unlocked _thread.RLock object owner=0 count=0&gt;</em><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.__LOCK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.__instance">
+<code class="sig-name descname">__instance</code><em class="property">: <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">MatlabEngineContainer</a></em><em class="property"> = None</em><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.__instance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance">
+<em class="property">static </em><code class="sig-name descname">get_instance</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">app.domain.helpers.matlab_utils.MatlabEngineContainer</a><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.get_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to obtain a singleton instance of <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatlabEngineContainer</span></code></a></p>
+<p>If one instance already exists that instance is returned,
+otherwise a new one is created and returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A reference to the existing MatlabEngineContainer instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.matrix_global_opt">
+<code class="sig-name descname">matrix_global_opt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Any<a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.matrix_global_opt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.matrix_global_opt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an optimized transition matrix using the matlab engine.</p>
+<p>Constructs an optimized transition matrix using linear programming
+relaxations and convex envelope approximations for the specified steady
+state <cite>v</cite>, this is done by invoke the matlabscript matrixGlobalOpt
+in the project folder name matlab.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function can only be invoked if you have a valid matlab license.</p>
 </div>
-<div class="section" id="app-domain-helpers-matrices-module">
-<h2>app.domain.helpers.matrices module<a class="headerlink" href="#app-domain-helpers-matrices-module" title="Permalink to this headline">¶</a></h2>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – A non-optimized symmetric adjency matrix.</p></li>
+<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
+respective mixing rate or None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-app.domain.helpers.matrices">
+<span id="app-domain-helpers-matrices-module"></span><h2>app.domain.helpers.matrices module<a class="headerlink" href="#module-app.domain.helpers.matrices" title="Permalink to this headline">¶</a></h2>
+<p>Module used by :py:class:<a href="#id1"><span class="problematic" id="id2">`</span></a>~domain.cluster_groups.Cluster to create transition
+matrices for the simulation.</p>
+<p>You should implement your own metropolis-hastings or alternative algorithms
+as well as any steady-state or transition matrix optimization algorithms in
+this module.</p>
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.__get_diagonal_entry_probability">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">__get_diagonal_entry_probability</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">r</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">i</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; numpy.float64<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.__get_diagonal_entry_probability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function used by _metropolis_hastings function.</p>
+<p>Calculates the value that should be assigned to the entry (i, i) of the
+transition matrix being calculated by the metropolis hastings algorithm
+by considering the rejection probability over the random walk that was
+performed on an adjacency matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rw</strong> – A random_walk over an adjacency matrix.</p></li>
+<li><p><strong>r</strong> – A matrix whose entries contain acceptance probabilities for rw.</p></li>
+<li><p><strong>i</strong> – The diagonal-index of the random walk where summation needs to
+be performed on.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A probability to be inserted at entry (i, i) of the transition matrix
+outputed by the _metropolis_hastings function.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.__get_diagonal_entry_probability_v2">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">__get_diagonal_entry_probability_v2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">i</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; numpy.float64<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability_v2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.__get_diagonal_entry_probability_v2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function used by _metropolis_hastings function.</p>
+<p>Calculates the value that should be assigned to the entry (i, i) of the
+transition matrix being calculated by the metropolis hastings algorithm
+by considering the rejection probability over the random walk that was
+performed on an adjacency matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> – The matrix to receive the diagonal entry value.</p></li>
+<li><p><strong>i</strong> – The diagonal entry index. E.g.: m[i, i].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A probability to be inserted at entry (i, i) of the transition matrix
+outputed by the _metropolis_hastings function.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices._adjency_matrix_sdp_optimization">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_adjency_matrix_sdp_optimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>Tuple<span class="p">[</span>cvxpy.problems.problem.Problem<span class="p">, </span>cvxpy.expressions.variable.Variable<span class="p">]</span><span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_adjency_matrix_sdp_optimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._adjency_matrix_sdp_optimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimizes a symmetric adjacency matrix using Semidefinite Programming.</p>
+<p>The optimization is done with respect to the uniform stochastic vector
+with the the same length as the inputed symmetric matrix.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ol class="arabic simple">
+<li><p>This function only works if you have a valid MOSEK license.</p></li>
+</ol>
+<p>2. The input Matrix hould have no transient states/absorbent nodes, but
+this is not enforced or verified.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>a</strong> – Any symmetric adjacency matrix.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The optimal matrix or None if the problem is unfeasible.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices._construct_random_walk_matrix">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_construct_random_walk_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_construct_random_walk_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._construct_random_walk_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds a random walk matrix over the given adjacency matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>a</strong> – Any adjacency matrix.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A matrix representing the performed random walk.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices._construct_rejection_matrix">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_construct_rejection_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.array</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_construct_rejection_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._construct_rejection_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds a rejection matrix for a given rejection matrix rw and vector <a href="#id3"><span class="problematic" id="id4">v_</span></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> – a stochastic desired distribution vector</p></li>
+<li><p><strong>rw</strong> – a random_walk over an adjacency matrix</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A matrix whose entries are acceptance probabilities for the random walk.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices._metropolis_hastings">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_metropolis_hastings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">column_major_out</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">version</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_metropolis_hastings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._metropolis_hastings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a transition matrix using metropolis-hastings algorithm.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The input Matrix hould have no transient states/absorbent nodes,
+but this is not enforced or verified.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – A symmetric adjency matrix.</p></li>
+<li><p><strong>v</strong> – A stochastic vector that is the steady state of the resulting
+transition matrix.</p></li>
+<li><p><strong>column_major_out</strong> – optional; Indicates whether to return transition_matrix output
+is in row or column major form.</p></li>
+<li><p><strong>version</strong> – optional; Indicates which version of the algorith should be used
+(default is 2, for version 2).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An unlabeled transition matrix with steady state <a href="#id5"><span class="problematic" id="id6">v_</span></a>.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#app.domain.helpers.exceptions.DistributionShapeError" title="app.domain.helpers.exceptions.DistributionShapeError"><strong>DistributionShapeError</strong></a> – When the length of <a href="#id7"><span class="problematic" id="id8">v_</span></a> is not the same as the matrix a.</p></li>
+<li><p><a class="reference internal" href="#app.domain.helpers.exceptions.MatrixNotSquareError" title="app.domain.helpers.exceptions.MatrixNotSquareError"><strong>MatrixNotSquareError</strong></a> – When matrix a is not a square matrix.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.get_mixing_rate">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">get_mixing_rate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#get_mixing_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.get_mixing_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculats the fast mixing rate the input matrix.</p>
+<p>The fast mixing rate of matrix M is the highest eigenvalue that is
+smaller than one. If returned value is 1.0 than the matrix has transient
+states or absorbent nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>m</strong> – A matrix.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The highest eigenvalue of <cite>m</cite> that is smaller than one or one.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.is_connected">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">is_connected</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">directed</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#is_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.is_connected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a matrix is connected by counting the number of connected
+components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> – The matrix to be verified.</p></li>
+<li><p><strong>directed</strong> – If the matrix edges are directed, i.e., if the matrix is an adjency
+matrix are the edges bidirectional, where false means they are (
+default is false).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the matrix is a connected graph, else False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.is_symmetric">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">is_symmetric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tol</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-08</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#is_symmetric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.is_symmetric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if a matrix is symmetric by comparing entries of a and a.T.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> – The matrix to be verified.</p></li>
+<li><p><strong>tol</strong> – The tolerance used to verify the entries of the matrix (default
+is 1e-8).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the matrix is symmetric, else False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.make_connected">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">make_connected</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#make_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.make_connected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turns a matrix into a connected matrix that could represent a
+connected graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>m</strong> – The matrix to be made connected.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A connected matrix. If the inputed matrix was connected it will
+remain so.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.new_go_transition_matrix">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_go_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_go_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_go_transition_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an optimized transition matrix using cvxpy and MOSEK solver.</p>
+<p>Constructs an optimized markov matrix using linear programming relaxations
+and convex envelope approximations for the specified steady state <cite>v</cite>.
+Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform
+Matrix, 2) is equal to the markov matrix eigenvalue.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function only works if you have a valid MOSEK license.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – A non-optimized symmetric adjency matrix.</p></li>
+<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
+respective mixing rate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.new_mgo_transition_matrix">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_mgo_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_mgo_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_mgo_transition_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an optimized transition matrix using the matlab engine.</p>
+<p>Constructs an optimized transition matrix using linear programming
+relaxations and convex envelope approximations for the specified steady
+state <cite>v</cite>. Result is only trully optimal if normal(Tranistion Matrix Opt
+- Uniform Matrix, 2) is equal to the markov matrix eigenvalue. The code
+is run on a matlab engine because it provides a non-convex SDP solver ç
+BMIBNB.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function can only be invoked if you have a valid matlab license.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – A non-optimized symmetric adjency matrix.</p></li>
+<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
+respective mixing rate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.new_mh_transition_matrix">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_mh_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>numpy.ndarray<span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_mh_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_mh_transition_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a transition matrix using metropolis-hastings.</p>
+<p>Constructs a transition matrix using metropolis-hastings algorithm  for
+the specified steady state <cite>v</cite>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The input Matrix hould have no transient states or absorbent nodes,
+but this is not enforced or verified.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – A symmetric adjency matrix.</p></li>
+<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
+respective mixing rate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.new_sdp_mh_transition_matrix">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_sdp_mh_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_sdp_mh_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_sdp_mh_transition_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an optimized transition matrix using cvxpy and MOSEK solver.</p>
+<p>Constructs a transition matrix using metropolis-hastings algorithm  for
+the specified steady state <cite>v</cite>. The provided adjacency matrix A is first
+optimized with semi-definite programming techniques for the uniform
+distribution vector.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function only works if you have a valid MOSEK license.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – A non-optimized symmetric adjency matrix.</p></li>
+<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
+respective mixing rate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.new_symmetric_connected_matrix">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_symmetric_connected_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_connected_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_symmetric_connected_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a random symmetric matrix which is also connected.</p>
+<p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code> and
+py:func:<cite>~domain.helpers.matrices.make_connected</cite>.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>size:</dt><dd><p>The length of the square matrix.</p>
+</dd>
+<dt>allow_sloops:</dt><dd><p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code>.</p>
+</dd>
+<dt>force_sloops:</dt><dd><p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A matrix that represents an adjacency matrix that is also connected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.new_symmetric_matrix">
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_symmetric_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a random symmetric matrix.</p>
+<blockquote>
+<div><p>The generated adjacency matrix does not have transient state sets or
+absorbent nodes and can effectively represent a network topology
+with bidirectional connections between network nodes.</p>
+<dl>
+<dt>Args:</dt><dd><dl>
+<dt>size:</dt><dd><p>The length of the square matrix.</p>
+</dd>
+<dt>allow_sloops:</dt><dd><p>Indicates if the generated adjacency matrix allows diagonal
+entries representing self-loops. If false, then, all diagonal</p>
+<blockquote>
+<div><p>entries must be zeros. Otherwise, they can be zeros or ones (
+default is True).</p>
+</div></blockquote>
+</dd>
+<dt>force_sloops:</dt><dd><p>Indicates if the diagonal of the generated matrix should be
+filled with ones. If false, valid diagonal entries are decided by
+<cite>allow_self_loops</cite> param. Otherwise, diagonal entries are filled
+with ones. If <cite>allow_self_loops</cite> is False and <cite>enforce_loops</cite> is
+True, an error is raised (default is True).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The adjency matrix representing the connections between a
+groups of network nodes.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="app.domain.helpers.exceptions.IllegalArgumentError"><strong>IllegalArgumentError</strong></a> – When <cite>allow_self_loops</cite> (False) conflicts with
+    <cite>enforce_loops</cite> (True).</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="app-domain-helpers-smart-dataclasses-module">
 <h2>app.domain.helpers.smart_dataclasses module<a class="headerlink" href="#app-domain-helpers-smart-dataclasses-module" title="Permalink to this headline">¶</a></h2>
