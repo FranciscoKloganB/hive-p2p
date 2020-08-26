@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <title>app.utils.convertions</title>
+    
+
+    <link rel="stylesheet" href="../../../_static/css/redactor.css" type="text/css" />
+    
+    
+    <link rel="index" title="Index" href="../../../genindex.html"/>
+    <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="Hives 1.0 documentation" href="../../../index.html"/>
+    <link rel="up" title="Module code" href="../../index.html"/> 
+</head>
+
+<body role="document">
+     
+
+    
+<a href="#" id="js-navigation-toggle" class="navigation-toggle">
+    <i class="mdi mdi-menu"></i><i class="mdi mdi-close"></i>
+</a>
+
+<section class="site-sidebar">
+
+<nav>
+
+
+    <a href="../../../index.html" class="branding-link">
+    
+        Hives
+    
+    
+    
+        
+        
+    
+    </a>
+
+    
+<section role="search">
+    <form action="../../../search.html" method="get" class="site-searchform">
+        <input type="text" name="q" placeholder="Search docs" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+</section>
+
+
+
+    <section class="site-nav">
+    
+    
+        <div></div>
+    
+    </section>
+
+</nav>
+
+</section>
+
+    <main class="site-main" role="main">
+        
+
+
+
+
+
+
+
+
+
+
+
+<nav class="site-breadcrumbs">
+    <ul>
+    
+        <li>
+            <a href="../../../index.html">Docs</a> /
+        </li>
+        
+        <li>
+            <a href="../../index.html">Module code</a> /
+        </li>
+        
+        <li class="site-breadcrumbs__leaf">app.utils.convertions</li>
+    
+    </ul>
+</nav>
+        <section class="site-content">
+            <div class="container">
+                
+  <h1>Source code for app.utils.convertions</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module includes various data-type convertion utilities.</span>
+
+<span class="sd">Some functions include representing a string or sequence of bytes</span>
+<span class="sd">as base64-encoded strings or serialization objects into JSON strings.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">jsonpickle</span>
+
+
+<div class="viewcode-block" id="bytes_to_base64_string"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.bytes_to_base64_string">[docs]</a><span class="k">def</span> <span class="nf">bytes_to_base64_string</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Converts a byte sequence or non base64 string to a base64-encoded string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: sequence of bytes to be converted.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A base64-encoded string representation of data or None if data is not a</span>
+<span class="sd">        str or bytes type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="base64_string_to_bytes"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.base64_string_to_bytes">[docs]</a><span class="k">def</span> <span class="nf">base64_string_to_bytes</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot; Converts a base64 string to a sequence of bytes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        string: a base64-encoded string to be converted to a byte sequence.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A sequence of bytes converted from the given base64-encoded string or</span>
+<span class="sd">        None string is not a str type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="base64_bytelike_obj_to_bytes"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.base64_bytelike_obj_to_bytes">[docs]</a><span class="k">def</span> <span class="nf">base64_bytelike_obj_to_bytes</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Converts a byte-like object to a sequence of bytes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: The object to be converted to base64-encoded string.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A sequence of bytesrepresentation of the given object or None if obj</span>
+<span class="sd">        is not a bytes type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="bytes_to_utf8string"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.bytes_to_utf8string">[docs]</a><span class="k">def</span> <span class="nf">bytes_to_utf8string</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Converts a sequence of bytes a utf-8 string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data: sequence of bytes to be converted.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A utf-8 string representation of data or None if data is not a bytes</span>
+<span class="sd">        type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="utf8string_to_bytes"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.utf8string_to_bytes">[docs]</a><span class="k">def</span> <span class="nf">utf8string_to_bytes</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Converts utf-8 string to a sequence of bytes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        string: a utf-8 string to be converted to bytes.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The bytes of the utf-8 string or None if string is not a str type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="str_copy"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.str_copy">[docs]</a><span class="k">def</span> <span class="nf">str_copy</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Hard copies a string</span>
+
+<span class="sd">     Note:</span>
+<span class="sd">         Python&#39;s builtin copy.deepcopy() does not deep copy strings.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        string: The string to be copied.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An deep copy of the string or None if the string is not a str type.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">string</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="obj_to_json_string"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.obj_to_json_string">[docs]</a><span class="k">def</span> <span class="nf">obj_to_json_string</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Serializes a python object to a JSON string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: The object to be serialized.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A string representation of the object in JSON format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="json_string_to_obj"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.json_string_to_obj">[docs]</a><span class="k">def</span> <span class="nf">json_string_to_obj</span><span class="p">(</span><span class="n">json_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Deserializes a JSON string to a a python object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        json_string: The string to be deserialized into a python object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A python object obtained from the JSON string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">jsonpickle</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="class_name_to_obj"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.class_name_to_obj">[docs]</a><span class="k">def</span> <span class="nf">class_name_to_obj</span><span class="p">(</span><span class="n">module_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">class_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Uses reflection to instanciate a class by name.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        module_name:</span>
+<span class="sd">            The fully qualified path of the module the class is defined in.</span>
+<span class="sd">            The name of the module must be included.</span>
+<span class="sd">        class_name:</span>
+<span class="sd">            The name of the class to be instanciated.</span>
+<span class="sd">        args:</span>
+<span class="sd">            The arguments expected by the named class as an iterable list.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An object of the named class.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AttributeError:</span>
+<span class="sd">            When `class_name` does not exist or when `module_name` to be</span>
+<span class="sd">            imported causes cyclic import errors.</span>
+<span class="sd">        ImportError:</span>
+<span class="sd">            When `module_name` is not a valid module.</span>
+<span class="sd">    Examples:</span>
+<span class="sd">        You could call this function like so::</span>
+
+<span class="sd">            h = class_name_to_obj(MASTER_SERVERS, &quot;Master&quot;, [&quot;f.jpg&quot;, 1, 80])</span>
+
+<span class="sd">        This would be equivalent to calling::</span>
+
+<span class="sd">            h = Master(&quot;f.jpg&quot;, 1, 80)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">module_</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+    <span class="n">instance</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module_</span><span class="p">,</span> <span class="n">class_name</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">instance</span></div>
+
+
+<div class="viewcode-block" id="truncate_float_value"><a class="viewcode-back" href="../../../app.utils.html#app.utils.convertions.truncate_float_value">[docs]</a><span class="k">def</span> <span class="nf">truncate_float_value</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Truncates a float value without rounding.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f:</span>
+<span class="sd">            The float value to truncate.</span>
+<span class="sd">        d:</span>
+<span class="sd">            The number of decimal places the float can have.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The truncated float.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">d</span></div>
+</pre></div>
+
+            </div>
+
+        </section>
+
+        
+
+        
+            <div class="source-link">
+            
+                
+            
+            </div>
+        
+
+
+
+    </main>
+
+    <footer class="site-footer">
+<div class="container">
+
+    <div role="contentinfo">
+        <p>
+                &copy; Copyright 2020, Francisco Barros.
+        </p>
+    </div>
+        <p>Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+        <a href="https://github.com/testthedocs/sphinx_ttd_theme">theme</a>
+        provided by <a href="https://testthedocs">TestTheDocs</a>. 
+
+</div>
+</footer>
+
+    
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../../_static/js/theme-min.js"></script> 
+</body>
+</html>
