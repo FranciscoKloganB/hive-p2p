@@ -1,4 +1,4 @@
-"""Module used by :py:class:`~domain.cluster_groups.Cluster to create transition
+"""Module used by :py:class:`domain.cluster_groups.Cluster` to create transition
 matrices for the simulation.
 
 You should implement your own metropolis-hastings or alternative algorithms
@@ -474,16 +474,16 @@ def new_symmetric_connected_matrix(
 ) -> np.ndarray:
     """Generates a random symmetric matrix which is also connected.
 
-    See :py:func:`~domain.helpers.matrices.new_symmetric_matrix` and
-    py:func:`~domain.helpers.matrices.make_connected`.
+    See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix` and
+    py:func:`app.domain.helpers.matrices.make_connected`.
 
      Args:
          size:
             The length of the square matrix.
          allow_sloops:
-            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.
+            See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.
          force_sloops:
-            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.
+            See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.
 
     Returns:
         A matrix that represents an adjacency matrix that is also connected.

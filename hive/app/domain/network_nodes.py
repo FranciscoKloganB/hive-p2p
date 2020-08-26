@@ -325,7 +325,7 @@ class HiveNode(Node):
         possible HTTP Codes.
 
         Overrides:
-            :py:meth:`~domain.network_nodes.Node.execute_epoch`.
+            :py:meth:`app.domain.network_nodes.Node.execute_epoch`.
 
         Args:
             cluster:
@@ -357,11 +357,11 @@ class HiveNode(Node):
         The file block replica is sent selectively in descending order to the
         most reliable Nodes in the Cluster down to the least
         reliable. Whereas
-        :py:meth:`~domain.network_nodes.HiveNode.send_part`. follows
+        :py:meth:`app.domain.network_nodes.HiveNode.send_part`. follows
         stochastic swarm guidance routing.
 
         Overrides:
-            :py:meth:`~domain.network_nodes.Node.replicate_part`.
+            :py:meth:`app.domain.network_nodes.Node.replicate_part`.
         """
         # Number of times the block needs to be replicated.
         lost_replicas: int = replica.can_replicate(cluster.current_epoch)
@@ -462,13 +462,13 @@ class HiveNodeExt(HiveNode):
         """Used to obtain the status of the worker.
 
         Overrides:
-            :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
+            :py:meth:`app.domain.network_nodes.HiveNode.get_epoch_status`.
             When not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
 
         Returns:
             The status of the worker. See
-            :py:class:`~domain.helpers.enums.Status`.
+            :py:class:`app.domain.helpers.enums.Status`.
         """
         if self.status == e.Status.ONLINE:
             self.uptime -= 1
@@ -505,7 +505,7 @@ class HDFSNode(Node):
         corruption is still logged in the output file.
 
         Overrides:
-            :py:meth:`~domain.network_nodes.Node.execute_epoch`.
+            :py:meth:`app.domain.network_nodes.Node.execute_epoch`.
 
         Args:
             cluster:
@@ -536,7 +536,7 @@ class HDFSNode(Node):
         most reliable Nodes in the Cluster down to the least reliable.
 
         Overrides:
-            :py:meth:`~domain.network_nodes.Node.replicate_part`.
+            :py:meth:`app.domain.network_nodes.Node.replicate_part`.
         """
         # Number of times the block needs to be replicated.
         lost_replicas: int = replica.can_replicate(cluster.current_epoch)
@@ -560,13 +560,13 @@ class HDFSNode(Node):
         """Used to obtain the status of the worker.
 
         Overrides:
-            :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
+            :py:meth:`app.domain.network_nodes.HiveNode.get_epoch_status`.
             When not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
 
         Returns:
             The status of the worker. See
-            :py:class:`~domain.helpers.enums.Status`.
+            :py:class:`app.domain.helpers.enums.Status`.
         """
         if self.status == e.Status.ONLINE:
             self.uptime -= 1
