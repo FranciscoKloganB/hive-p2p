@@ -216,7 +216,7 @@ class Master:
         Args:
             exclusion_dict:
                 A dictionary of network nodes identifiers and their object
-                instances (:py:class:`~domain.network_nodes.HiveNode`),
+                instances (:py:class:`app.domain.network_nodes.HiveNode`),
                 which represent the nodes the Cluster is not interested in,
                 i.e., this argument is a blacklist.
             n:
@@ -293,7 +293,7 @@ class Master:
                 uptime of the network node.
 
         Returns:
-            The :py:class:`~domain.network_nodes.Node` instance.
+            The :py:class:`app.domain.network_nodes.Node` instance.
         """
         return class_name_to_obj(NETWORK_NODES, node_class, [nid, node_uptime])
     # endregion
@@ -341,9 +341,9 @@ class HDFSMaster(Master):
         """Opens and processes the simulation filed referenced in `path`.
 
         Overrides:
-            py:mod:`~domain.master_servers.Master.__process_simfile__`. The
+            py:mod:`app.domain.master_servers.Master.__process_simfile__`. The
             method is exactly the same except for one instruction. The
-            :py:mod:`~domain.master_servers.Master.__split_files__` is
+            :py:mod:`app.domain.master_servers.Master.__split_files__` is
             invoked with fixed `bsize` = 1MB. The reason for this is twofold::
 
                 - The default and, thus recommended, block/chunk size for the
