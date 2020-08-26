@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Dict, Union
 
-import domain.helpers.smart_dataclasses as sd
-import domain.helpers.enums as e
 import domain.master_servers as ms
 import domain.cluster_groups as cg
 import domain.network_nodes as nn
+import domain.helpers.enums as e
+import domain.helpers.smart_dataclasses as sd
 
 MasterType: Union[
     ms.Master
