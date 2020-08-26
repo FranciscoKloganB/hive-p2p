@@ -26,7 +26,6 @@ import uuid
 from typing import Tuple, Optional, List, Dict, Any
 
 from tabulate import tabulate
-from functools import reduce
 
 import domain.helpers.smart_dataclasses as sd
 import domain.helpers.matrices as mm
