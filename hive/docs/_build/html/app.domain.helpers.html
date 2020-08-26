@@ -310,7 +310,7 @@ respective mixing rate or None.</p>
 </div>
 <div class="section" id="module-app.domain.helpers.matrices">
 <span id="app-domain-helpers-matrices-module"></span><h2>app.domain.helpers.matrices module<a class="headerlink" href="#module-app.domain.helpers.matrices" title="Permalink to this headline">¶</a></h2>
-<p>Module used by :py:class:<a href="#id1"><span class="problematic" id="id2">`</span></a>~domain.cluster_groups.Cluster to create transition
+<p>Module used by <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster</span></code> to create transition
 matrices for the simulation.</p>
 <p>You should implement your own metropolis-hastings or alternative algorithms
 as well as any steady-state or transition matrix optimization algorithms in
@@ -372,9 +372,8 @@ with the the same length as the inputed symmetric matrix.</p>
 <p class="admonition-title">Note</p>
 <ol class="arabic simple">
 <li><p>This function only works if you have a valid MOSEK license.</p></li>
+<li><p>The input Matrix hould have no transient states/absorbent nodes,         but this is not enforced or verified.</p></li>
 </ol>
-<p>2. The input Matrix hould have no transient states/absorbent nodes, but
-this is not enforced or verified.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -630,16 +629,16 @@ respective mixing rate.</p>
 <dt id="app.domain.helpers.matrices.new_symmetric_connected_matrix">
 <code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_symmetric_connected_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_connected_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_symmetric_connected_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a random symmetric matrix which is also connected.</p>
-<p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code> and
-py:func:<cite>~domain.helpers.matrices.make_connected</cite>.</p>
+<p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a> and
+py:func:<cite>app.domain.helpers.matrices.make_connected</cite>.</p>
 <blockquote>
 <div><dl class="simple">
 <dt>Args:</dt><dd><dl class="simple">
 <dt>size:</dt><dd><p>The length of the square matrix.</p>
 </dd>
-<dt>allow_sloops:</dt><dd><p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code>.</p>
+<dt>allow_sloops:</dt><dd><p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p>
 </dd>
-<dt>force_sloops:</dt><dd><p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code>.</p>
+<dt>force_sloops:</dt><dd><p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p>
 </dd>
 </dl>
 </dd>

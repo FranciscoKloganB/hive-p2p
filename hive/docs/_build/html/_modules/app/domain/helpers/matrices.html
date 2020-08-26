@@ -96,7 +96,7 @@
             <div class="container">
                 
   <h1>Source code for app.domain.helpers.matrices</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Module used by :py:class:`~domain.cluster_groups.Cluster to create transition</span>
+<span></span><span class="sd">&quot;&quot;&quot;Module used by :py:class:`domain.cluster_groups.Cluster` to create transition</span>
 <span class="sd">matrices for the simulation.</span>
 
 <span class="sd">You should implement your own metropolis-hastings or alternative algorithms</span>
@@ -572,16 +572,16 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Generates a random symmetric matrix which is also connected.</span>
 
-<span class="sd">    See :py:func:`~domain.helpers.matrices.new_symmetric_matrix` and</span>
-<span class="sd">    py:func:`~domain.helpers.matrices.make_connected`.</span>
+<span class="sd">    See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix` and</span>
+<span class="sd">    py:func:`app.domain.helpers.matrices.make_connected`.</span>
 
 <span class="sd">     Args:</span>
 <span class="sd">         size:</span>
 <span class="sd">            The length of the square matrix.</span>
 <span class="sd">         allow_sloops:</span>
-<span class="sd">            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.</span>
+<span class="sd">            See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.</span>
 <span class="sd">         force_sloops:</span>
-<span class="sd">            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.</span>
+<span class="sd">            See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A matrix that represents an adjacency matrix that is also connected.</span>

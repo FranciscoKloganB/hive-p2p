@@ -60,11 +60,11 @@ def __input_bounded_integer(
         message:
             The message to be printed to the user upon first input request.
         lower_bound:
-            optional; Any input equal or smaller than`lower_bound` is rejected (
-            default is 2).
+            optional; Any input equal or smaller than `lower_bound` is
+            rejected (default is 2).
         upper_bound:
-            optional; Any input equal or bigger than `upper_bound` is rejected (
-            default is 16384).
+            optional; Any input equal or bigger than `upper_bound` is rejected
+            (default is 16384).
 
     Returns:
         An integer inputed by the user.
