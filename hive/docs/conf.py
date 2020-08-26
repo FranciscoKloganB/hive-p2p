@@ -58,6 +58,8 @@ autodoc_typehints = 'description'
 napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
 
+add_module_names = False
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

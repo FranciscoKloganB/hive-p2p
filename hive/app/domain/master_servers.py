@@ -137,7 +137,7 @@ class Master:
     def __create_network_nodes__(
             self, json: Dict[str, Any], node_class: str) -> None:
         """Helper method that instantiates all
-        :py:class:`Network Nodes<domain.network_nodes.Node> that are
+        :py:class:`Network Nodes <app.domain.network_nodes.Node>` that are
         specified in the simulation file.
 
         Args:
