@@ -14,7 +14,6 @@ Subpackages
    :maxdepth: 4
 
    app.domain
-   app.scripts
    app.utils
 
 Submodules
