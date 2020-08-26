@@ -266,7 +266,7 @@ the multithreaded mode to speed up simulations.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance">
-<em class="property">static </em><code class="sig-name descname">get_instance</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">app.domain.helpers.matlab_utils.MatlabEngineContainer</a><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.get_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">get_instance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.get_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Used to obtain a singleton instance of <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatlabEngineContainer</span></code></a></p>
 <p>If one instance already exists that instance is returned,
 otherwise a new one is created and returned.</p>
@@ -274,12 +274,15 @@ otherwise a new one is created and returned.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A reference to the existing MatlabEngineContainer instance.</p>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">app.domain.helpers.matlab_utils.MatlabEngineContainer</a></p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.matrix_global_opt">
-<code class="sig-name descname">matrix_global_opt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Any<a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.matrix_global_opt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.matrix_global_opt" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">matrix_global_opt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.matrix_global_opt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.matrix_global_opt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs an optimized transition matrix using the matlab engine.</p>
 <p>Constructs an optimized transition matrix using linear programming
 relaxations and convex envelope approximations for the specified steady
@@ -292,13 +295,17 @@ in the project folder name matlab.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> – A non-optimized symmetric adjency matrix.</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – A non-optimized symmetric adjency matrix.</p></li>
 <li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+<li><p><strong>v_</strong> (<em>numpy.ndarray</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
 respective mixing rate or None.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Any</p>
 </dd>
 </dl>
 </dd></dl>
@@ -315,7 +322,7 @@ as well as any steady-state or transition matrix optimization algorithms in
 this module.</p>
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.__get_diagonal_entry_probability">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">__get_diagonal_entry_probability</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">r</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">i</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; numpy.float64<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.__get_diagonal_entry_probability" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">__get_diagonal_entry_probability</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span></em>, <em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.__get_diagonal_entry_probability" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function used by
 <a class="reference internal" href="#app.domain.helpers.matrices._metropolis_hastings" title="app.domain.helpers.matrices._metropolis_hastings"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices._metropolis_hastings()</span></code></a> function.</p>
 <p>Calculates the value that should be assigned to the entry (i, i) of the
@@ -325,9 +332,9 @@ performed on an adjacency matrix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rw</strong> – A random_walk over an adjacency matrix.</p></li>
-<li><p><strong>r</strong> – A matrix whose entries contain acceptance probabilities for rw.</p></li>
-<li><p><strong>i</strong> – The diagonal-index of the random walk where summation needs to
+<li><p><strong>rw</strong> (<em>numpy.ndarray</em>) – A random_walk over an adjacency matrix.</p></li>
+<li><p><strong>r</strong> (<em>numpy.ndarray</em>) – A matrix whose entries contain acceptance probabilities for rw.</p></li>
+<li><p><strong>i</strong> (<em>int</em>) – The diagonal-index of the random walk where summation needs to
 be performed on.</p></li>
 </ul>
 </dd>
@@ -335,12 +342,15 @@ be performed on.</p></li>
 <dd class="field-even"><p>A probability to be inserted at entry (i, i) of the transition matrix
 outputed by the _metropolis_hastings function.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.__get_diagonal_entry_probability_v2">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">__get_diagonal_entry_probability_v2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">i</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; numpy.float64<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability_v2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.__get_diagonal_entry_probability_v2" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">__get_diagonal_entry_probability_v2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability_v2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.__get_diagonal_entry_probability_v2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function used by _metropolis_hastings function.</p>
 <p>Calculates the value that should be assigned to the entry (i, i) of the
 transition matrix being calculated by the metropolis hastings algorithm
@@ -349,20 +359,23 @@ performed on an adjacency matrix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>m</strong> – The matrix to receive the diagonal entry value.</p></li>
-<li><p><strong>i</strong> – The diagonal entry index. E.g.: m[i, i].</p></li>
+<li><p><strong>m</strong> (<em>numpy.ndarray</em>) – The matrix to receive the diagonal entry value.</p></li>
+<li><p><strong>i</strong> (<em>int</em>) – The diagonal entry index. E.g.: m[i, i].</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A probability to be inserted at entry (i, i) of the transition matrix
 outputed by the _metropolis_hastings function.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices._adjency_matrix_sdp_optimization">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_adjency_matrix_sdp_optimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>Tuple<span class="p">[</span>cvxpy.problems.problem.Problem<span class="p">, </span>cvxpy.expressions.variable.Variable<span class="p">]</span><span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_adjency_matrix_sdp_optimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._adjency_matrix_sdp_optimization" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_adjency_matrix_sdp_optimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_adjency_matrix_sdp_optimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._adjency_matrix_sdp_optimization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimizes a symmetric adjacency matrix using Semidefinite Programming.</p>
 <p>The optimization is done with respect to the uniform stochastic vector
 with the the same length as the inputed symmetric matrix.</p>
@@ -375,48 +388,58 @@ with the the same length as the inputed symmetric matrix.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>a</strong> – Any symmetric adjacency matrix.</p>
+<dd class="field-odd"><p><strong>a</strong> (<em>numpy.ndarray</em>) – Any symmetric adjacency matrix.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The optimal matrix or None if the problem is unfeasible.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[Tuple[cvxpy.problems.problem.Problem, cvxpy.expressions.variable.Variable]]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices._construct_random_walk_matrix">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_construct_random_walk_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_construct_random_walk_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._construct_random_walk_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_construct_random_walk_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_construct_random_walk_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._construct_random_walk_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds a random walk matrix over the given adjacency matrix</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>a</strong> – Any adjacency matrix.</p>
+<dd class="field-odd"><p><strong>a</strong> (<em>numpy.ndarray</em>) – Any adjacency matrix.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A matrix representing the performed random walk.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices._construct_rejection_matrix">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_construct_rejection_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.array</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_construct_rejection_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._construct_rejection_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_construct_rejection_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_construct_rejection_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._construct_rejection_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds a matrix of rejection probabilities for a given random walk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>v</strong> – a stochastic desired distribution vector</p></li>
-<li><p><strong>rw</strong> – a random_walk over an adjacency matrix</p></li>
+<li><p><strong>rw</strong> (<em>numpy.ndarray</em>) – a random_walk over an adjacency matrix</p></li>
+<li><p><strong>v_</strong> (<em>numpy.array</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A matrix whose entries are acceptance probabilities for the random walk.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices._metropolis_hastings">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_metropolis_hastings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">column_major_out</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">version</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_metropolis_hastings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._metropolis_hastings" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_metropolis_hastings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em>, <em class="sig-param"><span class="n">column_major_out</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">version</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_metropolis_hastings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._metropolis_hastings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a transition matrix using metropolis-hastings algorithm.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -426,13 +449,14 @@ but this is not enforced or verified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> – A symmetric adjency matrix.</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – A symmetric adjency matrix.</p></li>
 <li><p><strong>v</strong> – A stochastic vector that is the steady state of the resulting
 transition matrix.</p></li>
-<li><p><strong>column_major_out</strong> – optional; Indicates whether to return transition_matrix output
+<li><p><strong>column_major_out</strong> (<em>bool</em>) – optional; Indicates whether to return transition_matrix output
 is in row or column major form.</p></li>
-<li><p><strong>version</strong> – optional; Indicates which version of the algorith should be used
+<li><p><strong>version</strong> (<em>int</em>) – optional; Indicates which version of the algorith should be used
 (default is version 2).</p></li>
+<li><p><strong>v_</strong> (<em>numpy.ndarray</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -444,82 +468,97 @@ is in row or column major form.</p></li>
 <li><p><a class="reference internal" href="#app.domain.helpers.exceptions.MatrixNotSquareError" title="app.domain.helpers.exceptions.MatrixNotSquareError"><strong>MatrixNotSquareError</strong></a> – When matrix <cite>a</cite> is not a square matrix.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.get_mixing_rate">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">get_mixing_rate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#get_mixing_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.get_mixing_rate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">get_mixing_rate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#get_mixing_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.get_mixing_rate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculats the fast mixing rate the input matrix.</p>
 <p>The fast mixing rate of matrix M is the highest eigenvalue that is
 smaller than one. If returned value is 1.0 than the matrix has transient
 states or absorbent nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>m</strong> – A matrix.</p>
+<dd class="field-odd"><p><strong>m</strong> (<em>numpy.ndarray</em>) – A matrix.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The highest eigenvalue of <cite>m</cite> that is smaller than one or one.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.is_connected">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">is_connected</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">directed</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#is_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.is_connected" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">is_connected</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">directed</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#is_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.is_connected" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if a matrix is connected by counting the number of connected
 components.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>m</strong> – The matrix to be verified.</p></li>
-<li><p><strong>directed</strong> – If the matrix edges are directed, i.e., if the matrix is an adjency
+<li><p><strong>m</strong> (<em>numpy.ndarray</em>) – The matrix to be verified.</p></li>
+<li><p><strong>directed</strong> (<em>bool</em>) – If the matrix edges are directed, i.e., if the matrix is an adjency
 matrix are the edges bidirectional, where false means they are.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>True if the matrix is a connected graph, else False.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.is_symmetric">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">is_symmetric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">tol</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-08</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#is_symmetric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.is_symmetric" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">is_symmetric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-08</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#is_symmetric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.is_symmetric" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if a matrix is symmetric by comparing entries of a and a.T.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>m</strong> – The matrix to be verified.</p></li>
-<li><p><strong>tol</strong> – The tolerance used to verify the entries of the matrix (default
+<li><p><strong>m</strong> (<em>numpy.ndarray</em>) – The matrix to be verified.</p></li>
+<li><p><strong>tol</strong> (<em>float</em>) – The tolerance used to verify the entries of the matrix (default
 is 1e-8).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>True if the matrix is symmetric, else False.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.make_connected">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">make_connected</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#make_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.make_connected" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">make_connected</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#make_connected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.make_connected" title="Permalink to this definition">¶</a></dt>
 <dd><p>Turns a matrix into a connected matrix that could represent a
 connected graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>m</strong> – The matrix to be made connected.</p>
+<dd class="field-odd"><p><strong>m</strong> (<em>numpy.ndarray</em>) – The matrix to be made connected.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A connected matrix. If the inputed matrix was connected it will
 remain so.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.new_go_transition_matrix">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_go_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_go_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_go_transition_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_go_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_go_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_go_transition_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs an optimized transition matrix using cvxpy and MOSEK solver.</p>
 <p>Constructs an optimized markov matrix using linear programming relaxations
 and convex envelope approximations for the specified steady state <cite>v</cite>.
@@ -532,20 +571,24 @@ Matrix, 2) is equal to the markov matrix eigenvalue.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> – A non-optimized symmetric adjency matrix.</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – A non-optimized symmetric adjency matrix.</p></li>
 <li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+<li><p><strong>v_</strong> (<em>numpy.ndarray</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
 respective mixing rate.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[Optional[numpy.ndarray], float]</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.new_mgo_transition_matrix">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_mgo_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_mgo_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_mgo_transition_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_mgo_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_mgo_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_mgo_transition_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs an optimized transition matrix using the matlab engine.</p>
 <p>Constructs an optimized transition matrix using linear programming
 relaxations and convex envelope approximations for the specified steady
@@ -560,20 +603,24 @@ BMIBNB.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> – A non-optimized symmetric adjency matrix.</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – A non-optimized symmetric adjency matrix.</p></li>
 <li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+<li><p><strong>v_</strong> (<em>numpy.ndarray</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
 respective mixing rate.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[Optional[numpy.ndarray], float]</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.new_mh_transition_matrix">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_mh_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>numpy.ndarray<span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_mh_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_mh_transition_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_mh_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_mh_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_mh_transition_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a transition matrix using metropolis-hastings.</p>
 <p>Constructs a transition matrix using metropolis-hastings algorithm  for
 the specified steady state <cite>v</cite>.</p>
@@ -585,20 +632,24 @@ but this is not enforced or verified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> – A symmetric adjency matrix.</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – A symmetric adjency matrix.</p></li>
 <li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+<li><p><strong>v_</strong> (<em>numpy.ndarray</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
 respective mixing rate.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[numpy.ndarray, float]</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.new_sdp_mh_transition_matrix">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_sdp_mh_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span>Optional<span class="p">[</span>numpy.ndarray<span class="p">]</span><span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_sdp_mh_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_sdp_mh_transition_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_sdp_mh_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_sdp_mh_transition_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_sdp_mh_transition_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs an optimized transition matrix using cvxpy and MOSEK solver.</p>
 <p>Constructs a transition matrix using metropolis-hastings algorithm  for
 the specified steady state <cite>v</cite>. The provided adjacency matrix A is first
@@ -611,40 +662,47 @@ distribution vector.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> – A non-optimized symmetric adjency matrix.</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – A non-optimized symmetric adjency matrix.</p></li>
 <li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
+<li><p><strong>v_</strong> (<em>numpy.ndarray</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Markov Matrix with <cite>v_</cite> as steady state distribution and the
 respective mixing rate.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[Optional[numpy.ndarray], float]</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.new_symmetric_connected_matrix">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_symmetric_connected_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_connected_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_symmetric_connected_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_symmetric_connected_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_connected_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_symmetric_connected_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a random symmetric matrix which is also connected.</p>
 <p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a> and
 py:func:<cite>app.domain.helpers.matrices.make_connected</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>size</strong> – The length of the square matrix.</p></li>
-<li><p><strong>allow_sloops</strong> – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p></li>
-<li><p><strong>force_sloops</strong> – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p></li>
+<li><p><strong>size</strong> (<em>int</em>) – The length of the square matrix.</p></li>
+<li><p><strong>allow_sloops</strong> (<em>bool</em>) – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p></li>
+<li><p><strong>force_sloops</strong> (<em>bool</em>) – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A matrix that represents an adjacency matrix that is also connected.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.new_symmetric_matrix">
-<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_symmetric_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_symmetric_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a random symmetric matrix.</p>
 <p>The generated adjacency matrix does not have transient state sets or
 absorbent nodes and can effectively represent a network topology
@@ -652,11 +710,11 @@ with bidirectional connections between network nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>size</strong> – The length of the square matrix.</p></li>
-<li><p><strong>allow_sloops</strong> – Indicates if the generated adjacency matrix allows diagonal
+<li><p><strong>size</strong> (<em>int</em>) – The length of the square matrix.</p></li>
+<li><p><strong>allow_sloops</strong> (<em>bool</em>) – Indicates if the generated adjacency matrix allows diagonal
 entries representing self-loops. If false, then, all diagonal
 entries must be zeros. Otherwise, they can be zeros or ones.</p></li>
-<li><p><strong>force_sloops</strong> – Indicates if the diagonal of the generated matrix should be
+<li><p><strong>force_sloops</strong> (<em>bool</em>) – Indicates if the diagonal of the generated matrix should be
 filled with ones. If false, valid diagonal entries are decided by
 <cite>allow_self_loops</cite> param. Otherwise, diagonal entries are filled
 with ones. If <cite>allow_self_loops</cite> is False and <cite>enforce_loops</cite> is
@@ -671,6 +729,9 @@ groups of network nodes.</p>
 <dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="app.domain.helpers.exceptions.IllegalArgumentError"><strong>IllegalArgumentError</strong></a> – When <cite>allow_self_loops</cite> (False) conflicts with
     <cite>enforce_loops</cite> (True).</p>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -681,7 +742,7 @@ groups of network nodes.</p>
 encapsulating attribute and method behaviour.</p>
 <dl class="py class">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData">
-<em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.smart_dataclasses.</code><code class="sig-name descname">FileBlockData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive_id</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">number</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n">bytes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.smart_dataclasses.</code><code class="sig-name descname">FileBlockData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Wrapping class for the contents of a file block.</p>
 <p>Among other responsabilities <cite>FileBlockData</cite> helps managing simulation
@@ -742,16 +803,19 @@ Until a loss occurs and after a loss is recovered,
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.can_replicate">
-<code class="sig-name descname">can_replicate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.can_replicate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.can_replicate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">can_replicate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.can_replicate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.can_replicate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Informs the calling network node if file block needs replication.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> – Simulation’s current epoch.</p>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – Simulation’s current epoch.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>How many times the caller should replicate the block. The network
 node knows how many blocks he needs to create and distribute if
 returned value is bigger than zero.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
@@ -770,7 +834,7 @@ environment.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">
-<code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.set_replication_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.set_replication_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the epoch in which replication levels should be restored.</p>
 <p>This method tries to assign a new epoch, in the future, at which
 recovery should be performed. If the proposition is sooner than the
@@ -789,7 +853,7 @@ losing the instance of <cite>FileBlockData</cite> and possibly others.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> – Simulation’s current epoch.</p>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – Simulation’s current epoch.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Zero if the current <cite>replication_epoch</cite> is positive infinity,
@@ -797,12 +861,15 @@ otherwise the expected delay_replication is returned. This value
 can be used to log, for example, the average recovery
 delay_replication in a simulation.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.update_epochs_to_recover">
-<code class="sig-name descname">update_epochs_to_recover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.update_epochs_to_recover"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.update_epochs_to_recover" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update_epochs_to_recover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.update_epochs_to_recover"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileBlockData.update_epochs_to_recover" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the <cite>replication_epoch</cite> after a recovery attempt was carried out.</p>
 <p>If the recovery attempt performed by some network node successfully
 managed to restore the replication levels to the original target, then,
@@ -810,7 +877,10 @@ managed to restore the replication levels to the original target, then,
 attempt will be done in the next epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> – Simulation’s current epoch.</p>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – Simulation’s current epoch.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -819,7 +889,7 @@ attempt will be done in the next epoch.</p>
 
 <dl class="py class">
 <dt id="app.domain.helpers.smart_dataclasses.FileData">
-<em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.smart_dataclasses.</code><code class="sig-name descname">FileData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.smart_dataclasses.</code><code class="sig-name descname">FileData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Holds essential simulation data concerning files being persisted.</p>
 <p>FileData is a helper class which has responsabilities such as tracking
@@ -875,47 +945,55 @@ has graphs and figures. See
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.fclose">
-<code class="sig-name descname">fclose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fclose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.fclose" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fclose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fclose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.fclose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Closes the output file controlled by the FileData instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>msg</strong> – optional; If filled, a termination message is logged into the
+<dd class="field-odd"><p><strong>msg</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – optional; If filled, a termination message is logged into the
 output file that is being closed.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.fwrite">
-<code class="sig-name descname">fwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.fwrite" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.fwrite" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a message to the output file referenced by the FileData object.</p>
 <p>The method fwrite automatically adds a new line to the inputted message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>msg</strong> – The message to be logged on the output file.</p>
+<dd class="field-odd"><p><strong>msg</strong> (<em>str</em>) – The message to be logged on the output file.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.jwrite">
-<code class="sig-name descname">jwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive</span><span class="p">:</span> <span class="n">domain.cluster_groups.Cluster</span></em>, <em class="sig-param"><span class="n">origin</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.jwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.jwrite" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">jwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive</span></em>, <em class="sig-param"><span class="n">origin</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.jwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.FileData.jwrite" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a JSON string of the LoggingData instance to the output file.</p>
 <p>The logged data is defined by the attributes of the
-<code class="xref py py-class docutils literal notranslate"><span class="pre">LoggingData</span> <span class="pre">&lt;app.domain.helpers.smart_dataclasses.LoggingData</span></code></p>
-<blockquote>
-<div><p>class.</p>
-</div></blockquote>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">LoggingData</span> <span class="pre">&lt;app.domain.helpers.smart_dataclasses.</span>
+<span class="pre">LoggingData</span></code> class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>hive</strong> – The <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a> object that manages
-the simulated persistence of the referenced file.</p></li>
-<li><p><strong>origin</strong> – The name of the simulation file that started the simulation
+<li><p><strong>hive</strong> (<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><em>domain.cluster_groups.Cluster</em></a>) – The <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a>
+object that manages the simulated persistence of the
+referenced file.</p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – The name of the simulation file that started the simulation
 process.</p></li>
-<li><p><strong>epoch</strong> – The epoch at which the LoggingData was logged into the
+<li><p><strong>epoch</strong> (<em>int</em>) – The epoch at which the LoggingData was logged into the
 output file.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -927,15 +1005,17 @@ output file.</p></li>
 <em class="property">class </em><code class="sig-prename descclassname">app.domain.helpers.smart_dataclasses.</code><code class="sig-name descname">LoggingData</code><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Logging class that registers simulation state per epoch basis.</p>
-<p class="rubric">Notes</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Some attributes might not be documented, but should be straight
 forward to understand after inspecting their usage in the source code.</p>
+</div>
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.cswc">
 <code class="sig-name descname">cswc</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicates how many consecutive steps a file as been in
 convergence. Once convergence is not verified by
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">equal_distributions()</span></code>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.equal_distributions()</span></code>
 this attribute is reseted to zero.</p>
 </dd></dl>
 
@@ -959,7 +1039,8 @@ after being appended to <a class="reference internal" href="#app.domain.helpers.
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets">
 <code class="sig-name descname">convergence_sets</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores all previous convergence sets. See <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>.</p>
+<dd><p>Stores all previous convergence sets.
+See <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -973,7 +1054,7 @@ after being appended to <a class="reference internal" href="#app.domain.helpers.
 <code class="sig-name descname">terminated_messages</code><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated_messages" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set of at least one error message that led to the failure
 of the simulation or one success message, at termination epoch
-(<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated" title="app.domain.helpers.smart_dataclasses.LoggingData.terminated"><code class="xref py py-attr docutils literal notranslate"><span class="pre">terminated</span></code></a>)</p>
+(<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated" title="app.domain.helpers.smart_dataclasses.LoggingData.terminated"><code class="xref py py-attr docutils literal notranslate"><span class="pre">terminated</span></code></a>).</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -982,7 +1063,7 @@ of the simulation or one success message, at termination epoch
 <dd><p>When the simulation is terminated this value is set to True if
 no errors or failures occurred, i.e., if the simulation managed
 to persist the file throughout
-<code class="xref py py-const docutils literal notranslate"><span class="pre">ms.Master.MAX_EPOCHS</span></code> time
+<code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.ms.Master.MAX_EPOCHS</span></code> time
 steps.</p>
 </dd></dl>
 
@@ -1065,66 +1146,78 @@ network at each epoch.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData._recursive_len">
-<code class="sig-name descname">_recursive_len</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData._recursive_len"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData._recursive_len" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">_recursive_len</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData._recursive_len"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData._recursive_len" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recusively sums the length of all lists in <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>item</strong> – A sub list of <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a> that needs that</p></li>
+<li><p><strong>item</strong> (<em>Any</em>) – A sub list of <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a> that needs that</p></li>
 <li><p><strong>not yet been counted.</strong> (<em>as</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The number of epochs that were registered at the inputed sub list.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_bandwidth_units">
-<code class="sig-name descname">log_bandwidth_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_bandwidth_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_bandwidth_units" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_bandwidth_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_bandwidth_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_bandwidth_units" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the amount of moved file blocks moved at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> – Number of parts moved at epoch.</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of parts moved at epoch.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch index.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_corrupted_file_blocks">
-<code class="sig-name descname">log_corrupted_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_corrupted_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_corrupted_file_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_corrupted_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_corrupted_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_corrupted_file_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the amount of corrupted file block blocks at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> – Number of corrupted blocks</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of corrupted blocks</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch index.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_existing_file_blocks">
-<code class="sig-name descname">log_existing_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_existing_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_existing_file_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_existing_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_existing_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_existing_file_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the amount of existing file blocks in the simulation environment at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> – Number of file blocks in the system.</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of file blocks in the system.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch index.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_fail">
-<code class="sig-name descname">log_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">message</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_fail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_fail" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em>, <em class="sig-param"><span class="n">message</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_fail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_fail" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the epoch at which a simulation terminated due to a failure.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1135,113 +1228,139 @@ or the simultaneous disconnection of all network nodes in the hive.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>message</strong> – optional; A log error message.</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch at which termination occurred.</p></li>
+<li><p><strong>message</strong> (<em>str</em>) – optional; A log error message.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch at which termination occurred.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_lost_file_blocks">
-<code class="sig-name descname">log_lost_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_lost_file_blocks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_lost_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_file_blocks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_lost_file_blocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the amount of permanently lost file block blocks at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> – Number of blocks that were lost.</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of blocks that were lost.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch index.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_lost_messages">
-<code class="sig-name descname">log_lost_messages</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_messages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_lost_messages" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_lost_messages</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_messages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_lost_messages" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the amount of failed message transmissions at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> – Number of lost terminated_messages.</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of lost terminated_messages.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch index.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance">
-<code class="sig-name descname">log_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">status_bm</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">status_am</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">size_bm</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">size_am</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_maintenance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">status_bm</span></em>, <em class="sig-param"><span class="n">status_am</span></em>, <em class="sig-param"><span class="n">size_bm</span></em>, <em class="sig-param"><span class="n">size_am</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_maintenance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs hive membership status and size at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>status_bm</strong> – A string that describes the status of the cluster before
+<li><p><strong>status_bm</strong> (<em>str</em>) – A string that describes the status of the cluster before
 maintenance.</p></li>
-<li><p><strong>status_am</strong> – A string that describes the status of the cluster after
+<li><p><strong>status_am</strong> (<em>str</em>) – A string that describes the status of the cluster after
 maintenance.</p></li>
-<li><p><strong>size_bm</strong> – The number of network nodes in the hive before maintenance.</p></li>
-<li><p><strong>size_am</strong> – The number of network nodes in the hive after maintenance.</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch at which termination occurred.</p></li>
+<li><p><strong>size_bm</strong> (<em>int</em>) – The number of network nodes in the hive before maintenance.</p></li>
+<li><p><strong>size_am</strong> (<em>int</em>) – The number of network nodes in the hive after maintenance.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch at which termination occurred.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">
-<code class="sig-name descname">log_matrices_degrees</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_matrices_degrees"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname">log_matrices_degrees</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nodes_degrees</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_matrices_degrees"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>nodes_degrees</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – </p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_off_nodes">
-<code class="sig-name descname">log_off_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_off_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_off_nodes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_off_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_off_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_off_nodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the amount of disconnected network_nodes at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n</strong> – Number of disconnected network_nodes in the system.</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of disconnected network_nodes in the system.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch index.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_replication_delay">
-<code class="sig-name descname">log_replication_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">delay</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">calls</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_replication_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_replication_delay" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_replication_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">delay</span></em>, <em class="sig-param"><span class="n">calls</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_replication_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_replication_delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the expected delay_replication at epoch at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>delay</strong> – The delay sum.</p></li>
-<li><p><strong>calls</strong> – Number of times a delay_replication was generated.</p></li>
-<li><p><strong>epoch</strong> – A simulation epoch index.</p></li>
+<li><p><strong>delay</strong> (<em>int</em>) – The delay sum.</p></li>
+<li><p><strong>calls</strong> (<em>int</em>) – Number of times a delay_replication was generated.</p></li>
+<li><p><strong>epoch</strong> (<em>int</em>) – A simulation epoch index.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_suspicous_node_detection_delay">
-<code class="sig-name descname">log_suspicous_node_detection_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_id</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">delay</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_suspicous_node_detection_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_suspicous_node_detection_delay" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_suspicous_node_detection_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_id</span></em>, <em class="sig-param"><span class="n">delay</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_suspicous_node_detection_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.log_suspicous_node_detection_delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs the expected delay_replication at epoch at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>delay</strong> – The time it took until the specified node was evicted from a
+<li><p><strong>delay</strong> (<em>int</em>) – The time it took until the specified node was evicted from a
 <a class="reference internal" href="app.domain.html#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span></code></a> after it was known
 to be offline by the perfect failure detector.</p></li>
-<li><p><strong>node_id</strong> – A unique <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> identifier.</p></li>
+<li><p><strong>node_id</strong> (<em>str</em>) – A unique <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> identifier.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.register_convergence">
-<code class="sig-name descname">register_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.register_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.register_convergence" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">register_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.register_convergence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.register_convergence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Increments <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="app.domain.helpers.smart_dataclasses.LoggingData.cswc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cswc</span></code></a> by one and tries to update the <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a></p>
 <p>Checks if the counter for consecutive epoch convergence is bigger
 than the minimum threshold for verified convergence (see
@@ -1250,18 +1369,26 @@ and if it is, it marks the epoch as part of the current
 <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> – The A simulation epoch index.</p>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – The A simulation epoch index.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset">
-<code class="sig-name descname">save_sets_and_reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.save_sets_and_reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">save_sets_and_reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.save_sets_and_reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resets all convergence variables</p>
 <p>Tries to update <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.largest_convergence_window" title="app.domain.helpers.smart_dataclasses.LoggingData.largest_convergence_window"><code class="xref py py-attr docutils literal notranslate"><span class="pre">largest_convergence_window</span></code></a> and
 <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a> when <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>
 is not an empty list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

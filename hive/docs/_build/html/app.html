@@ -282,66 +282,112 @@ document is accessible in :py:const:`environment_settings.SHARED_ROOT`.
 </div>
 <dl class="py function">
 <dt id="app.hive_simulation.__can_exec_simfile">
-<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__can_exec_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sname</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/hive_simulation.html#__can_exec_simfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__can_exec_simfile" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__can_exec_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__can_exec_simfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__can_exec_simfile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verifies if input simulation file name exists in
 <code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SIMULATION_ROOT</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sname</strong> (<em>str</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.hive_simulation.__makedirs">
-<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__makedirs</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/hive_simulation.html#__makedirs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__makedirs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__makedirs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__makedirs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__makedirs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates required simulation working directories if they do not exist.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.hive_simulation.__parallel_main">
-<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__parallel_main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threads_count</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">sdir</span><span class="p">:</span> <span class="n">bool</span></em>, <em class="sig-param"><span class="n">sname</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">iters</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epochs</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/hive_simulation.html#__parallel_main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__parallel_main" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__parallel_main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threads_count</span></em>, <em class="sig-param"><span class="n">sdir</span></em>, <em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">iters</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__parallel_main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__parallel_main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper method that initializes a multi-threaded simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>threads_count</strong> (<em>int</em>) – </p></li>
+<li><p><strong>sdir</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>sname</strong> (<em>str</em>) – </p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – </p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.hive_simulation.__single_main">
-<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__single_main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sdir</span><span class="p">:</span> <span class="n">bool</span></em>, <em class="sig-param"><span class="n">sname</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">iters</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epochs</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/hive_simulation.html#__single_main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__single_main" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__single_main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sdir</span></em>, <em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">iters</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__single_main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__single_main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function that initializes a single-threaded simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sdir</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>sname</strong> (<em>str</em>) – </p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – </p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.hive_simulation.__start_simulation">
-<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__start_simulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sname</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">sid</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epochs</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/hive_simulation.html#__start_simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__start_simulation" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">__start_simulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__start_simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.__start_simulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Executes one instance of the simulation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sname</strong> – The name of the simulation file to be executed.</p></li>
-<li><p><strong>sid</strong> – A sequence number that identifies the simulation execution instance.</p></li>
-<li><p><strong>epochs</strong> – The number of discrete time steps the simulation lasts.</p></li>
+<li><p><strong>sname</strong> (<em>str</em>) – The name of the simulation file to be executed.</p></li>
+<li><p><strong>sid</strong> (<em>int</em>) – A sequence number that identifies the simulation execution instance.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps the simulation lasts.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.hive_simulation.main">
-<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threads_count</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">sdir</span><span class="p">:</span> <span class="n">bool</span></em>, <em class="sig-param"><span class="n">sname</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">iters</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">epochs</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/hive_simulation.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.main" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.hive_simulation.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threads_count</span></em>, <em class="sig-param"><span class="n">sdir</span></em>, <em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">iters</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.hive_simulation.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Receives user input and initializes the simulation process.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>threads_count</strong> – Indicates if multiple simulation instances should run in parallel
+<li><p><strong>threads_count</strong> (<em>int</em>) – Indicates if multiple simulation instances should run in parallel
 (default results in running the simulation in a
 single thread).</p></li>
-<li><p><strong>sdir</strong> – Indicates if the user wishes to execute all simulation files
+<li><p><strong>sdir</strong> (<em>bool</em>) – Indicates if the user wishes to execute all simulation files
 that exist in <code class="xref py py-const docutils literal notranslate"><span class="pre">environment_settings.SIMULATION_ROOT</span></code> or
 if he wishes to run one single simulation file, which must be
 explicitly specified in <cite>sname</cite>.</p></li>
-<li><p><strong>sname</strong> – When <cite>sdir</cite> is set to False, <cite>sname</cite> needs to be specified as a
+<li><p><strong>sname</strong> (<em>str</em>) – When <cite>sdir</cite> is set to False, <cite>sname</cite> needs to be specified as a
 non blank string containing the name of the simulation file to
 be executed. The named file must exist in
 <code class="xref py py-const docutils literal notranslate"><span class="pre">environment_settings.SIMULATION_ROOT</span></code>.</p></li>
-<li><p><strong>iters</strong> – The number of times the same simulation file should be executed.</p></li>
-<li><p><strong>epochs</strong> – The number of discrete time steps each iteration of each instance
+<li><p><strong>iters</strong> (<em>int</em>) – The number of times the same simulation file should be executed.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps each iteration of each instance
 of a simulation lasts.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -402,99 +448,117 @@ appear in your terminal when running the following command:</p>
 <code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SHARED_ROOT</span></code> directory.</p>
 <dl class="py function">
 <dt id="app.simfile_generator.__in_yes_no">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__in_yes_no</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/app/simfile_generator.html#__in_yes_no"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__in_yes_no" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__in_yes_no</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#__in_yes_no"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__in_yes_no" title="Permalink to this definition">¶</a></dt>
 <dd><p>Asks the user to reply with yes or no to a message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>message</strong> – The message to be printed to the user upon first input request.</p>
+<dd class="field-odd"><p><strong>message</strong> (<em>str</em>) – The message to be printed to the user upon first input request.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>True if user presses yes, otherwise False.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.simfile_generator.__init_nodes_uptime">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__init_nodes_uptime</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>float<span class="p">]</span><a class="reference internal" href="_modules/app/simfile_generator.html#__init_nodes_uptime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__init_nodes_uptime" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__init_nodes_uptime</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#__init_nodes_uptime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__init_nodes_uptime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a record containing network nodes’ uptime.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A collection mapping <code class="xref py py-mod docutils literal notranslate"><span class="pre">domain.network_nodes</span></code>’s class
 instance labels to their respective uptime values.</p>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict[str, float]</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.simfile_generator.__init_persisting_dict">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__init_persisting_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict<span class="p">[</span>str<span class="p">, </span>Any<span class="p">]</span><a class="reference internal" href="_modules/app/simfile_generator.html#__init_persisting_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__init_persisting_dict" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__init_persisting_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#__init_persisting_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__init_persisting_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the “persisting” key of simulation file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A dictionary containing data respecting files to be shared in the system</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.simfile_generator.__input_bounded_float">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__input_bounded_float</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">lower_bound</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">upper_bound</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">100.0</span></em><span class="sig-paren">)</span> &#x2192; float<a class="reference internal" href="_modules/app/simfile_generator.html#__input_bounded_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__input_bounded_float" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__input_bounded_float</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em>, <em class="sig-param"><span class="n">lower_bound</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">upper_bound</span><span class="o">=</span><span class="default_value">100.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#__input_bounded_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__input_bounded_float" title="Permalink to this definition">¶</a></dt>
 <dd><p>Obtains a user inputed integer within the specified closed interval.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>message</strong> – The message to be printed to the user upon first input request.</p></li>
-<li><p><strong>lower_bound</strong> – optional; Any input smaller than`lower_bound` is rejected.</p></li>
-<li><p><strong>upper_bound</strong> – optional; Any input bigger than <cite>upper_bound</cite> is rejected.</p></li>
+<li><p><strong>message</strong> (<em>str</em>) – The message to be printed to the user upon first input request.</p></li>
+<li><p><strong>lower_bound</strong> (<em>float</em>) – optional; Any input smaller than`lower_bound` is rejected.</p></li>
+<li><p><strong>upper_bound</strong> (<em>float</em>) – optional; Any input bigger than <cite>upper_bound</cite> is rejected.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An float inputed by the user.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.simfile_generator.__input_bounded_integer">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__input_bounded_integer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">lower_bound</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">2</span></em>, <em class="sig-param"><span class="n">upper_bound</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">16384</span></em><span class="sig-paren">)</span> &#x2192; int<a class="reference internal" href="_modules/app/simfile_generator.html#__input_bounded_integer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__input_bounded_integer" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__input_bounded_integer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em>, <em class="sig-param"><span class="n">lower_bound</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">upper_bound</span><span class="o">=</span><span class="default_value">16384</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#__input_bounded_integer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__input_bounded_integer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Obtains a user inputed integer within the specified closed interval.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>message</strong> – The message to be printed to the user upon first input request.</p></li>
-<li><p><strong>lower_bound</strong> – optional; Any input equal or smaller than <cite>lower_bound</cite> is
+<li><p><strong>message</strong> (<em>str</em>) – The message to be printed to the user upon first input request.</p></li>
+<li><p><strong>lower_bound</strong> (<em>int</em>) – optional; Any input equal or smaller than <cite>lower_bound</cite> is
 rejected.</p></li>
-<li><p><strong>upper_bound</strong> – optional; Any input equal or bigger than <cite>upper_bound</cite> is rejected.</p></li>
+<li><p><strong>upper_bound</strong> (<em>int</em>) – optional; Any input equal or bigger than <cite>upper_bound</cite> is rejected.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>An integer inputed by the user.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.simfile_generator.__input_character_option">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__input_character_option</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">white_list</span><span class="p">:</span> <span class="n">List<span class="p">[</span>str<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/app/simfile_generator.html#__input_character_option"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__input_character_option" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__input_character_option</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em>, <em class="sig-param"><span class="n">white_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#__input_character_option"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__input_character_option" title="Permalink to this definition">¶</a></dt>
 <dd><p>Obtains a user inputed character within a predefined set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>message</strong> – The message to be printed to the user upon first input request.</p></li>
-<li><p><strong>white_list</strong> – A list of valid option characters.</p></li>
+<li><p><strong>message</strong> (<em>str</em>) – The message to be printed to the user upon first input request.</p></li>
+<li><p><strong>white_list</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of valid option characters.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The character that represents the initial distribution of files in a
 <code class="xref py py-mod docutils literal notranslate"><span class="pre">domain.cluster_groups</span></code>’s class instance desired by the user.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.simfile_generator.__input_filename">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__input_filename</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/app/simfile_generator.html#__input_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__input_filename" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__input_filename</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#__input_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__input_filename" title="Permalink to this definition">¶</a></dt>
 <dd><p>Verifies if inputed file name exists in
 <code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SHARED_ROOT</span></code> directory.</p>
 <div class="admonition note">
@@ -504,21 +568,27 @@ selected.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>message</strong> – The message to be printed to the user upon first input request.</p>
+<dd class="field-odd"><p><strong>message</strong> (<em>str</em>) – The message to be printed to the user upon first input request.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>A file name with extension.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="app.simfile_generator.__yield_label">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__yield_label</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="_modules/app/simfile_generator.html#__yield_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__yield_label" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">__yield_label</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#__yield_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.__yield_label" title="Permalink to this definition">¶</a></dt>
 <dd><p>Used to generate an arbrirary numbers of unique labels.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Yields</dt>
 <dd class="field-odd"><p>The next string label in the sequence.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -538,7 +608,7 @@ selected.</p>
 
 <dl class="py function">
 <dt id="app.simfile_generator.main">
-<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span> &#x2192; None<a class="reference internal" href="_modules/app/simfile_generator.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.main" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">app.simfile_generator.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/simfile_generator.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.simfile_generator.main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a JSON file within the user’s file system that is used by
 <code class="xref py py-mod docutils literal notranslate"><span class="pre">hive_simulation</span></code>.</p>
 <div class="admonition note">
@@ -549,7 +619,10 @@ is being simulalted.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>simfile_name</strong> – Name to be assigned to JSON file in the user’s file system.</p>
+<dd class="field-odd"><p><strong>simfile_name</strong> (<em>str</em>) – Name to be assigned to JSON file in the user’s file system.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>

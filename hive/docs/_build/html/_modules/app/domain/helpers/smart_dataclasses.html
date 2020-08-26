@@ -175,13 +175,14 @@
         <span class="sd">&quot;&quot;&quot;Writes a JSON string of the LoggingData instance to the output file.</span>
 
 <span class="sd">        The logged data is defined by the attributes of the</span>
-<span class="sd">        :py:class:`LoggingData &lt;app.domain.helpers.smart_dataclasses.LoggingData`</span>
-<span class="sd">         class.</span>
+<span class="sd">        :py:class:`LoggingData &lt;app.domain.helpers.smart_dataclasses.</span>
+<span class="sd">        LoggingData` class.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            hive:</span>
-<span class="sd">                The :py:class:`Cluster &lt;app.domain.cluster_groups.Cluster&gt;` object that manages</span>
-<span class="sd">                the simulated persistence of the referenced file.</span>
+<span class="sd">                The :py:class:`Cluster &lt;app.domain.cluster_groups.Cluster&gt;`</span>
+<span class="sd">                object that manages the simulated persistence of the</span>
+<span class="sd">                referenced file.</span>
 <span class="sd">            origin:</span>
 <span class="sd">                The name of the simulation file that started the simulation</span>
 <span class="sd">                process.</span>
@@ -442,15 +443,16 @@
 <div class="viewcode-block" id="LoggingData"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData">[docs]</a><span class="k">class</span> <span class="nc">LoggingData</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Logging class that registers simulation state per epoch basis.</span>
 
-<span class="sd">    Notes:</span>
+<span class="sd">    Note:</span>
 <span class="sd">        Some attributes might not be documented, but should be straight</span>
 <span class="sd">        forward to understand after inspecting their usage in the source code.</span>
+
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        cswc:</span>
 <span class="sd">            Indicates how many consecutive steps a file as been in</span>
 <span class="sd">            convergence. Once convergence is not verified by</span>
-<span class="sd">            :py:meth:`equal_distributions() &lt;app.domain.cluster_groups.Cluster.equal_distributions&gt;`</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.equal_distributions`</span>
 <span class="sd">            this attribute is reseted to zero.</span>
 <span class="sd">        largest_convergence_window:</span>
 <span class="sd">            Stores the largest convergence window that occurred throughout</span>
@@ -462,19 +464,19 @@
 <span class="sd">            :py:attr:`cswc` is cleared once convergence is not verified,</span>
 <span class="sd">            after being appended to :py:attr:`convergence_sets`.</span>
 <span class="sd">        convergence_sets:</span>
-<span class="sd">            Stores all previous convergence sets. See :py:attr:`convergence_set`.</span>
+<span class="sd">            Stores all previous convergence sets.</span>
+<span class="sd">            See :py:attr:`convergence_set`.</span>
 <span class="sd">        terminated:</span>
 <span class="sd">            Indicates the epoch at which the simulation was terminated.</span>
 <span class="sd">        terminated_messages:</span>
 <span class="sd">            Set of at least one error message that led to the failure</span>
 <span class="sd">            of the simulation or one success message, at termination epoch</span>
-<span class="sd">            (:py:attr:`terminated`)</span>
+<span class="sd">            (:py:attr:`terminated`).</span>
 <span class="sd">        successfull:</span>
 <span class="sd">            When the simulation is terminated this value is set to True if</span>
 <span class="sd">            no errors or failures occurred, i.e., if the simulation managed</span>
 <span class="sd">            to persist the file throughout</span>
-<span class="sd">            :py:const:`ms.Master.MAX_EPOCHS</span>
-<span class="sd">            &lt;environment_settings.ms.Master.MAX_EPOCHS&gt;` time</span>
+<span class="sd">            :py:const:`app.environment_settings.ms.Master.MAX_EPOCHS` time</span>
 <span class="sd">            steps.</span>
 <span class="sd">        blocks_corrupted:</span>
 <span class="sd">            The number of file block repllicas lost at each epoch due</span>

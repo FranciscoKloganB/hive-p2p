@@ -77,13 +77,14 @@ class FileData:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
-        :py:class:`LoggingData <app.domain.helpers.smart_dataclasses.LoggingData`
-         class.
+        :py:class:`LoggingData <app.domain.helpers.smart_dataclasses.
+        LoggingData` class.
 
         Args:
             hive:
-                The :py:class:`Cluster <app.domain.cluster_groups.Cluster>` object that manages
-                the simulated persistence of the referenced file.
+                The :py:class:`Cluster <app.domain.cluster_groups.Cluster>`
+                object that manages the simulated persistence of the
+                referenced file.
             origin:
                 The name of the simulation file that started the simulation
                 process.
@@ -344,7 +345,7 @@ class FileBlockData:
 class LoggingData:
     """Logging class that registers simulation state per epoch basis.
 
-    Notes:
+    Note:
         Some attributes might not be documented, but should be straight
         forward to understand after inspecting their usage in the source code.
 
@@ -352,7 +353,7 @@ class LoggingData:
         cswc:
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
-            :py:meth:`equal_distributions() <app.domain.cluster_groups.Cluster.equal_distributions>`
+            :py:meth:`app.domain.cluster_groups.Cluster.equal_distributions`
             this attribute is reseted to zero.
         largest_convergence_window:
             Stores the largest convergence window that occurred throughout
@@ -364,19 +365,19 @@ class LoggingData:
             :py:attr:`cswc` is cleared once convergence is not verified,
             after being appended to :py:attr:`convergence_sets`.
         convergence_sets:
-            Stores all previous convergence sets. See :py:attr:`convergence_set`.
+            Stores all previous convergence sets.
+            See :py:attr:`convergence_set`.
         terminated:
             Indicates the epoch at which the simulation was terminated.
         terminated_messages:
             Set of at least one error message that led to the failure
             of the simulation or one success message, at termination epoch
-            (:py:attr:`terminated`)
+            (:py:attr:`terminated`).
         successfull:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
             to persist the file throughout
-            :py:const:`ms.Master.MAX_EPOCHS
-            <environment_settings.ms.Master.MAX_EPOCHS>` time
+            :py:const:`app.environment_settings.ms.Master.MAX_EPOCHS` time
             steps.
         blocks_corrupted:
             The number of file block repllicas lost at each epoch due
