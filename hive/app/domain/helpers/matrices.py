@@ -182,9 +182,8 @@ def _adjency_matrix_sdp_optimization(
 
     Note:
         1. This function only works if you have a valid MOSEK license.
-        2. The input Matrix hould have no transient states/absorbent nodes, but
-        this is not enforced or verified.
-
+        2. The input Matrix hould have no transient states/absorbent nodes, \
+        but this is not enforced or verified.
 
     Args:
         a:
