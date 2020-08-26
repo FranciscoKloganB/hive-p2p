@@ -253,12 +253,13 @@ class Master:
                 instances through reflection. See :py:mod:`Cluster Group
                 <domain.cluster_groups>`.
             size:
-                The cluster's initial member size.
+                The :py:class:`Cluster's <app.domain.cluster_groups.Cluster>`
+                initial member size.
             fname:
                 The name of the fille being stored in the cluster.
 
         Returns:
-            The :py:class:`~domain.cluster_groups.Cluster` instance.
+            The :py:class:`~app.domain.cluster_groups.Cluster` instance.
         """
         cluster_members: th.NodeDict = {}
         nodes = np.random.choice(

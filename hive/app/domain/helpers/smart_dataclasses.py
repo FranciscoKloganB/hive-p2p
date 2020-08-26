@@ -31,7 +31,7 @@ class FileData:
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
             has graphs and figures. See
-            :py:class:`~domain.helpers.smart_dataclasses.SimulationData`
+            :py:class:`~app.domain.helpers.smart_dataclasses.SimulationData`
         out_file (str/bytes/int):
             File output stream to where captured data is written in append mode.
     """
@@ -77,12 +77,12 @@ class FileData:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
-        :py:class:`LoggingData <domain.helpers.smart_dataclasses.LoggingData`
+        :py:class:`LoggingData <app.domain.helpers.smart_dataclasses.LoggingData`
          class.
 
         Args:
             hive:
-                The :py:class:`Cluster <domain.cluster_groups.Cluster>` object that manages
+                The :py:class:`Cluster <app.domain.cluster_groups.Cluster>` object that manages
                 the simulated persistence of the referenced file.
             origin:
                 The name of the simulation file that started the simulation
@@ -348,7 +348,7 @@ class LoggingData:
         cswc:
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
-            :py:meth:`equal_distributions() <domain.cluster_groups.Cluster.equal_distributions>`
+            :py:meth:`equal_distributions() <app.domain.cluster_groups.Cluster.equal_distributions>`
             this attribute is reseted to zero.
         largest_convergence_window:
             Stores the largest convergence window that occurred throughout
@@ -379,11 +379,11 @@ class LoggingData:
             to disk errors.
         blocks_existing:
             The number of existing file block repllicas inside the
-            :py:mod:`Cluster Group <domain.cluster_group>` members' storage
+            :py:mod:`Cluster Group <app.domain.cluster_group>` members' storage
             disks at each epoch.
         blocks_lost:
             The number of file block blocks that were lost at each epoch
-            due to :py:mod:`Network Nodes <domain.network_nodes>` going offline.
+            due to :py:mod:`Network Nodes <app.domain.network_nodes>` going offline.
         blocks_moved:
             The number of messages containing file block blocks that were
             transmited, including those that were not delivered or
@@ -393,20 +393,20 @@ class LoggingData:
             block blocks during each epoch.
         delay_suspects_detection:
             Log of the time it took for each suspicious
-            :py:mod:`Network Node <domain.network_nodes>` to be evicted
-            from the :py:mod:`Cluster Group <domain.cluster_group>`.
+            :py:mod:`Network Node <app.domain.network_nodes>` to be evicted
+            from the :py:mod:`Cluster Group <app.domain.cluster_group>`.
         initial_spread:
             Records the strategy used distribute file blocks in the
             beggining of the simulation.
         matrices_nodes_degrees:
             Stores the in-degree and out-degree of each
-            :py:mod:`Network Node <domain.network_nodes>` in the
-            :py:mod:`Cluster Group <domain.cluster_group>`. One dictionary
+            :py:mod:`Network Node <app.domain.network_nodes>` in the
+            :py:mod:`Cluster Group <app.domain.cluster_group>`. One dictionary
             is kept in the list for each transition matrix used throughout
             the simulation. The integral part of the float value is the
             in-degree, the decimal part is the out-degree.
         off_node_count:
-            The number of :py:mod:`Network Nodes <domain.network_nodes>`
+            The number of :py:mod:`Network Nodes <app.domain.network_nodes>`
             whose status changed to offline at each epoch.
         transmissions_failed:
             The number of messages transmissions that were lost in the
@@ -537,11 +537,11 @@ class LoggingData:
         Args:
             delay:
                 The time it took until the specified node was evicted from a
-                :py:mod:`Cluster <domain.cluster_groups>` after it was known
+                :py:mod:`Cluster <app.domain.cluster_groups>` after it was known
                 to be offline by the perfect failure detector.
             node_id:
                 A unique :py:mod:`Network Node
-                <domain.network_nodes>` identifier.
+                <app.domain.network_nodes>` identifier.
         """
         self.delay_suspects_detection[node_id] = delay
 
