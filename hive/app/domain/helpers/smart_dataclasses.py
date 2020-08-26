@@ -188,27 +188,27 @@ class FileBlockData:
     parameters, e.g., replica control such or file block integrity.
 
     Attributes:
-        hive_id (str):
+        hive_id:
             Unique identifier of the hive that manages the file block.
-        name (str):
+        name:
             The name of the file the file block belongs to.
-        number (int):
+        number:
             The number that uniquely identifies the file block.
-        id (str):
+        id:
             Concatenation the the `name` and `number`.
-        references (int):
+        references:
             Tracks how many references exist to the file block in the
             simulation environment. When it reaches 0 the file block ceases
             to exist and the simulation fails.
-        replication_epoch (float):
+        replication_epoch:
             When a reference to the file block is lost, i.e., decremented,
             a replication epoch that simulates time to copy blocks from one
             node to another is assigned to this attribute.
             Until a loss occurs and after a loss is recovered,
             `recovery_epoch` is set to positive infinity.
-        data (str):
+        data:
             A base64-encoded string representation of the file block bytes.
-        sha256 (str):
+        sha256:
             The hash value of data resulting from a SHA256 digest.
     """
 
