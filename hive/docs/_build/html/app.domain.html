@@ -492,12 +492,11 @@ This argument facilitates simulation. (default: False)</p></li>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.set_replication_epoch">
 <code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.set_replication_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.cluster_groups.Cluster.set_replication_epoch" title="Permalink to this definition">¶</a></dt>
-<dd><p>Delegates to :py:meth:
-<cite>app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch</cite></p>
+<dd><p>Delegates to <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch" title="app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>replica</strong> (<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><em>domain.helpers.smart_dataclasses.FileBlockData</em></a>) – A <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileBlockData</span></code></a>
-instance that represents a file block replica that was lost.</p>
+<dd class="field-odd"><p><strong>replica</strong> (<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><em>domain.helpers.smart_dataclasses.FileBlockData</em></a>) – A reference to a <code class="docutils literal notranslate"><span class="pre">FileBlockData</span></code> instance that represents a
+file block replica that was lost.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -518,17 +517,17 @@ instances of classes belonging to module
 distributed between the Cluster members according to
 the desired <cite>strategy</cite>.</p></li>
 <li><p><strong>strat</strong> (<em>str</em>) – <p>A user defined way of identifying the way files are initially
-distributed among members of the cluster. For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>`u` - Distributed uniformly across network;
-
-`a` - Give all file block replicas to N different network
-nodes, where N is equal to
-:py:const:`&lt;environment_settings.REPLICATION_LEVEL&gt;`;
-
-`i` - Distribute all file block replicas following such
-that the simulation starts with all file replicas and their
-replicas distributed with a bias towards the ideal steady
-state distribution (default);
+distributed among members of the cluster.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">u</span>
+    <span class="n">Distributed</span> <span class="n">uniformly</span> <span class="n">across</span> <span class="n">network</span><span class="o">.</span>
+<span class="n">a</span>
+    <span class="n">Give</span> <span class="nb">all</span> <span class="n">file</span> <span class="n">block</span> <span class="n">replicas</span> <span class="n">to</span> <span class="n">N</span> <span class="n">different</span> <span class="n">network</span>
+    <span class="n">nodes</span><span class="p">,</span> <span class="n">where</span> <span class="n">N</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">replication</span> <span class="n">level</span><span class="o">.</span>
+<span class="n">i</span>
+    <span class="n">Distribute</span> <span class="nb">all</span> <span class="n">file</span> <span class="n">block</span> <span class="n">replicas</span> <span class="n">following</span> <span class="n">such</span>
+    <span class="n">that</span> <span class="n">the</span> <span class="n">simulation</span> <span class="n">starts</span> <span class="k">with</span> <span class="nb">all</span> <span class="n">file</span> <span class="n">replicas</span> <span class="ow">and</span>
+    <span class="n">their</span> <span class="n">replicas</span> <span class="n">distributed</span> <span class="k">with</span> <span class="n">a</span> <span class="n">bias</span> <span class="n">towards</span> <span class="n">the</span>
+    <span class="n">ideal</span> <span class="n">steady</span> <span class="n">state</span> <span class="n">distribution</span><span class="o">.</span>
 </pre></div>
 </div>
 </p></li>
@@ -685,17 +684,17 @@ instances of classes belonging to module
 distributed between the Cluster members according to
 the desired <cite>strategy</cite>.</p></li>
 <li><p><strong>strat</strong> (<em>str</em>) – <p>A user defined way of identifying the way files are initially
-distributed among members of the cluster. For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>`u` - Distributed uniformly across network;
-
-`a` - Give all file block replicas to N different network
-nodes, where N is equal to
-:py:const:`&lt;environment_settings.REPLICATION_LEVEL&gt;`;
-
-`i` - Distribute all file block replicas following such
-that the simulation starts with all file replicas and their
-replicas distributed with a bias towards the ideal steady
-state distribution (default);
+distributed among members of the cluster.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">u</span>
+    <span class="n">Distributed</span> <span class="n">uniformly</span> <span class="n">across</span> <span class="n">network</span><span class="o">.</span>
+<span class="n">a</span>
+    <span class="n">Give</span> <span class="nb">all</span> <span class="n">file</span> <span class="n">block</span> <span class="n">replicas</span> <span class="n">to</span> <span class="n">N</span> <span class="n">different</span> <span class="n">network</span>
+    <span class="n">nodes</span><span class="p">,</span> <span class="n">where</span> <span class="n">N</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">replication</span> <span class="n">level</span><span class="o">.</span>
+<span class="n">i</span>
+    <span class="n">Distribute</span> <span class="nb">all</span> <span class="n">file</span> <span class="n">block</span> <span class="n">replicas</span> <span class="n">following</span> <span class="n">such</span>
+    <span class="n">that</span> <span class="n">the</span> <span class="n">simulation</span> <span class="n">starts</span> <span class="k">with</span> <span class="nb">all</span> <span class="n">file</span> <span class="n">replicas</span> <span class="ow">and</span>
+    <span class="n">their</span> <span class="n">replicas</span> <span class="n">distributed</span> <span class="k">with</span> <span class="n">a</span> <span class="n">bias</span> <span class="n">towards</span> <span class="n">the</span>
+    <span class="n">ideal</span> <span class="n">steady</span> <span class="n">state</span> <span class="n">distribution</span><span class="o">.</span>
 </pre></div>
 </div>
 </p></li>
@@ -1366,7 +1365,7 @@ their participation on any Cluster.</p>
 <dt id="app.domain.master_servers.Master.__create_network_nodes__">
 <code class="sig-name descname">__create_network_nodes__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__create_network_nodes__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.master_servers.Master.__create_network_nodes__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper method that instantiates all
-:py:class:<a href="#id1"><span class="problematic" id="id2">`</span></a>Network Nodes&lt;domain.network_nodes.Node&gt; that are
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a> that are
 specified in the simulation file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

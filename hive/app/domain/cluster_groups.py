@@ -245,18 +245,18 @@ class Cluster:
                 the desired `strategy`.
             strat:
                 A user defined way of identifying the way files are initially
-                distributed among members of the cluster. For example::
+                distributed among members of the cluster. ::
 
-                    `u` - Distributed uniformly across network;
-
-                    `a` - Give all file block replicas to N different network
-                    nodes, where N is equal to
-                    :py:const:`<environment_settings.REPLICATION_LEVEL>`;
-
-                    `i` - Distribute all file block replicas following such
-                    that the simulation starts with all file replicas and their
-                    replicas distributed with a bias towards the ideal steady
-                    state distribution (default);
+                    u
+                        Distributed uniformly across network.
+                    a
+                        Give all file block replicas to N different network
+                        nodes, where N is the replication level.
+                    i
+                        Distribute all file block replicas following such
+                        that the simulation starts with all file replicas and
+                        their replicas distributed with a bias towards the
+                        ideal steady state distribution.
 
         """
         raise NotImplementedError("")
@@ -420,13 +420,12 @@ class Cluster:
             return "dead"
 
     def set_replication_epoch(self, replica: sd.FileBlockData) -> None:
-        """Delegates to :py:meth:
-        `app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
+        """Delegates to :py:meth:`app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch`.
 
         Args:
             replica:
-                A :py:class:`app.domain.helpers.smart_dataclasses.FileBlockData`
-                instance that represents a file block replica that was lost.
+                A reference to a ``FileBlockData`` instance that represents a
+                file block replica that was lost.
         """
         s = replica.set_replication_epoch(self.current_epoch)
         self._recovery_epoch_sum += s

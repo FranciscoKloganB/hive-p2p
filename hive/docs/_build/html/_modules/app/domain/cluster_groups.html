@@ -343,18 +343,18 @@
 <span class="sd">                the desired `strategy`.</span>
 <span class="sd">            strat:</span>
 <span class="sd">                A user defined way of identifying the way files are initially</span>
-<span class="sd">                distributed among members of the cluster. For example::</span>
+<span class="sd">                distributed among members of the cluster. ::</span>
 
-<span class="sd">                    `u` - Distributed uniformly across network;</span>
-
-<span class="sd">                    `a` - Give all file block replicas to N different network</span>
-<span class="sd">                    nodes, where N is equal to</span>
-<span class="sd">                    :py:const:`&lt;environment_settings.REPLICATION_LEVEL&gt;`;</span>
-
-<span class="sd">                    `i` - Distribute all file block replicas following such</span>
-<span class="sd">                    that the simulation starts with all file replicas and their</span>
-<span class="sd">                    replicas distributed with a bias towards the ideal steady</span>
-<span class="sd">                    state distribution (default);</span>
+<span class="sd">                    u</span>
+<span class="sd">                        Distributed uniformly across network.</span>
+<span class="sd">                    a</span>
+<span class="sd">                        Give all file block replicas to N different network</span>
+<span class="sd">                        nodes, where N is the replication level.</span>
+<span class="sd">                    i</span>
+<span class="sd">                        Distribute all file block replicas following such</span>
+<span class="sd">                        that the simulation starts with all file replicas and</span>
+<span class="sd">                        their replicas distributed with a bias towards the</span>
+<span class="sd">                        ideal steady state distribution.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
@@ -518,13 +518,12 @@
             <span class="k">return</span> <span class="s2">&quot;dead&quot;</span></div>
 
 <div class="viewcode-block" id="Cluster.set_replication_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.set_replication_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Delegates to :py:meth:</span>
-<span class="sd">        `app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`</span>
+        <span class="sd">&quot;&quot;&quot;Delegates to :py:meth:`app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            replica:</span>
-<span class="sd">                A :py:class:`app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">                instance that represents a file block replica that was lost.</span>
+<span class="sd">                A reference to a ``FileBlockData`` instance that represents a</span>
+<span class="sd">                file block replica that was lost.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">replica</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span> <span class="o">+=</span> <span class="n">s</span>
