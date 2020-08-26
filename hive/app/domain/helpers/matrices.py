@@ -185,6 +185,7 @@ def _adjency_matrix_sdp_optimization(
         2. The input Matrix hould have no transient states/absorbent nodes, but
         this is not enforced or verified.
 
+
     Args:
         a:
             Any symmetric adjacency matrix.
@@ -248,13 +249,13 @@ def _metropolis_hastings(a: np.ndarray,
             (default is 2, for version 2).
 
     Returns:
-        An unlabeled transition matrix with steady state v_.
+        An unlabeled transition matrix with steady state `v_`.
 
     Raises:
         DistributionShapeError:
-            When the length of v_ is not the same as the matrix a.
+            When the length of `v_` is not the same as the matrix `a`.
         MatrixNotSquareError:
-            When matrix a is not a square matrix.
+            When matrix `a` is not a square matrix.
     """
 
     if v_.shape[0] != a.shape[1]:
@@ -317,7 +318,7 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
 
 
 def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
-    """Builds a rejection matrix for a given rejection matrix rw and vector v_.
+    """Builds a matrix of rejection probabilities for a given random walk.
 
     Args:
         v_:
@@ -340,7 +341,8 @@ def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
 
 def __get_diagonal_entry_probability(
         rw: np.ndarray, r: np.ndarray, i: int) -> np.float64:
-    """Helper function used by _metropolis_hastings function.
+    """Helper function used by
+    :py:func:`app.domain.helpers.matrices._metropolis_hastings` function.
 
     Calculates the value that should be assigned to the entry (i, i) of the
     transition matrix being calculated by the metropolis hastings algorithm
@@ -430,8 +432,8 @@ def new_symmetric_matrix(
          allow_sloops:
             Indicates if the generated adjacency matrix allows diagonal
             entries representing self-loops. If false, then, all diagonal
-                entries must be zeros. Otherwise, they can be zeros or ones (
-                default is True).
+            entries must be zeros. Otherwise, they can be zeros or ones (
+            default is True).
          force_sloops:
             Indicates if the diagonal of the generated matrix should be
             filled with ones. If false, valid diagonal entries are decided by

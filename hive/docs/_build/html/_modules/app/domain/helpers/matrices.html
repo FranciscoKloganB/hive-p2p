@@ -283,6 +283,7 @@
 <span class="sd">        2. The input Matrix hould have no transient states/absorbent nodes, but</span>
 <span class="sd">        this is not enforced or verified.</span>
 
+
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
 <span class="sd">            Any symmetric adjacency matrix.</span>
@@ -346,13 +347,13 @@
 <span class="sd">            (default is 2, for version 2).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        An unlabeled transition matrix with steady state v_.</span>
+<span class="sd">        An unlabeled transition matrix with steady state `v_`.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        DistributionShapeError:</span>
-<span class="sd">            When the length of v_ is not the same as the matrix a.</span>
+<span class="sd">            When the length of `v_` is not the same as the matrix `a`.</span>
 <span class="sd">        MatrixNotSquareError:</span>
-<span class="sd">            When matrix a is not a square matrix.</span>
+<span class="sd">            When matrix `a` is not a square matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">v_</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
@@ -415,7 +416,7 @@
 
 
 <div class="viewcode-block" id="_construct_rejection_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices._construct_rejection_matrix">[docs]</a><span class="k">def</span> <span class="nf">_construct_rejection_matrix</span><span class="p">(</span><span class="n">rw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Builds a rejection matrix for a given rejection matrix rw and vector v_.</span>
+    <span class="sd">&quot;&quot;&quot;Builds a matrix of rejection probabilities for a given random walk.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        v_:</span>
@@ -438,7 +439,8 @@
 
 <div class="viewcode-block" id="__get_diagonal_entry_probability"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.__get_diagonal_entry_probability">[docs]</a><span class="k">def</span> <span class="nf">__get_diagonal_entry_probability</span><span class="p">(</span>
         <span class="n">rw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Helper function used by _metropolis_hastings function.</span>
+    <span class="sd">&quot;&quot;&quot;Helper function used by</span>
+<span class="sd">    :py:func:`app.domain.helpers.matrices._metropolis_hastings` function.</span>
 
 <span class="sd">    Calculates the value that should be assigned to the entry (i, i) of the</span>
 <span class="sd">    transition matrix being calculated by the metropolis hastings algorithm</span>
@@ -528,8 +530,8 @@
 <span class="sd">         allow_sloops:</span>
 <span class="sd">            Indicates if the generated adjacency matrix allows diagonal</span>
 <span class="sd">            entries representing self-loops. If false, then, all diagonal</span>
-<span class="sd">                entries must be zeros. Otherwise, they can be zeros or ones (</span>
-<span class="sd">                default is True).</span>
+<span class="sd">            entries must be zeros. Otherwise, they can be zeros or ones (</span>
+<span class="sd">            default is True).</span>
 <span class="sd">         force_sloops:</span>
 <span class="sd">            Indicates if the diagonal of the generated matrix should be</span>
 <span class="sd">            filled with ones. If false, valid diagonal entries are decided by</span>

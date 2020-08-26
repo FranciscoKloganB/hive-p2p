@@ -318,7 +318,8 @@ this module.</p>
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.__get_diagonal_entry_probability">
 <code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">__get_diagonal_entry_probability</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">r</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">i</span><span class="p">:</span> <span class="n">int</span></em><span class="sig-paren">)</span> &#x2192; numpy.float64<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.__get_diagonal_entry_probability" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper function used by _metropolis_hastings function.</p>
+<dd><p>Helper function used by
+<a class="reference internal" href="#app.domain.helpers.matrices._metropolis_hastings" title="app.domain.helpers.matrices._metropolis_hastings"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices._metropolis_hastings()</span></code></a> function.</p>
 <p>Calculates the value that should be assigned to the entry (i, i) of the
 transition matrix being calculated by the metropolis hastings algorithm
 by considering the rejection probability over the random walk that was
@@ -402,7 +403,7 @@ this is not enforced or verified.</p>
 <dl class="py function">
 <dt id="app.domain.helpers.matrices._construct_rejection_matrix">
 <code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">_construct_rejection_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span><span class="p">:</span> <span class="n">numpy.ndarray</span></em>, <em class="sig-param"><span class="n">v_</span><span class="p">:</span> <span class="n">numpy.array</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_construct_rejection_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices._construct_rejection_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Builds a rejection matrix for a given rejection matrix rw and vector <a href="#id3"><span class="problematic" id="id4">v_</span></a>.</p>
+<dd><p>Builds a matrix of rejection probabilities for a given random walk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -438,12 +439,12 @@ is in row or column major form.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An unlabeled transition matrix with steady state <a href="#id5"><span class="problematic" id="id6">v_</span></a>.</p>
+<dd class="field-even"><p>An unlabeled transition matrix with steady state <cite>v_</cite>.</p>
 </dd>
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><a class="reference internal" href="#app.domain.helpers.exceptions.DistributionShapeError" title="app.domain.helpers.exceptions.DistributionShapeError"><strong>DistributionShapeError</strong></a> – When the length of <a href="#id7"><span class="problematic" id="id8">v_</span></a> is not the same as the matrix a.</p></li>
-<li><p><a class="reference internal" href="#app.domain.helpers.exceptions.MatrixNotSquareError" title="app.domain.helpers.exceptions.MatrixNotSquareError"><strong>MatrixNotSquareError</strong></a> – When matrix a is not a square matrix.</p></li>
+<li><p><a class="reference internal" href="#app.domain.helpers.exceptions.DistributionShapeError" title="app.domain.helpers.exceptions.DistributionShapeError"><strong>DistributionShapeError</strong></a> – When the length of <cite>v_</cite> is not the same as the matrix <cite>a</cite>.</p></li>
+<li><p><a class="reference internal" href="#app.domain.helpers.exceptions.MatrixNotSquareError" title="app.domain.helpers.exceptions.MatrixNotSquareError"><strong>MatrixNotSquareError</strong></a> – When matrix <cite>a</cite> is not a square matrix.</p></li>
 </ul>
 </dd>
 </dl>
@@ -659,16 +660,14 @@ py:func:<cite>~domain.helpers.matrices.make_connected</cite>.</p>
 <div><p>The generated adjacency matrix does not have transient state sets or
 absorbent nodes and can effectively represent a network topology
 with bidirectional connections between network nodes.</p>
-<dl>
-<dt>Args:</dt><dd><dl>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
 <dt>size:</dt><dd><p>The length of the square matrix.</p>
 </dd>
 <dt>allow_sloops:</dt><dd><p>Indicates if the generated adjacency matrix allows diagonal
-entries representing self-loops. If false, then, all diagonal</p>
-<blockquote>
-<div><p>entries must be zeros. Otherwise, they can be zeros or ones (
+entries representing self-loops. If false, then, all diagonal
+entries must be zeros. Otherwise, they can be zeros or ones (
 default is True).</p>
-</div></blockquote>
 </dd>
 <dt>force_sloops:</dt><dd><p>Indicates if the diagonal of the generated matrix should be
 filled with ones. If false, valid diagonal entries are decided by
