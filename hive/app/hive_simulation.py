@@ -1,35 +1,36 @@
 """This scripts's functions are used to start simulations.
 
-    You can start a simulation by executing the following command::
+You can start a simulation by executing the following command::
 
-        $ python hive_simulation.py --file=a_simulation_name.json --iters=30
+    $ python hive_simulation.py --file=a_simulation_name.json --iters=30
 
-    You can also execute all simulation file that exist in
-    :py:const:`~environment_settings.SIMULATION_ROOT` by instead executing:
+You can also execute all simulation file that exist in
+:py:const:`~environment_settings.SIMULATION_ROOT` by instead executing::
 
-        $ python hive_simulation.py -d -i 24
+    $ python hive_simulation.py -d -i 24
 
-    If you wish to execute multiple simulations in parallel (to save time) you
-    can use the -t or --threading flag in either of the previously specified
-    commands. The threading flag expects an integer that specifies the max
-    working threads. E.g.::
+If you wish to execute multiple simulations in parallel (to save time) you
+can use the -t or --threading flag in either of the previously specified
+commands. The threading flag expects an integer that specifies the max
+working threads. For example::
 
-        $ python hive_simulation.py -d --iters=1 --threading=12
+    $ python hive_simulation.py -d --iters=1 --threading=12
 
-    If you don't have a simulation file yet, run the following instead::
+If you don't have a simulation file yet, run the following instead::
 
-        $ python simfile_generator.py --file=filename.json
+    $ python simfile_generator.py --file=filename.json
 
-    Notes:
-        For the simulation to run without errors you must ensurue that::
-            1. The specified simulation files exist in
-            :py:const:`~environment_settings.SIMULATION_ROOT`.
+Note:
+    For the simulation to run without errors you must ensurue that::
+        1. The specified simulation files exist in
+        :py:const:`~environment_settings.SIMULATION_ROOT`.
 
-            2. Any file used by the simulation, e.g., a picture or a .pptx
-            document is accessible in :py:const:`~environment_settings.SHARED_ROOT`.
+        2. Any file used by the simulation, e.g., a picture or a .pptx
+        document is accessible in :py:const:`~environment_settings.SHARED_ROOT`.
 
-            3. An output file simdirectory exists with default path being:
-            :py:const:`~environment_settings.OUTFILE_ROOT`.
+        3. An output file simdirectory exists with default path being:
+        :py:const:`~environment_settings.OUTFILE_ROOT`.
+
 """
 
 import getopt
