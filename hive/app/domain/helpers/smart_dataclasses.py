@@ -412,7 +412,6 @@ class LoggingData:
             The number of messages transmissions that were lost in the
             network at each epoch.
     """
-    # endregion
 
     # region Class Variables, Instance Variables and Constructors
     def __init__(self) -> None:
