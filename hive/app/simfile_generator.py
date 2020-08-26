@@ -91,11 +91,11 @@ def __input_bounded_float(
         message:
             The message to be printed to the user upon first input request.
         lower_bound:
-            optional; Any input smaller than`lower_bound` is rejected (
-            default is 0.0).
+            optional; Any input smaller than`lower_bound` is rejected
+            (default is 0.0).
         upper_bound:
-            optional; Any input bigger than `upper_bound` is rejected (
-            default is 100.0).
+            optional; Any input bigger than `upper_bound` is rejected
+            (default is 100.0).
 
     Returns:
         An float inputed by the user.
