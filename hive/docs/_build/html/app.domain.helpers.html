@@ -434,7 +434,7 @@ transition matrix.</p></li>
 <li><p><strong>column_major_out</strong> – optional; Indicates whether to return transition_matrix output
 is in row or column major form.</p></li>
 <li><p><strong>version</strong> – optional; Indicates which version of the algorith should be used
-(default is 2, for version 2).</p></li>
+(default is version 2).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -476,8 +476,7 @@ components.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>m</strong> – The matrix to be verified.</p></li>
 <li><p><strong>directed</strong> – If the matrix edges are directed, i.e., if the matrix is an adjency
-matrix are the edges bidirectional, where false means they are (
-default is false).</p></li>
+matrix are the edges bidirectional, where false means they are.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -665,14 +664,13 @@ with bidirectional connections between network nodes.</p>
 </dd>
 <dt>allow_sloops:</dt><dd><p>Indicates if the generated adjacency matrix allows diagonal
 entries representing self-loops. If false, then, all diagonal
-entries must be zeros. Otherwise, they can be zeros or ones (
-default is True).</p>
+entries must be zeros. Otherwise, they can be zeros or ones.</p>
 </dd>
 <dt>force_sloops:</dt><dd><p>Indicates if the diagonal of the generated matrix should be
 filled with ones. If false, valid diagonal entries are decided by
 <cite>allow_self_loops</cite> param. Otherwise, diagonal entries are filled
 with ones. If <cite>allow_self_loops</cite> is False and <cite>enforce_loops</cite> is
-True, an error is raised (default is True).</p>
+True, an error is raised.</p>
 </dd>
 </dl>
 </dd>

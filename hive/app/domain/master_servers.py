@@ -22,10 +22,10 @@ class Master:
 
     Class Attributes:
         MAX_EPOCHS:
-            The number of time steps a simulation should have (default is 720).
+            The number of time steps a simulation should have.
             On a 24 hour day, 720 means one epoch should occur every two minutes.
         MAX_EPOCHS_PLUS_ONE:
-            do not alter; (default is MAX_EPOCHS + 1).
+            do not alter.
 
     Attributes:
         origin:

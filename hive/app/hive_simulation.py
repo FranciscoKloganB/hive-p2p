@@ -131,21 +131,20 @@ def main(
     Args:
         threads_count:
             Indicates if multiple simulation instances should run in parallel
-            (default is 0, this results in running the simulation in a
+            (default results in running the simulation in a
             single thread).
         sdir:
             Indicates if the user wishes to execute all simulation files
             that exist in :py:const:`environment_settings.SIMULATION_ROOT` or
             if he wishes to run one single simulation file, which must be
-            explicitly specified in `sname` (default is False).
+            explicitly specified in `sname`.
         sname:
             When `sdir` is set to False, `sname` needs to be specified as a
             non blank string containing the name of the simulation file to
             be executed. The named file must exist in
             :py:const:`environment_settings.SIMULATION_ROOT`.
         iters:
-            The number of times the same simulation file should be executed (
-            default is 30).
+            The number of times the same simulation file should be executed.
         epochs:
             The number of discrete time steps each iteration of each instance
             of a simulation lasts.

@@ -25,30 +25,31 @@ Note:
 Attributes:
     DEBUG:
         Indicates if some debug related actions or prints to the terminal
-        should be performed (default is False).
+        should be performed.
     READ_SIZE:
         Defines the raw size of each file block before it's wrapped in a
         :py:class:`app.domain.helpers.smart_dataclasses.FileBlockData`
-        instance object (default is 131072). Example values: 32KB = 32768B;
+        instance object. Example values: 32KB = 32768B;
         128KB = 131072B; 512KB = 524288B; 1MB = 1048576B; 20MB = 20971520B.
     MONTH_EPOCHS:
         Defines how many epochs (discrete time steps) a month is represented
-        with (default is 21600, one epoch per two minutes). See
-        :py:meth:`app.domain.cluster_groups._assign_disk_error_chance`.
+        with (with the default value of 21600 each epoch would represent two
+        minutes. See :py:meth:`app.domain.cluster_groups
+        ._assign_disk_error_chance`.
     MIN_REPLICATION_DELAY:
         The minimum amount of epoch time steps replica file block blocks
-        take to be regenerated after their are lost (default is 1).
+        take to be regenerated after their are lost.
     MAX_REPLICATION_DELAY:
         The maximum amount of epoch time steps replica file block blocks
-        take to be regenerated after their are lost (default is 4).
+        take to be regenerated after their are lost.
     REPLICATION_LEVEL:
-        The amount of blocks each file block has (default is 3).
+        The amount of blocks each file block has.
     MIN_CONVERGENCE_THRESHOLD:
         The number of consecutive epoch time steps that an
         :py:class:`app.domain.cluster_groups.Cluster` must converge before
         epochs start being marked with verified convergence in
         :py:attr:`app.domain.helpers.smart_dataclasses.LoggingData
-        .convergence_set` (default is 2).
+        .convergence_set`.
     LOSS_CHANCE:
         Defines the probability of a message not being delivered to a
         destination due to network link problems, in the simulation

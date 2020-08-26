@@ -245,7 +245,7 @@ def _metropolis_hastings(a: np.ndarray,
             is in row or column major form.
         version:
             optional; Indicates which version of the algorith should be used
-            (default is 2, for version 2).
+            (default is version 2).
 
     Returns:
         An unlabeled transition matrix with steady state `v_`.
@@ -431,14 +431,13 @@ def new_symmetric_matrix(
          allow_sloops:
             Indicates if the generated adjacency matrix allows diagonal
             entries representing self-loops. If false, then, all diagonal
-            entries must be zeros. Otherwise, they can be zeros or ones (
-            default is True).
+            entries must be zeros. Otherwise, they can be zeros or ones.
          force_sloops:
             Indicates if the diagonal of the generated matrix should be
             filled with ones. If false, valid diagonal entries are decided by
             `allow_self_loops` param. Otherwise, diagonal entries are filled
             with ones. If `allow_self_loops` is False and `enforce_loops` is
-            True, an error is raised (default is True).
+            True, an error is raised.
 
     Returns:
         The adjency matrix representing the connections between a
@@ -545,8 +544,7 @@ def is_connected(m: np.ndarray, directed: bool = False) -> bool:
             The matrix to be verified.
         directed:
             If the matrix edges are directed, i.e., if the matrix is an adjency
-            matrix are the edges bidirectional, where false means they are (
-            default is false).
+            matrix are the edges bidirectional, where false means they are.
 
     Returns:
         True if the matrix is a connected graph, else False.

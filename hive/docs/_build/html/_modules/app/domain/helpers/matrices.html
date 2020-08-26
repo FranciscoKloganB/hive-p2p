@@ -343,7 +343,7 @@
 <span class="sd">            is in row or column major form.</span>
 <span class="sd">        version:</span>
 <span class="sd">            optional; Indicates which version of the algorith should be used</span>
-<span class="sd">            (default is 2, for version 2).</span>
+<span class="sd">            (default is version 2).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        An unlabeled transition matrix with steady state `v_`.</span>
@@ -529,14 +529,13 @@
 <span class="sd">         allow_sloops:</span>
 <span class="sd">            Indicates if the generated adjacency matrix allows diagonal</span>
 <span class="sd">            entries representing self-loops. If false, then, all diagonal</span>
-<span class="sd">            entries must be zeros. Otherwise, they can be zeros or ones (</span>
-<span class="sd">            default is True).</span>
+<span class="sd">            entries must be zeros. Otherwise, they can be zeros or ones.</span>
 <span class="sd">         force_sloops:</span>
 <span class="sd">            Indicates if the diagonal of the generated matrix should be</span>
 <span class="sd">            filled with ones. If false, valid diagonal entries are decided by</span>
 <span class="sd">            `allow_self_loops` param. Otherwise, diagonal entries are filled</span>
 <span class="sd">            with ones. If `allow_self_loops` is False and `enforce_loops` is</span>
-<span class="sd">            True, an error is raised (default is True).</span>
+<span class="sd">            True, an error is raised.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The adjency matrix representing the connections between a</span>
@@ -643,8 +642,7 @@
 <span class="sd">            The matrix to be verified.</span>
 <span class="sd">        directed:</span>
 <span class="sd">            If the matrix edges are directed, i.e., if the matrix is an adjency</span>
-<span class="sd">            matrix are the edges bidirectional, where false means they are (</span>
-<span class="sd">            default is false).</span>
+<span class="sd">            matrix are the edges bidirectional, where false means they are.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        True if the matrix is a connected graph, else False.</span>

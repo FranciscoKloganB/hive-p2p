@@ -621,7 +621,7 @@ class LoggingData:
 
         Args:
             message:
-                optional; A log error message (default is blank)
+                optional; A log error message.
             epoch:
                 A simulation epoch at which termination occurred.
         """
