@@ -125,8 +125,10 @@
 <span class="sd">            the multithreaded mode to speed up simulations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">__LOCK</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
-    <span class="n">__instance</span><span class="p">:</span> <span class="n">MatlabEngineContainer</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: A re-entrant lock used to make `eng` shareable by multiple threads.</span>
+    <span class="n">_LOCK</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+    <span class="c1">#: A reference to the instance of `MatlabEngineContainer` or `None`.</span>
+    <span class="n">_instance</span><span class="p">:</span> <span class="n">MatlabEngineContainer</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="MatlabEngineContainer.get_instance"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_instance</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">MatlabEngineContainer</span><span class="p">:</span>
@@ -138,11 +140,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            A reference to the existing MatlabEngineContainer instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">__instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">__LOCK</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">__instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_LOCK</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">MatlabEngineContainer</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">__instance</span></div>
+        <span class="k">return</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span></div>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Instantiates a new MatlabEngineContainer object.</span>
@@ -151,11 +153,11 @@
 <span class="sd">            Do not directly invoke this constructor, use</span>
 <span class="sd">            :py:method:`getInstance` instead.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">__instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading matlab engine... this can take a while.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">start_matlab</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">eng</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">MATLAB_DIR</span><span class="p">)</span>
-            <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">__instance</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;MatlabEngineContainer is a Singleton. Use &quot;</span>
                                <span class="s2">&quot;MatlabEngineContainer.getInstance() to get a &quot;</span>
@@ -182,7 +184,7 @@
 <span class="sd">            Markov Matrix with `v_` as steady state distribution and the</span>
 <span class="sd">            respective mixing rate or None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">__LOCK</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_LOCK</span><span class="p">:</span>
             <span class="n">ma</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
             <span class="n">mv_</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="n">v_</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eng</span><span class="o">.</span><span class="n">matrixGlobalOpt</span><span class="p">(</span><span class="n">ma</span><span class="p">,</span> <span class="n">mv_</span><span class="p">,</span> <span class="n">nargout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div></div>

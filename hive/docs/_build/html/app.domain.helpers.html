@@ -211,10 +211,6 @@ row shape and does not.</p>
 <em class="property">exception </em><code class="sig-prename descclassname">app.domain.helpers.exceptions.</code><code class="sig-name descname">IllegalArgumentError</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/exceptions.html#IllegalArgumentError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></p>
 <p>Generic error used to indicate a parameter is not valid or expected.</p>
-<dl class="simple">
-<dt>Inherits:</dt><dd><p>ValueError</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py exception">
@@ -257,14 +253,16 @@ the multithreaded mode to speed up simulations.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.__LOCK">
-<code class="sig-name descname">__LOCK</code><em class="property"> = &lt;unlocked _thread.RLock object owner=0 count=0&gt;</em><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.__LOCK" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer._LOCK">
+<code class="sig-name descname">_LOCK</code><em class="property"> = &lt;unlocked _thread.RLock object owner=0 count=0&gt;</em><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer._LOCK" title="Permalink to this definition">¶</a></dt>
+<dd><p>A re-entrant lock used to make <cite>eng</cite> shareable by multiple threads.</p>
+</dd></dl>
 
 <dl class="py attribute">
-<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.__instance">
-<code class="sig-name descname">__instance</code><em class="property">: <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">MatlabEngineContainer</a></em><em class="property"> = None</em><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.__instance" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer._instance">
+<code class="sig-name descname">_instance</code><em class="property">: <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">app.domain.helpers.matlab_utils.MatlabEngineContainer</a></em><em class="property"> = None</em><a class="headerlink" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer._instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>A reference to the instance of <cite>MatlabEngineContainer</cite> or <cite>None</cite>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance">
@@ -630,22 +628,16 @@ respective mixing rate.</p>
 <dd><p>Generates a random symmetric matrix which is also connected.</p>
 <p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a> and
 py:func:<cite>app.domain.helpers.matrices.make_connected</cite>.</p>
-<blockquote>
-<div><dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>size:</dt><dd><p>The length of the square matrix.</p>
-</dd>
-<dt>allow_sloops:</dt><dd><p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p>
-</dd>
-<dt>force_sloops:</dt><dd><p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A matrix that represents an adjacency matrix that is also connected.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> – The length of the square matrix.</p></li>
+<li><p><strong>allow_sloops</strong> – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p></li>
+<li><p><strong>force_sloops</strong> – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A matrix that represents an adjacency matrix that is also connected.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -654,35 +646,29 @@ py:func:<cite>app.domain.helpers.matrices.make_connected</cite>.</p>
 <dt id="app.domain.helpers.matrices.new_symmetric_matrix">
 <code class="sig-prename descclassname">app.domain.helpers.matrices.</code><code class="sig-name descname">new_symmetric_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a random symmetric matrix.</p>
-<blockquote>
-<div><p>The generated adjacency matrix does not have transient state sets or
+<p>The generated adjacency matrix does not have transient state sets or
 absorbent nodes and can effectively represent a network topology
 with bidirectional connections between network nodes.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>size:</dt><dd><p>The length of the square matrix.</p>
-</dd>
-<dt>allow_sloops:</dt><dd><p>Indicates if the generated adjacency matrix allows diagonal
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> – The length of the square matrix.</p></li>
+<li><p><strong>allow_sloops</strong> – Indicates if the generated adjacency matrix allows diagonal
 entries representing self-loops. If false, then, all diagonal
-entries must be zeros. Otherwise, they can be zeros or ones.</p>
-</dd>
-<dt>force_sloops:</dt><dd><p>Indicates if the diagonal of the generated matrix should be
+entries must be zeros. Otherwise, they can be zeros or ones.</p></li>
+<li><p><strong>force_sloops</strong> – Indicates if the diagonal of the generated matrix should be
 filled with ones. If false, valid diagonal entries are decided by
 <cite>allow_self_loops</cite> param. Otherwise, diagonal entries are filled
 with ones. If <cite>allow_self_loops</cite> is False and <cite>enforce_loops</cite> is
-True, an error is raised.</p>
+True, an error is raised.</p></li>
+</ul>
 </dd>
-</dl>
-</dd>
-</dl>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The adjency matrix representing the connections between a
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The adjency matrix representing the connections between a
 groups of network nodes.</p>
 </dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference internal" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="app.domain.helpers.exceptions.IllegalArgumentError"><strong>IllegalArgumentError</strong></a> – When <cite>allow_self_loops</cite> (False) conflicts with
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="app.domain.helpers.exceptions.IllegalArgumentError"><strong>IllegalArgumentError</strong></a> – When <cite>allow_self_loops</cite> (False) conflicts with
     <cite>enforce_loops</cite> (True).</p>
 </dd>
 </dl>

@@ -6,17 +6,16 @@ as well as any steady-state or transition matrix optimization algorithms in
 this module.
 """
 
-from typing import Tuple, Any, Optional
-
 import random
-import numpy as np
-import cvxpy as cvx
+from typing import Tuple, Optional
 
+import cvxpy as cvx
+import numpy as np
 from matlab.engine import EngineError
 from scipy.sparse.csgraph import connected_components
 
-from domain.helpers.matlab_utils import MatlabEngineContainer
 from domain.helpers.exceptions import *
+from domain.helpers.matlab_utils import MatlabEngineContainer
 from utils.randoms import random_index
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
@@ -105,7 +104,8 @@ def new_go_transition_matrix(
     """
     # Allocate python variables
     n: int = a.shape[0]
-    ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
+    ones_vector: np.ndarray = np.ones(
+        n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
     ones_matrix: np.ndarray = np.ones((n, n))
     zeros_matrix: np.ndarray = np.zeros((n, n))
     u: np.ndarray = np.ones((n, n)) / n
@@ -116,8 +116,10 @@ def new_go_transition_matrix(
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
         t >= 0,  # Aopt entries must be non-negative
-        (t @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(t, ones_matrix - a) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
+        (t @ ones_vector) == ones_vector,
+        # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
+        cvx.multiply(t, ones_matrix - a) == zeros_matrix,
+        # optimized matrix has no new connections. It may have less than original adjencency matrix
         (v_ @ t) == v_,  # Resulting matrix must be a markov matrix.
     ]
 
@@ -169,6 +171,8 @@ def new_mgo_transition_matrix(
             return None, float('inf')
     except EngineError:
         return None, float('inf')
+
+
 # endregion
 
 
@@ -195,7 +199,8 @@ def _adjency_matrix_sdp_optimization(
 
     # Allocate python variables
     n: int = a.shape[0]
-    ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
+    ones_vector: np.ndarray = np.ones(
+        n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
     ones_matrix: np.ndarray = np.ones((n, n))
     zeros_matrix: np.ndarray = np.zeros((n, n))
     u: np.ndarray = np.ones((n, n)) / n
@@ -208,9 +213,12 @@ def _adjency_matrix_sdp_optimization(
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
         a_opt >= 0,  # a_opt entries must be non-negative
-        (a_opt @ ones_vector) == ones_vector,  # a_opt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(a_opt, ones_matrix - a) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
-        (a_opt - u) >> (-t * i),  # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
+        (a_opt @ ones_vector) == ones_vector,
+        # a_opt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
+        cvx.multiply(a_opt, ones_matrix - a) == zeros_matrix,
+        # optimized matrix has no new connections. It may have less than original adjencency matrix
+        (a_opt - u) >> (-t * i),
+        # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
         (a_opt - u) << (t * i)  # eigenvalue upper bound
     ]
 
@@ -220,6 +228,8 @@ def _adjency_matrix_sdp_optimization(
     problem.solve(solver=cvx.MOSEK)
 
     return problem, a_opt
+
+
 # endregion
 
 
@@ -387,6 +397,8 @@ def __get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
             outputed by the _metropolis_hastings function.
         """
     return 1 - np.sum(m[i, :])
+
+
 # endregion
 
 
