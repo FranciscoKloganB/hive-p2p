@@ -4,10 +4,10 @@ This module demonstrates holds multiple constant variables that are used
 through out the simulation's lifetime including initialization and execution.
 
 Note:
-    To configure the amount of available network nodes in a simulation (
-    :py:class:`app.domain.network_nodes.HiveNode`), the number of network
-    nodes in a group persisting a file (
-    :py:class:`app.domain.cluster_groups.Cluster`),
+    To configure the amount of available network nodes in a simulation
+    (:py:class:`app.domain.network_nodes.HiveNode`), the number of network
+    nodes in a group persisting a file
+    (:py:class:`app.domain.cluster_groups.Cluster`),
     the way files are initially distributed between network nodes of a
     simulation (:py:meth:`app.domain.cluster_groups.Cluster.spread_files`)
     and, the actual name of the file whose persistence is being simulated,
