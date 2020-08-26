@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator's documentation!
-============================================================================
+=============================================================================
 
 .. toctree::
    :maxdepth: 2
