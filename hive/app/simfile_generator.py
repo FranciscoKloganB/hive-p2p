@@ -6,11 +6,11 @@ appear in your terminal when running the following command::
     $ python simfile_generator.py --file=filename.json
 
 Notes:
-    Simulation files are placed in:
-    :py:const:`app.environment_settings.SIMULATION_ROOT`.
+    Simulation files are placed inside
+    :py:const:`app.environment_settings.SIMULATION_ROOT` directory.
 
-    Any file used to simulate persistance must be in:
-    :py:const:`app.environment_settings.SHARED_ROOT`.
+    Any file used to simulate persistance must be inside
+    :py:const:`app.environment_settings.SHARED_ROOT` directory.
 
 """
 import getopt
