@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Hives- A P2P Stochastic Swarm Guidance Simulator's documentation!
+Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator's documentation!
 ============================================================================
 
 .. toctree::
