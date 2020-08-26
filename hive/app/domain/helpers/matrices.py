@@ -421,18 +421,18 @@ def new_symmetric_matrix(
 ) -> np.ndarray:
     """Generates a random symmetric matrix.
 
-     The generated adjacency matrix does not have transient state sets or
-     absorbent nodes and can effectively represent a network topology
-     with bidirectional connections between network nodes.
+    The generated adjacency matrix does not have transient state sets or
+    absorbent nodes and can effectively represent a network topology
+    with bidirectional connections between network nodes.
 
-     Args:
-         size:
-            The length of the square matrix.
-         allow_sloops:
+    Args:
+        size:
+             The length of the square matrix.
+        allow_sloops:
             Indicates if the generated adjacency matrix allows diagonal
             entries representing self-loops. If false, then, all diagonal
             entries must be zeros. Otherwise, they can be zeros or ones.
-         force_sloops:
+        force_sloops:
             Indicates if the diagonal of the generated matrix should be
             filled with ones. If false, valid diagonal entries are decided by
             `allow_self_loops` param. Otherwise, diagonal entries are filled
@@ -476,12 +476,12 @@ def new_symmetric_connected_matrix(
     See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix` and
     py:func:`app.domain.helpers.matrices.make_connected`.
 
-     Args:
-         size:
+    Args:
+        size:
             The length of the square matrix.
-         allow_sloops:
+        allow_sloops:
             See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.
-         force_sloops:
+        force_sloops:
             See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.
 
     Returns:
