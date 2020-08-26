@@ -185,7 +185,7 @@ class Cluster:
                 The :py:class:`code <app.domain.helpers.enums.HttpCodes>` that
                 led to the complaint.
         """
-        raise NotImplementedError("")
+        pass
     # endregion
 
     # region Simulation setup
@@ -459,13 +459,6 @@ class HiveCluster(Cluster):
         self.cv_: pd.DataFrame = pd.DataFrame()
         self.v_: pd.DataFrame = pd.DataFrame()
         self.create_and_bcast_new_transition_matrix()
-
-    # region Cluster API
-    def complain(
-            self, complainter: str, complainee: str, reason: th.HttpResponse
-    ) -> None:
-        pass
-    # endregion
 
     # region Simulation setup
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
@@ -1017,23 +1010,24 @@ class HDFSCluster(Cluster):
     """Represents a group of network nodes persisting a file in a Hadoop
     Distributed File System scenario.
 
-    Differ from Cluster in the sense that the
-    :py:class:`Network Nodes <domain.network_nodes.HiveNode>` are
-    do not perform swarm guidance behaviors and instead report with regular
-    heartbeats to their monitoring `HDFSCluster` instance. This class would
-    represent a NameNode Server in HDFS and a Master server in GFS.
+    Differs from :py:class:`~app.domain.cluster_groups.Cluster` in the sense
+    that :py:class:`Network Nodes <app.domain.network_nodes.HDFSNode>` do not
+    perform swarm guidance behaviors and instead report with regular
+    heartbeats to their
+    :py:class:`HDFSCluster monitors <app.domain.cluster_groups.HDFSCluster>`.
+    This class would represent a NameNode Server in HDFS or a Master server
+    in GFS.
 
     Attributes:
         suspicious_nodes:
             A set containing the unique identifiers of known suspicious
             nodes.
         data_node_heartbeats:
-            A dictionary mapping :py:mod:`Network
-            Nodes' <domain.network_nodes>` identifiers to their respective
-            number of received complaints. Each node enters the dictionary
-            with at five beats. When they miss five beats in a row, i.e.,
-            when the dictionary value count is zero, they are evicted from the
-            cluster.
+            A dictionary mapping :py:class:`~app.domain.network_nodes.HDFSNode`
+            identifiers to their respective number of received complaints.
+            Each node enters the dictionary with at five beats. When they
+            miss five beats in a row, i.e., when the dictionary value count
+            is zero, they are evicted from the cluster.
     """
     def __init__(self,
                  master: th.MasterType,
@@ -1051,13 +1045,6 @@ class HDFSCluster(Cluster):
         self.data_node_heartbeats: Dict[str, int] = {
             node.id: 5 for node in members.values()
         }
-
-    # region Cluster API
-    def complain(
-            self, complainter: str, complainee: str, reason: th.HttpResponse
-    ) -> None:
-        pass
-    # endregion
 
     # region Simulation setup
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:

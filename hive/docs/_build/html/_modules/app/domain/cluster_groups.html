@@ -283,7 +283,7 @@
 <span class="sd">                The :py:class:`code &lt;app.domain.helpers.enums.HttpCodes&gt;` that</span>
 <span class="sd">                led to the complaint.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+        <span class="k">pass</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation setup</span>
@@ -1115,23 +1115,24 @@
     <span class="sd">&quot;&quot;&quot;Represents a group of network nodes persisting a file in a Hadoop</span>
 <span class="sd">    Distributed File System scenario.</span>
 
-<span class="sd">    Differ from Cluster in the sense that the</span>
-<span class="sd">    :py:class:`Network Nodes &lt;domain.network_nodes.HiveNode&gt;` are</span>
-<span class="sd">    do not perform swarm guidance behaviors and instead report with regular</span>
-<span class="sd">    heartbeats to their monitoring `HDFSCluster` instance. This class would</span>
-<span class="sd">    represent a NameNode Server in HDFS and a Master server in GFS.</span>
+<span class="sd">    Differs from :py:class:`~app.domain.cluster_groups.Cluster` in the sense</span>
+<span class="sd">    that :py:class:`Network Nodes &lt;app.domain.network_nodes.HDFSNode&gt;` do not</span>
+<span class="sd">    perform swarm guidance behaviors and instead report with regular</span>
+<span class="sd">    heartbeats to their</span>
+<span class="sd">    :py:class:`HDFSCluster monitors &lt;app.domain.cluster_groups.HDFSCluster&gt;`.</span>
+<span class="sd">    This class would represent a NameNode Server in HDFS or a Master server</span>
+<span class="sd">    in GFS.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        suspicious_nodes:</span>
 <span class="sd">            A set containing the unique identifiers of known suspicious</span>
 <span class="sd">            nodes.</span>
 <span class="sd">        data_node_heartbeats:</span>
-<span class="sd">            A dictionary mapping :py:mod:`Network</span>
-<span class="sd">            Nodes&#39; &lt;domain.network_nodes&gt;` identifiers to their respective</span>
-<span class="sd">            number of received complaints. Each node enters the dictionary</span>
-<span class="sd">            with at five beats. When they miss five beats in a row, i.e.,</span>
-<span class="sd">            when the dictionary value count is zero, they are evicted from the</span>
-<span class="sd">            cluster.</span>
+<span class="sd">            A dictionary mapping :py:class:`~app.domain.network_nodes.HDFSNode`</span>
+<span class="sd">            identifiers to their respective number of received complaints.</span>
+<span class="sd">            Each node enters the dictionary with at five beats. When they</span>
+<span class="sd">            miss five beats in a row, i.e., when the dictionary value count</span>
+<span class="sd">            is zero, they are evicted from the cluster.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
@@ -1149,13 +1150,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="mi">5</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
         <span class="p">}</span>
-
-    <span class="c1"># region Cluster API</span>
-<div class="viewcode-block" id="HDFSCluster.complain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.complain">[docs]</a>    <span class="k">def</span> <span class="nf">complain</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">complainter</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">complainee</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">pass</span></div>
-    <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="HDFSCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
