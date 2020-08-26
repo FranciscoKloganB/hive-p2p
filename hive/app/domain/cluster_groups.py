@@ -1,23 +1,5 @@
 """This module contains domain specific classes that represent groups of
-storage nodes.
-
-Classes:
-    Cluster:
-        A group of P2P nodes working together to ensure the durability of a
-        file using stochastic swarm guidance.
-    HiveClusterExt:
-        A group of P2P nodes working together to ensure the durability of a
-        file using stochastic swarm guidance. Differs from `Cluster` in the
-        sense that member eviction is based on the received complaints
-        from other P2P member nodes within the Cluster rather than having
-        the Cluster detecting the disconnection fault, i.e., Cluster
-        role in the simulation is more coordinative and less informative to
-        nodes.
-    Cluster:
-        A group of reliable servers that ensure the durability of a file
-        following a client-server model as seen in Google File System or
-        Hadoop Distributed File System.
-"""
+storage nodes."""
 
 from __future__ import annotations
 
@@ -41,7 +23,7 @@ from utils.convertions import truncate_float_value
 
 
 class Cluster:
-    """Represents a group of network nodes persisting a file.
+    """Represents a group of network nodes ensuring the durability of a file.
 
     Attributes:
         id:
@@ -748,7 +730,7 @@ class HiveCluster(Cluster):
 
         Returns:
             A transition matrix that is likely to be a markov matrix whose
-            steady state is `v_`, but is not yet validated. See
+            steady state is ``v_``, but is not yet validated. See
             :py:meth:`_validate_transition_matrix`.
         """
         results: List[Tuple[Optional[np.ndarray], float]] = [
@@ -782,7 +764,7 @@ class HiveCluster(Cluster):
 
         Verification is done by raising the matrix to the power of 4096
         (just a large number) and checking if all column vectors are equal
-        to the :py:attr:`v_`.
+        to the :py:attr:``v_``.
 
         Returns:
             True if the matrix can converge to the desired steady state,

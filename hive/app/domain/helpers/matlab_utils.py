@@ -70,7 +70,7 @@ class MatlabEngineContainer:
 
         Constructs an optimized transition matrix using linear programming
         relaxations and convex envelope approximations for the specified steady
-        state `v`, this is done by invoke the matlabscript matrixGlobalOpt
+        state ``v``, this is done by invoke the matlabscript matrixGlobalOpt
         in the project folder name matlab.
 
         Note:
@@ -83,7 +83,7 @@ class MatlabEngineContainer:
                 A stochastic steady state distribution vector.
 
         Returns:
-            Markov Matrix with `v_` as steady state distribution and the
+            Markov Matrix with ``v_`` as steady state distribution and the
             respective mixing rate or None.
         """
         with MatlabEngineContainer._LOCK:

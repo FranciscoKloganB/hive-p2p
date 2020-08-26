@@ -50,10 +50,13 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autodoc.typehints',
     'sphinx.ext.napoleon',
-    #'sphinx_rtd_theme'
+    # 'sphinx_rtd_theme'
 ]
 
 autodoc_typehints = 'description'
+
+napoleon_include_private_with_doc = True
+napoleon_include_special_with_doc = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -184,7 +184,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__process_simfile__</span><span class="p">(</span><span class="n">simfile_path</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
 
     <span class="c1"># region Simulation setup</span>
-    <span class="k">def</span> <span class="nf">__process_simfile__</span><span class="p">(</span>
+<div class="viewcode-block" id="Master.__process_simfile__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__process_simfile__">[docs]</a>    <span class="k">def</span> <span class="nf">__process_simfile__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Opens and processes the simulation filed referenced in `path`.</span>
 
@@ -230,9 +230,9 @@
             <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">spread_strategy</span> <span class="o">=</span> <span class="n">fspreads</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
                 <span class="n">file_blocks</span> <span class="o">=</span> <span class="n">fblocks</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
-                <span class="n">cluster</span><span class="o">.</span><span class="n">spread_files</span><span class="p">(</span><span class="n">file_blocks</span><span class="p">,</span> <span class="n">spread_strategy</span><span class="p">)</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">spread_files</span><span class="p">(</span><span class="n">file_blocks</span><span class="p">,</span> <span class="n">spread_strategy</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">__create_network_nodes__</span><span class="p">(</span>
+<div class="viewcode-block" id="Master.__create_network_nodes__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__create_network_nodes__">[docs]</a>    <span class="k">def</span> <span class="nf">__create_network_nodes__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">json</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Helper method that instantiates all</span>
 <span class="sd">        :py:class:`Network Nodes&lt;domain.network_nodes.Node&gt; that are</span>
@@ -246,9 +246,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">nid</span><span class="p">,</span> <span class="n">nuptime</span> <span class="ow">in</span> <span class="n">json</span><span class="p">[</span><span class="s1">&#39;nodes_uptime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_network_node__</span><span class="p">(</span><span class="n">node_class</span><span class="p">,</span> <span class="n">nid</span><span class="p">,</span> <span class="n">nuptime</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span></div>
 
-    <span class="k">def</span> <span class="nf">__split_files__</span><span class="p">(</span>
+<div class="viewcode-block" id="Master.__split_files__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__split_files__">[docs]</a>    <span class="k">def</span> <span class="nf">__split_files__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">bsize</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Helper method that splits the files into multiple blocks to be</span>
@@ -276,7 +276,7 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">break</span>
             <span class="n">cluster</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parts_count</span> <span class="o">=</span> <span class="n">bid</span>
-            <span class="k">return</span> <span class="n">d</span>
+            <span class="k">return</span> <span class="n">d</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -333,7 +333,7 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
-    <span class="k">def</span> <span class="nf">__new_cluster_group__</span><span class="p">(</span>
+<div class="viewcode-block" id="Master.__new_cluster_group__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__new_cluster_group__">[docs]</a>    <span class="k">def</span> <span class="nf">__new_cluster_group__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Helper method that initializes a new Cluster group.</span>
@@ -366,9 +366,9 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster</span>
-        <span class="k">return</span> <span class="n">cluster</span>
+        <span class="k">return</span> <span class="n">cluster</span></div>
 
-    <span class="k">def</span> <span class="nf">__new_network_node__</span><span class="p">(</span>
+<div class="viewcode-block" id="Master.__new_network_node__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__new_network_node__">[docs]</a>    <span class="k">def</span> <span class="nf">__new_network_node__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">nid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_uptime</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Helper method that initializes a new Node.</span>
 
@@ -386,7 +386,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            The :py:class:`app.domain.network_nodes.Node` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">class_name_to_obj</span><span class="p">(</span><span class="n">NETWORK_NODES</span><span class="p">,</span> <span class="n">node_class</span><span class="p">,</span> <span class="p">[</span><span class="n">nid</span><span class="p">,</span> <span class="n">node_uptime</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="n">class_name_to_obj</span><span class="p">(</span><span class="n">NETWORK_NODES</span><span class="p">,</span> <span class="n">node_class</span><span class="p">,</span> <span class="p">[</span><span class="n">nid</span><span class="p">,</span> <span class="n">node_uptime</span><span class="p">])</span></div></div>
     <span class="c1"># endregion</span>
 
 
@@ -427,7 +427,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
 
     <span class="c1"># region Simulation setup</span>
-    <span class="k">def</span> <span class="nf">__process_simfile__</span><span class="p">(</span>
+<div class="viewcode-block" id="HDFSMaster.__process_simfile__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster.__process_simfile__">[docs]</a>    <span class="k">def</span> <span class="nf">__process_simfile__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Opens and processes the simulation filed referenced in `path`.</span>
 
@@ -475,7 +475,7 @@
             <span class="c1"># Distribute files before starting simulation</span>
             <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">file_blocks</span> <span class="o">=</span> <span class="n">fblocks</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
-                <span class="n">cluster</span><span class="o">.</span><span class="n">spread_files</span><span class="p">(</span><span class="n">file_blocks</span><span class="p">)</span></div>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">spread_files</span><span class="p">(</span><span class="n">file_blocks</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 </pre></div>
 

@@ -98,23 +98,6 @@
   <h1>Source code for app.domain.cluster_groups</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;This module contains domain specific classes that represent groups of</span>
 <span class="sd">storage nodes.</span>
-
-<span class="sd">Classes:</span>
-<span class="sd">    Cluster:</span>
-<span class="sd">        A group of P2P nodes working together to ensure the durability of a</span>
-<span class="sd">        file using stochastic swarm guidance.</span>
-<span class="sd">    HiveClusterExt:</span>
-<span class="sd">        A group of P2P nodes working together to ensure the durability of a</span>
-<span class="sd">        file using stochastic swarm guidance. Differs from `Cluster` in the</span>
-<span class="sd">        sense that member eviction is based on the received complaints</span>
-<span class="sd">        from other P2P member nodes within the Cluster rather than having</span>
-<span class="sd">        the Cluster detecting the disconnection fault, i.e., Cluster</span>
-<span class="sd">        role in the simulation is more coordinative and less informative to</span>
-<span class="sd">        nodes.</span>
-<span class="sd">    Cluster:</span>
-<span class="sd">        A group of reliable servers that ensure the durability of a file</span>
-<span class="sd">        following a client-server model as seen in Google File System or</span>
-<span class="sd">        Hadoop Distributed File System.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
@@ -305,7 +288,7 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation setup</span>
-    <span class="k">def</span> <span class="nf">__assign_disk_error_chance__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="Cluster.__assign_disk_error_chance__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.__assign_disk_error_chance__">[docs]</a>    <span class="k">def</span> <span class="nf">__assign_disk_error_chance__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Defines the probability of a file block being corrupted while stored</span>
 <span class="sd">        at the disk of a</span>
 <span class="sd">        :py:class:`Network Node &lt;app.domain.network_nodes.Node&gt;`.</span>
@@ -332,9 +315,9 @@
         <span class="n">ploss_month</span> <span class="o">=</span> <span class="mf">0.0086</span>
         <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="p">(</span><span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span> <span class="o">*</span> <span class="n">ploss_month</span><span class="p">)</span> <span class="o">/</span> <span class="n">MONTH_EPOCHS</span>
         <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">ploss_epoch</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">ploss_epoch</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="nf">__setup_epoch__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Cluster.__setup_epoch__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.__setup_epoch__">[docs]</a>    <span class="k">def</span> <span class="nf">__setup_epoch__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Initializes some attributes of the Cluster during</span>
 <span class="sd">        its initialization.</span>
 
@@ -347,7 +330,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">epoch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="Cluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Distributes files among members of the cluster. Members are</span>
@@ -473,7 +456,7 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
-    <span class="k">def</span> <span class="nf">__log_evaluation__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Cluster.__log_evaluation__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.__log_evaluation__">[docs]</a>    <span class="k">def</span> <span class="nf">__log_evaluation__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Helper method that performs evaluate step related logging.</span>
 
 <span class="sd">        Args:</span>
@@ -484,7 +467,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_existing_file_blocks</span><span class="p">(</span><span class="n">pcount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">pcount</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining parts.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parts_in_hive</span> <span class="o">=</span> <span class="n">pcount</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parts_in_hive</span> <span class="o">=</span> <span class="n">pcount</span></div>
 
 <div class="viewcode-block" id="Cluster._set_fail"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._set_fail">[docs]</a>    <span class="k">def</span> <span class="nf">_set_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Ends the Cluster instance simulation.</span>
@@ -846,7 +829,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A transition matrix that is likely to be a markov matrix whose</span>
-<span class="sd">            steady state is `v_`, but is not yet validated. See</span>
+<span class="sd">            steady state is ``v_``, but is not yet validated. See</span>
 <span class="sd">            :py:meth:`_validate_transition_matrix`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
@@ -880,7 +863,7 @@
 
 <span class="sd">        Verification is done by raising the matrix to the power of 4096</span>
 <span class="sd">        (just a large number) and checking if all column vectors are equal</span>
-<span class="sd">        to the :py:attr:`v_`.</span>
+<span class="sd">        to the :py:attr:``v_``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            True if the matrix can converge to the desired steady state,</span>
@@ -947,7 +930,7 @@
 
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">__log_evaluation__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HiveCluster.__log_evaluation__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.__log_evaluation__">[docs]</a>    <span class="k">def</span> <span class="nf">__log_evaluation__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Helper method that performs evaluate step related logging.</span>
 
 <span class="sd">        Extends:</span>
@@ -957,9 +940,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equal_distributions</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">register_convergence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">save_sets_and_reset</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">save_sets_and_reset</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">__pretty_print_eq_distr_table__</span><span class="p">(</span>
+<div class="viewcode-block" id="HiveCluster.__pretty_print_eq_distr_table__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.__pretty_print_eq_distr_table__">[docs]</a>    <span class="k">def</span> <span class="nf">__pretty_print_eq_distr_table__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Pretty prints a PSQL formatted table for visual vector comparison.&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
@@ -969,7 +952,7 @@
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;tolerance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">atol</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rtol</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="o">*</span><span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]]]</span>
         <span class="n">zipped</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;(cv_ - v_)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;tolerance&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;is_close&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">zipped</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">tabulate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="s1">&#39;keys&#39;</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s1">&#39;psql&#39;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">tabulate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="s1">&#39;keys&#39;</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s1">&#39;psql&#39;</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 
 

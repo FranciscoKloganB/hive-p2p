@@ -27,7 +27,7 @@ def new_mh_transition_matrix(
     """ Constructs a transition matrix using metropolis-hastings.
 
     Constructs a transition matrix using metropolis-hastings algorithm  for
-    the specified steady state `v`.
+    the specified steady state ``v``.
 
     Note:
         The input Matrix hould have no transient states or absorbent nodes,
@@ -40,7 +40,7 @@ def new_mh_transition_matrix(
             A stochastic steady state distribution vector.
 
     Returns:
-        Markov Matrix with `v_` as steady state distribution and the
+        Markov Matrix with ``v_`` as steady state distribution and the
         respective mixing rate.
     """
     t = _metropolis_hastings(a, v_)
@@ -52,7 +52,7 @@ def new_sdp_mh_transition_matrix(
     """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
 
     Constructs a transition matrix using metropolis-hastings algorithm  for
-    the specified steady state `v`. The provided adjacency matrix A is first
+    the specified steady state ``v``. The provided adjacency matrix A is first
     optimized with semi-definite programming techniques for the uniform
     distribution vector.
 
@@ -66,7 +66,7 @@ def new_sdp_mh_transition_matrix(
             A stochastic steady state distribution vector.
 
     Returns:
-        Markov Matrix with `v_` as steady state distribution and the
+        Markov Matrix with ``v_`` as steady state distribution and the
         respective mixing rate.
     """
     try:
@@ -85,7 +85,7 @@ def new_go_transition_matrix(
     """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
 
     Constructs an optimized markov matrix using linear programming relaxations
-    and convex envelope approximations for the specified steady state `v`.
+    and convex envelope approximations for the specified steady state ``v``.
     Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform
     Matrix, 2) is equal to the markov matrix eigenvalue.
 
@@ -99,7 +99,7 @@ def new_go_transition_matrix(
             A stochastic steady state distribution vector.
 
     Returns:
-        Markov Matrix with `v_` as steady state distribution and the
+        Markov Matrix with ``v_`` as steady state distribution and the
         respective mixing rate.
     """
     # Allocate python variables
@@ -143,7 +143,7 @@ def new_mgo_transition_matrix(
 
     Constructs an optimized transition matrix using linear programming
     relaxations and convex envelope approximations for the specified steady
-    state `v`. Result is only trully optimal if normal(Tranistion Matrix Opt
+    state ``v``. Result is only trully optimal if normal(Tranistion Matrix Opt
     - Uniform Matrix, 2) is equal to the markov matrix eigenvalue. The code
     is run on a matlab engine because it provides a non-convex SDP solver ç
     BMIBNB.
@@ -158,7 +158,7 @@ def new_mgo_transition_matrix(
             A stochastic steady state distribution vector.
 
     Returns:
-        Markov Matrix with `v_` as steady state distribution and the
+        Markov Matrix with ``v_`` as steady state distribution and the
         respective mixing rate.
     """
     matlab_container = MatlabEngineContainer.get_instance()
@@ -258,11 +258,11 @@ def _metropolis_hastings(a: np.ndarray,
             (default is version 2).
 
     Returns:
-        An unlabeled transition matrix with steady state `v_`.
+        An unlabeled transition matrix with steady state ``v_``.
 
     Raises:
         DistributionShapeError:
-            When the length of `v_` is not the same as the matrix `a`.
+            When the length of ``v_`` is not the same as the matrix `a`.
         MatrixNotSquareError:
             When matrix `a` is not a square matrix.
     """

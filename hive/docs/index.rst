@@ -15,6 +15,4 @@ Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator's documentation!
 Indices and tables
 ==================
 
-* :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
