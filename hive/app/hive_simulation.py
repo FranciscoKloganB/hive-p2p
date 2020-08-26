@@ -21,16 +21,14 @@ If you don't have a simulation file yet, run the following instead::
     $ python simfile_generator.py --file=filename.json
 
 Note:
-    For the simulation to run without errors you must ensurue that::
-
-        1. The specified simulation files exist in
-        :py:const:`environment_settings.SIMULATION_ROOT`.
-
-        2. Any file used by the simulation, e.g., a picture or a .pptx
-        document is accessible in :py:const:`environment_settings.SHARED_ROOT`.
-
-        3. An output file simdirectory exists with default path being:
-        :py:const:`environment_settings.OUTFILE_ROOT`.
+    For the simulation to run without errors you must ensure that:
+        1. The specified simulation files exist in \
+        :py:const:`app.environment_settings.SIMULATION_ROOT`.
+        2. Any file used by the simulation, e.g., a picture or a .pptx \
+        document is accessible in \
+        :py:const:`app.environment_settings.SHARED_ROOT`.
+        3. An output file simdirectory exists with default path being: \
+        :py:const:`app.environment_settings.OUTFILE_ROOT`.
 
 """
 

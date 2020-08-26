@@ -268,17 +268,14 @@ working threads. For example:</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For the simulation to run without errors you must ensurue that:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. The specified simulation files exist in
-:py:const:`environment_settings.SIMULATION_ROOT`.
-
-2. Any file used by the simulation, e.g., a picture or a .pptx
-document is accessible in :py:const:`environment_settings.SHARED_ROOT`.
-
-3. An output file simdirectory exists with default path being:
-:py:const:`environment_settings.OUTFILE_ROOT`.
-</pre></div>
-</div>
+<dl class="simple">
+<dt>For the simulation to run without errors you must ensure that:</dt><dd><ol class="arabic simple">
+<li><p>The specified simulation files exist in         <code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SIMULATION_ROOT</span></code>.</p></li>
+<li><p>Any file used by the simulation, e.g., a picture or a .pptx         document is accessible in         <code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SHARED_ROOT</span></code>.</p></li>
+<li><p>An output file simdirectory exists with default path being:         <code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.OUTFILE_ROOT</span></code>.</p></li>
+</ol>
+</dd>
+</dl>
 </div>
 <dl class="py function">
 <dt id="app.hive_simulation.__can_exec_simfile">
