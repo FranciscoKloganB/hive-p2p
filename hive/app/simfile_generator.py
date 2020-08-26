@@ -1,16 +1,17 @@
 """This scripts's functions are used to create a simulation file for the user.
 
-    You can create a simulation file by following the instructions that
-    appear in your terminal when running the following command::
+You can create a simulation file by following the instructions that
+appear in your terminal when running the following command::
 
-        $ python simfile_generator.py --file=filename.json
+    $ python simfile_generator.py --file=filename.json
 
-    Notes:
-        Simulation files are placed in:
-        :py:const:`~environment_settings.SIMULATION_ROOT`.
+Notes:
+    Simulation files are placed in:
+    :py:const:`app.environment_settings.SIMULATION_ROOT`.
 
-        Any file used to simulate persistance must be in:
-        :py:const:`~environment_settings.SHARED_ROOT`.
+    Any file used to simulate persistance must be in:
+    :py:const:`app.environment_settings.SHARED_ROOT`.
+
 """
 import getopt
 import itertools
@@ -42,7 +43,7 @@ def __input_character_option(message: str, white_list: List[str]) -> str:
 
     Returns:
         The character that represents the initial distribution of files in a
-        :py:mod:`~domain.cluster_groups`'s class instance desired by the user.
+        :py:mod:`domain.cluster_groups`'s class instance desired by the user.
     """
     character = input(message)
     while True:
@@ -114,7 +115,7 @@ def __input_bounded_float(
 
 def __input_filename(message: str) -> str:
     """Verifies if inputed file name exists in
-    :py:const:`~environment_settings.SHARED_ROOT` directory.
+    :py:const:`app.environment_settings.SHARED_ROOT` directory.
 
     Note:
         If a blank file name is given, default value of FBZ_0134.NEF is
@@ -185,7 +186,7 @@ def __init_nodes_uptime() -> Dict[str, float]:
     """Creates a record containing network nodes' uptime.
 
     Returns:
-        A collection mapping :py:mod:`~domain.network_nodes`'s class
+        A collection mapping :py:mod:`domain.network_nodes`'s class
         instance labels to their respective uptime values.
     """
     number_of_nodes = __input_bounded_integer("Network Size [2, 16384]: ")

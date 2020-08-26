@@ -53,44 +53,44 @@ class Cluster:
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`~app.domain.cluster_groups.Cluster.
+            :py:meth:`app.domain.cluster_groups.Cluster.
             _assign_disk_error_chance` for corruption chance configuration.
         master:
-            A reference to :py:class:`~app.domain.master_servers.Master` that
+            A reference to :py:class:`app.domain.master_servers.Master` that
             coordinates this Cluster instance.
         members:
             A collection of network nodes that belong to the Cluster
-            instance. See also :py:class:`~app.domain.network_nodes.HiveNode`.
+            instance. See also :py:class:`app.domain.network_nodes.HiveNode`.
         file:
-            A reference to :py:class:`~app.domain.helpers.FileData` object that
+            A reference to :py:class:`app.domain.helpers.FileData` object that
             represents the file being persisted by the Cluster instance.
         critical_size:
             Minimum number of network nodes plus required to exist in the
             Cluster to assure the target replication level.
         sufficient_size:
-             Sum of :py:attr:`~app.domain.cluster_groups.Cluster.critical_size`
+             Sum of :py:attr:`app.domain.cluster_groups.Cluster.critical_size`
              and the number of nodes expected to fail between two successive
              recovery phases.
         original_size:
             The initial and theoretically optimal
-            :py:class:`~app.domain.cluster_groups.Cluster` size.
+            :py:class:`app.domain.cluster_groups.Cluster` size.
         redundant_size:
             Application-specific parameter, which indicates that membership
             of the Cluster must be pruned.
         running:
             Indicates if the Cluster instance is active. This attribute is
-            used by :py:class:`~app.domain.master_servers.Master` to manage the
+            used by :py:class:`app.domain.master_servers.Master` to manage the
             simulation process.
         _recovery_epoch_sum:
             Helper attribute that facilitates the storage of the sum of the
             values returned by all
-            :py:meth:`~app.domain.helpers.smart_dataclasses.FileBlockData
+            :py:meth:`app.domain.helpers.smart_dataclasses.FileBlockData
             .set_recovery_epoch` method calls. Important for logging purposes.
         _recovery_epoch_calls:
             Helper attribute that facilitates the storage of the sum of the
-            values returned by all :py:meth:`~app.domain.helpers.
+            values returned by all :py:meth:`app.domain.helpers.
             smart_dataclasses.FileBlockData.set_recovery_epoch` method calls
-            throughout the :py:attr:`~current_epoch`.
+            throughout the :py:attr:`current_epoch`.
     """
 
     def __init__(self,
@@ -103,7 +103,7 @@ class Cluster:
 
         Args:
             master:
-                A reference to an :py:class:`~app.domain.master_servers.Master`
+                A reference to an :py:class:`app.domain.master_servers.Master`
                 object that manages the `Cluster` being initialized.
             file_name:
                 The name of the file this `:py:class:`Cluster
@@ -215,7 +215,7 @@ class Cluster:
         Note:
             Recommended value should be based on the paper named
             `An Analysis of Data Corruption in the Storage Stack
-            <http://www.cs.toronto.edu/~bianca/papers/fast08.pdf>`. Thus
+            <http://www.cs.toronto.edu/bianca/papers/fast08.pdf>`. Thus
             the current implementation follows this formula::
 
                 :py:const:`MAX_EPOCHS <app.domain.master_servers.Master.MAX_EPOCHS>`
@@ -254,7 +254,7 @@ class Cluster:
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
         """Distributes files among members of the cluster. Members are
         instances of classes belonging to module
-        :py:mod:`~app.domain.network_nodes`.
+        :py:mod:`app.domain.network_nodes`.
 
         Args:
             replicas:
@@ -269,7 +269,7 @@ class Cluster:
 
                     `a` - Give all file block replicas to N different network
                     nodes, where N is equal to
-                    :py:const:`~<environment_settings.REPLICATION_LEVEL>`;
+                    :py:const:`<environment_settings.REPLICATION_LEVEL>`;
 
                     `i` - Distribute all file block replicas following such
                     that the simulation starts with all file replicas and their
@@ -286,9 +286,9 @@ class Cluster:
 
         Note:
             If the Cluster terminates early, i.e., if it terminates before
-            reaching :py:code:`~app.environment_settings.MAX_EPOCHS`,
+            reaching :py:code:`app.environment_settings.MAX_EPOCHS`,
             no logging should be done in
-            :py:class:`~app.domain.helpers.smart_dataclasses.LoggingData`
+            :py:class:`app.domain.helpers.smart_dataclasses.LoggingData`
             the received `epoch` to avoid skewing previously collected results.
 
         Args:
@@ -325,7 +325,7 @@ class Cluster:
         Returns:
              A collection of members who disconnected during the current
              epoch. See
-             :py:meth:`~app.domain.network_nodes.Node.get_epoch_status`.
+             :py:meth:`app.domain.network_nodes.Node.get_epoch_status`.
         """
         raise NotImplementedError("")
 
@@ -392,10 +392,10 @@ class Cluster:
         """Ends the Cluster instance simulation.
 
         Sets :py:attr:`running` to False and instructs
-        :py:class:`~app.domain.helpers.smart_dataclasses.FileData` to persist
-        :py:class:`~app.domain.helpers.smart_dataclasses.LoggingData` to disk
+        :py:class:`app.domain.helpers.smart_dataclasses.FileData` to persist
+        :py:class:`app.domain.helpers.smart_dataclasses.LoggingData` to disk
         and close its IO stream (
-        py:attr:`~app.domain.helpers.smart_dataclasses.FileData.out_file`).
+        py:attr:`app.domain.helpers.smart_dataclasses.FileData.out_file`).
 
         Args:
             message:
@@ -439,11 +439,11 @@ class Cluster:
 
     def set_replication_epoch(self, replica: sd.FileBlockData) -> None:
         """Delegates to :py:meth:
-        `~app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
+        `app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`
 
         Args:
             replica: A
-            :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+            :py:class:`app.domain.helpers.smart_dataclasses.FileBlockData`
             instance that represents a file block replica that was lost.
         """
         s = replica.set_replication_epoch(self.current_epoch)
@@ -472,7 +472,7 @@ class HiveCluster(Cluster):
         """Instantiates an `HiveClusterExt` object.
 
         Extends:
-            :py:class:`~app.domain.cluster_groups.Cluster`.
+            :py:class:`app.domain.cluster_groups.Cluster`.
         """
         super().__init__(master, file_name, members, sim_id, origin)
         self.cv_: pd.DataFrame = pd.DataFrame()
@@ -534,12 +534,12 @@ class HiveCluster(Cluster):
         """Queries all network node members execute the epoch.
 
         Overrides:
-            :py:meth:`~app.domain.cluster_groups.Cluster.nodes_execute`.
+            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.
 
         Returns:
              A collection of members who disconnected during the current
              epoch. See
-             :py:meth:`~app.domain.network_nodes.Node.get_epoch_status`.
+             :py:meth:`app.domain.network_nodes.Node.get_epoch_status`.
         """
         lost_parts_count: int = 0
         off_nodes: List[th.NodeType] = []
@@ -713,7 +713,7 @@ class HiveCluster(Cluster):
         members of the Cluster.
 
         After creating a transition matrix it ensures that the matrix is a
-        markov matrix by invoking :py:meth:`~_validate_transition_matrix`.
+        markov matrix by invoking :py:meth:`_validate_transition_matrix`.
         If this validation fails three times, simulation is resumed with an
         invalid matrix until the Cluster membership is changed again for any
         reason.
@@ -749,7 +749,7 @@ class HiveCluster(Cluster):
         Returns:
             A transition matrix that is likely to be a markov matrix whose
             steady state is `v_`, but is not yet validated. See
-            :py:meth:`~_validate_transition_matrix`.
+            :py:meth:`_validate_transition_matrix`.
         """
         results: List[Tuple[Optional[np.ndarray], float]] = [
             mm.new_mh_transition_matrix(a, v_),
@@ -782,7 +782,7 @@ class HiveCluster(Cluster):
 
         Verification is done by raising the matrix to the power of 4096
         (just a large number) and checking if all column vectors are equal
-        to the :py:attr:`~v_`.
+        to the :py:attr:`v_`.
 
         Returns:
             True if the matrix can converge to the desired steady state,
@@ -814,7 +814,7 @@ class HiveCluster(Cluster):
         and a backup solution using cloud approaches is desired. The idea
         is that surviving members upload their replicas to the cloud server,
         e.g., an Amazon S3 instance. See Master method
-        :py:meth:`~app.domain.master_servers.Master.get_cloud_reference`
+        :py:meth:`app.domain.master_servers.Master.get_cloud_reference`
         for more details.
 
         Notes:
@@ -852,7 +852,7 @@ class HiveCluster(Cluster):
         """Helper method that performs evaluate step related logging.
 
         Extends:
-            :py:meth:`~app.domain.cluster_groups.Cluster.__log_evaluation__`
+            :py:meth:`app.domain.cluster_groups.Cluster.__log_evaluation__`
         """
         super().__log_evaluation__(pcount)
         if self.equal_distributions():
@@ -878,7 +878,7 @@ class HiveClusterExt(HiveCluster):
     """Represents a group of network nodes persisting a file.
 
     HiveClusterExt instances differ from
-    :py:class:`~app.domain.cluster_groups.HiveCluster` because their members are
+    :py:class:`app.domain.cluster_groups.HiveCluster` because their members are
     of type :py:class:`Network Nodes <app.domain.network_nodes.HiveNodeExt>`
     . When combined these classes give nodes the responsibility of
     collaborating in the detection of faulty members of the `HiveClusterExt`
@@ -916,7 +916,7 @@ class HiveClusterExt(HiveCluster):
         """Instantiates an `HiveClusterExt` object.
 
         Extends:
-            :py:class:`~app.domain.cluster_groups.Cluster`.
+            :py:class:`app.domain.cluster_groups.Cluster`.
         """
         super().__init__(master, file_name, members, sim_id, origin)
         self.complaint_threshold: float = len(members) * 0.5
@@ -931,7 +931,7 @@ class HiveClusterExt(HiveCluster):
         """Registers a complaint against a possibly offline node.
 
         Overrides:
-            :py:meth:`~app.domain.cluster_groups.Cluster.complain`
+            :py:meth:`app.domain.cluster_groups.Cluster.complain`
         """
         if reason == e.HttpCodes.TIME_OUT:
             return
@@ -952,7 +952,7 @@ class HiveClusterExt(HiveCluster):
         """Instructs the cluster to execute an epoch.
 
         Extends:
-            :py:meth:`~app.domain.cluster_groups.Cluster.execute_epoch`.
+            :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.
         """
         super().execute_epoch(epoch)
         self._epoch_complaints.clear()
@@ -961,7 +961,7 @@ class HiveClusterExt(HiveCluster):
         """Queries all network node members execute the epoch.
 
         Overrides:
-            :py:meth:`~app.domain.cluster_groups.HiveCluster.nodes_execute`. It
+            :py:meth:`app.domain.cluster_groups.HiveCluster.nodes_execute`. It
             considers nodes as Suspects until it receives enough complaints
             from member nodes. This is important because lost parts can not
             be logged multiple times. Yet suspected network_nodes need to be
@@ -971,7 +971,7 @@ class HiveClusterExt(HiveCluster):
         Returns:
              A collection of members who disconnected during the current
              epoch.
-             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
+             See :py:meth:`domain.network_nodes.HiveNode.get_epoch_status`.
         """
         lost_parts_count: int = 0
         off_nodes = []
@@ -1014,11 +1014,11 @@ class HiveClusterExt(HiveCluster):
         `complaint_threshold`.
 
         Overrides:
-            :py:meth:`~domain.cluster_groups.HiveCluster.maintain`.
+            :py:meth:`domain.cluster_groups.HiveCluster.maintain`.
             Considers parameters that belong HiveClusterExt. Such as
-            :py:attr:`~domain.cluster_groups.HiveClusterExt.suspicious_nodes`
+            :py:attr:`domain.cluster_groups.HiveClusterExt.suspicious_nodes`
             and
-          :py:attr:`~domain.cluster_groups.HiveClusterExt.nodes_complaints`
+          :py:attr:`domain.cluster_groups.HiveClusterExt.nodes_complaints`
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
@@ -1063,7 +1063,7 @@ class HDFSCluster(Cluster):
         """Instantiates an `HiveClusterExt` object.
 
         Extends:
-            :py:class:`~domain.cluster_groups.Cluster`.
+            :py:class:`domain.cluster_groups.Cluster`.
         """
         super().__init__(master, file_name, members, sim_id, origin)
         self.suspicious_nodes: set = set()
@@ -1104,7 +1104,7 @@ class HDFSCluster(Cluster):
         """Queries all network node members execute the epoch.
 
         Overrides:
-            :py:meth:`~domain.cluster_groups.Cluster.nodes_execute`
+            :py:meth:`domain.cluster_groups.Cluster.nodes_execute`
             regarding the behavior of :py:mod:`Network Nodes
             <domain.network_nodes>`. They only send heartbeats to the
             `HDFSCluster` and do nothing else in their epochs unless
@@ -1113,7 +1113,7 @@ class HDFSCluster(Cluster):
         Returns:
              A collection of members who disconnected during the current
              epoch.
-             See :py:meth:`~domain.network_nodes.HiveNode.get_epoch_status`.
+             See :py:meth:`domain.network_nodes.HiveNode.get_epoch_status`.
         """
         off_nodes = []
         lost_replicas_count: int = 0
@@ -1160,7 +1160,7 @@ class HDFSCluster(Cluster):
         replicas in the system.
 
         Overrides:
-            :py:meth:`~domain.cluster_groups.Cluster.evaluate`.
+            :py:meth:`domain.cluster_groups.Cluster.evaluate`.
         """
         if not self.members:
             self._set_fail("Cluster has no remaining members.")
@@ -1178,7 +1178,7 @@ class HDFSCluster(Cluster):
         heartbeats in `data_node_heartbeats` reached zero.
 
         Overrides:
-            :py:meth:`~domain.cluster_groups.Cluster.execute_epoch`.
+            :py:meth:`domain.cluster_groups.Cluster.execute_epoch`.
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
@@ -1192,9 +1192,9 @@ class HDFSCluster(Cluster):
         """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
 
         Extends:
-            :py:meth:`~domain.cluster_groups.Cluster.membership_maintenance`.
+            :py:meth:`domain.cluster_groups.Cluster.membership_maintenance`.
             New members are given five lives in
-            :py:attr:`~domain.cluster_groups.HDFSCluster.data_node_heartbeats`.
+            :py:attr:`domain.cluster_groups.HDFSCluster.data_node_heartbeats`.
         """
         new_members = super().membership_maintenance()
         for nid in new_members.keys():

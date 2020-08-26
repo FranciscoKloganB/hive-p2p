@@ -31,7 +31,7 @@ class FileData:
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
             has graphs and figures. See
-            :py:class:`~app.domain.helpers.smart_dataclasses.SimulationData`
+            :py:class:`app.domain.helpers.smart_dataclasses.SimulationData`
         out_file (str/bytes/int):
             File output stream to where captured data is written in append mode.
     """
@@ -157,7 +157,7 @@ class FileData:
         """Override to allows a network node object to be used as a dict key
 
         Returns:
-            The hash of value of the referenced file :py:attr:`~name`.
+            The hash of value of the referenced file :py:attr:`name`.
         """
         return hash(str(self.name))
 
@@ -353,20 +353,20 @@ class LoggingData:
         largest_convergence_window:
             Stores the largest convergence window that occurred throughout
             the simulation, i.e., it stores the highest verified
-            :py:attr:`~cswc`.
+            :py:attr:`cswc`.
         convergence_set:
             Set of consecutive epochs in which convergence was verified.
             This list only stores the most up to date convergence set and like
-            :py:attr:`~cswc` is cleared once convergence is not verified,
-            after being appended to :py:attr:`~convergence_sets`.
+            :py:attr:`cswc` is cleared once convergence is not verified,
+            after being appended to :py:attr:`convergence_sets`.
         convergence_sets:
-            Stores all previous convergence sets. See :py:attr:`~convergence_set`.
+            Stores all previous convergence sets. See :py:attr:`convergence_set`.
         terminated:
             Indicates the epoch at which the simulation was terminated.
         terminated_messages:
             Set of at least one error message that led to the failure
             of the simulation or one success message, at termination epoch
-            (:py:attr:`~terminated`)
+            (:py:attr:`terminated`)
         successfull:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
