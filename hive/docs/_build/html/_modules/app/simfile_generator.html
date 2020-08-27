@@ -115,12 +115,11 @@
 
 <span class="sd">    $ python simfile_generator.py --file=filename.json</span>
 
-<span class="sd">Notes:</span>
+<span class="sd">Note:</span>
 <span class="sd">    Simulation files are placed inside</span>
-<span class="sd">    :py:const:`app.environment_settings.SIMULATION_ROOT` directory.</span>
-
-<span class="sd">    Any file used to simulate persistance must be inside</span>
-<span class="sd">    :py:const:`app.environment_settings.SHARED_ROOT` directory.</span>
+<span class="sd">    :py:const:`~app.environment_settings.SIMULATION_ROOT` directory. Any file</span>
+<span class="sd">    used to simulate persistance must be inside</span>
+<span class="sd">    :py:const:`~app.environment_settings.SHARED_ROOT` directory.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">getopt</span>
@@ -221,12 +220,15 @@
 
 
 <div class="viewcode-block" id="_input_filename"><a class="viewcode-back" href="../../app.html#app.simfile_generator._input_filename">[docs]</a><span class="k">def</span> <span class="nf">_input_filename</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Verifies if inputed file name exists in</span>
-<span class="sd">    :py:const:`app.environment_settings.SHARED_ROOT` directory.</span>
+    <span class="sd">&quot;&quot;&quot;Asks the user to input the name of a file in the command line terminal.</span>
+
+<span class="sd">    A warning message is displayed if the specified file does not exist inside</span>
+<span class="sd">    :py:const:`~app.environment_settings.SHARED_ROOT`</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        If a blank file name is given, default value of FBZ_0134.NEF is</span>
-<span class="sd">        selected.</span>
+<span class="sd">        Defaults to ``&quot;FBZ_0134.NEF&quot;`` when input is blank. This file should</span>
+<span class="sd">        be present inside :py:const:`~app.environment_settings.SHARED_ROOT`</span>
+<span class="sd">        unless it was previously deleted by the user.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        message:</span>
@@ -267,22 +269,26 @@
 
 
 <span class="c1"># region Helpers</span>
-<div class="viewcode-block" id="_yield_label"><a class="viewcode-back" href="../../app.html#app.simfile_generator._yield_label">[docs]</a><span class="k">def</span> <span class="nf">_yield_label</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="yield_label"><a class="viewcode-back" href="../../app.html#app.simfile_generator.yield_label">[docs]</a><span class="k">def</span> <span class="nf">yield_label</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Used to generate an arbrirary numbers of unique labels.</span>
 
 <span class="sd">    Yields:</span>
 <span class="sd">        The next string label in the sequence.</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; n = 4</span>
-<span class="sd">        &gt;&gt;&gt; for s in itertools.islice(_yield_label(), n):</span>
-<span class="sd">        ...     return s</span>
-<span class="sd">        [a, b, c, d]</span>
+<span class="sd">        The following code snippets illustrate the result of calling this</span>
+<span class="sd">        method ``n`` times. ::</span>
 
-<span class="sd">       &gt;&gt;&gt; n = 4 + 26</span>
-<span class="sd">        &gt;&gt;&gt; for s in itertools.islice(_yield_label(), n):</span>
-<span class="sd">        ...     return s</span>
-<span class="sd">        [a, b, c, d, ..., aa, ab, ac, ad]</span>
+<span class="sd">            &gt;&gt;&gt; n = 4</span>
+<span class="sd">            &gt;&gt;&gt; for s in itertools.islice(yield_label(), n):</span>
+<span class="sd">            ...     return s</span>
+<span class="sd">            [a, b, c, d]</span>
+
+<span class="sd">           &gt;&gt;&gt; n = 4 + 26</span>
+<span class="sd">            &gt;&gt;&gt; for s in itertools.islice(yield_label(), n):</span>
+<span class="sd">            ...     return s</span>
+<span class="sd">            [a, b, c, d, ..., aa, ab, ac, ad]</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">size</span><span class="p">):</span>
@@ -293,8 +299,10 @@
     <span class="sd">&quot;&quot;&quot;Creates a record containing network nodes&#39; uptime.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A collection mapping :py:mod:`domain.network_nodes`&#39;s class</span>
-<span class="sd">        instance labels to their respective uptime values.</span>
+<span class="sd">        A dictionary where keys are</span>
+<span class="sd">        :py:attr:`network node identifiers &lt;app.domain.network_nodes.Node.id&gt;`</span>
+<span class="sd">        and values are their respective uptimes</span>
+<span class="sd">        :py:attr:`uptime &lt;app.domain.network_nodes.Node.uptime&gt;` values.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">number_of_nodes</span> <span class="o">=</span> <span class="n">_input_bounded_integer</span><span class="p">(</span><span class="s2">&quot;Network Size [2, 16384]: &quot;</span><span class="p">)</span>
 
@@ -310,7 +318,7 @@
     <span class="n">samples</span> <span class="o">=</span> <span class="n">ng</span><span class="o">.</span><span class="n">generate_samples</span><span class="p">(</span><span class="n">surveys</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
     <span class="n">nodes_uptime</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">_yield_label</span><span class="p">(),</span> <span class="n">number_of_nodes</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">yield_label</span><span class="p">(),</span> <span class="n">number_of_nodes</span><span class="p">):</span>
         <span class="c1"># gets and removes last element in samples to assign it to label</span>
         <span class="n">uptime</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">pop</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mf">100.0</span>
         <span class="n">uptime</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">uptime</span><span class="p">,</span> <span class="n">min_uptime</span><span class="p">,</span> <span class="n">max_uptime</span><span class="p">)</span>

@@ -5,12 +5,11 @@ appear in your terminal when running the following command::
 
     $ python simfile_generator.py --file=filename.json
 
-Notes:
+Note:
     Simulation files are placed inside
-    :py:const:`app.environment_settings.SIMULATION_ROOT` directory.
-
-    Any file used to simulate persistance must be inside
-    :py:const:`app.environment_settings.SHARED_ROOT` directory.
+    :py:const:`~app.environment_settings.SIMULATION_ROOT` directory. Any file
+    used to simulate persistance must be inside
+    :py:const:`~app.environment_settings.SHARED_ROOT` directory.
 
 """
 import getopt
@@ -111,12 +110,15 @@ def _input_bounded_float(
 
 
 def _input_filename(message: str) -> str:
-    """Verifies if inputed file name exists in
-    :py:const:`app.environment_settings.SHARED_ROOT` directory.
+    """Asks the user to input the name of a file in the command line terminal.
+
+    A warning message is displayed if the specified file does not exist inside
+    :py:const:`~app.environment_settings.SHARED_ROOT`
 
     Note:
-        If a blank file name is given, default value of FBZ_0134.NEF is
-        selected.
+        Defaults to ``"FBZ_0134.NEF"`` when input is blank. This file should
+        be present inside :py:const:`~app.environment_settings.SHARED_ROOT`
+        unless it was previously deleted by the user.
 
     Args:
         message:
@@ -157,22 +159,26 @@ def _in_yes_no(message: str) -> bool:
 
 
 # region Helpers
-def _yield_label() -> str:
+def yield_label() -> str:
     """Used to generate an arbrirary numbers of unique labels.
 
     Yields:
         The next string label in the sequence.
 
     Examples:
-        >>> n = 4
-        >>> for s in itertools.islice(_yield_label(), n):
-        ...     return s
-        [a, b, c, d]
+        The following code snippets illustrate the result of calling this
+        method ``n`` times. ::
 
-       >>> n = 4 + 26
-        >>> for s in itertools.islice(_yield_label(), n):
-        ...     return s
-        [a, b, c, d, ..., aa, ab, ac, ad]
+            >>> n = 4
+            >>> for s in itertools.islice(yield_label(), n):
+            ...     return s
+            [a, b, c, d]
+
+           >>> n = 4 + 26
+            >>> for s in itertools.islice(yield_label(), n):
+            ...     return s
+            [a, b, c, d, ..., aa, ab, ac, ad]
+
     """
     for size in itertools.count(1):
         for s in itertools.product(string.ascii_lowercase, repeat=size):
@@ -183,8 +189,10 @@ def _init_nodes_uptime() -> Dict[str, float]:
     """Creates a record containing network nodes' uptime.
 
     Returns:
-        A collection mapping :py:mod:`domain.network_nodes`'s class
-        instance labels to their respective uptime values.
+        A dictionary where keys are
+        :py:attr:`network node identifiers <app.domain.network_nodes.Node.id>`
+        and values are their respective uptimes
+        :py:attr:`uptime <app.domain.network_nodes.Node.uptime>` values.
     """
     number_of_nodes = _input_bounded_integer("Network Size [2, 16384]: ")
 
@@ -200,7 +208,7 @@ def _init_nodes_uptime() -> Dict[str, float]:
     samples = ng.generate_samples(surveys=1, mean=mean, std=std).tolist()
 
     nodes_uptime = {}
-    for label in itertools.islice(_yield_label(), number_of_nodes):
+    for label in itertools.islice(yield_label(), number_of_nodes):
         # gets and removes last element in samples to assign it to label
         uptime = numpy.abs(samples.pop()[0]) / 100.0
         uptime = numpy.clip(uptime, min_uptime, max_uptime)
