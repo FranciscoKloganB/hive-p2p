@@ -32,7 +32,7 @@ from scripts.python import normal_distribution_generator as ng
 from utils.convertions import truncate_float_value
 
 
-def __input_character_option(message: str, white_list: List[str]) -> str:
+def _input_character_option(message: str, white_list: List[str]) -> str:
     """Obtains a user inputed character within a predefined set.
 
     Args:
@@ -52,7 +52,7 @@ def __input_character_option(message: str, white_list: List[str]) -> str:
         character = input(f"Choose an option among {white_list}. Try again: ")
 
 
-def __input_bounded_integer(
+def _input_bounded_integer(
         message: str, lower_bound: int = 2, upper_bound: int = 16384) -> int:
     """Obtains a user inputed integer within the specified closed interval.
 
@@ -81,7 +81,7 @@ def __input_bounded_integer(
             continue
 
 
-def __input_bounded_float(
+def _input_bounded_float(
         message: str, lower_bound: float = 0.0, upper_bound: float = 100.0
 ) -> float:
     """Obtains a user inputed integer within the specified closed interval.
@@ -110,7 +110,7 @@ def __input_bounded_float(
             continue
 
 
-def __input_filename(message: str) -> str:
+def _input_filename(message: str) -> str:
     """Verifies if inputed file name exists in
     :py:const:`app.environment_settings.SHARED_ROOT` directory.
 
@@ -135,7 +135,7 @@ def __input_filename(message: str) -> str:
         return file_name
 
 
-def __in_yes_no(message: str) -> bool:
+def _in_yes_no(message: str) -> bool:
     """Asks the user to reply with yes or no to a message.
 
     Args:
@@ -157,7 +157,7 @@ def __in_yes_no(message: str) -> bool:
 
 
 # region Helpers
-def __yield_label() -> str:
+def _yield_label() -> str:
     """Used to generate an arbrirary numbers of unique labels.
 
     Yields:
@@ -165,12 +165,12 @@ def __yield_label() -> str:
 
     Examples:
         >>> n = 4
-        >>> for s in itertools.islice(__yield_label(), n):
+        >>> for s in itertools.islice(_yield_label(), n):
         ...     return s
         [a, b, c, d]
 
        >>> n = 4 + 26
-        >>> for s in itertools.islice(__yield_label(), n):
+        >>> for s in itertools.islice(_yield_label(), n):
         ...     return s
         [a, b, c, d, ..., aa, ab, ac, ad]
     """
@@ -179,28 +179,28 @@ def __yield_label() -> str:
             yield "".join(s)
 
 
-def __init_nodes_uptime() -> Dict[str, float]:
+def _init_nodes_uptime() -> Dict[str, float]:
     """Creates a record containing network nodes' uptime.
 
     Returns:
         A collection mapping :py:mod:`domain.network_nodes`'s class
         instance labels to their respective uptime values.
     """
-    number_of_nodes = __input_bounded_integer("Network Size [2, 16384]: ")
+    number_of_nodes = _input_bounded_integer("Network Size [2, 16384]: ")
 
-    min_uptime = __input_bounded_float("Min node uptime [0.0, 100.0]: ") / 100
+    min_uptime = _input_bounded_float("Min node uptime [0.0, 100.0]: ") / 100
     min_uptime = truncate_float_value(min_uptime, 6)
 
-    max_uptime = __input_bounded_float("Max node uptime [0.0, 100.0]: ") / 100
+    max_uptime = _input_bounded_float("Max node uptime [0.0, 100.0]: ") / 100
     max_uptime = truncate_float_value(max_uptime, 6)
 
-    mean = __input_bounded_float("Distribution mean [0.0, 100.0]: ")
-    std = __input_bounded_float("Standard deviation [0.0, 100.0]: ")
+    mean = _input_bounded_float("Distribution mean [0.0, 100.0]: ")
+    std = _input_bounded_float("Standard deviation [0.0, 100.0]: ")
 
     samples = ng.generate_samples(surveys=1, mean=mean, std=std).tolist()
 
     nodes_uptime = {}
-    for label in itertools.islice(__yield_label(), number_of_nodes):
+    for label in itertools.islice(_yield_label(), number_of_nodes):
         # gets and removes last element in samples to assign it to label
         uptime = numpy.abs(samples.pop()[0]) / 100.0
         uptime = numpy.clip(uptime, min_uptime, max_uptime)
@@ -210,7 +210,7 @@ def __init_nodes_uptime() -> Dict[str, float]:
     return nodes_uptime
 
 
-def __init_persisting_dict() -> Dict[str, Any]:
+def _init_persisting_dict() -> Dict[str, Any]:
     """Creates the "persisting" key of simulation file.
 
     Returns:
@@ -227,7 +227,7 @@ def __init_persisting_dict() -> Dict[str, Any]:
 
     add_file: bool = True
     while add_file:
-        file_name = __input_filename(
+        file_name = _input_filename(
             "Name the file (with extension) you wish to simulate persistence of: ")
 
         options_message = ("\nSelect how files blocks are spread across "
@@ -236,14 +236,14 @@ def __init_persisting_dict() -> Dict[str, Any]:
                            "   i: near steady-state distribution,\n"
                            "   a: all files concentrated on N blocks\n}\n")
         options_list = ["u", "U", "i", "I", "a", "A"]
-        option_choice = __input_character_option(options_message, options_list)
+        option_choice = _input_character_option(options_message, options_list)
 
         persisting[file_name] = {}
         persisting[file_name]["spread"] = option_choice.lower()
-        persisting[file_name]["cluster_size"] = __input_bounded_integer(
+        persisting[file_name]["cluster_size"] = _input_bounded_integer(
             "Number of nodes that should be sharing the next file: \n")
 
-        add_file = __in_yes_no(
+        add_file = _in_yes_no(
             "\nSimulate persistence of another file in simulation?")
 
     return persisting
@@ -264,8 +264,8 @@ def main(simfile_name: str) -> None:
             Name to be assigned to JSON file in the user's file system.
     """
     simfile_json: Dict[str, Any] = {
-        "nodes_uptime": __init_nodes_uptime(),
-        "persisting": __init_persisting_dict()
+        "nodes_uptime": _init_nodes_uptime(),
+        "persisting": _init_persisting_dict()
     }
 
     with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
