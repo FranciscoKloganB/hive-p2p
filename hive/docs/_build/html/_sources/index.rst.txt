@@ -4,11 +4,11 @@
    contain the root `toctree` directive.
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 3
    :caption: Hives - Navbar
 
    quickstartdocs
    scriptdocs
-   modules
+   app
    notedocs
    indices

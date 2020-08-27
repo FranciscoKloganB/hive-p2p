@@ -1,5 +1,5 @@
-App Package
-===========
+App Documentation
+=================
 
 .. automodule:: app
    :members:
@@ -11,7 +11,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    app.domain
    app.utils
