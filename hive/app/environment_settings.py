@@ -85,9 +85,21 @@ with a relative tolerance that is the minimum value in
 # region DO NOT ALTER THESE
 # path constants
 SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
+"""Path to the folder where files to be persisted during the simulation are 
+located."""
+
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
+"""Path to the folder where simulation output files are located will be 
+stored."""
+
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
+"""Path to the folder where simulation files to be executed by 
+:py:mod:`app.hive_simulation` are located."""
+
 MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlab')
+"""Path the folder where matlab scripts are located. Used by 
+:py:class:`app.domain.helpers.matlab_utils.MatlabEngineContainer`"""
+
 MIXING_RATE_SAMPLE_ROOT: str = os.path.join(
     OUTFILE_ROOT, 'mixing_rate_samples')
 
