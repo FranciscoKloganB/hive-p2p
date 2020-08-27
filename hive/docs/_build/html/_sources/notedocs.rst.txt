@@ -1,10 +1,13 @@
-Future Releases
-===============
+Notes
+=====
 
 .. toctree::
    :maxdepth: 1
    :caption: Notes
    :name: Notes
+
+Future Releases
+---------------
 
 In the future, we will focus on improving each simulation's thread performance,
 in the current release, any P2P network with more than 16 peers and many files
