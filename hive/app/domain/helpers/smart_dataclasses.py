@@ -31,7 +31,7 @@ class FileData:
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
             has graphs and figures. See
-            :py:class:`~domain.helpers.smart_dataclasses.SimulationData`
+            :py:class:`app.domain.helpers.smart_dataclasses.SimulationData`
         out_file (str/bytes/int):
             File output stream to where captured data is written in append mode.
     """
@@ -77,13 +77,14 @@ class FileData:
         """Writes a JSON string of the LoggingData instance to the output file.
 
         The logged data is defined by the attributes of the
-        :py:class:`LoggingData <domain.helpers.smart_dataclasses.LoggingData`
-         class.
+        :py:class:`LoggingData <app.domain.helpers.smart_dataclasses.
+        LoggingData` class.
 
         Args:
             hive:
-                The :py:class:`Cluster <domain.cluster_groups.Cluster>` object that manages
-                the simulated persistence of the referenced file.
+                The :py:class:`Cluster <app.domain.cluster_groups.Cluster>`
+                object that manages the simulated persistence of the
+                referenced file.
             origin:
                 The name of the simulation file that started the simulation
                 process.
@@ -157,7 +158,7 @@ class FileData:
         """Override to allows a network node object to be used as a dict key
 
         Returns:
-            The hash of value of the referenced file :py:attr:`~name`.
+            The hash of value of the referenced file :py:attr:`name`.
         """
         return hash(str(self.name))
 
@@ -184,38 +185,38 @@ class FileData:
 class FileBlockData:
     """Wrapping class for the contents of a file block.
 
-    Among other responsabilities FileBlockData helps managing simulation
+    Among other responsabilities `FileBlockData` helps managing simulation
     parameters, e.g., replica control such or file block integrity.
 
     Attributes:
-        hive_id (str):
+        hive_id:
             Unique identifier of the hive that manages the file block.
-        name (str):
+        name:
             The name of the file the file block belongs to.
-        number (int):
+        number:
             The number that uniquely identifies the file block.
-        id (str):
+        id:
             Concatenation the the `name` and `number`.
-        references (int):
+        references:
             Tracks how many references exist to the file block in the
             simulation environment. When it reaches 0 the file block ceases
             to exist and the simulation fails.
-        replication_epoch (float):
+        replication_epoch:
             When a reference to the file block is lost, i.e., decremented,
             a replication epoch that simulates time to copy blocks from one
             node to another is assigned to this attribute.
             Until a loss occurs and after a loss is recovered,
             `recovery_epoch` is set to positive infinity.
-        data (str):
+        data:
             A base64-encoded string representation of the file block bytes.
-        sha256 (str):
+        sha256:
             The hash value of data resulting from a SHA256 digest.
     """
 
     def __init__(
             self, hive_id: str, name: str, number: int, data: bytes
     ) -> None:
-        """Creates an instance of FileBlockData.
+        """Creates an instance of `FileBlockData`.
 
         Args:
             hive_id:
@@ -253,7 +254,7 @@ class FileBlockData:
             peers, which is not our case. We assume peers only report their
             suspicions to a small number of trusted of monitors who then
             decide if the reported network node is disconnected, consequently
-            losing the instance of FileBlockData and possibly others.
+            losing the instance of `FileBlockData` and possibly others.
 
         Args:
             epoch:
@@ -313,12 +314,16 @@ class FileBlockData:
     # region Overrides
 
     def __str__(self):
-        """Overrides default string representation of FileBlockData instances.
+        """Overrides default string representation of `FileBlockData` instances.
 
         Returns:
             A dictionary representation of the object.
         """
-        return "part_name: {},\npart_number: {},\npart_id: {},\npart_data: {},\nsha256: {}\n".format(self.name, self.number, self.id, self.data, self.sha256)
+        return (f"part_name: {self.name},\n"
+                f"part_number: {self.number},\n"
+                f"part_id: {self.id},\n"
+                f"part_data: {self.data},\n"
+                f"sha256: { self.sha256}\n")
 
     # endregionss
 
@@ -340,7 +345,7 @@ class FileBlockData:
 class LoggingData:
     """Logging class that registers simulation state per epoch basis.
 
-    Notes:
+    Note:
         Some attributes might not be documented, but should be straight
         forward to understand after inspecting their usage in the source code.
 
@@ -348,42 +353,42 @@ class LoggingData:
         cswc:
             Indicates how many consecutive steps a file as been in
             convergence. Once convergence is not verified by
-            :py:meth:`equal_distributions() <domain.cluster_groups.Cluster.equal_distributions>`
+            :py:meth:`app.domain.cluster_groups.Cluster.equal_distributions`
             this attribute is reseted to zero.
         largest_convergence_window:
             Stores the largest convergence window that occurred throughout
             the simulation, i.e., it stores the highest verified
-            :py:attr:`~cswc`.
+            :py:attr:`cswc`.
         convergence_set:
             Set of consecutive epochs in which convergence was verified.
             This list only stores the most up to date convergence set and like
-            :py:attr:`~cswc` is cleared once convergence is not verified,
-            after being appended to :py:attr:`~convergence_sets`.
+            :py:attr:`cswc` is cleared once convergence is not verified,
+            after being appended to :py:attr:`convergence_sets`.
         convergence_sets:
-            Stores all previous convergence sets. See :py:attr:`~convergence_set`.
+            Stores all previous convergence sets.
+            See :py:attr:`convergence_set`.
         terminated:
             Indicates the epoch at which the simulation was terminated.
         terminated_messages:
             Set of at least one error message that led to the failure
             of the simulation or one success message, at termination epoch
-            (:py:attr:`~terminated`)
+            (:py:attr:`terminated`).
         successfull:
             When the simulation is terminated this value is set to True if
             no errors or failures occurred, i.e., if the simulation managed
             to persist the file throughout
-            :py:const:`ms.Master.MAX_EPOCHS
-            <environment_settings.ms.Master.MAX_EPOCHS>` time
+            :py:const:`app.environment_settings.ms.Master.MAX_EPOCHS` time
             steps.
         blocks_corrupted:
             The number of file block repllicas lost at each epoch due
             to disk errors.
         blocks_existing:
             The number of existing file block repllicas inside the
-            :py:mod:`Cluster Group <domain.cluster_group>` members' storage
+            :py:mod:`Cluster Group <app.domain.cluster_group>` members' storage
             disks at each epoch.
         blocks_lost:
             The number of file block blocks that were lost at each epoch
-            due to :py:mod:`Network Nodes <domain.network_nodes>` going offline.
+            due to :py:mod:`Network Nodes <app.domain.network_nodes>` going offline.
         blocks_moved:
             The number of messages containing file block blocks that were
             transmited, including those that were not delivered or
@@ -393,26 +398,25 @@ class LoggingData:
             block blocks during each epoch.
         delay_suspects_detection:
             Log of the time it took for each suspicious
-            :py:mod:`Network Node <domain.network_nodes>` to be evicted
-            from the :py:mod:`Cluster Group <domain.cluster_group>`.
+            :py:mod:`Network Node <app.domain.network_nodes>` to be evicted
+            from the :py:mod:`Cluster Group <app.domain.cluster_group>`.
         initial_spread:
             Records the strategy used distribute file blocks in the
             beggining of the simulation.
         matrices_nodes_degrees:
             Stores the in-degree and out-degree of each
-            :py:mod:`Network Node <domain.network_nodes>` in the
-            :py:mod:`Cluster Group <domain.cluster_group>`. One dictionary
+            :py:mod:`Network Node <app.domain.network_nodes>` in the
+            :py:mod:`Cluster Group <app.domain.cluster_group>`. One dictionary
             is kept in the list for each transition matrix used throughout
             the simulation. The integral part of the float value is the
             in-degree, the decimal part is the out-degree.
         off_node_count:
-            The number of :py:mod:`Network Nodes <domain.network_nodes>`
+            The number of :py:mod:`Network Nodes <app.domain.network_nodes>`
             whose status changed to offline at each epoch.
         transmissions_failed:
             The number of messages transmissions that were lost in the
             network at each epoch.
     """
-    # endregion
 
     # region Class Variables, Instance Variables and Constructors
     def __init__(self) -> None:
@@ -537,11 +541,11 @@ class LoggingData:
         Args:
             delay:
                 The time it took until the specified node was evicted from a
-                :py:mod:`Cluster <domain.cluster_groups>` after it was known
+                :py:mod:`Cluster <app.domain.cluster_groups>` after it was known
                 to be offline by the perfect failure detector.
             node_id:
                 A unique :py:mod:`Network Node
-                <domain.network_nodes>` identifier.
+                <app.domain.network_nodes>` identifier.
         """
         self.delay_suspects_detection[node_id] = delay
 
@@ -621,7 +625,7 @@ class LoggingData:
 
         Args:
             message:
-                optional; A log error message (default is blank)
+                optional; A log error message.
             epoch:
                 A simulation epoch at which termination occurred.
         """

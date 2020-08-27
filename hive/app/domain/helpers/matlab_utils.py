@@ -27,8 +27,10 @@ class MatlabEngineContainer:
             the multithreaded mode to speed up simulations.
     """
 
-    __LOCK = threading.RLock()
-    __instance: MatlabEngineContainer = None
+    #: A re-entrant lock used to make `eng` shareable by multiple threads.
+    _LOCK = threading.RLock()
+    #: A reference to the instance of `MatlabEngineContainer` or `None`.
+    _instance: MatlabEngineContainer = None
 
     @staticmethod
     def get_instance() -> MatlabEngineContainer:
@@ -40,11 +42,11 @@ class MatlabEngineContainer:
         Returns:
             A reference to the existing MatlabEngineContainer instance.
         """
-        if MatlabEngineContainer.__instance is None:
-            with MatlabEngineContainer.__LOCK:
-                if MatlabEngineContainer.__instance is None:
+        if MatlabEngineContainer._instance is None:
+            with MatlabEngineContainer._LOCK:
+                if MatlabEngineContainer._instance is None:
                     MatlabEngineContainer()
-        return MatlabEngineContainer.__instance
+        return MatlabEngineContainer._instance
 
     def __init__(self) -> None:
         """Instantiates a new MatlabEngineContainer object.
@@ -53,11 +55,11 @@ class MatlabEngineContainer:
             Do not directly invoke this constructor, use
             :py:method:`getInstance` instead.
         """
-        if MatlabEngineContainer.__instance is None:
+        if MatlabEngineContainer._instance is None:
             print("Loading matlab engine... this can take a while.")
             self.eng = matlab.engine.start_matlab()
             self.eng.cd(MATLAB_DIR)
-            MatlabEngineContainer.__instance = self
+            MatlabEngineContainer._instance = self
         else:
             raise RuntimeError("MatlabEngineContainer is a Singleton. Use "
                                "MatlabEngineContainer.getInstance() to get a "
@@ -68,7 +70,7 @@ class MatlabEngineContainer:
 
         Constructs an optimized transition matrix using linear programming
         relaxations and convex envelope approximations for the specified steady
-        state `v`, this is done by invoke the matlabscript matrixGlobalOpt
+        state ``v``, this is done by invoke the matlabscript matrixGlobalOpt
         in the project folder name matlab.
 
         Note:
@@ -81,10 +83,10 @@ class MatlabEngineContainer:
                 A stochastic steady state distribution vector.
 
         Returns:
-            Markov Matrix with `v_` as steady state distribution and the
+            Markov Matrix with ``v_`` as steady state distribution and the
             respective mixing rate or None.
         """
-        with MatlabEngineContainer.__LOCK:
+        with MatlabEngineContainer._LOCK:
             ma = matlab.double(a.tolist())
             mv_ = matlab.double(v_.tolist())
             return self.eng.matrixGlobalOpt(ma, mv_, nargout=1)

@@ -21,7 +21,7 @@ def excluding_randrange(start, stop, start_again, stop_again, step=1):
             value.
         step:
             optional; Step point of range, this won't be included. This is
-            optional (default is 1).
+            optional.
     The random number that is generated is
 
     Returns:

@@ -14,16 +14,14 @@ def generate_skewed_samples(
         If you use this sample generation, simply select pick up the elements
         and assign them to a label in sequence. In this case sample_count is
         just the number of samples I wish to take. See also
-        :py:func:`~generate_skewed_samples_extended`.
+        :py:func:`generate_skewed_samples_extended`.
 
     Args:
         sample_count:
-            optional; The number of skewed results to be drawn. (default is
-            10000).
+            optional; The number of skewed results to be drawn.
         skewness:
             optional; Where peak density will be found. Negative values make
-             the plot left skewed, positive values make it right skewed (
-             default is -90.0).
+             the plot left skewed, positive values make it right skewed.
 
     Returns:
         The sampled bins.
@@ -55,15 +53,12 @@ def generate_skewed_samples_extended(bin_count: int = 7001,
 
     Args:
         bin_count:
-            optional; (default is 7001).
+            optional; The number of bins to be created.
         sample_count:
-            optional; The number of skewed results to be drawn. (default is
-            10000).
+            optional; The number of skewed results to be drawn.
         skewness:
             optional; Where peak density will be found. Negative values make
-             the plot left skewed, positive values make it right skewed (
-             default is -90.0).
-
+             the plot left skewed, positive values make it right skewed.
     Returns:
         The sampled bins and respective frequencies.
     """
@@ -96,13 +91,12 @@ def plot_uptime_distribution(
 
     Args:
         bin_count:
-            optional; The number of bins the plot should have (default is
-            'auto'), i.e., matplotlib.pyplot module's functions chooses
+            optional; The number of bins the plot should have. With default
+            matplotlib.pyplot module's functions chooses
             a probably adequate bin count.
         skewness:
              optional; Where peak density will be found. Negative values make
-             the plot left skewed, positive values make it right skewed (
-             default is -90.0).
+             the plot left skewed, positive values make it right skewed.
     """
     results: np.array = generate_skewed_samples(skewness=skewness)
     plt.hist(results, bin_count, density=True)

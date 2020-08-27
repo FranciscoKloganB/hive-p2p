@@ -1,9 +1,9 @@
 """This module contains domain specific classes that coordinate all
-:py:mod:`~domain.cluster_groups` of a simulation instance."""
+:py:mod:`domain.cluster_groups` of a simulation instance."""
 from __future__ import annotations
 
 import json
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Optional
 
 import domain.helpers.enums as e
 import type_hints as th
@@ -20,13 +20,6 @@ class Master:
     """Simulation manager class. Plays the role of a master server for all
     Hives of the distributed backup system.
 
-    Class Attributes:
-        MAX_EPOCHS:
-            The number of time steps a simulation should have (default is 720).
-            On a 24 hour day, 720 means one epoch should occur every two minutes.
-        MAX_EPOCHS_PLUS_ONE:
-            do not alter; (default is MAX_EPOCHS + 1).
-
     Attributes:
         origin:
             The name of the simulation file name that started the simulation
@@ -38,21 +31,21 @@ class Master:
         epoch:
             The simulation's current epoch.
         cluster_groups:
-            A collection of :py:class:`~domain.cluster_groups.Cluster`
+            A collection of :py:class:`domain.cluster_groups.Cluster`
             instances managed by the Master.
         network_nodes:
             A dictionary mapping network node identifiers names to their
-            object instances (:py:class:`~domain.network_nodes.HiveNode`).
+            object instances (:py:class:`domain.network_nodes.HiveNode`).
             This collection differs from the
-            :py:class:`~domain.cluster_groups.Cluster`s' attribute
-            :py:attr:`~domain.cluster_groups.Cluster.members` in the sense that
-            the latter is only a subset of `workers`, which includes all
-            network nodes of the distributed backup system. Regardless of
+            :py:class:`Cluster's <app.domain.cluster_groups.Cluster>` attribute
+            :py:attr:`~app.domain.cluster_groups.Cluster.members` in the sense
+            that the latter is only a subset of `workers`, which includes all
+            network nodes of the distributed backup system, regardless of
             their participation on any Cluster.
     """
 
-    MAX_EPOCHS = None
-    MAX_EPOCHS_PLUS_ONE = None
+    MAX_EPOCHS: Optional[int] = None
+    MAX_EPOCHS_PLUS_ONE: Optional[int] = None
 
     def __init__(self,
                  simfile_name: str,
@@ -98,13 +91,13 @@ class Master:
         """Opens and processes the simulation filed referenced in `path`.
 
         This method opens the file reads the json data inside it and combined
-        with :py:mod:`~environment_settings`, sets up the class instances to
+        with :py:mod:`environment_settings`, sets up the class instances to
         be used during the simulation (e.g., :py:class:`Clusters
         <domain.network_nodes.Cluster>` and :py:class:`Nodes
         <domain.network_nodes.Node>`). This method should also be responsible
         for splitting the file into multiple chunks/blocks/parts and
         distributing them over the initial clusters'
-        :py:attr:`~domain.cluster_groups.Cluster.members`.
+        :py:attr:`domain.cluster_groups.Cluster.members`.
 
         Args:
             path:
@@ -144,7 +137,7 @@ class Master:
     def __create_network_nodes__(
             self, json: Dict[str, Any], node_class: str) -> None:
         """Helper method that instantiates all
-        :py:class:`Network Nodes<domain.network_nodes.Node> that are
+        :py:class:`Network Nodes <app.domain.network_nodes.Node>` that are
         specified in the simulation file.
 
         Args:
@@ -161,12 +154,12 @@ class Master:
             self, fname: str, cluster: th.ClusterType, bsize: int
     ) -> th.ReplicasDict:
         """Helper method that splits the files into multiple blocks to be
-        persisted in a :py:class:`~domain.cluster_group.Cluster`.
+        persisted in a :py:class:`domain.cluster_group.Cluster`.
 
         Args:
             fname:
                 The name of the file located in
-                :py:const:`~environment_settings.SHARED_ROOT` folder to be
+                :py:const:`environment_settings.SHARED_ROOT` folder to be
                 read and splitted.
             bsize:
                 The maximum amount of bytes each file block can have.
@@ -216,7 +209,7 @@ class Master:
         Args:
             exclusion_dict:
                 A dictionary of network nodes identifiers and their object
-                instances (:py:class:`~domain.network_nodes.HiveNode`),
+                instances (:py:class:`app.domain.network_nodes.HiveNode`),
                 which represent the nodes the Cluster is not interested in,
                 i.e., this argument is a blacklist.
             n:
@@ -253,12 +246,13 @@ class Master:
                 instances through reflection. See :py:mod:`Cluster Group
                 <domain.cluster_groups>`.
             size:
-                The cluster's initial member size.
+                The :py:class:`Cluster's <app.domain.cluster_groups.Cluster>`
+                initial member size.
             fname:
                 The name of the fille being stored in the cluster.
 
         Returns:
-            The :py:class:`~domain.cluster_groups.Cluster` instance.
+            The :py:class:`~app.domain.cluster_groups.Cluster` instance.
         """
         cluster_members: th.NodeDict = {}
         nodes = np.random.choice(
@@ -292,7 +286,7 @@ class Master:
                 uptime of the network node.
 
         Returns:
-            The :py:class:`~domain.network_nodes.Node` instance.
+            The :py:class:`app.domain.network_nodes.Node` instance.
         """
         return class_name_to_obj(NETWORK_NODES, node_class, [nid, node_uptime])
     # endregion
@@ -340,9 +334,9 @@ class HDFSMaster(Master):
         """Opens and processes the simulation filed referenced in `path`.
 
         Overrides:
-            py:mod:`~domain.master_servers.Master.__process_simfile__`. The
+            py:mod:`app.domain.master_servers.Master.__process_simfile__`. The
             method is exactly the same except for one instruction. The
-            :py:mod:`~domain.master_servers.Master.__split_files__` is
+            :py:mod:`app.domain.master_servers.Master.__split_files__` is
             invoked with fixed `bsize` = 1MB. The reason for this is twofold::
 
                 - The default and, thus recommended, block/chunk size for the

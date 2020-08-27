@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <title>app.utils package</title>
+    
+
+    <link rel="stylesheet" href="_static/css/redactor.css" type="text/css" />
+    
+    
+    <link rel="index" title="Index" href="genindex.html"/>
+    <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Hives - P2P Stochastic Swarm Guidance Simulator" href="index.html"/> 
+</head>
+
+<body role="document">
+     
+
+    
+<a href="#" id="js-navigation-toggle" class="navigation-toggle">
+    <i class="mdi mdi-menu"></i><i class="mdi mdi-close"></i>
+</a>
+
+<section class="site-sidebar">
+
+<nav>
+
+
+    <a href="index.html" class="branding-link">
+    
+        Hives
+    
+    
+    
+        
+        
+            <span class="branding-link__version">
+                1.6
+            </span>
+        
+    
+    </a>
+
+    
+<section role="search">
+    <form action="search.html" method="get" class="site-searchform">
+        <input type="text" name="q" placeholder="Search docs" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+</section>
+
+
+
+    <section class="site-nav">
+    
+    
+        <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Hives Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+    
+    </section>
+
+</nav>
+
+</section>
+
+    <main class="site-main" role="main">
+        
+
+
+
+
+
+
+
+
+
+
+
+<nav class="site-breadcrumbs">
+    <ul>
+    
+        <li>
+            <a href="index.html">Docs</a> /
+        </li>
+        
+        <li class="site-breadcrumbs__leaf">app.utils package</li>
+    
+    </ul>
+</nav>
+        <section class="site-content">
+            <div class="container">
+                
+  <div class="section" id="module-app.utils">
+<span id="app-utils-package"></span><h1>app.utils package</h1>
+<div class="section" id="submodules">
+<h2>Submodules</h2>
+</div>
+<div class="section" id="module-app.utils.convertions">
+<span id="app-utils-convertions-module"></span><h2>app.utils.convertions module</h2>
+<p>This module includes various data-type convertion utilities.</p>
+<p>Some functions include representing a string or sequence of bytes
+as base64-encoded strings or serialization objects into JSON strings.</p>
+<dl class="py function">
+<dt id="app.utils.convertions.base64_bytelike_obj_to_bytes">
+<code class="sig-name descname">base64_bytelike_obj_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#base64_bytelike_obj_to_bytes"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Converts a byte-like object to a sequence of bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>obj</strong> (<em>bytes</em>) – The object to be converted to base64-encoded string.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A sequence of bytesrepresentation of the given object or None if obj
+is not a bytes type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[bytes]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.base64_string_to_bytes">
+<code class="sig-name descname">base64_string_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#base64_string_to_bytes"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Converts a base64 string to a sequence of bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>string</strong> (<em>str</em>) – a base64-encoded string to be converted to a byte sequence.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A sequence of bytes converted from the given base64-encoded string or
+None string is not a str type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[bytes]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.bytes_to_base64_string">
+<code class="sig-name descname">bytes_to_base64_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#bytes_to_base64_string"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Converts a byte sequence or non base64 string to a base64-encoded string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Union</em><em>[</em><em>bytes</em><em>, </em><em>str</em><em>]</em>) – sequence of bytes to be converted.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A base64-encoded string representation of data or None if data is not a
+str or bytes type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.bytes_to_utf8string">
+<code class="sig-name descname">bytes_to_utf8string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#bytes_to_utf8string"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Converts a sequence of bytes a utf-8 string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>bytes</em>) – sequence of bytes to be converted.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A utf-8 string representation of data or None if data is not a bytes
+type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.class_name_to_obj">
+<code class="sig-name descname">class_name_to_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module_name</span></em>, <em class="sig-param"><span class="n">class_name</span></em>, <em class="sig-param"><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#class_name_to_obj"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Uses reflection to instanciate a class by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module_name</strong> (<em>str</em>) – The fully qualified path of the module the class is defined in.
+The name of the module must be included.</p></li>
+<li><p><strong>class_name</strong> (<em>str</em>) – The name of the class to be instanciated.</p></li>
+<li><p><strong>args</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – The arguments expected by the named class as an iterable list.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An object of the named class.</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AttributeError</strong> – When <cite>class_name</cite> does not exist or when <cite>module_name</cite> to be
+    imported causes cyclic import errors.</p></li>
+<li><p><strong>ImportError</strong> – When <cite>module_name</cite> is not a valid module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Any</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>You could call this function like so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">h</span> <span class="o">=</span> <span class="n">class_name_to_obj</span><span class="p">(</span><span class="n">MASTER_SERVERS</span><span class="p">,</span> <span class="s2">&quot;Master&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;f.jpg&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">80</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This would be equivalent to calling:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">h</span> <span class="o">=</span> <span class="n">Master</span><span class="p">(</span><span class="s2">&quot;f.jpg&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">80</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.json_string_to_obj">
+<code class="sig-name descname">json_string_to_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json_string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#json_string_to_obj"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Deserializes a JSON string to a a python object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>json_string</strong> (<em>str</em>) – The string to be deserialized into a python object.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A python object obtained from the JSON string.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.obj_to_json_string">
+<code class="sig-name descname">obj_to_json_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#obj_to_json_string"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Serializes a python object to a JSON string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>obj</strong> (<em>Any</em>) – The object to be serialized.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A string representation of the object in JSON format.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.str_copy">
+<code class="sig-name descname">str_copy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#str_copy"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Hard copies a string</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Note:</dt><dd><p>Python’s builtin copy.deepcopy() does not deep copy strings.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>string</strong> (<em>str</em>) – The string to be copied.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An deep copy of the string or None if the string is not a str type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.truncate_float_value">
+<code class="sig-name descname">truncate_float_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#truncate_float_value"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Truncates a float value without rounding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>float</em>) – The float value to truncate.</p></li>
+<li><p><strong>d</strong> (<em>int</em>) – The number of decimal places the float can have.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The truncated float.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.convertions.utf8string_to_bytes">
+<code class="sig-name descname">utf8string_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#utf8string_to_bytes"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Converts utf-8 string to a sequence of bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>string</strong> (<em>str</em>) – a utf-8 string to be converted to bytes.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The bytes of the utf-8 string or None if string is not a str type.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[bytes]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-app.utils.crypto">
+<span id="app-utils-crypto-module"></span><h2>app.utils.crypto module</h2>
+<p>Utility module that includes confidentiality, integrity and authentication functions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As of current release this module only includes one function
+<a class="reference internal" href="#app.utils.crypto.sha256" title="app.utils.crypto.sha256"><code class="xref py py-func docutils literal notranslate"><span class="pre">sha256()</span></code></a>, but if you need to test a swarm guidance algorithm
+that does not assume the communication channels to be secure or
+trustworthy you should implement the crypto related functions here.</p>
+</div>
+<dl class="py function">
+<dt id="app.utils.crypto.sha256">
+<code class="sig-name descname">sha256</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/crypto.html#sha256"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Calculates the SHA-256 hash of data. Data can be anything.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Any</em>) – The data to get the hash from. If data is not of type bytes,</p></li>
+<li><p><strong>will be converted to bytes before the data is digested.</strong> (<em>it</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The SHA-256 hash of data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-app.utils.randoms">
+<span id="app-utils-randoms-module"></span><h2>app.utils.randoms module</h2>
+<p>This module implements some functions related with random number generation.</p>
+<dl class="py function">
+<dt id="app.utils.randoms.excluding_randrange">
+<code class="sig-name descname">excluding_randrange</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">start_again</span></em>, <em class="sig-param"><span class="n">stop_again</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/randoms.html#excluding_randrange"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generates a random number</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – Number consideration for generation starts from this.</p></li>
+<li><p><strong>stop</strong> – Numbers less than this are generated unless they are bigger or
+equal than <cite>start_again</cite>.</p></li>
+<li><p><strong>start_again</strong> – Number consideration for generation starts again from this.</p></li>
+<li><p><strong>stop_again</strong> – Number consideration stops here and does not include the inputed
+value.</p></li>
+<li><p><strong>step</strong> – optional; Step point of range, this won’t be included. This is
+optional.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The random number that is generated is</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A randomly selected element from in the interval [start, stop) or in
+[start_again, stop_again).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.utils.randoms.random_index">
+<code class="sig-name descname">random_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">size</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/randoms.html#random_index"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Generates a random number that can be used as a iterables’ index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>i</strong> (<em>int</em>) – An index;</p></li>
+<li><p><strong>size</strong> (<em>int</em>) – The size of the matrix</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A random index that is different than <cite>i</cite> and belongs to [0, <cite>size</cite>).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+            </div>
+
+        </section>
+
+        
+
+        
+            <div class="source-link">
+            
+                
+            
+            </div>
+        
+
+
+
+    </main>
+
+    <footer class="site-footer">
+<div class="container">
+
+    <div role="contentinfo">
+        <p>
+                &copy; Copyright 2020, Francisco Barros.
+        </p>
+    </div>
+        <p>Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+        <a href="https://github.com/testthedocs/sphinx_ttd_theme">theme</a>
+        provided by <a href="https://testthedocs">TestTheDocs</a>. 
+
+</div>
+</footer>
+
+    
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'1.6.0rc1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/js/theme-min.js"></script> 
+</body>
+</html>

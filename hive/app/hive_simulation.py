@@ -1,35 +1,35 @@
 """This scripts's functions are used to start simulations.
 
-    You can start a simulation by executing the following command::
+You can start a simulation by executing the following command::
 
-        $ python hive_simulation.py --file=a_simulation_name.json --iters=30
+    $ python hive_simulation.py --file=a_simulation_name.json --iters=30
 
-    You can also execute all simulation file that exist in
-    :py:const:`~environment_settings.SIMULATION_ROOT` by instead executing:
+You can also execute all simulation file that exist in
+:py:const:`environment_settings.SIMULATION_ROOT` by instead executing::
 
-        $ python hive_simulation.py -d -i 24
+    $ python hive_simulation.py -d -i 24
 
-    If you wish to execute multiple simulations in parallel (to save time) you
-    can use the -t or --threading flag in either of the previously specified
-    commands. The threading flag expects an integer that specifies the max
-    working threads. E.g.::
+If you wish to execute multiple simulations in parallel (to save time) you
+can use the -t or --threading flag in either of the previously specified
+commands. The threading flag expects an integer that specifies the max
+working threads. For example::
 
-        $ python hive_simulation.py -d --iters=1 --threading=12
+    $ python hive_simulation.py -d --iters=1 --threading=12
 
-    If you don't have a simulation file yet, run the following instead::
+If you don't have a simulation file yet, run the following instead::
 
-        $ python simfile_generator.py --file=filename.json
+    $ python simfile_generator.py --file=filename.json
 
-    Notes:
-        For the simulation to run without errors you must ensurue that::
-            1. The specified simulation files exist in
-            :py:const:`~environment_settings.SIMULATION_ROOT`.
+Note:
+    For the simulation to run without errors you must ensure that:
+        1. The specified simulation files exist in \
+        :py:const:`app.environment_settings.SIMULATION_ROOT`.
+        2. Any file used by the simulation, e.g., a picture or a .pptx \
+        document is accessible in \
+        :py:const:`app.environment_settings.SHARED_ROOT`.
+        3. An output file simdirectory exists with default path being: \
+        :py:const:`app.environment_settings.OUTFILE_ROOT`.
 
-            2. Any file used by the simulation, e.g., a picture or a .pptx
-            document is accessible in :py:const:`~environment_settings.SHARED_ROOT`.
-
-            3. An output file simdirectory exists with default path being:
-            :py:const:`~environment_settings.OUTFILE_ROOT`.
 """
 
 import getopt
@@ -65,7 +65,8 @@ def __makedirs() -> None:
 
 
 def __can_exec_simfile(sname: str) -> None:
-    """Verifies if input simulation file name exists in ~/*/SIMULATION_ROOT"""
+    """Verifies if input simulation file name exists in
+    :py:const:`app.environment_settings.SIMULATION_ROOT`."""
     spath = os.path.join(SIMULATION_ROOT, sname)
     if not os.path.exists(spath):
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
@@ -128,21 +129,20 @@ def main(
     Args:
         threads_count:
             Indicates if multiple simulation instances should run in parallel
-            (default is 0, this results in running the simulation in a
+            (default results in running the simulation in a
             single thread).
         sdir:
             Indicates if the user wishes to execute all simulation files
-            that exist in :py:const:`~environment_settings.SIMULATION_ROOT` or
+            that exist in :py:const:`environment_settings.SIMULATION_ROOT` or
             if he wishes to run one single simulation file, which must be
-            explicitly specified in `sname` (default is False).
+            explicitly specified in `sname`.
         sname:
             When `sdir` is set to False, `sname` needs to be specified as a
             non blank string containing the name of the simulation file to
             be executed. The named file must exist in
-            :py:const:`~environment_settings.SIMULATION_ROOT`.
+            :py:const:`environment_settings.SIMULATION_ROOT`.
         iters:
-            The number of times the same simulation file should be executed (
-            default is 30).
+            The number of times the same simulation file should be executed.
         epochs:
             The number of discrete time steps each iteration of each instance
             of a simulation lasts.
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     iterations = 30
     duration = 720
 
-    master_class = "Master"
+    master_class = "HiveMaster"
     cluster_class = "HiveCluster"
     node_class = "HiveNode"
 

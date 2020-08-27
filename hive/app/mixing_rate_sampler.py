@@ -3,22 +3,19 @@
 This functionality tests and compares the mixing rate of various
 markov matrices.
 
-    You can start a test by executing the following command::
+You can start a test by executing the following command::
 
-        $ python mixing_rate_sampler.py --samples=1000
+    $ python mixing_rate_sampler.py --samples=1000
 
-    You can also specify the names of the functions used to generate markov
-    matrices like so::
+You can also specify the names of the functions used to generate markov
+matrices like so::
 
-        $ python mixing_rate_sampler.py -s 10 -f afunc,anotherfunc,yetanotherfunc
+    $ python mixing_rate_sampler.py -s 10 -f afunc,anotherfunc,yetanotherfunc
 
-        Default functions set {
-            "new_mh_transition_matrix",
-            "new_sdp_mh_transition_matrix",
-            "new_go_transition_matrix",
-            "new_mgo_transition_matrix"
-        }
-
+Note:
+    Default functions set { "new_mh_transition_matrix",
+    "new_sdp_mh_transition_matrix", "new_go_transition_matrix",
+    "new_mgo_transition_matrix" }
 
 """
 
