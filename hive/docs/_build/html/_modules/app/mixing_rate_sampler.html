@@ -60,7 +60,11 @@
     <section class="site-nav">
     
     
-        <div></div>
+        <p class="caption"><span class="caption-text">Simulator Docs:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">app</a></li>
+</ul>
+
     
     </section>
 
@@ -198,11 +202,11 @@
         <span class="s2">&quot;new_mgo_transition_matrix&quot;</span>
     <span class="p">]</span>
 
-    <span class="n">allow_sloops</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">enforce_sloops</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">allow_sloops</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">enforce_sloops</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">short_opts</span> <span class="o">=</span> <span class="s2">&quot;s:n:m:f:&quot;</span>
+        <span class="n">short_opts</span> <span class="o">=</span> <span class="s2">&quot;s:n:m:f:a:e:&quot;</span>
         <span class="n">long_opts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;samples=&quot;</span><span class="p">,</span> <span class="s2">&quot;network_sizes=&quot;</span><span class="p">,</span> <span class="s2">&quot;module=&quot;</span><span class="p">,</span> <span class="s2">&quot;functions=&quot;</span><span class="p">,</span>
                      <span class="s2">&quot;allow_self_loops=&quot;</span><span class="p">,</span> <span class="s2">&quot;enforce_loops=&quot;</span><span class="p">]</span>
 
@@ -216,9 +220,9 @@
                 <span class="n">module</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;--functions&quot;</span><span class="p">):</span>
                 <span class="n">function_names</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;--allow_self_loops&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;--allow_self_loops&quot;</span><span class="p">):</span>
                 <span class="n">allow_sloops</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="ow">or</span> <span class="n">allow_sloops</span>
-            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;--enforce_loops&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;--enforce_loops&quot;</span><span class="p">):</span>
                 <span class="n">enforce_sloops</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="ow">or</span> <span class="n">enforce_sloops</span>
 
         <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
