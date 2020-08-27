@@ -6,13 +6,6 @@ Quickstart
    :caption: Quickstart
    :name: Quickstart
 
-Hives is a P2P Stochastic Swarm Guidance Simulator that facilitates research
-by allowing developers to prototype P2P networks based on swarm guidance
-behaviors, quickly. The simulator is written in Python (version 3.7.x) which
-offers users easy access to powerful scientific libraries such as NumPy,
-SciPy and Pandas, which are not readily available in languages like Java or C#
-and as a result of some of the best or most well-known simulators out there.
-
 Technology
 ----------
 

@@ -1,6 +1,11 @@
 App Documentation
 =================
 
+.. toctree::
+   :maxdepth: 1
+   :caption: App Documentation
+   :name: App Documentation
+
 .. automodule:: app
    :members:
    :undoc-members:
