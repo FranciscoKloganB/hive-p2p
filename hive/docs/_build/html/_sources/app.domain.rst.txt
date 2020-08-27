@@ -1,5 +1,5 @@
-app.domain package
-==================
+app.domain
+==========
 
 .. automodule:: app.domain
    :members:
@@ -18,8 +18,8 @@ Subpackages
 Submodules
 ----------
 
-app.domain.cluster\_groups module
----------------------------------
+app.domain.cluster\_groups
+--------------------------
 
 .. automodule:: app.domain.cluster_groups
    :members:
@@ -27,8 +27,8 @@ app.domain.cluster\_groups module
    :show-inheritance:
    :private-members:
 
-app.domain.master\_servers module
----------------------------------
+app.domain.master\_servers
+--------------------------
 
 .. automodule:: app.domain.master_servers
    :members:
@@ -36,8 +36,8 @@ app.domain.master\_servers module
    :show-inheritance:
    :private-members:
 
-app.domain.network\_nodes module
---------------------------------
+app.domain.network\_nodes
+-------------------------
 
 .. automodule:: app.domain.network_nodes
    :members:

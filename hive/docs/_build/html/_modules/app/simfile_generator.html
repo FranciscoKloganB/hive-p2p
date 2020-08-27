@@ -142,7 +142,7 @@
 <span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">truncate_float_value</span>
 
 
-<div class="viewcode-block" id="__input_character_option"><a class="viewcode-back" href="../../app.html#app.simfile_generator.__input_character_option">[docs]</a><span class="k">def</span> <span class="nf">__input_character_option</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">white_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="_input_character_option"><a class="viewcode-back" href="../../app.html#app.simfile_generator._input_character_option">[docs]</a><span class="k">def</span> <span class="nf">_input_character_option</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">white_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Obtains a user inputed character within a predefined set.</span>
 
 <span class="sd">    Args:</span>
@@ -162,7 +162,7 @@
         <span class="n">character</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Choose an option among </span><span class="si">{</span><span class="n">white_list</span><span class="si">}</span><span class="s2">. Try again: &quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="__input_bounded_integer"><a class="viewcode-back" href="../../app.html#app.simfile_generator.__input_bounded_integer">[docs]</a><span class="k">def</span> <span class="nf">__input_bounded_integer</span><span class="p">(</span>
+<div class="viewcode-block" id="_input_bounded_integer"><a class="viewcode-back" href="../../app.html#app.simfile_generator._input_bounded_integer">[docs]</a><span class="k">def</span> <span class="nf">_input_bounded_integer</span><span class="p">(</span>
         <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16384</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Obtains a user inputed integer within the specified closed interval.</span>
 
@@ -191,7 +191,7 @@
             <span class="k">continue</span></div>
 
 
-<div class="viewcode-block" id="__input_bounded_float"><a class="viewcode-back" href="../../app.html#app.simfile_generator.__input_bounded_float">[docs]</a><span class="k">def</span> <span class="nf">__input_bounded_float</span><span class="p">(</span>
+<div class="viewcode-block" id="_input_bounded_float"><a class="viewcode-back" href="../../app.html#app.simfile_generator._input_bounded_float">[docs]</a><span class="k">def</span> <span class="nf">_input_bounded_float</span><span class="p">(</span>
         <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Obtains a user inputed integer within the specified closed interval.</span>
@@ -220,7 +220,7 @@
             <span class="k">continue</span></div>
 
 
-<div class="viewcode-block" id="__input_filename"><a class="viewcode-back" href="../../app.html#app.simfile_generator.__input_filename">[docs]</a><span class="k">def</span> <span class="nf">__input_filename</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="_input_filename"><a class="viewcode-back" href="../../app.html#app.simfile_generator._input_filename">[docs]</a><span class="k">def</span> <span class="nf">_input_filename</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Verifies if inputed file name exists in</span>
 <span class="sd">    :py:const:`app.environment_settings.SHARED_ROOT` directory.</span>
 
@@ -245,7 +245,7 @@
         <span class="k">return</span> <span class="n">file_name</span></div>
 
 
-<div class="viewcode-block" id="__in_yes_no"><a class="viewcode-back" href="../../app.html#app.simfile_generator.__in_yes_no">[docs]</a><span class="k">def</span> <span class="nf">__in_yes_no</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="_in_yes_no"><a class="viewcode-back" href="../../app.html#app.simfile_generator._in_yes_no">[docs]</a><span class="k">def</span> <span class="nf">_in_yes_no</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Asks the user to reply with yes or no to a message.</span>
 
 <span class="sd">    Args:</span>
@@ -267,7 +267,7 @@
 
 
 <span class="c1"># region Helpers</span>
-<div class="viewcode-block" id="__yield_label"><a class="viewcode-back" href="../../app.html#app.simfile_generator.__yield_label">[docs]</a><span class="k">def</span> <span class="nf">__yield_label</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="_yield_label"><a class="viewcode-back" href="../../app.html#app.simfile_generator._yield_label">[docs]</a><span class="k">def</span> <span class="nf">_yield_label</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Used to generate an arbrirary numbers of unique labels.</span>
 
 <span class="sd">    Yields:</span>
@@ -275,12 +275,12 @@
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; n = 4</span>
-<span class="sd">        &gt;&gt;&gt; for s in itertools.islice(__yield_label(), n):</span>
+<span class="sd">        &gt;&gt;&gt; for s in itertools.islice(_yield_label(), n):</span>
 <span class="sd">        ...     return s</span>
 <span class="sd">        [a, b, c, d]</span>
 
 <span class="sd">       &gt;&gt;&gt; n = 4 + 26</span>
-<span class="sd">        &gt;&gt;&gt; for s in itertools.islice(__yield_label(), n):</span>
+<span class="sd">        &gt;&gt;&gt; for s in itertools.islice(_yield_label(), n):</span>
 <span class="sd">        ...     return s</span>
 <span class="sd">        [a, b, c, d, ..., aa, ab, ac, ad]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -289,28 +289,28 @@
             <span class="k">yield</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="__init_nodes_uptime"><a class="viewcode-back" href="../../app.html#app.simfile_generator.__init_nodes_uptime">[docs]</a><span class="k">def</span> <span class="nf">__init_nodes_uptime</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="_init_nodes_uptime"><a class="viewcode-back" href="../../app.html#app.simfile_generator._init_nodes_uptime">[docs]</a><span class="k">def</span> <span class="nf">_init_nodes_uptime</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Creates a record containing network nodes&#39; uptime.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A collection mapping :py:mod:`domain.network_nodes`&#39;s class</span>
 <span class="sd">        instance labels to their respective uptime values.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">number_of_nodes</span> <span class="o">=</span> <span class="n">__input_bounded_integer</span><span class="p">(</span><span class="s2">&quot;Network Size [2, 16384]: &quot;</span><span class="p">)</span>
+    <span class="n">number_of_nodes</span> <span class="o">=</span> <span class="n">_input_bounded_integer</span><span class="p">(</span><span class="s2">&quot;Network Size [2, 16384]: &quot;</span><span class="p">)</span>
 
-    <span class="n">min_uptime</span> <span class="o">=</span> <span class="n">__input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Min node uptime [0.0, 100.0]: &quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+    <span class="n">min_uptime</span> <span class="o">=</span> <span class="n">_input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Min node uptime [0.0, 100.0]: &quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
     <span class="n">min_uptime</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">min_uptime</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
-    <span class="n">max_uptime</span> <span class="o">=</span> <span class="n">__input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Max node uptime [0.0, 100.0]: &quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+    <span class="n">max_uptime</span> <span class="o">=</span> <span class="n">_input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Max node uptime [0.0, 100.0]: &quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
     <span class="n">max_uptime</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">max_uptime</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 
-    <span class="n">mean</span> <span class="o">=</span> <span class="n">__input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Distribution mean [0.0, 100.0]: &quot;</span><span class="p">)</span>
-    <span class="n">std</span> <span class="o">=</span> <span class="n">__input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Standard deviation [0.0, 100.0]: &quot;</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">_input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Distribution mean [0.0, 100.0]: &quot;</span><span class="p">)</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">_input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Standard deviation [0.0, 100.0]: &quot;</span><span class="p">)</span>
 
     <span class="n">samples</span> <span class="o">=</span> <span class="n">ng</span><span class="o">.</span><span class="n">generate_samples</span><span class="p">(</span><span class="n">surveys</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
     <span class="n">nodes_uptime</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">__yield_label</span><span class="p">(),</span> <span class="n">number_of_nodes</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">_yield_label</span><span class="p">(),</span> <span class="n">number_of_nodes</span><span class="p">):</span>
         <span class="c1"># gets and removes last element in samples to assign it to label</span>
         <span class="n">uptime</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">pop</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mf">100.0</span>
         <span class="n">uptime</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">uptime</span><span class="p">,</span> <span class="n">min_uptime</span><span class="p">,</span> <span class="n">max_uptime</span><span class="p">)</span>
@@ -320,7 +320,7 @@
     <span class="k">return</span> <span class="n">nodes_uptime</span></div>
 
 
-<div class="viewcode-block" id="__init_persisting_dict"><a class="viewcode-back" href="../../app.html#app.simfile_generator.__init_persisting_dict">[docs]</a><span class="k">def</span> <span class="nf">__init_persisting_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<div class="viewcode-block" id="_init_persisting_dict"><a class="viewcode-back" href="../../app.html#app.simfile_generator._init_persisting_dict">[docs]</a><span class="k">def</span> <span class="nf">_init_persisting_dict</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Creates the &quot;persisting&quot; key of simulation file.</span>
 
 <span class="sd">    Returns:</span>
@@ -337,7 +337,7 @@
 
     <span class="n">add_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">while</span> <span class="n">add_file</span><span class="p">:</span>
-        <span class="n">file_name</span> <span class="o">=</span> <span class="n">__input_filename</span><span class="p">(</span>
+        <span class="n">file_name</span> <span class="o">=</span> <span class="n">_input_filename</span><span class="p">(</span>
             <span class="s2">&quot;Name the file (with extension) you wish to simulate persistence of: &quot;</span><span class="p">)</span>
 
         <span class="n">options_message</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Select how files blocks are spread across &quot;</span>
@@ -346,14 +346,14 @@
                            <span class="s2">&quot;   i: near steady-state distribution,</span><span class="se">\n</span><span class="s2">&quot;</span>
                            <span class="s2">&quot;   a: all files concentrated on N blocks</span><span class="se">\n</span><span class="s2">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">options_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span>
-        <span class="n">option_choice</span> <span class="o">=</span> <span class="n">__input_character_option</span><span class="p">(</span><span class="n">options_message</span><span class="p">,</span> <span class="n">options_list</span><span class="p">)</span>
+        <span class="n">option_choice</span> <span class="o">=</span> <span class="n">_input_character_option</span><span class="p">(</span><span class="n">options_message</span><span class="p">,</span> <span class="n">options_list</span><span class="p">)</span>
 
         <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">][</span><span class="s2">&quot;spread&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">option_choice</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">][</span><span class="s2">&quot;cluster_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">__input_bounded_integer</span><span class="p">(</span>
+        <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">][</span><span class="s2">&quot;cluster_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_input_bounded_integer</span><span class="p">(</span>
             <span class="s2">&quot;Number of nodes that should be sharing the next file: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="n">add_file</span> <span class="o">=</span> <span class="n">__in_yes_no</span><span class="p">(</span>
+        <span class="n">add_file</span> <span class="o">=</span> <span class="n">_in_yes_no</span><span class="p">(</span>
             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Simulate persistence of another file in simulation?&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">persisting</span></div>
@@ -367,15 +367,15 @@
 <span class="sd">    Note:</span>
 <span class="sd">        The name of the created file concerns the name of the simulation file.</span>
 <span class="sd">        It does not concern the name or names of the files whose persistence</span>
-<span class="sd">        is being simulalted.</span>
+<span class="sd">        is being simulated.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        simfile_name:</span>
 <span class="sd">            Name to be assigned to JSON file in the user&#39;s file system.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">simfile_json</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;nodes_uptime&quot;</span><span class="p">:</span> <span class="n">__init_nodes_uptime</span><span class="p">(),</span>
-        <span class="s2">&quot;persisting&quot;</span><span class="p">:</span> <span class="n">__init_persisting_dict</span><span class="p">()</span>
+        <span class="s2">&quot;nodes_uptime&quot;</span><span class="p">:</span> <span class="n">_init_nodes_uptime</span><span class="p">(),</span>
+        <span class="s2">&quot;persisting&quot;</span><span class="p">:</span> <span class="n">_init_persisting_dict</span><span class="p">()</span>
     <span class="p">}</span>
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">simfile_name</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>

@@ -257,7 +257,7 @@ def main(simfile_name: str) -> None:
     Note:
         The name of the created file concerns the name of the simulation file.
         It does not concern the name or names of the files whose persistence
-        is being simulalted.
+        is being simulated.
 
     Args:
         simfile_name:

@@ -1,5 +1,5 @@
-app.domain.helpers package
-==========================
+app.domain.helpers
+==================
 
 .. automodule:: app.domain.helpers
    :members:
@@ -10,8 +10,8 @@ app.domain.helpers package
 Submodules
 ----------
 
-app.domain.helpers.enums module
--------------------------------
+app.domain.helpers.enums
+------------------------
 
 .. automodule:: app.domain.helpers.enums
    :members:
@@ -19,8 +19,8 @@ app.domain.helpers.enums module
    :show-inheritance:
    :private-members:
 
-app.domain.helpers.exceptions module
-------------------------------------
+app.domain.helpers.exceptions
+-----------------------------
 
 .. automodule:: app.domain.helpers.exceptions
    :members:
@@ -28,8 +28,8 @@ app.domain.helpers.exceptions module
    :show-inheritance:
    :private-members:
 
-app.domain.helpers.matlab\_utils module
----------------------------------------
+app.domain.helpers.matlab\_utils
+--------------------------------
 
 .. automodule:: app.domain.helpers.matlab_utils
    :members:
@@ -37,8 +37,8 @@ app.domain.helpers.matlab\_utils module
    :show-inheritance:
    :private-members:
 
-app.domain.helpers.matrices module
-----------------------------------
+app.domain.helpers.matrices
+---------------------------
 
 .. automodule:: app.domain.helpers.matrices
    :members:
@@ -46,8 +46,8 @@ app.domain.helpers.matrices module
    :show-inheritance:
    :private-members:
 
-app.domain.helpers.smart\_dataclasses module
---------------------------------------------
+app.domain.helpers.smart\_dataclasses
+-------------------------------------
 
 .. automodule:: app.domain.helpers.smart_dataclasses
    :members:
