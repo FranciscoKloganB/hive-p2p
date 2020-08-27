@@ -6,15 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     
-    <title>Search</title>
+    <title>Future Releases</title>
     
 
     <link rel="stylesheet" href="_static/css/redactor.css" type="text/css" />
     
     
     <link rel="index" title="Index" href="genindex.html"/>
-    <link rel="search" title="Search" href="#"/>
-    <link rel="top" title="Hives - P2P Stochastic Swarm Guidance Simulator" href="index.html"/> 
+    <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Hives - P2P Stochastic Swarm Guidance Simulator" href="index.html"/>
+    <link rel="prev" title="app.utils package" href="app.utils.html"/> 
 </head>
 
 <body role="document">
@@ -47,7 +48,7 @@
 
     
 <section role="search">
-    <form action="#" method="get" class="site-searchform">
+    <form action="search.html" method="get" class="site-searchform">
         <input type="text" name="q" placeholder="Search docs" />
         <input type="hidden" name="check_keywords" value="yes" />
         <input type="hidden" name="area" value="default" />
@@ -59,13 +60,14 @@
     <section class="site-nav">
     
     
-        <p class="caption"><span class="caption-text">Hives - Navbar</span></p>
-<ul>
+        <p class="caption"><span class="caption-text">Simulator Docs:</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quickstartdocs.html">Quickstart</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scriptdocs.html">Scripts and Flags</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Code Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notedocs.html">Future Releases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="indices.html">Indices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">app</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Future Releases</a><ul class="simple">
+</ul>
+</li>
 </ul>
 
     
@@ -95,40 +97,48 @@
             <a href="index.html">Docs</a> /
         </li>
         
-        <li class="site-breadcrumbs__leaf">Search</li>
+        <li class="site-breadcrumbs__leaf">Future Releases</li>
     
     </ul>
 </nav>
         <section class="site-content">
             <div class="container">
                 
-    <noscript>
-        <div id="fallback" class="admonition warning">
-            <p class="last">
-            
-                Please activate JavaScript to enable the search
-                functionality.
-            
-            </p>
-        </div>
-    </noscript>
+  <div class="section" id="future-releases">
+<h1>Future Releases</h1>
+<div class="toctree-wrapper compound" id="notes">
+</div>
+<p>In the future, we will focus on improving each simulation’s thread performance,
+in the current release, any P2P network with more than 16 peers and many files
+can take a long time to complete due to the amount of <em>for</em> statements that
+exist in the code. This is one reason why our program offers the possibility
+of running multiple (different) simulations in different threads, allowing
+researchers to complete more simulations, in less time, by fully utilizing the
+CPU of their machines. Ideally, we would like to offer this speed up using
+multi-threading and fast individual threads.</p>
+</div>
 
-    <section class="site-search-results">
-    
-
-    <div id="search-results">
-        
-    </div>
-    </section>
 
             </div>
 
         </section>
 
         
+            <nav class="site-bottom-navigation" role="navigation">
+            
+            
+                <a href="app.utils.html" class="btn btn--primary btn--prev"
+                    title="app.utils package" accesskey="p">
+                    Previous
+                </a>
+            
+            </nav>
+        
 
         
             <div class="source-link">
+            
+                
             
             </div>
         
@@ -167,13 +177,6 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
-    <script type="text/javascript" src="_static/searchtools.js"></script>
-    <script type="text/javascript" src="_static/js/theme-min.js"></script>
-    <script type="text/javascript">
-        jQuery(function() { Search.loadIndex("searchindex.js"); });
-    </script>
-    <script type="text/javascript" id="searchindexloader"></script>
-     
-
+    <script type="text/javascript" src="_static/js/theme-min.js"></script> 
 </body>
 </html>

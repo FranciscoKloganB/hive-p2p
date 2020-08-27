@@ -1,4 +1,4 @@
-app package
+App Package
 ===========
 
 .. automodule:: app
