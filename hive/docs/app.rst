@@ -2,7 +2,7 @@ App Documentation
 =================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
    :caption: App Documentation
    :name: App Documentation
 

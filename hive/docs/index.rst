@@ -7,7 +7,7 @@ Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator
 ============================================================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 4
    :caption: Navbar
    :hidden:
 
