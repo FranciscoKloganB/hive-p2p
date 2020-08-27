@@ -52,7 +52,7 @@ __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
 from utils.convertions import class_name_to_obj
 
 
-def __makedirs() -> None:
+def __makedirs__() -> None:
     """Creates required simulation working directories if they do not exist."""
     if not os.path.exists(SHARED_ROOT):
         os.makedirs(SHARED_ROOT)
@@ -64,7 +64,7 @@ def __makedirs() -> None:
         os.makedirs(OUTFILE_ROOT)
 
 
-def __can_exec_simfile(sname: str) -> None:
+def __can_exec_simfile__(sname: str) -> None:
     """Verifies if input simulation file name exists in
     :py:const:`app.environment_settings.SIMULATION_ROOT`."""
     spath = os.path.join(SIMULATION_ROOT, sname)
@@ -72,7 +72,7 @@ def __can_exec_simfile(sname: str) -> None:
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
 
 
-def __start_simulation(sname: str, sid: int, epochs: int) -> None:
+def __start_simulation__(sname: str, sid: int, epochs: int) -> None:
     """Executes one instance of the simulation
 
     Args:
@@ -91,7 +91,7 @@ def __start_simulation(sname: str, sid: int, epochs: int) -> None:
     master_server.execute_simulation()
 
 
-def __parallel_main(
+def _parallel_main(
         threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
 ) -> None:
     """Helper method that initializes a multi-threaded simulation."""
@@ -100,24 +100,24 @@ def __parallel_main(
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
                 for i in range(iters):
-                    executor.submit(__start_simulation, sn, i, epochs)
+                    executor.submit(__start_simulation__, sn, i, epochs)
         else:
-            __can_exec_simfile(sname)
+            __can_exec_simfile__(sname)
             for i in range(iters):
-                executor.submit(__start_simulation, sname, i, epochs)
+                executor.submit(__start_simulation__, sname, i, epochs)
 
 
-def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
+def _single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
     """Helper function that initializes a single-threaded simulation."""
     if sdir:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
             for i in range(iters):
-                __start_simulation(sn, i, epochs)
+                __start_simulation__(sn, i, epochs)
     else:
-        __can_exec_simfile(sname)
+        __can_exec_simfile__(sname)
         for i in range(iters):
-            __start_simulation(sname, i, epochs)
+            __start_simulation__(sname, i, epochs)
 # endregion
 
 
@@ -150,14 +150,14 @@ def main(
     MatlabEngineContainer.get_instance()
 
     if threads_count != 0:
-        __parallel_main(
+        _parallel_main(
             numpy.abs(threads_count).item(), sdir, sname, iters, epochs)
     else:
-        __single_main(sdir, sname, iters, epochs)
+        _single_main(sdir, sname, iters, epochs)
 
 
 if __name__ == "__main__":
-    __makedirs()
+    __makedirs__()
 
     threading = 0
     simdirectory = False
