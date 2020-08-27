@@ -14,7 +14,7 @@
     
     <link rel="index" title="Index" href="genindex.html"/>
     <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Hives 1.0 documentation" href="index.html"/> 
+    <link rel="top" title="Hives - P2P Stochastic Swarm Guidance Simulator" href="index.html"/> 
 </head>
 
 <body role="document">
@@ -38,6 +38,10 @@
     
         
         
+            <span class="branding-link__version">
+                1.6
+            </span>
+        
     
     </a>
 
@@ -55,16 +59,12 @@
     <section class="site-nav">
     
     
-        <div><ul>
-<li><a class="reference internal" href="#">app.utils package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-app.utils.convertions">app.utils.convertions module</a></li>
-<li><a class="reference internal" href="#module-app.utils.crypto">app.utils.crypto module</a></li>
-<li><a class="reference internal" href="#module-app.utils.randoms">app.utils.randoms module</a></li>
+        <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Hives Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#indices-and-tables">Indices and tables</a></li>
 </ul>
-</li>
-</ul>
-</div>
+
     
     </section>
 
@@ -100,18 +100,18 @@
             <div class="container">
                 
   <div class="section" id="module-app.utils">
-<span id="app-utils-package"></span><h1>app.utils package<a class="headerlink" href="#module-app.utils" title="Permalink to this headline">¶</a></h1>
+<span id="app-utils-package"></span><h1>app.utils package</h1>
 <div class="section" id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules</h2>
 </div>
 <div class="section" id="module-app.utils.convertions">
-<span id="app-utils-convertions-module"></span><h2>app.utils.convertions module<a class="headerlink" href="#module-app.utils.convertions" title="Permalink to this headline">¶</a></h2>
+<span id="app-utils-convertions-module"></span><h2>app.utils.convertions module</h2>
 <p>This module includes various data-type convertion utilities.</p>
 <p>Some functions include representing a string or sequence of bytes
 as base64-encoded strings or serialization objects into JSON strings.</p>
 <dl class="py function">
 <dt id="app.utils.convertions.base64_bytelike_obj_to_bytes">
-<code class="sig-name descname">base64_bytelike_obj_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#base64_bytelike_obj_to_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.base64_bytelike_obj_to_bytes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">base64_bytelike_obj_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#base64_bytelike_obj_to_bytes"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Converts a byte-like object to a sequence of bytes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -129,7 +129,7 @@ is not a bytes type.</p>
 
 <dl class="py function">
 <dt id="app.utils.convertions.base64_string_to_bytes">
-<code class="sig-name descname">base64_string_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#base64_string_to_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.base64_string_to_bytes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">base64_string_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#base64_string_to_bytes"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Converts a base64 string to a sequence of bytes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -147,7 +147,7 @@ None string is not a str type.</p>
 
 <dl class="py function">
 <dt id="app.utils.convertions.bytes_to_base64_string">
-<code class="sig-name descname">bytes_to_base64_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#bytes_to_base64_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.bytes_to_base64_string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">bytes_to_base64_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#bytes_to_base64_string"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Converts a byte sequence or non base64 string to a base64-encoded string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -165,7 +165,7 @@ str or bytes type.</p>
 
 <dl class="py function">
 <dt id="app.utils.convertions.bytes_to_utf8string">
-<code class="sig-name descname">bytes_to_utf8string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#bytes_to_utf8string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.bytes_to_utf8string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">bytes_to_utf8string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#bytes_to_utf8string"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Converts a sequence of bytes a utf-8 string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -183,7 +183,7 @@ type.</p>
 
 <dl class="py function">
 <dt id="app.utils.convertions.class_name_to_obj">
-<code class="sig-name descname">class_name_to_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module_name</span></em>, <em class="sig-param"><span class="n">class_name</span></em>, <em class="sig-param"><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#class_name_to_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.class_name_to_obj" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">class_name_to_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module_name</span></em>, <em class="sig-param"><span class="n">class_name</span></em>, <em class="sig-param"><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#class_name_to_obj"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Uses reflection to instanciate a class by name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -221,7 +221,7 @@ The name of the module must be included.</p></li>
 
 <dl class="py function">
 <dt id="app.utils.convertions.json_string_to_obj">
-<code class="sig-name descname">json_string_to_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json_string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#json_string_to_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.json_string_to_obj" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">json_string_to_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json_string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#json_string_to_obj"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Deserializes a JSON string to a a python object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -238,7 +238,7 @@ The name of the module must be included.</p></li>
 
 <dl class="py function">
 <dt id="app.utils.convertions.obj_to_json_string">
-<code class="sig-name descname">obj_to_json_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#obj_to_json_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.obj_to_json_string" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">obj_to_json_string</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#obj_to_json_string"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Serializes a python object to a JSON string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -255,7 +255,7 @@ The name of the module must be included.</p></li>
 
 <dl class="py function">
 <dt id="app.utils.convertions.str_copy">
-<code class="sig-name descname">str_copy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#str_copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.str_copy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">str_copy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#str_copy"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Hard copies a string</p>
 <blockquote>
 <div><dl class="simple">
@@ -278,7 +278,7 @@ The name of the module must be included.</p></li>
 
 <dl class="py function">
 <dt id="app.utils.convertions.truncate_float_value">
-<code class="sig-name descname">truncate_float_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#truncate_float_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.truncate_float_value" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">truncate_float_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">f</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#truncate_float_value"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Truncates a float value without rounding.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -298,7 +298,7 @@ The name of the module must be included.</p></li>
 
 <dl class="py function">
 <dt id="app.utils.convertions.utf8string_to_bytes">
-<code class="sig-name descname">utf8string_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#utf8string_to_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.convertions.utf8string_to_bytes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">utf8string_to_bytes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/convertions.html#utf8string_to_bytes"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Converts utf-8 string to a sequence of bytes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -315,7 +315,7 @@ The name of the module must be included.</p></li>
 
 </div>
 <div class="section" id="module-app.utils.crypto">
-<span id="app-utils-crypto-module"></span><h2>app.utils.crypto module<a class="headerlink" href="#module-app.utils.crypto" title="Permalink to this headline">¶</a></h2>
+<span id="app-utils-crypto-module"></span><h2>app.utils.crypto module</h2>
 <p>Utility module that includes confidentiality, integrity and authentication functions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -326,7 +326,7 @@ trustworthy you should implement the crypto related functions here.</p>
 </div>
 <dl class="py function">
 <dt id="app.utils.crypto.sha256">
-<code class="sig-name descname">sha256</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/crypto.html#sha256"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.crypto.sha256" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sha256</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/crypto.html#sha256"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Calculates the SHA-256 hash of data. Data can be anything.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -346,11 +346,11 @@ trustworthy you should implement the crypto related functions here.</p>
 
 </div>
 <div class="section" id="module-app.utils.randoms">
-<span id="app-utils-randoms-module"></span><h2>app.utils.randoms module<a class="headerlink" href="#module-app.utils.randoms" title="Permalink to this headline">¶</a></h2>
+<span id="app-utils-randoms-module"></span><h2>app.utils.randoms module</h2>
 <p>This module implements some functions related with random number generation.</p>
 <dl class="py function">
 <dt id="app.utils.randoms.excluding_randrange">
-<code class="sig-name descname">excluding_randrange</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">start_again</span></em>, <em class="sig-param"><span class="n">stop_again</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/randoms.html#excluding_randrange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.randoms.excluding_randrange" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">excluding_randrange</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">start_again</span></em>, <em class="sig-param"><span class="n">stop_again</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/randoms.html#excluding_randrange"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Generates a random number</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -377,7 +377,7 @@ optional.</p></li>
 
 <dl class="py function">
 <dt id="app.utils.randoms.random_index">
-<code class="sig-name descname">random_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">size</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/randoms.html#random_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#app.utils.randoms.random_index" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">random_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">size</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/randoms.html#random_index"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Generates a random number that can be used as a iterables’ index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -437,7 +437,7 @@ optional.</p></li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'',
-            VERSION:'1.0',
+            VERSION:'1.6.0rc1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     
-    <title>Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator’s documentation!</title>
+    <title>Hives Quickstart</title>
     
 
     <link rel="stylesheet" href="_static/css/redactor.css" type="text/css" />
@@ -14,7 +14,7 @@
     
     <link rel="index" title="Index" href="genindex.html"/>
     <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Hives 1.0 documentation" href="#"/> 
+    <link rel="top" title="Hives - P2P Stochastic Swarm Guidance Simulator" href="#"/> 
 </head>
 
 <body role="document">
@@ -38,6 +38,10 @@
     
         
         
+            <span class="branding-link__version">
+                1.6
+            </span>
+        
     
     </a>
 
@@ -56,7 +60,16 @@
     
     
         <div><ul>
-<li><a class="reference internal" href="#">Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator’s documentation!</a></li>
+<li><a class="reference internal" href="#">Hives Quickstart</a><ul>
+<li><a class="reference internal" href="#technology">Technology</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#scripts-and-flags">Scripts and Flags</a></li>
+<li><a class="reference internal" href="#future-releases">Future Releases</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 </div>
@@ -87,20 +100,127 @@
             <a href="#">Docs</a> /
         </li>
         
-        <li class="site-breadcrumbs__leaf">Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator’s documentation!</li>
+        <li class="site-breadcrumbs__leaf">Hives Quickstart</li>
     
     </ul>
 </nav>
         <section class="site-content">
             <div class="container">
                 
-  <div class="section" id="welcome-to-hives-a-p2p-stochastic-swarm-guidance-simulator-s-documentation">
-<h1>Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator’s documentation!<a class="headerlink" href="#welcome-to-hives-a-p2p-stochastic-swarm-guidance-simulator-s-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="hives-quickstart">
+<h1>Hives Quickstart</h1>
+<p>Hives is a P2P Stochastic Swarm Guidance Simulator that facilitates research
+by allowing developers to prototype P2P networks based on swarm guidance
+behaviors, quickly. The simulator is written in Python (version 3.7.x) which
+offers users easy access to powerful scientific libraries such as NumPy,
+SciPy and Pandas, which are not readily available in languages like Java or C#
+and as a result of some of the best or most well-known simulators out there.</p>
 <div class="toctree-wrapper compound">
+</div>
+<div class="section" id="technology">
+<h2>Technology</h2>
+<p>This simulator uses Python 3.7.7. You are free to use any version you desire,
+but we do not guarantee the simulator will work under such conditions.
+Any version launched before 3.7.x will not run this project due to retro
+compatibility errors. We recommend using an IDE such as PyCharm or equivalent
+for easier inspection, usage, and setups.</p>
+<div class="section" id="installation">
+<h3>Installation</h3>
+<ol class="arabic simple">
+<li><p>Download and install Python 3.7.7 if you do not have it yet:</p></li>
+</ol>
+<div class="line-block">
+<div class="line">- <a class="reference external" href="https://www.python.org/downloads/release/python-377/">https://www.python.org/downloads/release/python-377/</a></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Download (clone) our repository at:</p></li>
+</ol>
+<div class="line-block">
+<div class="line">- <a class="reference external" href="https://github.com/FranciscoKloganB/hive-msc-thesis">https://github.com/FranciscoKloganB/hive-msc-thesis</a></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>We recommended using JetBrains’ IDEs, but this is not necessary:</p></li>
+</ol>
+<div class="line-block">
+<div class="line">- <a class="reference external" href="https://www.jetbrains.com/pycharm/download">https://www.jetbrains.com/pycharm/download</a></div>
+</div>
+<p>4. Create a virtual environment of your choosing, two example guides are
+linked below:</p>
+<div class="line-block">
+<div class="line">- <a class="reference external" href="https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/">https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/</a></div>
+<div class="line">- <a class="reference external" href="https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html">https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html</a></div>
+</div>
+<p>5. Navigate to <code class="docutils literal notranslate"><span class="pre">hive</span></code> folder located at the root of your recently cloned
+project:</p>
+<div class="line-block">
+<div class="line">- <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">cd</span> <span class="pre">hive</span></code></div>
+</div>
+<p>6. Install project dependencies by opening your terminal and inserting the
+command:</p>
+<div class="line-block">
+<div class="line">- <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code></div>
+</div>
+</div>
+</div>
+<div class="section" id="usage">
+<h2>Usage</h2>
+<p>A typical usage of the Hives simulator would include the following sequence of
+commands (see <a class="reference internal" href="#scripts-and-flags">Scripts and Flags</a> section for flag details), responding
+accordingly to any prompts that appear on your command line terminal:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">cd</span> <span class="pre">hive/app</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">simfile_generator.py</span> <span class="pre">--file=test01.json</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">hive_simulation.py</span> <span class="pre">--file=test01.json</span> <span class="pre">--iters=30</span> <span class="pre">--epochs=720</span></code></p>
+</div></blockquote>
+</div>
+<div class="section" id="scripts-and-flags">
+<h2>Scripts and Flags</h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><em>simfile_generator.py</em></p></th>
+<th class="head"></th>
+<th class="head"></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Long option</strong></p></td>
+<td><p><strong>Short Option</strong></p></td>
+<td><p><strong>Argument Type</strong></p></td>
+<td><p><strong>Default Value</strong></p></td>
+<td><p><strong>Description</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p>–file</p></td>
+<td><p>-f</p></td>
+<td><p>str</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Creates a simulation file with the specified name in <code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SIMULATION_ROOT</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="future-releases">
+<h2>Future Releases</h2>
+<p>In the future, we will focus on improving each simulation’s thread performance,
+in the current release, any P2P network with more than 16 peers and many files
+can take a long time to complete due to the amount of <em>for</em> statements that
+exist in the code. This is one reason why our program offers the possibility
+of running multiple (different) simulations in different threads, allowing
+researchers to complete more simulations, in less time, by fully utilizing the
+CPU of their machines. Ideally, we would like to offer this speed up using
+multi-threading and fast individual threads.</p>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h1>Indices and tables</h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 </ul>
@@ -145,7 +265,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'',
-            VERSION:'1.0',
+            VERSION:'1.6.0rc1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

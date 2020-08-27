@@ -165,7 +165,7 @@ if __name__ == "__main__":
     iterations = 30
     duration = 720
 
-    master_class = "Master"
+    master_class = "HiveMaster"
     cluster_class = "HiveCluster"
     node_class = "HiveNode"
 
