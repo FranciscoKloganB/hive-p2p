@@ -140,18 +140,25 @@
 through out the simulation’s lifetime including initialization and execution.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>To configure the amount of available network nodes in a simulation
-(<a class="reference internal" href="app.domain.html#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode</span></code></a>), the number of network
-nodes in a group persisting a file
-(<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a>),
-the way files are initially distributed between network nodes of a
-simulation (<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.spread_files" title="app.domain.cluster_groups.Cluster.spread_files"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.spread_files()</span></code></a>)
-and, the actual name of the file whose persistence is being simulated,
-you should create a simulation file using
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">simulation_file_generator</span></code> and follow its instructions. To run
-that modules functionality use:</p>
+<p>To configure the amount of available
+<a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a> system,
+the initial size of a file
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code></a> that
+work on the durability of a file, the way files are
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.spread_files" title="app.domain.cluster_groups.Cluster.spread_files"><code class="xref py py-meth docutils literal notranslate"><span class="pre">distributed</span></code></a>
+among the clusters’ nodes at the start of a simulation and, the actual
+name of the file whose persistence is being simulated, you should create
+a simulation file using this <a class="reference internal" href="#module-app.simfile_generator" title="app.simfile_generator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">script</span></code></a> and
+follow the respective instructions. To run the script type in your
+command line terminal:</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python simfile_generator.py --file=filename.json
 </pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
 </div>
 <p>It is also strongly recommended that the user does not alter any
 undocumented attributes or module variables unless they are absolutely
@@ -163,14 +170,14 @@ variables such as <a class="reference internal" href="#app.environment_settings.
 <dt id="app.environment_settings.ABS_TOLERANCE">
 <code class="sig-name descname">ABS_TOLERANCE</code><em class="property">: float</em><em class="property"> = 0.05</em></dt>
 <dd><p>Defines the maximum amount of absolute positive or negative deviation that a
-current distribution <code class="xref py py-attr docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.cv_</span></code> can
+current distribution <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.cv_" title="app.domain.cluster_groups.HiveCluster.cv_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cv_</span></code></a> can
 have from the desired steady state
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.v_</span></code>, in order for the
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>, in order for the
 distributions to be considered equal and thus marking the epoch as convergent.</p>
 <p>This constant will be used by
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.equal_distributions()</span></code> along
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.equal_distributions" title="app.domain.cluster_groups.HiveCluster.equal_distributions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster.equal_distributions()</span></code></a> along
 with a relative tolerance that is the minimum value in
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.v_</span></code>.</p>
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -205,7 +212,7 @@ be regenerated after their are lost.</p>
 <dt id="app.environment_settings.MIN_CONVERGENCE_THRESHOLD">
 <code class="sig-name descname">MIN_CONVERGENCE_THRESHOLD</code><em class="property">: int</em><em class="property"> = 0</em></dt>
 <dd><p>The number of consecutive epoch time steps that a
-<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a> must converge before epochs
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiveCluster</span></code></a> must converge before epochs
 start being marked with verified convergence in
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.LoggingData.convergence_set</span></code></a>.</p>
 </dd></dl>
@@ -220,9 +227,9 @@ be regenerated after their are lost.</p>
 <dl class="py data">
 <dt id="app.environment_settings.MONTH_EPOCHS">
 <code class="sig-name descname">MONTH_EPOCHS</code><em class="property">: int</em><em class="property"> = 21600</em></dt>
-<dd><p>Defines how many epochs (discrete time steps) a month is represented with.</p>
-<p>With the default value of 21600 each epoch would represent two minutes. See
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.__assign_disk_error_chance__()</span></code>.</p>
+<dd><p>Defines how many epochs (discrete time steps) a month is represented with.
+With the default value of 21600 each epoch would represent two minutes. See
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.__assign_disk_error_chance__" title="app.domain.cluster_groups.Cluster.__assign_disk_error_chance__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__assign_disk_error_chance__()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -238,13 +245,8 @@ stored.</p>
 <dd><p>Defines the raw size of each file block before it’s wrapped in a
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileBlockData</span></code></a> instance
 object.</p>
-<blockquote>
-<div><dl class="simple">
-<dt>Examples:</dt><dd><p>32KB = 32768B; 128KB = 131072B; 512KB = 524288B; 1MB = 1048576B;
-20MB = 20971520B.</p>
-</dd>
-</dl>
-</div></blockquote>
+<p>Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
+1MB = 1048576B; 20MB = 20971520B }.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -293,23 +295,25 @@ working threads. For example:</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<dl class="simple">
-<dt>For the simulation to run without errors you must ensure that:</dt><dd><ol class="arabic simple">
-<li><p>The specified simulation files exist in         <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SIMULATION_ROOT</span></code></a>.</p></li>
-<li><p>Any file used by the simulation, e.g., a picture or a .pptx         document is accessible in         <a class="reference internal" href="#app.environment_settings.SHARED_ROOT" title="app.environment_settings.SHARED_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SHARED_ROOT</span></code></a>.</p></li>
-<li><p>An output file simdirectory exists with default path being:         <a class="reference internal" href="#app.environment_settings.OUTFILE_ROOT" title="app.environment_settings.OUTFILE_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.OUTFILE_ROOT</span></code></a>.</p></li>
+<p>For the simulation to run without errors you must ensure that:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>The specified simulation files exist in         <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">SIMULATION_ROOT</span></code></a>.</p></li>
+<li><p>Any file used by the simulation, e.g., a picture or a .pptx         document is accessible in         <a class="reference internal" href="#app.environment_settings.SHARED_ROOT" title="app.environment_settings.SHARED_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">SHARED_ROOT</span></code></a>.</p></li>
+<li><p>An output file simdirectory exists with default path being:         <a class="reference internal" href="#app.environment_settings.OUTFILE_ROOT" title="app.environment_settings.OUTFILE_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">OUTFILE_ROOT</span></code></a>.</p></li>
 </ol>
-</dd>
-</dl>
+</div></blockquote>
 </div>
 <dl class="py function">
-<dt id="app.hive_simulation.__can_exec_simfile">
-<code class="sig-name descname">__can_exec_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__can_exec_simfile"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Verifies if input simulation file name exists in
-<a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.SIMULATION_ROOT</span></code></a>.</p>
+<dt id="app.hive_simulation.__can_exec_simfile__">
+<code class="sig-name descname">__can_exec_simfile__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__can_exec_simfile__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Asserts if simulation can proceed with user specified file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sname</strong> (<em>str</em>) – </p>
+<dd class="field-odd"><p><strong>sname</strong> (<em>str</em>) – The name of the simulation file, including extension,
+whose existence inside
+<a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">SIMULATION_ROOT</span></code></a> will be
+checked.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -318,9 +322,10 @@ working threads. For example:</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="app.hive_simulation.__makedirs">
-<code class="sig-name descname">__makedirs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__makedirs"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Creates required simulation working directories if they do not exist.</p>
+<dt id="app.hive_simulation.__makedirs__">
+<code class="sig-name descname">__makedirs__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__makedirs__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper method that reates required simulation working directories if
+they do not exist.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None</p>
@@ -329,54 +334,64 @@ working threads. For example:</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="app.hive_simulation.__parallel_main">
-<code class="sig-name descname">__parallel_main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threads_count</span></em>, <em class="sig-param"><span class="n">sdir</span></em>, <em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">iters</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__parallel_main"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Helper method that initializes a multi-threaded simulation.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>threads_count</strong> (<em>int</em>) – </p></li>
-<li><p><strong>sdir</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>sname</strong> (<em>str</em>) – </p></li>
-<li><p><strong>iters</strong> (<em>int</em>) – </p></li>
-<li><p><strong>epochs</strong> (<em>int</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="app.hive_simulation.__single_main">
-<code class="sig-name descname">__single_main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sdir</span></em>, <em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">iters</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__single_main"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Helper function that initializes a single-threaded simulation.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sdir</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>sname</strong> (<em>str</em>) – </p></li>
-<li><p><strong>iters</strong> (<em>int</em>) – </p></li>
-<li><p><strong>epochs</strong> (<em>int</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="app.hive_simulation.__start_simulation">
-<code class="sig-name descname">__start_simulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__start_simulation"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Executes one instance of the simulation</p>
+<dt id="app.hive_simulation.__start_simulation__">
+<code class="sig-name descname">__start_simulation__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#__start_simulation__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper method that orders execution of one simulation instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sname</strong> (<em>str</em>) – The name of the simulation file to be executed.</p></li>
 <li><p><strong>sid</strong> (<em>int</em>) – A sequence number that identifies the simulation execution instance.</p></li>
 <li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps the simulation lasts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.hive_simulation._parallel_main">
+<code class="sig-name descname">_parallel_main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">threads_count</span></em>, <em class="sig-param"><span class="n">sdir</span></em>, <em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">iters</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#_parallel_main"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper method that initializes a multi-threaded simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>threads_count</strong> (<em>int</em>) – Number of worker threads that will consume jobs from the Task Pool.</p></li>
+<li><p><strong>sdir</strong> (<em>bool</em>) – Indicates whether or not the program will proceed by executing
+all simulations files inside
+<a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">SIMULATION_ROOT</span></code></a> folder or
+if will run with the specified file <code class="docutils literal notranslate"><span class="pre">sname</span></code>.</p></li>
+<li><p><strong>sname</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the simulation file to be executed or <code class="docutils literal notranslate"><span class="pre">None</span></code> if
+<code class="docutils literal notranslate"><span class="pre">sdir</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – How many times each simulation file is executed.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – Number of discrete time steps (epochs) each executed simulation
+lasts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.hive_simulation._single_main">
+<code class="sig-name descname">_single_main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sdir</span></em>, <em class="sig-param"><span class="n">sname</span></em>, <em class="sig-param"><span class="n">iters</span></em>, <em class="sig-param"><span class="n">epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#_single_main"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper function that initializes a single-threaded simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sdir</strong> (<em>bool</em>) – Indicates whether or not the program will proceed by executing
+all simulations files inside
+<a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">SIMULATION_ROOT</span></code></a> folder or
+if will run with the specified file <code class="docutils literal notranslate"><span class="pre">sname</span></code>.</p></li>
+<li><p><strong>sname</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – The name of the simulation file to be executed or <code class="docutils literal notranslate"><span class="pre">None</span></code> if
+<code class="docutils literal notranslate"><span class="pre">sdir</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><strong>iters</strong> (<em>int</em>) – How many times each simulation file is executed.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – Number of discrete time steps (epochs) each executed simulation
+lasts.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -399,7 +414,7 @@ single thread).</p></li>
 that exist in <code class="xref py py-const docutils literal notranslate"><span class="pre">environment_settings.SIMULATION_ROOT</span></code> or
 if he wishes to run one single simulation file, which must be
 explicitly specified in <cite>sname</cite>.</p></li>
-<li><p><strong>sname</strong> (<em>str</em>) – When <cite>sdir</cite> is set to False, <cite>sname</cite> needs to be specified as a
+<li><p><strong>sname</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – When <cite>sdir</cite> is set to False, <cite>sname</cite> needs to be specified as a
 non blank string containing the name of the simulation file to
 be executed. The named file must exist in
 <code class="xref py py-const docutils literal notranslate"><span class="pre">environment_settings.SIMULATION_ROOT</span></code>.</p></li>
