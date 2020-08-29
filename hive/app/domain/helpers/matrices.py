@@ -12,6 +12,7 @@ from typing import Tuple, Optional
 import cvxpy as cvx
 import numpy as np
 from matlab.engine import EngineError
+from mosek import MosekException
 from scipy.sparse.csgraph import connected_components
 
 from domain.helpers.exceptions import *
@@ -225,7 +226,16 @@ def _adjency_matrix_sdp_optimization(
     # Formulate and Solve Problem
     objective = cvx.Minimize(t)
     problem = cvx.Problem(objective, constraints)
-    problem.solve(solver=cvx.MOSEK)
+
+    try:
+        # try using Mosek before any other solver for SDP problem solving.
+        if cvx.MOSEK in cvx.installed_solvers():
+            problem.solve(solver=cvx.MOSEK)
+        else:
+            problem.solve()
+    except MosekException:
+        # catches invalid MosekException invalid license.
+        problem.solve()
 
     return problem, a_opt
 
