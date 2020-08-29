@@ -57,8 +57,11 @@ class MatlabEngineContainer:
         """
         if MatlabEngineContainer._instance is None:
             print("Loading matlab engine... this can take a while.")
-            self.eng = matlab.engine.start_matlab()
-            self.eng.cd(MATLAB_DIR)
+            try:
+                self.eng = matlab.engine.start_matlab()
+                self.eng.cd(MATLAB_DIR)
+            except matlab.engine.EngineError:
+                self.eng = None
             MatlabEngineContainer._instance = self
         else:
             raise RuntimeError("MatlabEngineContainer is a Singleton. Use "
