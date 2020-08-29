@@ -196,6 +196,7 @@ def main(threads_count: int,
             The number of discrete time steps each iteration of each instance
             of a simulation lasts.
     """
+    # Creates a MatlabEngineContainer before any thread starts working.
     MatlabEngineContainer.get_instance()
 
     if threads_count != 0:
