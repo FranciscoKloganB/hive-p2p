@@ -170,7 +170,9 @@ def new_mgo_transition_matrix(
             return t, get_mixing_rate(t)
         else:
             return None, float('inf')
-    except EngineError:
+    except (EngineError, AttributeError):
+        # EngineError deals with invalid license or unfeasible problems,
+        # AttributeError deals MatlabEngineContainer.eng with None value.
         return None, float('inf')
 
 
