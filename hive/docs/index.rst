@@ -35,8 +35,7 @@ research by allowing developers to prototype P2P networks based on swarm
 guidance behaviors quickly. The simulator is written in Python_ (version 3.7.7),
 which offers users easy access to powerful scientific libraries such as NumPy_,
 SciPy_, and Pandas_, which are not readily available in languages like Java_
-or CSharp_ and as a result of some of the best or most well-known simulators out
-there.
+and as a result of some of the best or most well-known simulators out there.
 
 |pic1| |pic2|
 
@@ -46,9 +45,9 @@ there.
 .. |pic2| image:: _static/logos/isr-logo.png
    :width: 45%
 
-.. _IST: `Instituto Superior Técnico <https://tecnico.ulisboa.pt/en/>`
+.. _IST: https://tecnico.ulisboa.pt/en/
 
-.. _ISR: `Lisbon's Institute for Systems and Robotics <https://welcome.isr.tecnico.ulisboa.pt/>`
+.. _ISR: https://welcome.isr.tecnico.ulisboa.pt/
 
 .. _Python: http://www.python.org/
 
@@ -59,6 +58,3 @@ there.
 .. _Pandas: https://pandas.pydata.org/
 
 .. _Java: https://www.oracle.com/java/technologies/javase-jdk14-downloads.html/
-
-.. _CSharp: `C# <https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/>`
-

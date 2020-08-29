@@ -122,6 +122,7 @@
 <span class="kn">import</span> <span class="nn">cvxpy</span> <span class="k">as</span> <span class="nn">cvx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">matlab.engine</span> <span class="kn">import</span> <span class="n">EngineError</span>
+<span class="kn">from</span> <span class="nn">mosek</span> <span class="kn">import</span> <span class="n">MosekException</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="kn">import</span> <span class="n">connected_components</span>
 
 <span class="kn">from</span> <span class="nn">domain.helpers.exceptions</span> <span class="kn">import</span> <span class="o">*</span>
@@ -279,7 +280,9 @@
             <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">get_mixing_rate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">EngineError</span><span class="p">:</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">EngineError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="c1"># EngineError deals with invalid license or unfeasible problems,</span>
+        <span class="c1"># AttributeError deals MatlabEngineContainer.eng with None value.</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span></div>
 
 
@@ -335,7 +338,16 @@
     <span class="c1"># Formulate and Solve Problem</span>
     <span class="n">objective</span> <span class="o">=</span> <span class="n">cvx</span><span class="o">.</span><span class="n">Minimize</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
     <span class="n">problem</span> <span class="o">=</span> <span class="n">cvx</span><span class="o">.</span><span class="n">Problem</span><span class="p">(</span><span class="n">objective</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
-    <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="n">cvx</span><span class="o">.</span><span class="n">MOSEK</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># try using Mosek before any other solver for SDP problem solving.</span>
+        <span class="k">if</span> <span class="n">cvx</span><span class="o">.</span><span class="n">MOSEK</span> <span class="ow">in</span> <span class="n">cvx</span><span class="o">.</span><span class="n">installed_solvers</span><span class="p">():</span>
+            <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="n">cvx</span><span class="o">.</span><span class="n">MOSEK</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">MosekException</span><span class="p">:</span>
+        <span class="c1"># catches invalid MosekException invalid license.</span>
+        <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">problem</span><span class="p">,</span> <span class="n">a_opt</span></div>
 

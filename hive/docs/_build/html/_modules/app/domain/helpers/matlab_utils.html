@@ -167,8 +167,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading matlab engine... this can take a while.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">start_matlab</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">eng</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">MATLAB_DIR</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">start_matlab</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">MATLAB_DIR</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">EngineError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;MatlabEngineContainer is a Singleton. Use &quot;</span>

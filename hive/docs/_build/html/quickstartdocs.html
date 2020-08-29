@@ -65,7 +65,9 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#technology">Technology</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installation-part-i">Installation - Part I</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installation-part-ii">Installation - Part II</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disabling-licensed-components">Disabling Licensed Components</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
@@ -122,22 +124,22 @@ but we do not guarantee the simulator will work under such conditions.
 Any version launched before 3.7.x will not run this project due to retro
 compatibility errors. We recommend using an IDE such as PyCharm or equivalent
 for easier inspection, usage, and setups.</p>
-<div class="section" id="installation">
-<h3>Installation</h3>
+<div class="section" id="installation-part-i">
+<h3>Installation - Part I</h3>
 <ol class="arabic simple">
-<li><p>Download and install Python 3.7.7 if you do not have it yet:</p></li>
+<li><p>Download and install Python 3.7.x or higher:</p></li>
 </ol>
 <div class="line-block">
 <div class="line">- <a class="reference external" href="https://www.python.org/downloads/release/python-377/">https://www.python.org/downloads/release/python-377/</a></div>
 </div>
 <ol class="arabic simple" start="2">
-<li><p>Download (clone) our repository at:</p></li>
+<li><p>Clone our repository at:</p></li>
 </ol>
 <div class="line-block">
 <div class="line">- <a class="reference external" href="https://github.com/FranciscoKloganB/hive-msc-thesis">https://github.com/FranciscoKloganB/hive-msc-thesis</a></div>
 </div>
 <ol class="arabic simple" start="3">
-<li><p>We recommended using JetBrains’ IDEs, but this is not necessary:</p></li>
+<li><p>We recommended using JetBrains’ IDEs, but you can skip this step:</p></li>
 </ol>
 <div class="line-block">
 <div class="line">- <a class="reference external" href="https://www.jetbrains.com/pycharm/download">https://www.jetbrains.com/pycharm/download</a></div>
@@ -158,6 +160,55 @@ command:</p>
 <div class="line-block">
 <div class="line">- <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code></div>
 </div>
+<p>The previous steps complete the setup of your Hives project. If you have or
+can obtain licenses for <a class="reference external" href="https://www.mosek.com/products/academic-licenses/">Mosek</a> or <a class="reference external" href="https://https://www.mathworks.com/products/matlab.html">MatLab</a>, read <a class="reference internal" href="#installation-part-ii">Installation - Part II</a>,
+otherwise read <a class="reference internal" href="#disabling-licensed-components">Disabling Licensed Components</a>.</p>
+</div>
+<div class="section" id="installation-part-ii">
+<h3>Installation - Part II</h3>
+<p>Throughout the development of the project, convex optimization problems had to
+be solved.</p>
+<p>We used the <a class="reference external" href="https://www.cvxpy.org/">CVXPY</a> package to tackle that issue; unfortunately, the
+solvers available to <a class="reference external" href="https://www.python.org/">Python</a> are few and not very powerful, specially when it
+comes to open-source ones. For semi-definite programming problems with utilized
+<a class="reference external" href="https://www.mosek.com/products/academic-licenses/">Mosek</a>. We let CVXPY select the solver for global optimization problems, from
+among the pool of installed solvers. We also use <a class="reference external" href="https://yalmip.github.io/solver/bmibnb/">BMIBNB</a> solver from <a class="reference external" href="https://https://www.mathworks.com/products/matlab.html">MatLab</a>
+(through the <a class="reference external" href="https://www.mathworks.com/help/matlab/matlab-engine-for-python.html">MatLabEngine</a>) using <a class="reference external" href="https://yalmip.github.io/">YALMIP</a> because the latter supports
+non-convex constraints.</p>
+<p>To use MOSEK along with CVXPY follow the installation instructions linked below:</p>
+<ol class="arabic simple">
+<li><p>Mosek licensing quick start.</p></li>
+</ol>
+<div class="line-block">
+<div class="line">- <a class="reference external" href="https://docs.mosek.com/9.2/licensing/quickstart.html">https://docs.mosek.com/9.2/licensing/quickstart.html</a></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Installing Mosek on your python environment.</p></li>
+</ol>
+<div class="line-block">
+<div class="line">- <a class="reference external" href="https://docs.mosek.com/9.2/pythonapi/install-interface.html">https://docs.mosek.com/9.2/pythonapi/install-interface.html</a></div>
+</div>
+<p>For the MatLab Engine to work you need to have
+<a class="reference external" href="https://www.mathworks.com/products/new_products/latest_features.html">MatLab R2020a</a>
+or higher installed on your machine with a valid license. After you installing
+and validating the software, you should
+<a class="reference external" href="https://yalmip.github.io/tutorial/installation/">install YALMIP</a>. BMIBNB
+is bundled with YALMIP by default and no further action is required.</p>
+</div>
+<div class="section" id="disabling-licensed-components">
+<h3>Disabling Licensed Components</h3>
+<p>As explained in the previous session, some licensed components were needed
+during the development of our research, which we bundled with the simulator
+source code for demonstrative purposes. Concerning <a class="reference external" href="https://www.mosek.com/products/academic-licenses/">Mosek</a>, you do not need to
+take any action. Any modules’ functions that use the
+<a class="reference external" href="https://docs.mosek.com/9.2/pythonapi/index.html">Mosek Optimizer API</a>
+through <a class="reference external" href="https://www.cvxpy.org/">CVXPY</a> check if
+the package is installed and properly licensed before using it in favor of
+other open-source solvers. Concerning <a class="reference external" href="https://https://www.mathworks.com/products/matlab.html">MatLab</a> you should not need any further
+action either - our modules deal both with invalid licenses and Pythons’
+<code class="docutils literal notranslate"><span class="pre">AttributeError</span></code> transparently when invoking MatLab Engine methods as a result
+of our singleton, thread-safe, implementation of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">MatLabEngineContainer</span></code>.</p>
 </div>
 </div>
 <div class="section" id="usage">
