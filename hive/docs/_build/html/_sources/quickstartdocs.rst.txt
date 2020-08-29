@@ -113,13 +113,13 @@ during the development of our research, which we bundled with the simulator
 source code for demonstrative purposes. Concerning Mosek_, you do not need to
 take any action. Any modules' functions that use the
 `Mosek Optimizer API <https://docs.mosek.com/9.2/pythonapi/index.html>`_
-through CVXPY_ check if
-the package is installed and properly licensed before using it in favor of
-other open-source solvers. Concerning MatLab_ you should not need any further
-action either - our modules deal both with invalid licenses and Pythons'
-``AttributeError`` transparently when invoking MatLab Engine methods as a result
-of our singleton, thread-safe, implementation of
-:py:class:`~app.domain.helpers.matlab_utils.MatLabEngineContainer`.
+through CVXPY_ check if the package is installed and properly licensed before
+using it in favor of other open-source solvers. Concerning MatLab_ you should
+not need any further action either - our modules deal both with invalid
+licenses and Pythons'
+`AttributeError <https://docs.python.org/3.7/library/exceptions.html#AttributeError>`_
+transparently when invoking MatLabEngine_ methods as a result of our singleton,
+thread-safe, implementation of :py:class:`~app.domain.helpers.matlab_utils.MatlabEngineContainer`.
 
 Usage
 -----

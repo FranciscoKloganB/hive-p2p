@@ -202,13 +202,13 @@ during the development of our research, which we bundled with the simulator
 source code for demonstrative purposes. Concerning <a class="reference external" href="https://www.mosek.com/products/academic-licenses/">Mosek</a>, you do not need to
 take any action. Any modules’ functions that use the
 <a class="reference external" href="https://docs.mosek.com/9.2/pythonapi/index.html">Mosek Optimizer API</a>
-through <a class="reference external" href="https://www.cvxpy.org/">CVXPY</a> check if
-the package is installed and properly licensed before using it in favor of
-other open-source solvers. Concerning <a class="reference external" href="https://https://www.mathworks.com/products/matlab.html">MatLab</a> you should not need any further
-action either - our modules deal both with invalid licenses and Pythons’
-<code class="docutils literal notranslate"><span class="pre">AttributeError</span></code> transparently when invoking MatLab Engine methods as a result
-of our singleton, thread-safe, implementation of
-<code class="xref py py-class docutils literal notranslate"><span class="pre">MatLabEngineContainer</span></code>.</p>
+through <a class="reference external" href="https://www.cvxpy.org/">CVXPY</a> check if the package is installed and properly licensed before
+using it in favor of other open-source solvers. Concerning <a class="reference external" href="https://https://www.mathworks.com/products/matlab.html">MatLab</a> you should
+not need any further action either - our modules deal both with invalid
+licenses and Pythons’
+<a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#AttributeError">AttributeError</a>
+transparently when invoking <a class="reference external" href="https://www.mathworks.com/help/matlab/matlab-engine-for-python.html">MatLabEngine</a> methods as a result of our singleton,
+thread-safe, implementation of <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatlabEngineContainer</span></code></a>.</p>
 </div>
 </div>
 <div class="section" id="usage">
