@@ -121,15 +121,15 @@ class Master:
             fspreads: Dict[str, str] = {}
             fblocks: Dict[str, th.ReplicasDict] = {}
 
-            self.__create_network_nodes__(simfile_json, node_class)
+            self._create_network_nodes(simfile_json, node_class)
 
             d: _PersistentingDict = simfile_json['persisting']
             for fname in d:
                 spread_strategy = d[fname]['spread']
                 fspreads[fname] = spread_strategy
                 size = d[fname]['cluster_size']
-                cluster = self.__new_cluster_group__(cluster_class, size, fname)
-                fblocks[fname] = self.__split_files(fname, cluster, READ_SIZE)
+                cluster = self._new_cluster_group(cluster_class, size, fname)
+                fblocks[fname] = self._split_files(fname, cluster, READ_SIZE)
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
@@ -137,7 +137,7 @@ class Master:
                 file_blocks = fblocks[cluster.file.name]
                 cluster.spread_files(file_blocks, spread_strategy)
 
-    def __create_network_nodes__(
+    def _create_network_nodes(
             self, json: Dict[str, Any], node_class: str) -> None:
         """Helper method that instantiates all
         :py:class:`Network Nodes <app.domain.network_nodes.Node>` that are
@@ -150,10 +150,10 @@ class Master:
                 The type of network node to create.
         """
         for nid, nuptime in json['nodes_uptime'].items():
-            node = self.__new_network_node__(node_class, nid, nuptime)
+            node = self._new_network_node(node_class, nid, nuptime)
             self.network_nodes[nid] = node
 
-    def __split_files(
+    def _split_files(
             self, fname: str, cluster: th.ClusterType, bsize: int
     ) -> th.ReplicasDict:
         """Helper method that splits the files into multiple blocks to be
@@ -238,7 +238,7 @@ class Master:
     # endregion
 
     # region Helpers
-    def __new_cluster_group__(
+    def _new_cluster_group(
             self, cluster_class: str, size: int, fname: str
     ) -> th.ClusterType:
         """Helper method that initializes a new Cluster group.
@@ -273,7 +273,7 @@ class Master:
         self.cluster_groups[cluster.id] = cluster
         return cluster
 
-    def __new_network_node__(
+    def _new_network_node(
             self, node_class: str, nid: str, node_uptime: str) -> th.NodeType:
         """Helper method that initializes a new Node.
 
@@ -337,7 +337,7 @@ class HDFSMaster(Master):
         """Opens and processes the simulation filed referenced in `path`.
 
         Overrides:
-            py:meth:`~app.domain.master_servers.Master._process_simfile`.
+            :py:meth:`~app.domain.master_servers.Master._process_simfile`.
 
             The method is exactly the same except for one instruction. The
             :py:meth:`~app.domain.master_servers.Master._split_files` is
@@ -371,15 +371,15 @@ class HDFSMaster(Master):
             fspreads: Dict[str, str] = {}
             fblocks: Dict[str, th.ReplicasDict] = {}
 
-            self.__create_network_nodes__(simfile_json, node_class)
+            self._create_network_nodes(simfile_json, node_class)
 
             d: _PersistentingDict = simfile_json['persisting']
             for fname in d:
                 spread_strategy = d[fname]['spread']
                 fspreads[fname] = spread_strategy
                 size = d[fname]['cluster_size']
-                cluster = self.__new_cluster_group__(cluster_class, size, fname)
-                fblocks[fname] = self.__split_files(fname, cluster, 1048576)
+                cluster = self._new_cluster_group(cluster_class, size, fname)
+                fblocks[fname] = self._split_files(fname, cluster, 1048576)
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
