@@ -1,5 +1,8 @@
 """This module contains domain specific classes that coordinate all
-:py:mod:`domain.cluster_groups` of a simulation instance."""
+:py:mod:`app.domain.cluster_groups` of a simulation instance. These could
+simulate centralized authentication servers, file localization or
+file metadata servers or a bank of currently online and offline
+:py:mod:`storage nodes <app.domain.network_nodes>`."""
 from __future__ import annotations
 
 import json
@@ -83,10 +86,10 @@ class Master:
         self.network_nodes: th.NodeDict = {}
 
         simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
-        self.__process_simfile__(simfile_path, cluster_class, node_class)
+        self._process_simfile(simfile_path, cluster_class, node_class)
 
     # region Simulation setup
-    def __process_simfile__(
+    def _process_simfile(
             self, path: str, cluster_class: str, node_class: str) -> None:
         """Opens and processes the simulation filed referenced in `path`.
 
@@ -126,7 +129,7 @@ class Master:
                 fspreads[fname] = spread_strategy
                 size = d[fname]['cluster_size']
                 cluster = self.__new_cluster_group__(cluster_class, size, fname)
-                fblocks[fname] = self.__split_files__(fname, cluster, READ_SIZE)
+                fblocks[fname] = self.__split_files(fname, cluster, READ_SIZE)
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
@@ -150,7 +153,7 @@ class Master:
             node = self.__new_network_node__(node_class, nid, nuptime)
             self.network_nodes[nid] = node
 
-    def __split_files__(
+    def __split_files(
             self, fname: str, cluster: th.ClusterType, bsize: int
     ) -> th.ReplicasDict:
         """Helper method that splits the files into multiple blocks to be
@@ -329,15 +332,17 @@ class HDFSMaster(Master):
         super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
 
     # region Simulation setup
-    def __process_simfile__(
+    def _process_simfile(
             self, path: str, cluster_class: str, node_class: str) -> None:
         """Opens and processes the simulation filed referenced in `path`.
 
         Overrides:
-            py:mod:`app.domain.master_servers.Master.__process_simfile__`. The
-            method is exactly the same except for one instruction. The
-            :py:mod:`app.domain.master_servers.Master.__split_files__` is
-            invoked with fixed `bsize` = 1MB. The reason for this is twofold::
+            py:meth:`~app.domain.master_servers.Master._process_simfile`.
+
+            The method is exactly the same except for one instruction. The
+            :py:meth:`~app.domain.master_servers.Master._split_files` is
+            invoked with fixed `bsize` = 1MB. The reason for this is
+            two-fold:
 
                 - The default and, thus recommended, block/chunk size for the
                 hadoop distributed file system is 128MB. The system is not
@@ -345,6 +350,7 @@ class HDFSMaster(Master):
                 requires many file blocks for stochastic swarm guidance to
                 work, hence being more effective with small block sizes. By
                 default Hives runs with 128KB blocks.
+
                 - Hadoop limits the minimum block size to be 1MB,
                 `dfs.namenode.fs-limits.min-block-size
                 <https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size>`.
@@ -352,10 +358,12 @@ class HDFSMaster(Master):
                 as that is the closest we would get to our Hive's default
                 block size in the real wourld
 
-            The other difference, is that spread strategy is ignored as we
-            are not interested in knowing if the way the files are initially
-            spread affect the time the time it takes for hives to achieve a
-            steady state distribution, since in HDFS file block replicas are
+            The other difference is that the spread strategy is ignored.
+            We are not interested in knowing if the way the files are
+            initially spread affects the time it takes for hives to
+            achieve a steady-state distribution since in HDFS
+            :py:class:`file block replicas
+            <app.domain.helpers.smart_dataclasses.FileBlockData>` are
             stationary on data nodes until they die.
         """
         with open(path) as input_file:
@@ -372,7 +380,7 @@ class HDFSMaster(Master):
                 fspreads[fname] = spread_strategy
                 size = d[fname]['cluster_size']
                 cluster = self.__new_cluster_group__(cluster_class, size, fname)
-                fblocks[fname] = self.__split_files__(fname, cluster, 1048576)
+                fblocks[fname] = self.__split_files(fname, cluster, 1048576)
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():

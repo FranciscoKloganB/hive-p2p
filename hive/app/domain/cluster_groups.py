@@ -1,5 +1,5 @@
 """This module contains domain specific classes that represent groups of
-storage nodes."""
+:py:mod:`storage nodes <app.domain.network_nodes>`."""
 
 from __future__ import annotations
 

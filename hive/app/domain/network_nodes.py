@@ -1,6 +1,7 @@
 """This module contains domain specific classes that represent network nodes
-responsible for the storage of file blocks. These could be reliable servers
-or P2P nodes."""
+responsible for the storage of :py:class:`file blocks
+<app.domain.helpers.smart_dataclasses.FileBlockData>. These could be
+reliable servers or P2P nodes."""
 from __future__ import annotations
 
 import math
