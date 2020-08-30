@@ -145,7 +145,7 @@
 <div class="section" id="module-app.domain.cluster_groups">
 <span id="app-domain-cluster-groups"></span><h2>app.domain.cluster_groups</h2>
 <p>This module contains domain specific classes that represent groups of
-storage nodes.</p>
+<a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">storage</span> <span class="pre">nodes</span></code></a>.</p>
 <dl class="py class">
 <dt id="app.domain.cluster_groups.Cluster">
 <em class="property">class </em><code class="sig-name descname">Cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster"><span class="viewcode-link">[source]</span></a></dt>
@@ -1428,7 +1428,10 @@ See <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt.ge
 <div class="section" id="module-app.domain.master_servers">
 <span id="app-domain-master-servers"></span><h2>app.domain.master_servers</h2>
 <p>This module contains domain specific classes that coordinate all
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">domain.cluster_groups</span></code> of a simulation instance.</p>
+<a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.cluster_groups</span></code></a> of a simulation instance. These could
+simulate centralized authentication servers, file localization or
+file metadata servers or a bank of currently online and offline
+<a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">storage</span> <span class="pre">nodes</span></code></a>.</p>
 <dl class="py class">
 <dt id="app.domain.master_servers.HDFSMaster">
 <em class="property">class </em><code class="sig-name descname">HDFSMaster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster"><span class="viewcode-link">[source]</span></a></dt>
@@ -1458,32 +1461,26 @@ instances through reflection. See <code class="xref py py-mod docutils literal n
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.master_servers.HDFSMaster.__process_simfile__">
-<code class="sig-name descname">__process_simfile__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster.__process_simfile__"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.master_servers.HDFSMaster._process_simfile">
+<code class="sig-name descname">_process_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster._process_simfile"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Opens and processes the simulation filed referenced in <cite>path</cite>.</p>
 <dl>
-<dt>Overrides:</dt><dd><p>py:mod:<cite>app.domain.master_servers.Master.__process_simfile__</cite>. The
-method is exactly the same except for one instruction. The
-<a class="reference internal" href="#app.domain.master_servers.Master.__split_files__" title="app.domain.master_servers.Master.__split_files__"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.master_servers.Master.__split_files__</span></code></a> is
-invoked with fixed <cite>bsize</cite> = 1MB. The reason for this is twofold:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>- The default and, thus recommended, block/chunk size for the
-hadoop distributed file system is 128MB. The system is not
-designed to perform well with small file blocks, but Hives
-requires many file blocks for stochastic swarm guidance to
-work, hence being more effective with small block sizes. By
-default Hives runs with 128KB blocks.
-- Hadoop limits the minimum block size to be 1MB,
-`dfs.namenode.fs-limits.min-block-size
-&lt;https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size&gt;`.
-For this reason, we make HDFSMaster split files into 1MB chunks,
-as that is the closest we would get to our Hive&#39;s default
-block size in the real wourld
-</pre></div>
-</div>
-<p>The other difference, is that spread strategy is ignored as we
-are not interested in knowing if the way the files are initially
-spread affect the time the time it takes for hives to achieve a
-steady state distribution, since in HDFS file block replicas are
+<dt>Overrides:</dt><dd><p>py:meth:<cite>~app.domain.master_servers.Master._process_simfile</cite>.</p>
+<p>The method is exactly the same except for one instruction. The
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">_split_files()</span></code> is
+invoked with fixed <cite>bsize</cite> = 1MB. The reason for this is
+two-fold:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The default and, thus recommended, block size for the                 hadoop distributed file system is 128MB. The system is not                 designed to perform well with small file blocks, but Hives                 requires many file blocks for stochastic swarm guidance to                 work, hence being more effective with small block sizes. By                 default Hives runs with 128KB blocks.</p></li>
+<li><p>Hadoop limits the minimum block size to be 1MB,                 <a class="reference external" href="https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size">dfs.namenode.fs-limits.min-block-size</a>.                 For this reason, we make HDFSMaster split files into 1MB                 chunks, as that is the closest we would get to our Hive’s                 default block size in the real world.</p></li>
+</ul>
+</div></blockquote>
+<p>The other difference is that the spread strategy is ignored.
+We are not interested in knowing if the way the files are
+initially spread affects the time it takes for hives to
+achieve a steady-state distribution since in HDFS
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replicas</span></code></a> are
 stationary on data nodes until they die.</p>
 </dd>
 </dl>
@@ -1691,8 +1688,30 @@ uptime of the network node.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.master_servers.Master.__process_simfile__">
-<code class="sig-name descname">__process_simfile__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__process_simfile__"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.master_servers.Master.__split_files">
+<code class="sig-name descname">__split_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">bsize</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Helper method that splits the files into multiple blocks to be
+persisted in a <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_group.Cluster</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – The name of the file located in
+<code class="xref py py-const docutils literal notranslate"><span class="pre">environment_settings.SHARED_ROOT</span></code> folder to be
+read and splitted.</p></li>
+<li><p><strong>bsize</strong> (<em>int</em>) – The maximum amount of bytes each file block can have.</p></li>
+<li><p><strong>cluster</strong> (<em>th.ClusterType</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>th.ReplicasDict</p>
+</dd>
+</dl>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.master_servers.Master._process_simfile">
+<code class="sig-name descname">_process_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master._process_simfile"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Opens and processes the simulation filed referenced in <cite>path</cite>.</p>
 <p>This method opens the file reads the json data inside it and combined
 with <code class="xref py py-mod docutils literal notranslate"><span class="pre">environment_settings</span></code>, sets up the class instances to
@@ -1715,28 +1734,6 @@ instances through reflection. See <code class="xref py py-mod docutils literal n
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="app.domain.master_servers.Master.__split_files__">
-<code class="sig-name descname">__split_files__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">bsize</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__split_files__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Helper method that splits the files into multiple blocks to be
-persisted in a <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_group.Cluster</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fname</strong> (<em>str</em>) – The name of the file located in
-<code class="xref py py-const docutils literal notranslate"><span class="pre">environment_settings.SHARED_ROOT</span></code> folder to be
-read and splitted.</p></li>
-<li><p><strong>bsize</strong> (<em>int</em>) – The maximum amount of bytes each file block can have.</p></li>
-<li><p><strong>cluster</strong> (<em>th.ClusterType</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>th.ReplicasDict</p>
-</dd>
-</dl>
-<p>Returns:</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1796,8 +1793,8 @@ i.e., this argument is a blacklist.</p></li>
 <div class="section" id="module-app.domain.network_nodes">
 <span id="app-domain-network-nodes"></span><h2>app.domain.network_nodes</h2>
 <p>This module contains domain specific classes that represent network nodes
-responsible for the storage of file blocks. These could be reliable servers
-or P2P nodes.</p>
+responsible for the storage of <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">blocks</span></code></a>. These could be
+reliable servers or P2P nodes.</p>
 <dl class="py class">
 <dt id="app.domain.network_nodes.HDFSNode">
 <em class="property">class </em><code class="sig-name descname">HDFSNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode"><span class="viewcode-link">[source]</span></a></dt>

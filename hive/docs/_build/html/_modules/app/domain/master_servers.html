@@ -109,7 +109,10 @@
                 
   <h1>Source code for app.domain.master_servers</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;This module contains domain specific classes that coordinate all</span>
-<span class="sd">:py:mod:`domain.cluster_groups` of a simulation instance.&quot;&quot;&quot;</span>
+<span class="sd">:py:mod:`app.domain.cluster_groups` of a simulation instance. These could</span>
+<span class="sd">simulate centralized authentication servers, file localization or</span>
+<span class="sd">file metadata servers or a bank of currently online and offline</span>
+<span class="sd">:py:mod:`storage nodes &lt;app.domain.network_nodes&gt;`.&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
@@ -193,10 +196,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">simfile_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">simfile_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__process_simfile__</span><span class="p">(</span><span class="n">simfile_path</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_simfile</span><span class="p">(</span><span class="n">simfile_path</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="Master.__process_simfile__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__process_simfile__">[docs]</a>    <span class="k">def</span> <span class="nf">__process_simfile__</span><span class="p">(</span>
+<div class="viewcode-block" id="Master._process_simfile"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master._process_simfile">[docs]</a>    <span class="k">def</span> <span class="nf">_process_simfile</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Opens and processes the simulation filed referenced in `path`.</span>
 
@@ -236,7 +239,7 @@
                 <span class="n">fspreads</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="n">spread_strategy</span>
                 <span class="n">size</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">fname</span><span class="p">][</span><span class="s1">&#39;cluster_size&#39;</span><span class="p">]</span>
                 <span class="n">cluster</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_cluster_group__</span><span class="p">(</span><span class="n">cluster_class</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-                <span class="n">fblocks</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__split_files__</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">READ_SIZE</span><span class="p">)</span>
+                <span class="n">fblocks</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__split_files</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">READ_SIZE</span><span class="p">)</span>
 
             <span class="c1"># Distribute files before starting simulation</span>
             <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
@@ -260,7 +263,7 @@
             <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_network_node__</span><span class="p">(</span><span class="n">node_class</span><span class="p">,</span> <span class="n">nid</span><span class="p">,</span> <span class="n">nuptime</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span></div>
 
-<div class="viewcode-block" id="Master.__split_files__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__split_files__">[docs]</a>    <span class="k">def</span> <span class="nf">__split_files__</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">__split_files</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">bsize</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Helper method that splits the files into multiple blocks to be</span>
@@ -288,7 +291,7 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">break</span>
             <span class="n">cluster</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parts_count</span> <span class="o">=</span> <span class="n">bid</span>
-            <span class="k">return</span> <span class="n">d</span></div>
+            <span class="k">return</span> <span class="n">d</span>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -439,33 +442,37 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="HDFSMaster.__process_simfile__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster.__process_simfile__">[docs]</a>    <span class="k">def</span> <span class="nf">__process_simfile__</span><span class="p">(</span>
+<div class="viewcode-block" id="HDFSMaster._process_simfile"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster._process_simfile">[docs]</a>    <span class="k">def</span> <span class="nf">_process_simfile</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Opens and processes the simulation filed referenced in `path`.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            py:mod:`app.domain.master_servers.Master.__process_simfile__`. The</span>
-<span class="sd">            method is exactly the same except for one instruction. The</span>
-<span class="sd">            :py:mod:`app.domain.master_servers.Master.__split_files__` is</span>
-<span class="sd">            invoked with fixed `bsize` = 1MB. The reason for this is twofold::</span>
+<span class="sd">            py:meth:`~app.domain.master_servers.Master._process_simfile`.</span>
 
-<span class="sd">                - The default and, thus recommended, block/chunk size for the</span>
-<span class="sd">                hadoop distributed file system is 128MB. The system is not</span>
-<span class="sd">                designed to perform well with small file blocks, but Hives</span>
-<span class="sd">                requires many file blocks for stochastic swarm guidance to</span>
-<span class="sd">                work, hence being more effective with small block sizes. By</span>
+<span class="sd">            The method is exactly the same except for one instruction. The</span>
+<span class="sd">            :py:meth:`~app.domain.master_servers.Master._split_files` is</span>
+<span class="sd">            invoked with fixed `bsize` = 1MB. The reason for this is</span>
+<span class="sd">            two-fold:</span>
+
+<span class="sd">                - The default and, thus recommended, block size for the \</span>
+<span class="sd">                hadoop distributed file system is 128MB. The system is not \</span>
+<span class="sd">                designed to perform well with small file blocks, but Hives \</span>
+<span class="sd">                requires many file blocks for stochastic swarm guidance to \</span>
+<span class="sd">                work, hence being more effective with small block sizes. By \</span>
 <span class="sd">                default Hives runs with 128KB blocks.</span>
-<span class="sd">                - Hadoop limits the minimum block size to be 1MB,</span>
-<span class="sd">                `dfs.namenode.fs-limits.min-block-size</span>
-<span class="sd">                &lt;https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size&gt;`.</span>
-<span class="sd">                For this reason, we make HDFSMaster split files into 1MB chunks,</span>
-<span class="sd">                as that is the closest we would get to our Hive&#39;s default</span>
-<span class="sd">                block size in the real wourld</span>
 
-<span class="sd">            The other difference, is that spread strategy is ignored as we</span>
-<span class="sd">            are not interested in knowing if the way the files are initially</span>
-<span class="sd">            spread affect the time the time it takes for hives to achieve a</span>
-<span class="sd">            steady state distribution, since in HDFS file block replicas are</span>
+<span class="sd">                - Hadoop limits the minimum block size to be 1MB, \</span>
+<span class="sd">                `dfs.namenode.fs-limits.min-block-size &lt;https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size&gt;`_. \</span>
+<span class="sd">                For this reason, we make HDFSMaster split files into 1MB \</span>
+<span class="sd">                chunks, as that is the closest we would get to our Hive&#39;s \</span>
+<span class="sd">                default block size in the real world.</span>
+
+<span class="sd">            The other difference is that the spread strategy is ignored.</span>
+<span class="sd">            We are not interested in knowing if the way the files are</span>
+<span class="sd">            initially spread affects the time it takes for hives to</span>
+<span class="sd">            achieve a steady-state distribution since in HDFS</span>
+<span class="sd">            :py:class:`file block replicas</span>
+<span class="sd">            &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` are</span>
 <span class="sd">            stationary on data nodes until they die.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">input_file</span><span class="p">:</span>
@@ -482,7 +489,7 @@
                 <span class="n">fspreads</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="n">spread_strategy</span>
                 <span class="n">size</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">fname</span><span class="p">][</span><span class="s1">&#39;cluster_size&#39;</span><span class="p">]</span>
                 <span class="n">cluster</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__new_cluster_group__</span><span class="p">(</span><span class="n">cluster_class</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-                <span class="n">fblocks</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__split_files__</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="mi">1048576</span><span class="p">)</span>
+                <span class="n">fblocks</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__split_files</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="mi">1048576</span><span class="p">)</span>
 
             <span class="c1"># Distribute files before starting simulation</span>
             <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>

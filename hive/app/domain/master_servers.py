@@ -344,19 +344,18 @@ class HDFSMaster(Master):
             invoked with fixed `bsize` = 1MB. The reason for this is
             two-fold:
 
-                - The default and, thus recommended, block/chunk size for the
-                hadoop distributed file system is 128MB. The system is not
-                designed to perform well with small file blocks, but Hives
-                requires many file blocks for stochastic swarm guidance to
-                work, hence being more effective with small block sizes. By
+                - The default and, thus recommended, block size for the \
+                hadoop distributed file system is 128MB. The system is not \
+                designed to perform well with small file blocks, but Hives \
+                requires many file blocks for stochastic swarm guidance to \
+                work, hence being more effective with small block sizes. By \
                 default Hives runs with 128KB blocks.
 
-                - Hadoop limits the minimum block size to be 1MB,
-                `dfs.namenode.fs-limits.min-block-size
-                <https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size>`.
-                For this reason, we make HDFSMaster split files into 1MB chunks,
-                as that is the closest we would get to our Hive's default
-                block size in the real wourld
+                - Hadoop limits the minimum block size to be 1MB, \
+                `dfs.namenode.fs-limits.min-block-size <https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size>`_. \
+                For this reason, we make HDFSMaster split files into 1MB \
+                chunks, as that is the closest we would get to our Hive's \
+                default block size in the real world.
 
             The other difference is that the spread strategy is ignored.
             We are not interested in knowing if the way the files are
