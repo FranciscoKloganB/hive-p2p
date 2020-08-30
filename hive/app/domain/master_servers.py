@@ -267,11 +267,11 @@ class Master:
         Args:
             cluster_class:
                 The name of the class used to instantiate cluster group
-                instances through reflection. See :py:mod:`Cluster Group
-                <domain.cluster_groups>`.
+                instances through reflection. See :py:mod:`cluster groups module
+                <app.domain.cluster_groups>`.
             size:
-                The :py:class:`Cluster's <app.domain.cluster_groups.Cluster>`
-                initial member size.
+                The :py:class:`cluster's <app.domain.cluster_groups.Cluster>`
+                initial memberhip size.
             fname:
                 The name of the fille being stored in the cluster.
 
@@ -301,16 +301,17 @@ class Master:
         Args:
             node_class:
                 The name of the class used to instantiate network node
-                instances through reflection. See :py:mod:`Network Node
-                <domain.network_nodes>`.
+                instances through reflection. See :py:mod:`network nodes module
+                <app.domain.network_nodes>`.
             nid:
-                An id that will uniquely identifies the network node.
+                An id that will uniquely identifies the
+                :py:class:`network node <app.domain.network_nodes.Node>`.
             node_uptime:
                 A float value in string representation that defines the
                 uptime of the network node.
 
         Returns:
-            The :py:class:`app.domain.network_nodes.Node` instance.
+            The :py:class:`~app.domain.network_nodes.Node` instance.
         """
         return class_name_to_obj(NETWORK_NODES, node_class, [nid, node_uptime])
     # endregion

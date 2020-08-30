@@ -377,11 +377,11 @@
 <span class="sd">        Args:</span>
 <span class="sd">            cluster_class:</span>
 <span class="sd">                The name of the class used to instantiate cluster group</span>
-<span class="sd">                instances through reflection. See :py:mod:`Cluster Group</span>
-<span class="sd">                &lt;domain.cluster_groups&gt;`.</span>
+<span class="sd">                instances through reflection. See :py:mod:`cluster groups module</span>
+<span class="sd">                &lt;app.domain.cluster_groups&gt;`.</span>
 <span class="sd">            size:</span>
-<span class="sd">                The :py:class:`Cluster&#39;s &lt;app.domain.cluster_groups.Cluster&gt;`</span>
-<span class="sd">                initial member size.</span>
+<span class="sd">                The :py:class:`cluster&#39;s &lt;app.domain.cluster_groups.Cluster&gt;`</span>
+<span class="sd">                initial memberhip size.</span>
 <span class="sd">            fname:</span>
 <span class="sd">                The name of the fille being stored in the cluster.</span>
 
@@ -411,16 +411,17 @@
 <span class="sd">        Args:</span>
 <span class="sd">            node_class:</span>
 <span class="sd">                The name of the class used to instantiate network node</span>
-<span class="sd">                instances through reflection. See :py:mod:`Network Node</span>
-<span class="sd">                &lt;domain.network_nodes&gt;`.</span>
+<span class="sd">                instances through reflection. See :py:mod:`network nodes module</span>
+<span class="sd">                &lt;app.domain.network_nodes&gt;`.</span>
 <span class="sd">            nid:</span>
-<span class="sd">                An id that will uniquely identifies the network node.</span>
+<span class="sd">                An id that will uniquely identifies the</span>
+<span class="sd">                :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">            node_uptime:</span>
 <span class="sd">                A float value in string representation that defines the</span>
 <span class="sd">                uptime of the network node.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The :py:class:`app.domain.network_nodes.Node` instance.</span>
+<span class="sd">            The :py:class:`~app.domain.network_nodes.Node` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">class_name_to_obj</span><span class="p">(</span><span class="n">NETWORK_NODES</span><span class="p">,</span> <span class="n">node_class</span><span class="p">,</span> <span class="p">[</span><span class="n">nid</span><span class="p">,</span> <span class="n">node_uptime</span><span class="p">])</span></div></div>
     <span class="c1"># endregion</span>
