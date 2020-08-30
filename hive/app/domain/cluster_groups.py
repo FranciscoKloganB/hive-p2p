@@ -723,16 +723,17 @@ class HiveCluster(Cluster):
         with a faster mixing rate.
 
         Args:
-            a:
+            a (:py:class:`~np:numpy.ndarray`)
                 An adjacency matrix that represents the network topology.
-            `v_`:
+            `v_` (:py:class:`~np:numpy.ndarray`):
                 A desired distribution vector that defines the returned
                 matrix steady state property.
 
         Returns:
-            A transition matrix that is likely to be a markov matrix whose
-            steady state is ``v_``, but is not yet validated. See
-            :py:meth:`_validate_transition_matrix`.
+            :py:class:`~np:numpy.ndarray`:
+                A transition matrix that is likely to be a markov matrix whose
+                steady state is ``v_``, but is not yet validated. See
+                :py:meth:`_validate_transition_matrix`.
         """
         results: List[Tuple[Optional[np.ndarray], float]] = [
             mm.new_mh_transition_matrix(a, v_),

@@ -833,16 +833,17 @@
 <span class="sd">        with a faster mixing rate.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            a:</span>
+<span class="sd">            a (:py:class:`~np:numpy.ndarray`)</span>
 <span class="sd">                An adjacency matrix that represents the network topology.</span>
-<span class="sd">            `v_`:</span>
+<span class="sd">            `v_` (:py:class:`~np:numpy.ndarray`):</span>
 <span class="sd">                A desired distribution vector that defines the returned</span>
 <span class="sd">                matrix steady state property.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A transition matrix that is likely to be a markov matrix whose</span>
-<span class="sd">            steady state is ``v_``, but is not yet validated. See</span>
-<span class="sd">            :py:meth:`_validate_transition_matrix`.</span>
+<span class="sd">            :py:class:`~np:numpy.ndarray`:</span>
+<span class="sd">                A transition matrix that is likely to be a markov matrix whose</span>
+<span class="sd">                steady state is ``v_``, but is not yet validated. See</span>
+<span class="sd">                :py:meth:`_validate_transition_matrix`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">mm</span><span class="o">.</span><span class="n">new_mh_transition_matrix</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_</span><span class="p">),</span>
