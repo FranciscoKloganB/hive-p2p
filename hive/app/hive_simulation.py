@@ -187,7 +187,7 @@ def main(threads_count: int,
             if he wishes to run one single simulation file, which must be
             explicitly specified in `sname`.
         sname:
-            When `sdir` is set to False, `sname` needs to be specified as a
+            When `sdir` is set to ``False``, `sname` needs to be specified as a
             non blank string containing the name of the simulation file to
             be executed. The named file must exist in
             :py:const:`~app.environment_settings.SIMULATION_ROOT`.

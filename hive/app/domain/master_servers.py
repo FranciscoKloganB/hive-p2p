@@ -310,7 +310,7 @@ class HiveMaster(Master):
         in the system.
 
         Note:
-            TODO: This method requires implementation at the user descretion.
+            This method is virtual.
 
         Returns:
             A pointer to thhe cloud server, e.g., an IP Address.

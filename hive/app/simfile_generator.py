@@ -145,7 +145,7 @@ def _in_yes_no(message: str) -> bool:
             The message to be printed to the user upon first input request.
 
     Returns:
-        True if user presses yes, otherwise False.
+        ``True`` if user presses yes, otherwise ``False``.
     """
     char = input(f"{message}; y/n: ").lower()
     while True:

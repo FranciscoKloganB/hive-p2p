@@ -234,30 +234,22 @@ class Cluster:
         self._recovery_epoch_calls = 0
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
-        """Distributes files among members of the cluster. Members are
-        instances of classes belonging to module
-        :py:mod:`app.domain.network_nodes`.
+        """Distributes a collection of
+        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+        objects among the :py:attr:`members` of the ``Cluster``.
 
         Args:
             replicas:
-                A collection of file replicas, without replication, to be
-                distributed between the Cluster members according to
-                the desired `strategy`.
+                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+                replicas, without replication.
             strat:
-                A user defined way of identifying the way files are initially
-                distributed among members of the cluster. ::
+                Defines how ``replicas`` will be initially distributed in
+                the ``Cluster``.
 
-                    u
-                        Distributed uniformly across network.
-                    a
-                        Give all file block replicas to N different network
-                        nodes, where N is the replication level.
-                    i
-                        Distribute all file block replicas following such
-                        that the simulation starts with all file replicas and
-                        their replicas distributed with a bias towards the
-                        ideal steady state distribution.
-
+        Raises:
+            NotImplementedError:
+                When children of this class do not implement the abstract
+                method.
         """
         raise NotImplementedError("")
     # endregion
@@ -280,8 +272,8 @@ class Cluster:
                 to it's managing :py:attr:`master` entity.
 
         Returns:
-            False if ``Cluster`` failed to persist the :py:attr:`file` it was
-            responsible for, otherwise True.
+            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it was
+            responsible for, otherwise ``True``.
         """
         self._setup_epoch(epoch)
 
@@ -373,7 +365,9 @@ class Cluster:
 
     # region Helpers
     def _log_evaluation(self, pcount: int) -> None:
-        """Helper method that performs evaluate step related logging.
+        """Helper that collects ``Cluster`` data and registers it on a
+        :py:class:`logger <app.domain.helpers.smart_dataclasses.LoggingData>`
+        object.
 
         Args:
             pcount:
@@ -388,7 +382,7 @@ class Cluster:
     def _set_fail(self, message: str) -> None:
         """Ends the Cluster instance simulation.
 
-        Sets :py:attr:`running` to False and orders
+        Sets :py:attr:`running` to ``False`` and orders
         :py:class:`~app.domain.helpers.smart_dataclasses.FileData` to write
         :py:class:`collected logs <app.domain.helpers.smart_dataclasses.LoggingData>`
         to disk and close it's
@@ -477,11 +471,34 @@ class HiveCluster(Cluster):
 
     # region Simulation setup
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
-        """Batch distributes files to Cluster members.
+        """Distributes a collection of
+        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+        objects among the :py:attr:`~Cluster.members` of the ``HiveCluster``.
 
-        This method is used at the start of a simulation to give all file
-        replicas including the replicas to members of the hive. Different
-        distribution options can be used depending on the selected `strategy`.
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.
+
+        Args:
+            replicas:
+                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+                replicas, without replication.
+            strat:
+                Defines how ``replicas`` will be initially distributed in
+                the ``Cluster``.
+
+                    u
+                        Distributed uniformly across network.
+                    a
+                        Give all file block replicas to N different members,
+                        where N is equal to
+                        :py:const:`~app.environment_settings.REPLICATION_LEVEL`.
+                    i
+                        Distribute all file block replicas following such
+                        that the simulation starts with all file replicas and
+                        their replicas distributed with a bias towards the
+                        ideal steady state distribution. This mode is only
+                        applicatable to clusters of type or with ancestor type
+                        :py:class:`~app.domain.cluster_groups.HiveCluster`.
         """
         self.file.logger.initial_spread = strat
 
@@ -667,25 +684,22 @@ class HiveCluster(Cluster):
         return pd.DataFrame(t, index=node_ids, columns=node_ids)
 
     def broadcast_transition_matrix(self, m: pd.DataFrame) -> None:
-        """Slices a transition matrix and delivers them to respective
-        network nodes.
-
-        Gives each member his respective slice (vector column) of the
-        transition matrix the Cluster is currently executing.
+        """Slices a  matrix and delivers columns to the respective
+        :py:class:`network nodes <app.domain.network_nodes.HiveNode>`.
 
         Args:
-            m:
-                A transition matrix to be broadcasted to the network nodes
+            m (:py:class:`pd:pandas.DataFrame`)
+                A matrix to be broadcasted to the network nodes
                 belonging who are currently members of the Cluster instance.
 
         Note:
             An optimization could be made that configures a transition matrix
-            for the hive, independent of of file names, i.e., turn Cluster
+            for the hive, independent of of file names, i.e., turn cluster
             groups into groups persisting multiple files instead of only one,
             thus reducing simulation spaceoverheads and in real-life
             scenarios, decreasing the load done to metadata servers, through
             queries and matrix calculations. For simplicity of implementation
-            each Cluster only manages one file for now.
+            each cluster only manages one file.
         """
         nodes_degrees: Dict[str, float] = {}
         out_degrees: pd.Series = m.apply(np.count_nonzero, axis=0)  # columns
@@ -698,14 +712,18 @@ class HiveCluster(Cluster):
         self.file.logger.log_matrices_degrees(nodes_degrees)
 
     def create_and_bcast_new_transition_matrix(self) -> None:
-        """Tries to create a valid transition matrix and distributes between
-        members of the Cluster.
+        """Helper method that attempts to generate a markov matrix to be
+        sliced and distributed to the ``HiveCluster``
+        :py:attr:`~Cluster.members`.
 
-        After creating a transition matrix it ensures that the matrix is a
-        markov matrix by invoking :py:meth:`_validate_transition_matrix`.
-        If this validation fails three times, simulation is resumed with an
-        invalid matrix until the Cluster membership is changed again for any
-        reason.
+        At most three transition matrices will be generated. The first to be
+        successfully :py:meth:`validated <_validate_transition_matrix>` is
+        distributed to the :py:class:`network nodes
+        <app.domain.network_nodes.HiveNode>`. If all matrices are invalid,
+        the last matrix will be used to prevent infinite loops in the
+        simulation. This is not an issue as eventually the membership of the
+        ``HiveCluster`` will change, thus, more opportunities to perform a
+        correct swarm guidance behavior will be possible.
         """
         tries = 1
         result: pd.DataFrame = pd.DataFrame()
@@ -767,15 +785,23 @@ class HiveCluster(Cluster):
     def _validate_transition_matrix(self,
                                     transition_matrix: pd.DataFrame,
                                     target_distribution: pd.DataFrame) -> bool:
-        """Verifies that a selected transition matrix is a Markov Matrix.
+        """Asserts if ``transition_matrix`` is a Markov Matrix.
 
-        Verification is done by raising the matrix to the power of 4096
-        (just a large number) and checking if all column vectors are equal
-        to the :py:attr:``v_``.
+        Verification is done by raising the ``transition_matrix`` to the power
+        of ``4096`` (just a large number) and checking if all columns of the
+        powered matrix are element-wise equal to the
+        entries of ``target_distribution``.
+
+        Args:
+            transition_matrix (:py:class:`pd:pandas.DataFrame`):
+                The matrix to be verified.
+            target_distribution (:py:class:`pd:pandas.DataFrame`):
+                The steady state the ``transition_matrix`` is expected to have.
 
         Returns:
-            True if the matrix can converge to the desired steady state,
-            otherwise False.
+            ``True`` if the matrix converges to the ``target_distribution``,
+            otherwise ``False``. I.e., if ``transition_matrix`` is a
+            markov matrix.
         """
         t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)
         column_count = t_pow.shape[1]
@@ -791,23 +817,24 @@ class HiveCluster(Cluster):
     def remove_cloud_reference(self) -> None:
         """Remove cloud references and delete files within it
 
-        Notes:
-            TODO: This method requires implementation at the user descretion.
+        Note:
+            This method is virtual.
         """
         pass
 
     def add_cloud_reference(self) -> None:
-        """Adds a cloud server reference to the membership.
+        """Adds a cloud server to the :py:attr:`~Cluster.members` of
+        the ``HiveCluster``.
 
-        This method is used when Cluster membership size becomes compromised
-        and a backup solution using cloud approaches is desired. The idea
-        is that surviving members upload their replicas to the cloud server,
-        e.g., an Amazon S3 instance. See Master method
-        :py:meth:`app.domain.master_servers.Master.get_cloud_reference`
+        This method is used when ``HiveCluster`` membership size becomes
+        compromised and a backup solution using cloud approaches is desired.
+        The idea is that surviving members upload their replicas to the cloud
+        server, e.g., an Amazon S3 instance. See Master method
+        :py:meth:`~app.domain.master_servers.HiveMaster.get_cloud_reference`
         for more details.
 
-        Notes:
-            TODO: This method requires implementation at the user descretion.
+        Note:
+            This method is virtual.
         """
         pass
         # noinspection PyUnusedLocal
@@ -816,17 +843,19 @@ class HiveCluster(Cluster):
 
     # region Helpers
     def equal_distributions(self) -> bool:
-        """Infers if :py:attr:`~app.domain.cluster_groups.HiveCluster.v_` and
-        :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` are equal.
+        """Asserts if the :py:attr:`desired distribution
+        <app.domain.cluster_groups.HiveCluster.v_>` and
+        :py:attr:`current distribution
+        <app.domain.cluster_groups.HiveCluster.cv_>` are equal.
 
         Equalility is calculated using numpy allclose function which has the
-        following formula::
+        following formula: ::
 
-            $ absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
+            absolute(`a` - `b`) <= (`atol` + `rtol` * absolute(`b`))
 
         Returns:
-            True if distributions are close enough to be considered equal,
-            otherwise, it returns False.
+            ``True`` if distributions are close enough to be considered equal,
+            otherwise, it returns ``False``.
         """
         pcount = self.file.parts_in_hive
         target = self.v_.multiply(pcount)
@@ -839,11 +868,6 @@ class HiveCluster(Cluster):
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
     def _log_evaluation(self, pcount: int) -> None:
-        """Helper method that performs evaluate step related logging.
-
-        Extends:
-            :py:meth:`app.domain.cluster_groups.Cluster.__log_evaluation__`
-        """
         super()._log_evaluation(pcount)
         if self.equal_distributions():
             self.file.logger.register_convergence(self.current_epoch)
@@ -852,7 +876,17 @@ class HiveCluster(Cluster):
 
     def _pretty_print_eq_distr_table(
             self, target: pd.DataFrame, atol: float, rtol: float) -> Any:
-        """Pretty prints a PSQL formatted table for visual vector comparison."""
+        """Pretty prints a PSQL formatted table for visual vector comparison.
+
+        Args:
+            target (:py:class:`pd:pandas.DataFrame`):
+                The :py:class:`pd:pandas.DataFrame` object to be formatted
+                as PSQL table.
+            atol:
+                The allowed absolute tolerance.
+            rtol:
+                The allowed relative tolerance.
+        """
         df = pd.DataFrame()
         df['cv_'] = self.cv_[0].values
         df['v_'] = target[0].values
@@ -1036,20 +1070,20 @@ class HDFSCluster(Cluster):
     in a Hadoop Distributed File System scenario.
 
     Note:
-        Differs from :py:class:`~app.domain.cluster_groups.Cluster` in the sense
-        that :py:class:`network nodes <app.domain.network_nodes.HDFSNode>` do not
+        Members of ``HDFSCluster`` are of type
+        :py:class:`~app.domain.network_nodes.HDFSNode`, they do not
         perform swarm guidance behaviors and instead report with regular
         heartbeats to their :py:class:`monitors
         <app.domain.cluster_groups.HDFSCluster>`. This class could be a
         *NameNode Server* in HDFS or a *master server* in GFS.
 
     Attributes:
-        suspicious_nodes:
+        suspicious_nodes (set):
             A set containing the identifiers of suspicious
             :py:class:`network nodes <app.domain.network_nodes.HDFSNode>`.
-        data_node_heartbeats:
+        data_node_heartbeats (Dict[str, int]):
             A dictionary mapping :py:attr:`node identifiers
-            <app.domain.network_nodes.HDFSNode.id>` to the number of
+            <app.domain.network_nodes.Node.id>` to the number of
             complaints made against them. Each node has five lives. When they
             miss five beats in a row, i.e., when the dictionary value count
             is zero, they are evicted from the cluster.
@@ -1068,6 +1102,22 @@ class HDFSCluster(Cluster):
 
     # region Simulation setup
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
+        """Distributes a collection of
+        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+        objects among the :py:attr:`~Cluster.members` of the ``HDFSCluster``.
+
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.
+
+        Args:
+            replicas:
+                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+                replicas, without replication.
+            strat:
+                Defines how ``replicas`` will be initially distributed in
+                the ``Cluster``. Regardless of the received value, the body
+                of this method will always set ``strat`` to default ``"i"``.
+        """
         self.file.logger.initial_spread = "i"
 
         choices: List[th.NodeType]
@@ -1089,19 +1139,15 @@ class HDFSCluster(Cluster):
 
     # region Simulation steps
     def nodes_execute(self) -> List[th.NodeType]:
-        """Queries all network node members execute the epoch.
+        """Queries all :py:attr:`Cluster.members` to execute the epoch.
 
         Overrides:
-            :py:meth:`domain.cluster_groups.Cluster.nodes_execute`
-            regarding the behavior of :py:mod:`Network Nodes
-            <domain.network_nodes>`. They only send heartbeats to the
-            `HDFSCluster` and do nothing else in their epochs unless
-            specifically asked to do so.
+            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`
 
         Returns:
-             A collection of members who disconnected during the current
-             epoch.
-             See :py:meth:`domain.network_nodes.HiveNode.get_epoch_status`.
+            A collection of :py:attr:`Cluster.members` who disconnected
+            during the current epoch.
+            See :py:meth:`app.domain.network_nodes.HiveNode.get_epoch_status`.
         """
         off_nodes = []
         lost_replicas_count: int = 0
@@ -1164,6 +1210,10 @@ class HDFSCluster(Cluster):
         """Evicts any :py:class:`network node <app.domain.network_nodes.HDFSNode>`
         whose heartbeats in :py:attr:`data_node_heartbeats` reached zero.
 
+        Args:
+            off_nodes:
+                The subset of :py:attr:`Cluster.members` who disconnected
+                during the current epoch.
         Overrides:
             :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.
         """
@@ -1176,13 +1226,6 @@ class HDFSCluster(Cluster):
         self.membership_maintenance()
 
     def membership_maintenance(self) -> th.NodeDict:
-        """Recruit new :py:mod:`Network Nodes <domain.network_nodes>`.
-
-        Extends:
-            :py:meth:`domain.cluster_groups.Cluster.membership_maintenance`.
-            New members are given five lives in
-            :py:attr:`domain.cluster_groups.HDFSCluster.data_node_heartbeats`.
-        """
         new_members = super().membership_maintenance()
         for nid in new_members.keys():
             if nid not in self.data_node_heartbeats:

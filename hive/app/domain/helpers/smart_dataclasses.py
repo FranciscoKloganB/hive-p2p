@@ -168,8 +168,8 @@ class FileData:
         Equality is based on name equality.
 
         Returns:
-            True if the name attribute of both instances is the same,
-            otherwise False.
+            ``True`` if the name attribute of both instances is the same,
+            otherwise ``False``.
         """
         if not isinstance(other, FileData):
             return False

@@ -449,14 +449,14 @@ def new_symmetric_matrix(
              The length of the square matrix.
         allow_sloops:
             Indicates if the generated adjacency matrix allows diagonal
-            entries representing self-loops. If false, then, all diagonal
+            entries representing self-loops. If ``False``, then, all diagonal
             entries must be zeros. Otherwise, they can be zeros or ones.
         force_sloops:
             Indicates if the diagonal of the generated matrix should be
-            filled with ones. If false, valid diagonal entries are decided by
-            `allow_self_loops` param. Otherwise, diagonal entries are filled
-            with ones. If `allow_self_loops` is False and `enforce_loops` is
-            True, an error is raised.
+            filled with ones. If ``False``, valid diagonal entries are
+            decided by `allow_self_loops` param. Otherwise, diagonal entries
+            are filled with ones. If `allow_self_loops` is ``False``
+            and `enforce_loops` is ``True``, an error is raised.
 
     Returns:
         The adjency matrix representing the connections between a
@@ -464,8 +464,8 @@ def new_symmetric_matrix(
 
     Raises:
         IllegalArgumentError:
-            When `allow_self_loops` (False) conflicts with
-            `enforce_loops` (True).
+            When `allow_self_loops` (``False``) conflicts with
+            `enforce_loops` (``True``).
     """
     if not allow_sloops and force_sloops:
         raise IllegalArgumentError("Can not invoke new_symmetric_matrix with:\n"
@@ -549,7 +549,7 @@ def is_symmetric(m: np.ndarray, tol: float = 1e-8) -> bool:
             is 1e-8).
 
     Returns:
-        True if the matrix is symmetric, else False.
+        ``True`` if the matrix is symmetric, else ``False``.
     """
     return np.all(np.abs(m - m.transpose()) < tol)
 
@@ -563,10 +563,10 @@ def is_connected(m: np.ndarray, directed: bool = False) -> bool:
             The matrix to be verified.
         directed:
             If the matrix edges are directed, i.e., if the matrix is an adjency
-            matrix are the edges bidirectional, where false means they are.
+            matrix are the edges bidirectional, where ``False`` means they are.
 
     Returns:
-        True if the matrix is a connected graph, else False.
+        True if the matrix is a connected graph, else ``False``.
     """
     n, cc_labels = connected_components(m, directed=directed)
     return n == 1

@@ -185,9 +185,8 @@ class Node:
             number:
                 The part number that uniquely identifies the file block.
             corrupt:
-                optional; If discard is being invoked due to identified file
-                block corruption, e.g., Sha256 does not match the expected (
-                default False).
+                If discard is being invoked due to identified file
+                block corruption, e.g., Sha256 does not match the expected.
             cluster:
                 Gateway Cluster that will set the recovery epoch (see
                 :py:meth:`domain.cluster_groups.Cluster.set_recovery_epoch`
@@ -518,7 +517,7 @@ class HDFSNode(Node):
         for number, replica in file_view.items():
             self.replicate_part(cluster, replica)
             if np.random.choice(a=TRUE_FALSE, p=cluster.corruption_chances):
-                # Don't set corrupt flag to True, doing so causes
+                # Don't set corrupt flag to ``True``, doing so causes
                 # set_recovery_epoch to be called. HDFS Corruption is silent.
                 self.discard_part(fid, number)
                 # Log the corruption in output file.
