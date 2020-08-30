@@ -51,7 +51,10 @@ extensions = [
     "sphinx_autodoc_future_annotations",
 ]
 
+# show type hints in doc body instead of signature
 autodoc_typehints = "description"
+# get docstring from class level and init simultaneously
+autoclass_content = "both"
 
 napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
