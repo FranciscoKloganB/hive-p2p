@@ -33,7 +33,7 @@ class Cluster:
         corruption_chances:
             A two-element list containing the probability of file block replica
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`~app.domain.cluster_groups.Cluster.__assign_disk_error_chance__`
+            :py:meth:`~app.domain.cluster_groups.Cluster._assign_disk_error_chance`
             for corruption chance configuration.
         master:
             A reference to :py:class:`app.domain.master_servers.Master` that
@@ -103,7 +103,7 @@ class Cluster:
         """
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-        self.corruption_chances: List[float] = self.__assign_disk_error_chance__()
+        self.corruption_chances: List[float] = self._assign_disk_error_chance()
         self.master = master
         self.members: th.NodeDict = members
         self.file: sd.FileData = sd.FileData(
@@ -184,7 +184,7 @@ class Cluster:
     # endregion
 
     # region Simulation setup
-    def __assign_disk_error_chance__(self) -> List[float]:
+    def _assign_disk_error_chance(self) -> List[float]:
         """Defines the probability of a file block being corrupted while stored
         at the disk of a
         :py:class:`Network Node <app.domain.network_nodes.Node>`.
@@ -213,7 +213,7 @@ class Cluster:
         ploss_epoch = truncate_float_value(ploss_epoch, 6)
         return [ploss_epoch, 1.0 - ploss_epoch]
 
-    def __setup_epoch__(self, epoch: int) -> None:
+    def _setup_epoch(self, epoch: int) -> None:
         """Initializes some attributes of the Cluster during
         its initialization.
 
@@ -277,7 +277,7 @@ class Cluster:
             False if Cluster failed to persist the file it was
             responsible for, otherwise True.
         """
-        self.__setup_epoch__(epoch)
+        self._setup_epoch(epoch)
 
         off_nodes = self.nodes_execute()
         self.evaluate()
@@ -352,7 +352,7 @@ class Cluster:
     # endregion
 
     # region Helpers
-    def __log_evaluation__(self, pcount: int) -> None:
+    def _log_evaluation(self, pcount: int) -> None:
         """Helper method that performs evaluate step related logging.
 
         Args:
@@ -556,7 +556,7 @@ class HiveCluster(Cluster):
                 pcount += node_parts_count
             else:
                 self.cv_.at[node.id, 0] = 0
-        self.__log_evaluation__(pcount)
+        self._log_evaluation(pcount)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         """Evicts disconnected network_nodes from the Cluster and
@@ -814,23 +814,23 @@ class HiveCluster(Cluster):
         atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
 
         if DEBUG:
-            print(self.__pretty_print_eq_distr_table__(target, atol, rtol))
+            print(self._pretty_print_eq_distr_table(target, atol, rtol))
 
         return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
 
-    def __log_evaluation__(self, pcount: int) -> None:
+    def _log_evaluation(self, pcount: int) -> None:
         """Helper method that performs evaluate step related logging.
 
         Extends:
             :py:meth:`app.domain.cluster_groups.Cluster.__log_evaluation__`
         """
-        super().__log_evaluation__(pcount)
+        super()._log_evaluation(pcount)
         if self.equal_distributions():
             self.file.logger.register_convergence(self.current_epoch)
         else:
             self.file.logger.save_sets_and_reset()
 
-    def __pretty_print_eq_distr_table__(
+    def _pretty_print_eq_distr_table(
             self, target: pd.DataFrame, atol: float, rtol: float) -> Any:
         """Pretty prints a PSQL formatted table for visual vector comparison."""
         df = pd.DataFrame()
@@ -1149,7 +1149,7 @@ class HDFSCluster(Cluster):
             if node.status == e.Status.ONLINE:
                 node_replicas = node.get_file_parts_count(self.file.name)
                 pcount += node_replicas
-        self.__log_evaluation__(pcount)
+        self._log_evaluation(pcount)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         """Evicts any :py:mod:`Network Node <domain.network_nodes>` whose
