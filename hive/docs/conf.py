@@ -45,10 +45,11 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.githubpages",
     "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.napoleon",
-    # "sphinx_autodoc_future_annotations",
+    "sphinx_autodoc_future_annotations",
 ]
 
 # show type hints in doc body instead of signature
