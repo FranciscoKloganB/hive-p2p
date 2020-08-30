@@ -47,6 +47,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    # "sphinx.ext.autodoc.typehints",
     "sphinx_autodoc_future_annotations",
 ]
 
