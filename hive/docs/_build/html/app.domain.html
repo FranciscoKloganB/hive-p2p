@@ -1449,9 +1449,9 @@ thus guaranteeing that different simulation instances do not
 overwrite previous out files.</p></li>
 <li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps the simulation lasts.</p></li>
 <li><p><strong>cluster_class</strong> (<em>str</em>) – The name of the class used to instantiate cluster group
-instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p></li>
+instances through reflection. See <a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">groups</span> <span class="pre">module</span></code></a>.</p></li>
 <li><p><strong>node_class</strong> (<em>str</em>) – The name of the class used to instantiate network node
-instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code>.</p></li>
+instances through reflection. See <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span> <span class="pre">module</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1465,9 +1465,9 @@ instances through reflection. See <code class="xref py py-mod docutils literal n
 <code class="sig-name descname">_process_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster._process_simfile"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Opens and processes the simulation filed referenced in <cite>path</cite>.</p>
 <dl>
-<dt>Overrides:</dt><dd><p>py:meth:<cite>~app.domain.master_servers.Master._process_simfile</cite>.</p>
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.master_servers.Master._process_simfile" title="app.domain.master_servers.Master._process_simfile"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.master_servers.Master._process_simfile()</span></code></a>.</p>
 <p>The method is exactly the same except for one instruction. The
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">_split_files()</span></code> is
+<a class="reference internal" href="#app.domain.master_servers.Master._split_files" title="app.domain.master_servers.Master._split_files"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_split_files()</span></code></a> is
 invoked with fixed <cite>bsize</cite> = 1MB. The reason for this is
 two-fold:</p>
 <blockquote>
@@ -1487,9 +1487,14 @@ stationary on data nodes until they die.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<em>str</em>) – </p></li>
-<li><p><strong>cluster_class</strong> (<em>str</em>) – </p></li>
-<li><p><strong>node_class</strong> (<em>str</em>) – </p></li>
+<li><p><strong>path</strong> (<em>str</em>) – The path to the simulation file. Including extension and
+parent folders.</p></li>
+<li><p><strong>cluster_class</strong> (<em>str</em>) – The name of the class used to instantiate cluster group
+instances through reflection.
+See <a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.cluster_groups</span></code></a>.</p></li>
+<li><p><strong>node_class</strong> (<em>str</em>) – The name of the class used to instantiate network node
+instances through reflection.
+See <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.network_nodes</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1517,9 +1522,9 @@ thus guaranteeing that different simulation instances do not
 overwrite previous out files.</p></li>
 <li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps the simulation lasts.</p></li>
 <li><p><strong>cluster_class</strong> (<em>str</em>) – The name of the class used to instantiate cluster group
-instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p></li>
+instances through reflection. See <a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">groups</span> <span class="pre">module</span></code></a>.</p></li>
 <li><p><strong>node_class</strong> (<em>str</em>) – The name of the class used to instantiate network node
-instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code>.</p></li>
+instances through reflection. See <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span> <span class="pre">module</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1533,15 +1538,16 @@ instances through reflection. See <code class="xref py py-mod docutils literal n
 <code class="sig-name descname">get_cloud_reference</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HiveMaster.get_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Use to obtain a reference to 3rd party cloud storage provider</p>
 <p>The cloud storage provider can be used to temporarely host files
-belonging to Hives in bad status, thus increasing file durability
-in the system.</p>
+belonging to <code class="xref py py-class docutils literal notranslate"><span class="pre">hive</span> <span class="pre">clusters</span></code> in bad
+conditions that may compromise the file durability of the files they
+are responsible for persisting.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This method is virtual.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A pointer to thhe cloud server, e.g., an IP Address.</p>
+<dd class="field-odd"><p>A pointer to the cloud server, e.g., an IP Address.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>str</p>
@@ -1555,13 +1561,19 @@ in the system.</p>
 <dt id="app.domain.master_servers.Master">
 <em class="property">class </em><code class="sig-name descname">Master</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Simulation manager class. Plays the role of a master server for all
-Hives of the distributed backup system.</p>
+<p>Simulation manager class, some kind of puppet-master. Could represent
+an authentication server or a monitor that decides along with other
+<code class="docutils literal notranslate"><span class="pre">Master</span></code> entities what <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> are online using consensus algorithms.</p>
 <dl class="py attribute">
 <dt id="app.domain.master_servers.Master.origin">
 <code class="sig-name descname">origin</code></dt>
 <dd><p>The name of the simulation file name that started the simulation
 process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1570,49 +1582,50 @@ process.</p>
 <dd><p>Identifier that generates unique output file names,
 thus guaranteeing that different simulation instances do not
 overwrite previous out files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.master_servers.Master.epoch">
 <code class="sig-name descname">epoch</code></dt>
 <dd><p>The simulation’s current epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.master_servers.Master.cluster_groups">
 <code class="sig-name descname">cluster_groups</code></dt>
-<dd><p>A collection of <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster</span></code>
-instances managed by the Master.</p>
+<dd><p>A collection of <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">groups</span></code></a> managed by the <code class="docutils literal notranslate"><span class="pre">Master</span></code>.
+Keys are <a class="reference internal" href="#app.domain.cluster_groups.Cluster.id" title="app.domain.cluster_groups.Cluster.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">identifiers</span></code></a> and values are the
+cluster instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="app.html#app.type_hints.ClusterDict" title="app.type_hints.ClusterDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.type_hints.ClusterDict</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.master_servers.Master.network_nodes">
 <code class="sig-name descname">network_nodes</code></dt>
-<dd><p>A dictionary mapping network node identifiers names to their
-object instances (<code class="xref py py-class docutils literal notranslate"><span class="pre">domain.network_nodes.HiveNode</span></code>).
-This collection differs from the
-<a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster's</span></code></a> attribute
-<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> in the sense
-that the latter is only a subset of <cite>workers</cite>, which includes all
-network nodes of the distributed backup system, regardless of
-their participation on any Cluster.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="app.domain.master_servers.Master.__create_network_nodes__">
-<code class="sig-name descname">__create_network_nodes__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__create_network_nodes__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Helper method that instantiates all
-<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a> that are
-specified in the simulation file.</p>
+<dd><p>A dictionary mapping <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> to their instance objects.
+This collection differs from
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.members</span></code></a> attribute
+in the sense that the former <code class="docutils literal notranslate"><span class="pre">network_nodes</span></code> includes all
+nodes, both online and offline, available on the entire
+distributed backup storage system regardless of their
+participation in any <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>json</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The simulation file in JSON dictionary object format.</p></li>
-<li><p><strong>node_class</strong> (<em>str</em>) – The type of network node to create.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="app.html#app.type_hints.NodeDict" title="app.type_hints.NodeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.type_hints.NodeDict</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1630,9 +1643,9 @@ thus guaranteeing that different simulation instances do not
 overwrite previous out files.</p></li>
 <li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps the simulation lasts.</p></li>
 <li><p><strong>cluster_class</strong> (<em>str</em>) – The name of the class used to instantiate cluster group
-instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p></li>
+instances through reflection. See <a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">groups</span> <span class="pre">module</span></code></a>.</p></li>
 <li><p><strong>node_class</strong> (<em>str</em>) – The name of the class used to instantiate network node
-instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code>.</p></li>
+instances through reflection. See <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span> <span class="pre">module</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1642,8 +1655,27 @@ instances through reflection. See <code class="xref py py-mod docutils literal n
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.master_servers.Master.__new_cluster_group__">
-<code class="sig-name descname">__new_cluster_group__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__new_cluster_group__"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.master_servers.Master._create_network_nodes">
+<code class="sig-name descname">_create_network_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master._create_network_nodes"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper method that instantiates all
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> that are
+specified in the simulation file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>json</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The simulation file in JSON dictionary object format.</p></li>
+<li><p><strong>node_class</strong> (<em>str</em>) – The type of network node to create.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.master_servers.Master._new_cluster_group">
+<code class="sig-name descname">_new_cluster_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master._new_cluster_group"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that initializes a new Cluster group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1665,8 +1697,8 @@ initial member size.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.master_servers.Master.__new_network_node__">
-<code class="sig-name descname">__new_network_node__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_class</span></em>, <em class="sig-param"><span class="n">nid</span></em>, <em class="sig-param"><span class="n">node_uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__new_network_node__"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.master_servers.Master._new_network_node">
+<code class="sig-name descname">_new_network_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_class</span></em>, <em class="sig-param"><span class="n">nid</span></em>, <em class="sig-param"><span class="n">node_uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master._new_network_node"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that initializes a new Node.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1688,46 +1720,28 @@ uptime of the network node.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.master_servers.Master.__split_files">
-<code class="sig-name descname">__split_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">bsize</span></em><span class="sig-paren">)</span></dt>
-<dd><p>Helper method that splits the files into multiple blocks to be
-persisted in a <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_group.Cluster</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fname</strong> (<em>str</em>) – The name of the file located in
-<code class="xref py py-const docutils literal notranslate"><span class="pre">environment_settings.SHARED_ROOT</span></code> folder to be
-read and splitted.</p></li>
-<li><p><strong>bsize</strong> (<em>int</em>) – The maximum amount of bytes each file block can have.</p></li>
-<li><p><strong>cluster</strong> (<em>th.ClusterType</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>th.ReplicasDict</p>
-</dd>
-</dl>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="app.domain.master_servers.Master._process_simfile">
 <code class="sig-name descname">_process_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master._process_simfile"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Opens and processes the simulation filed referenced in <cite>path</cite>.</p>
-<p>This method opens the file reads the json data inside it and combined
-with <code class="xref py py-mod docutils literal notranslate"><span class="pre">environment_settings</span></code>, sets up the class instances to
-be used during the simulation (e.g., <code class="xref py py-class docutils literal notranslate"><span class="pre">Clusters</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Nodes</span></code>). This method should also be responsible
-for splitting the file into multiple chunks/blocks/parts and
-distributing them over the initial clusters’
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster.members</span></code>.</p>
+<dd><p>Opens and processes the simulation filed referenced in <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p>
+<p>This method opens the file reads the json data inside it. Combined
+with <a class="reference internal" href="app.html#module-app.environment_settings" title="app.environment_settings"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.environment_settings</span></code></a> it sets up the class
+instances to be used during the simulation (e.g.,
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">groups</span></code></a> and
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>). This
+method also be splits the file to be persisted in the simulation into
+multiple <code class="docutils literal notranslate"><span class="pre">blocks</span></code> or <code class="docutils literal notranslate"><span class="pre">chunks</span></code> and for triggering the initial
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.spread_files" title="app.domain.cluster_groups.Cluster.spread_files"><code class="xref py py-meth docutils literal notranslate"><span class="pre">file</span> <span class="pre">spreading</span></code></a> mechanism.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> (<em>str</em>) – The path to the simulation file. Including extension and
 parent folders.</p></li>
 <li><p><strong>cluster_class</strong> (<em>str</em>) – The name of the class used to instantiate cluster group
-instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p></li>
+instances through reflection.
+See <a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.cluster_groups</span></code></a>.</p></li>
 <li><p><strong>node_class</strong> (<em>str</em>) – The name of the class used to instantiate network node
-instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code>.</p></li>
+instances through reflection.
+See <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.network_nodes</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1737,10 +1751,39 @@ instances through reflection. See <code class="xref py py-mod docutils literal n
 </dd></dl>
 
 <dl class="py method">
+<dt id="app.domain.master_servers.Master._split_files">
+<code class="sig-name descname">_split_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">bsize</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master._split_files"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper method that splits the files into multiple blocks to be
+persisted in a <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – The name of the file located in
+<a class="reference internal" href="app.html#app.environment_settings.SHARED_ROOT" title="app.environment_settings.SHARED_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">SHARED_ROOT</span></code></a> folder to be
+read and splitted.</p></li>
+<li><p><strong>cluster</strong> (<em>th.ClusterType</em>) – A reference to the <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a> whose
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> will be
+responsible for ensuring the file specified in <code class="docutils literal notranslate"><span class="pre">fname</span></code>
+becomes durable.</p></li>
+<li><p><strong>bsize</strong> (<em>int</em>) – The maximum amount of bytes each file block can have.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary in which the keys are integers and values are
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">blocks</span></code></a>, whose
+attribute <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.number" title="app.domain.helpers.smart_dataclasses.FileBlockData.number"><code class="xref py py-attr docutils literal notranslate"><span class="pre">number</span></code></a>
+is the key.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>th.ReplicasDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.master_servers.Master.execute_simulation">
 <code class="sig-name descname">execute_simulation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.execute_simulation"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Runs a stochastic swarm guidance algorithm applied
-to a P2P network.</p>
+<dd><p>Starts the simulation processes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None</p>
@@ -1749,25 +1792,26 @@ to a P2P network.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.master_servers.Master.find_replacement_node">
-<code class="sig-name descname">find_replacement_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exclusion_dict</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.find_replacement_node"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Finds a collection of online network nodes that can be used to
-replace offline ones in an Cluster.</p>
+<dt id="app.domain.master_servers.Master.find_online_nodes">
+<code class="sig-name descname">find_online_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">blacklist</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.find_online_nodes"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Finds <code class="docutils literal notranslate"><span class="pre">n</span></code> <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> who are currently registered at the
+<code class="docutils literal notranslate"><span class="pre">Master</span></code> and whose status is online.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>exclusion_dict</strong> (<em>th.NodeDict</em>) – A dictionary of network nodes identifiers and their object
-instances (<a class="reference internal" href="#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode</span></code></a>),
-which represent the nodes the Cluster is not interested in,
-i.e., this argument is a blacklist.</p></li>
-<li><p><strong>n</strong> (<em>int</em>) – How many replacements the calling Cluster desires to find.</p></li>
+<li><p><strong>blacklist</strong> (<em>th.NodeDict</em>) – A collection of <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">nodes</span> <span class="pre">identifiers</span></code></a> and their object
+instances, which specify nodes the requesting entity has
+no interest in.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – How many <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a> references the requesting
+entity wants to find.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A collection of replacements which is smaller or equal than <cite>n</cite>.</p>
+<dd class="field-even"><p>A collection of <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>
+which is at most as big as <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>th.NodeDict</p>
+<dd class="field-odd"><p><a class="reference internal" href="app.html#app.type_hints.NodeDict" title="app.type_hints.NodeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeDict</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>

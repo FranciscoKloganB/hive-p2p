@@ -20,31 +20,37 @@ _PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 
 
 class Master:
-    """Simulation manager class. Plays the role of a master server for all
-    Hives of the distributed backup system.
+    """Simulation manager class, some kind of puppet-master. Could represent
+    an authentication server or a monitor that decides along with other
+    ``Master`` entities what :py:class:`network nodes
+    <app.domain.network_nodes.Node>` are online using consensus algorithms.
 
     Attributes:
-        origin:
+        origin (str):
             The name of the simulation file name that started the simulation
             process.
-        sid:
+        sid (int):
             Identifier that generates unique output file names,
             thus guaranteeing that different simulation instances do not
             overwrite previous out files.
-        epoch:
+        epoch (int):
             The simulation's current epoch.
-        cluster_groups:
-            A collection of :py:class:`domain.cluster_groups.Cluster`
-            instances managed by the Master.
-        network_nodes:
-            A dictionary mapping network node identifiers names to their
-            object instances (:py:class:`domain.network_nodes.HiveNode`).
-            This collection differs from the
-            :py:class:`Cluster's <app.domain.cluster_groups.Cluster>` attribute
-            :py:attr:`~app.domain.cluster_groups.Cluster.members` in the sense
-            that the latter is only a subset of `workers`, which includes all
-            network nodes of the distributed backup system, regardless of
-            their participation on any Cluster.
+        cluster_groups (:py:class:`app.type_hints.ClusterDict`)
+            A collection of :py:class:`cluster groups
+            <app.domain.cluster_groups.Cluster>` managed by the ``Master``.
+            Keys are :py:attr:`cluster identifiers
+            <app.domain.cluster_groups.Cluster.id>` and values are the
+            cluster instances.
+        network_nodes (:py:class:`app.type_hints.NodeDict`):
+            A dictionary mapping :py:attr:`node identifiers
+            <app.domain.network_nodes.Node.id>` to their instance objects.
+            This collection differs from
+            :py:attr:`app.domain.cluster_groups.Cluster.members` attribute
+            in the sense that the former ``network_nodes`` includes all
+            nodes, both online and offline, available on the entire
+            distributed backup storage system regardless of their
+            participation in any :py:class:`cluster group
+            <app.domain.cluster_groups.Cluster>`.
     """
 
     MAX_EPOCHS: Optional[int] = None
@@ -69,12 +75,12 @@ class Master:
                 The number of discrete time steps the simulation lasts.
             cluster_class:
                 The name of the class used to instantiate cluster group
-                instances through reflection. See :py:mod:`Cluster Group
-                <domain.cluster_groups>`.
+                instances through reflection. See :py:mod:`cluster groups module
+                <app.domain.cluster_groups>`.
             node_class:
                 The name of the class used to instantiate network node
-                instances through reflection. See :py:mod:`Network Node
-                <domain.network_nodes>`.
+                instances through reflection. See :py:mod:`network nodes module
+                <app.domain.network_nodes>`.
         """
         Master.MAX_EPOCHS = epochs
         Master.MAX_EPOCHS_PLUS_ONE = epochs + 1
@@ -91,16 +97,17 @@ class Master:
     # region Simulation setup
     def _process_simfile(
             self, path: str, cluster_class: str, node_class: str) -> None:
-        """Opens and processes the simulation filed referenced in `path`.
+        """Opens and processes the simulation filed referenced in ``path``.
 
-        This method opens the file reads the json data inside it and combined
-        with :py:mod:`environment_settings`, sets up the class instances to
-        be used during the simulation (e.g., :py:class:`Clusters
-        <domain.network_nodes.Cluster>` and :py:class:`Nodes
-        <domain.network_nodes.Node>`). This method should also be responsible
-        for splitting the file into multiple chunks/blocks/parts and
-        distributing them over the initial clusters'
-        :py:attr:`domain.cluster_groups.Cluster.members`.
+        This method opens the file reads the json data inside it. Combined
+        with :py:mod:`app.environment_settings` it sets up the class
+        instances to be used during the simulation (e.g.,
+        :py:class:`cluster groups <app.domain.cluster_groups.Cluster>` and
+        :py:class:`network nodes <app.domain.network_nodes.Node>`). This
+        method also be splits the file to be persisted in the simulation into
+        multiple ``blocks`` or ``chunks`` and for triggering the initial
+        :py:meth:`file spreading
+        <app.domain.cluster_groups.Cluster.spread_files>` mechanism.
 
         Args:
             path:
@@ -108,12 +115,12 @@ class Master:
                 parent folders.
             cluster_class:
                 The name of the class used to instantiate cluster group
-                instances through reflection. See :py:mod:`Cluster Group
-                <domain.cluster_groups>`.
+                instances through reflection.
+                See :py:mod:`app.domain.cluster_groups`.
             node_class:
                 The name of the class used to instantiate network node
-                instances through reflection. See :py:mod:`Network Node
-                <domain.network_nodes>`.
+                instances through reflection.
+                See :py:mod:`app.domain.network_nodes`.
         """
         with open(path) as input_file:
             simfile_json: Any = json.load(input_file)
@@ -140,7 +147,7 @@ class Master:
     def _create_network_nodes(
             self, json: Dict[str, Any], node_class: str) -> None:
         """Helper method that instantiates all
-        :py:class:`Network Nodes <app.domain.network_nodes.Node>` that are
+        :py:class:`network nodes <app.domain.network_nodes.Node>` that are
         specified in the simulation file.
 
         Args:
@@ -157,18 +164,29 @@ class Master:
             self, fname: str, cluster: th.ClusterType, bsize: int
     ) -> th.ReplicasDict:
         """Helper method that splits the files into multiple blocks to be
-        persisted in a :py:class:`domain.cluster_group.Cluster`.
+        persisted in a :py:class:`cluster group
+        <app.domain.cluster_groups.Cluster>`.
 
         Args:
             fname:
                 The name of the file located in
-                :py:const:`environment_settings.SHARED_ROOT` folder to be
+                :py:const:`~app.environment_settings.SHARED_ROOT` folder to be
                 read and splitted.
+            cluster:
+                A reference to the :py:class:`cluster group
+                <app.domain.cluster_groups.Cluster>` whose
+                :py:attr:`~app.domain.cluster_groups.Cluster.members` will be
+                responsible for ensuring the file specified in ``fname``
+                becomes durable.
             bsize:
                 The maximum amount of bytes each file block can have.
 
         Returns:
-
+            A dictionary in which the keys are integers and values are
+            :py:class:`file blocks
+            <app.domain.helpers.smart_dataclasses.FileBlockData>`, whose
+            attribute :py:attr:`~app.domain.helpers.smart_dataclasses.FileBlockData.number`
+            is the key.
         """
         with open(os.path.join(SHARED_ROOT, fname), "rb") as file:
             bid: int = 0
@@ -186,9 +204,7 @@ class Master:
 
     # region Simulation steps
     def execute_simulation(self) -> None:
-        """Runs a stochastic swarm guidance algorithm applied
-        to a P2P network.
-        """
+        """Starts the simulation processes."""
         while self.epoch < Master.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
             print("epoch: {}".format(self.epoch))
             terminated_clusters: List[str] = []
@@ -204,22 +220,27 @@ class Master:
     # endregion
 
     # region Master API
-    def find_replacement_node(
-            self, exclusion_dict: th.NodeDict, n: int) -> th.NodeDict:
-        """Finds a collection of online network nodes that can be used to
-        replace offline ones in an Cluster.
+    def find_online_nodes(
+            self, blacklist: th.NodeDict, n: int) -> th.NodeDict:
+        """Finds ``n`` :py:class:`network nodes
+        <app.domain.network_nodes.Node>` who are currently registered at the
+        ``Master`` and whose status is online.
 
         Args:
-            exclusion_dict:
-                A dictionary of network nodes identifiers and their object
-                instances (:py:class:`app.domain.network_nodes.HiveNode`),
-                which represent the nodes the Cluster is not interested in,
-                i.e., this argument is a blacklist.
+            blacklist:
+                A collection of :py:attr:`nodes identifiers
+                <app.domain.network_nodes.Node.id>` and their object
+                instances, which specify nodes the requesting entity has
+                no interest in.
             n:
-                How many replacements the calling Cluster desires to find.
+                How many :py:class:`network node
+                <app.domain.network_nodes.Node>` references the requesting
+                entity wants to find.
 
         Returns:
-            A collection of replacements which is smaller or equal than `n`.
+            :py:class:`~app.type_hints.NodeDict`:
+                A collection of :py:class:`network nodes <app.domain.network_nodes.Node>`
+                which is at most as big as ``n``.
         """
         selected: th.NodeDict = {}
         if n <= 0:
@@ -232,7 +253,7 @@ class Master:
             elif node.status != e.Status.ONLINE:
                 # TODO: future-iterations review this code.
                 self.network_nodes.pop(node.id, None)
-            elif node.id not in exclusion_dict:
+            elif node.id not in blacklist:
                 selected[node.id] = node
         return selected
     # endregion
@@ -309,14 +330,15 @@ class HiveMaster(Master):
         """Use to obtain a reference to 3rd party cloud storage provider
 
         The cloud storage provider can be used to temporarely host files
-        belonging to Hives in bad status, thus increasing file durability
-        in the system.
+        belonging to :py:class:`hive clusters <app.domain.HiveCluster>` in bad
+        conditions that may compromise the file durability of the files they
+        are responsible for persisting.
 
         Note:
             This method is virtual.
 
         Returns:
-            A pointer to thhe cloud server, e.g., an IP Address.
+            A pointer to the cloud server, e.g., an IP Address.
         """
         return ""
     # endregion
@@ -337,7 +359,7 @@ class HDFSMaster(Master):
         """Opens and processes the simulation filed referenced in `path`.
 
         Overrides:
-            :py:meth:`~app.domain.master_servers.Master._process_simfile`.
+            :py:meth:`app.domain.master_servers.Master._process_simfile`.
 
             The method is exactly the same except for one instruction. The
             :py:meth:`~app.domain.master_servers.Master._split_files` is
@@ -364,6 +386,19 @@ class HDFSMaster(Master):
             :py:class:`file block replicas
             <app.domain.helpers.smart_dataclasses.FileBlockData>` are
             stationary on data nodes until they die.
+
+        Args:
+            path:
+                The path to the simulation file. Including extension and
+                parent folders.
+            cluster_class:
+                The name of the class used to instantiate cluster group
+                instances through reflection.
+                See :py:mod:`app.domain.cluster_groups`.
+            node_class:
+                The name of the class used to instantiate network node
+                instances through reflection.
+                See :py:mod:`app.domain.network_nodes`.
         """
         with open(path) as input_file:
             simfile_json: Any = json.load(input_file)

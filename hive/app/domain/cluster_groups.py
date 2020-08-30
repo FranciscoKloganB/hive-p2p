@@ -386,7 +386,7 @@ class Cluster:
             and values are
             :py:class:`node instances <app.domain.network_nodes.Node>`.
         """
-        return self.master.find_replacement_node(
+        return self.master.find_online_nodes(
             self.members, self.original_size - len(self.members))
 
     def get_cluster_status(self) -> str:

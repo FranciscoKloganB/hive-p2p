@@ -496,7 +496,7 @@
 <span class="sd">            and values are</span>
 <span class="sd">            :py:class:`node instances &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_replacement_node</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_online_nodes</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="Cluster.get_cluster_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.get_cluster_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_cluster_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
