@@ -23,7 +23,7 @@ class MatlabEngineContainer:
             Do not access this directly. MatlabEngine objects are not
             officially thread safe, thus it is recommended that you utilize
             the wrapped function, unless you are not running the
-            :py:mod:`hive_simulation` with -t flag, i.e., you are not using
+            :py:mod:`app.hive_simulation` with -t flag, i.e., you are not using
             the multithreaded mode to speed up simulations.
     """
 
@@ -52,8 +52,8 @@ class MatlabEngineContainer:
         """Instantiates a new MatlabEngineContainer object.
 
         Note:
-            Do not directly invoke this constructor, use
-            :py:method:`getInstance` instead.
+            Do not directly invoke constructor, instead use:
+            :py:meth:`app.domain.helpers.matlab_utils.MatlabEngineContainer.getInstance`.
         """
         if MatlabEngineContainer._instance is None:
             print("Loading matlab engine... this can take a while.")
