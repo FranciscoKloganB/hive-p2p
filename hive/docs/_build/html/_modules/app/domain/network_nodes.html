@@ -190,13 +190,7 @@
 
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="Node.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Instructs the HiveNode instance to execute the epoch.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError:</span>
-<span class="sd">                When the class or one of its children does not implement</span>
-<span class="sd">                their own `execute_epoch` method.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Instructs the HiveNode instance to execute the epoch.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;All children of class Node must &quot;</span>
                                   <span class="s2">&quot;implement their own execute_epoch.&quot;</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
@@ -295,9 +289,8 @@
 <span class="sd">            number:</span>
 <span class="sd">                The part number that uniquely identifies the file block.</span>
 <span class="sd">            corrupt:</span>
-<span class="sd">                optional; If discard is being invoked due to identified file</span>
-<span class="sd">                block corruption, e.g., Sha256 does not match the expected (</span>
-<span class="sd">                default False).</span>
+<span class="sd">                If discard is being invoked due to identified file</span>
+<span class="sd">                block corruption, e.g., Sha256 does not match the expected.</span>
 <span class="sd">            cluster:</span>
 <span class="sd">                Gateway Cluster that will set the recovery epoch (see</span>
 <span class="sd">                :py:meth:`domain.cluster_groups.Cluster.set_recovery_epoch`</span>
@@ -572,7 +565,7 @@
         <span class="sd">&quot;&quot;&quot;Used to obtain the status of the worker.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.network_nodes.HiveNode.get_epoch_status`.</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
 <span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
 <span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
 
@@ -628,7 +621,7 @@
         <span class="k">for</span> <span class="n">number</span><span class="p">,</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">file_view</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">replicate_part</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">replica</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">):</span>
-                <span class="c1"># Don&#39;t set corrupt flag to True, doing so causes</span>
+                <span class="c1"># Don&#39;t set corrupt flag to ``True``, doing so causes</span>
                 <span class="c1"># set_recovery_epoch to be called. HDFS Corruption is silent.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">discard_part</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
                 <span class="c1"># Log the corruption in output file.</span>
@@ -670,7 +663,7 @@
         <span class="sd">&quot;&quot;&quot;Used to obtain the status of the worker.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.network_nodes.HiveNode.get_epoch_status`.</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
 <span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
 <span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
 

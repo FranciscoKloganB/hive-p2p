@@ -80,13 +80,7 @@ class Node:
 
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
-        """Instructs the HiveNode instance to execute the epoch.
-
-        Raises:
-            NotImplementedError:
-                When the class or one of its children does not implement
-                their own `execute_epoch` method.
-        """
+        """Instructs the HiveNode instance to execute the epoch."""
         raise NotImplementedError("All children of class Node must "
                                   "implement their own execute_epoch.")
     # endregion
@@ -461,7 +455,7 @@ class HiveNodeExt(HiveNode):
         """Used to obtain the status of the worker.
 
         Overrides:
-            :py:meth:`app.domain.network_nodes.HiveNode.get_epoch_status`.
+            :py:meth:`app.domain.network_nodes.Node.get_status`.
             When not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
 
@@ -559,7 +553,7 @@ class HDFSNode(Node):
         """Used to obtain the status of the worker.
 
         Overrides:
-            :py:meth:`app.domain.network_nodes.HiveNode.get_epoch_status`.
+            :py:meth:`app.domain.network_nodes.Node.get_status`.
             When not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
 

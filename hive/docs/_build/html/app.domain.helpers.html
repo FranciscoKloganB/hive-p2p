@@ -576,11 +576,11 @@ components.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – The matrix to be verified.</p></li>
 <li><p><strong>directed</strong> (<em>bool</em>) – If the matrix edges are directed, i.e., if the matrix is an adjency
-matrix are the edges bidirectional, where false means they are.</p></li>
+matrix are the edges bidirectional, where <code class="docutils literal notranslate"><span class="pre">False</span></code> means they are.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>True if the matrix is a connected graph, else False.</p>
+<dd class="field-even"><p>True if the matrix is a connected graph, else <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool</p>
@@ -601,7 +601,7 @@ is 1e-8).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>True if the matrix is symmetric, else False.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the matrix is symmetric, else <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool</p>
@@ -776,13 +776,13 @@ with bidirectional connections between network nodes.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<em>int</em>) – The length of the square matrix.</p></li>
 <li><p><strong>allow_sloops</strong> (<em>bool</em>) – Indicates if the generated adjacency matrix allows diagonal
-entries representing self-loops. If false, then, all diagonal
+entries representing self-loops. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, then, all diagonal
 entries must be zeros. Otherwise, they can be zeros or ones.</p></li>
 <li><p><strong>force_sloops</strong> (<em>bool</em>) – Indicates if the diagonal of the generated matrix should be
-filled with ones. If false, valid diagonal entries are decided by
-<cite>allow_self_loops</cite> param. Otherwise, diagonal entries are filled
-with ones. If <cite>allow_self_loops</cite> is False and <cite>enforce_loops</cite> is
-True, an error is raised.</p></li>
+filled with ones. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, valid diagonal entries are
+decided by <cite>allow_self_loops</cite> param. Otherwise, diagonal entries
+are filled with ones. If <cite>allow_self_loops</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code>
+and <cite>enforce_loops</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, an error is raised.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -790,8 +790,8 @@ True, an error is raised.</p></li>
 groups of network nodes.</p>
 </dd>
 <dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="app.domain.helpers.exceptions.IllegalArgumentError"><strong>IllegalArgumentError</strong></a> – When <cite>allow_self_loops</cite> (False) conflicts with
-    <cite>enforce_loops</cite> (True).</p>
+<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="app.domain.helpers.exceptions.IllegalArgumentError"><strong>IllegalArgumentError</strong></a> – When <cite>allow_self_loops</cite> (<code class="docutils literal notranslate"><span class="pre">False</span></code>) conflicts with
+    <cite>enforce_loops</cite> (<code class="docutils literal notranslate"><span class="pre">True</span></code>).</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
@@ -1044,8 +1044,8 @@ has graphs and figures. See
 <p>Equality is based on name equality.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>True if the name attribute of both instances is the same,
-otherwise False.</p>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the name attribute of both instances is the same,
+otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 </dl>
 </dd></dl>

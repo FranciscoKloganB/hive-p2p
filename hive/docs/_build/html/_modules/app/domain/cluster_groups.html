@@ -295,7 +295,7 @@
 <span class="sd">            complainee:</span>
 <span class="sd">                The identifier of the :py:class:`network node</span>
 <span class="sd">                &lt;app.domain.network_nodes.Node&gt;` being complained about.</span>
-<span class="sd">            reason:</span>
+<span class="sd">            reason (:py:data:`app.type_hints.HttpResponse`):</span>
 <span class="sd">                The :py:class:`http code &lt;app.domain.helpers.enums.HttpCodes&gt;`</span>
 <span class="sd">                that led to the complaint.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -355,11 +355,6 @@
 <span class="sd">            strat:</span>
 <span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
 <span class="sd">                the ``Cluster``.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError:</span>
-<span class="sd">                When children of this class do not implement the abstract</span>
-<span class="sd">                method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
@@ -382,8 +377,8 @@
 <span class="sd">                to it&#39;s managing :py:attr:`master` entity.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            False if ``Cluster`` failed to persist the :py:attr:`file` it was</span>
-<span class="sd">            responsible for, otherwise True.</span>
+<span class="sd">            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it was</span>
+<span class="sd">            responsible for, otherwise ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
 
@@ -412,23 +407,13 @@
 <span class="sd">        Returns:</span>
 <span class="sd">             List of :py:attr:`members` that disconnected during the</span>
 <span class="sd">             :py:attr:`current_epoch`. See</span>
-<span class="sd">             :py:meth:`app.domain.network_nodes.Node.get_epoch_status`.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError:</span>
-<span class="sd">                When children of this class do not implement the abstract</span>
-<span class="sd">                method.</span>
+<span class="sd">             :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Evaluates and logs the health, possibly other parameters, of the</span>
 <span class="sd">        ``Cluster`` at every epoch.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError:</span>
-<span class="sd">                When children of this class do not implement the abstract</span>
-<span class="sd">                method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
@@ -440,11 +425,6 @@
 <span class="sd">            off_nodes:</span>
 <span class="sd">                The subset of :py:attr:`members` who disconnected during the</span>
 <span class="sd">                current epoch.</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError:</span>
-<span class="sd">                When children of this class do not implement the abstract</span>
-<span class="sd">                method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
@@ -492,7 +472,7 @@
 <div class="viewcode-block" id="Cluster._set_fail"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._set_fail">[docs]</a>    <span class="k">def</span> <span class="nf">_set_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Ends the Cluster instance simulation.</span>
 
-<span class="sd">        Sets :py:attr:`running` to False and orders</span>
+<span class="sd">        Sets :py:attr:`running` to ``False`` and orders</span>
 <span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileData` to write</span>
 <span class="sd">        :py:class:`collected logs &lt;app.domain.helpers.smart_dataclasses.LoggingData&gt;`</span>
 <span class="sd">        to disk and close it&#39;s</span>
@@ -596,19 +576,19 @@
 <span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
 <span class="sd">                the ``Cluster``.</span>
 
-<span class="sd">                    u</span>
-<span class="sd">                        Distributed uniformly across network.</span>
-<span class="sd">                    a</span>
-<span class="sd">                        Give all file block replicas to N different members,</span>
-<span class="sd">                        where N is equal to</span>
-<span class="sd">                        :py:const:`~app.environment_settings.REPLICATION_LEVEL`.</span>
-<span class="sd">                    i</span>
-<span class="sd">                        Distribute all file block replicas following such</span>
-<span class="sd">                        that the simulation starts with all file replicas and</span>
-<span class="sd">                        their replicas distributed with a bias towards the</span>
-<span class="sd">                        ideal steady state distribution. This mode is only</span>
-<span class="sd">                        applicatable to clusters of type or with ancestor type</span>
-<span class="sd">                        :py:class:`~app.domain.cluster_groups.HiveCluster`.</span>
+<span class="sd">                u</span>
+<span class="sd">                    Distributed uniformly across network.</span>
+<span class="sd">                a</span>
+<span class="sd">                    Give all file block replicas to N different members,</span>
+<span class="sd">                    where N is equal to</span>
+<span class="sd">                    :py:const:`~app.environment_settings.REPLICATION_LEVEL`.</span>
+<span class="sd">                i</span>
+<span class="sd">                    Distribute all file block replicas following such</span>
+<span class="sd">                    that the simulation starts with all file replicas and</span>
+<span class="sd">                    their replicas distributed with a bias towards the</span>
+<span class="sd">                    ideal steady state distribution. This mode is only</span>
+<span class="sd">                    applicatable to clusters of type or with ancestor type</span>
+<span class="sd">                    :py:class:`~app.domain.cluster_groups.HiveCluster`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="n">strat</span>
 
@@ -655,7 +635,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">             A collection of members who disconnected during the current</span>
 <span class="sd">             epoch. See</span>
-<span class="sd">             :py:meth:`app.domain.network_nodes.Node.get_epoch_status`.</span>
+<span class="sd">             :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -682,15 +662,6 @@
         <span class="k">return</span> <span class="n">off_nodes</span></div>
 
 <div class="viewcode-block" id="HiveCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Verifies file block distribution and hive health status.</span>
-
-<span class="sd">        Among other things it compares the current file block distribution</span>
-<span class="sd">        to the desired distribution, evicts and recruits new network nodes</span>
-<span class="sd">        for the Cluster and, performs logging invocations.</span>
-
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.evaluate`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
 
@@ -706,26 +677,25 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HiveCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Evicts disconnected network_nodes from the Cluster and</span>
-<span class="sd">        attempts to recruit new ones.</span>
-
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="n">node</span><span class="o">.</span><span class="n">remove_file_routing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="HiveCluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Recruit new :py:mod:`Network Nodes &lt;app.domain.network_nodes&gt;`.</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to recruits new</span>
+<span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.HiveNode&gt;` as members</span>
+<span class="sd">        of the ``HiveCluster``.</span>
 
 <span class="sd">        Extends:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.membership_maintenance`.</span>
-<span class="sd">            The implementation of membership_maintenance in `HiveCluster`</span>
-<span class="sd">            class also adds and removes cloud references depending on the</span>
-<span class="sd">            number of network nodes active in the membership before</span>
-<span class="sd">            maintenance is performed.</span>
+
+<span class="sd">            ``HiveCluster.membership_maintenance`` adds and removes cloud</span>
+<span class="sd">            references depending depending on the length of :py:attr:`~Cluster.members`</span>
+<span class="sd">            before maintenance is performed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary that is empty if membership did not change.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">s</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span><span class="p">:</span>
@@ -743,23 +713,29 @@
 <div class="viewcode-block" id="HiveCluster.new_desired_distribution"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.new_desired_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">new_desired_distribution</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">member_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">member_uptimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Sets a new desired distribution for the Cluster instance.</span>
+        <span class="sd">&quot;&quot;&quot;Sets a new :py:attr:`desired distribution &lt;v_&gt;` for the</span>
+<span class="sd">        ``HiveCluster``.</span>
 
-<span class="sd">        Normalizes the received uptimes to create a stochastic representation</span>
-<span class="sd">        of the desired distribution, which can be used by the different</span>
-<span class="sd">        transition matrix generation strategies.</span>
+<span class="sd">        Received ``member_uptimes`` are normalized to create a stochastic</span>
+<span class="sd">        representation of the desired distribution, which can be used by the</span>
+<span class="sd">        different transition matrix generation strategies.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            member_ids:</span>
-<span class="sd">                A list of network node identifiers currently belonging</span>
-<span class="sd">                to the Cluster membership.</span>
+<span class="sd">                A list of :py:attr:`node identifiers</span>
+<span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` who are</span>
+<span class="sd">                :py:attr:`~Cluster.members` of the ``HiveCluster``.</span>
 <span class="sd">            member_uptimes:</span>
-<span class="sd">                A list in which each index contains the uptime of the network</span>
-<span class="sd">                node with the same index in `member_ids`.</span>
+<span class="sd">                A list of :py:attr:`node identifiers</span>
+<span class="sd">                &lt;app.domain.network_nodes.Node.uptime&gt;`.</span>
 
+<span class="sd">        Note:</span>
+<span class="sd">            ``member_ids`` and ``member_uptimes`` elements at each index should</span>
+<span class="sd">            belong to each other, i.e., they should originate from from the</span>
+<span class="sd">            same :py:class:`network node &lt;app.domain.network_nodes.HiveNode&gt;`.</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of floats with normalized uptimes which represent the</span>
-<span class="sd">            &#39;reliability&#39; of network nodes.</span>
+<span class="sd">            &quot;reliability&quot; of network nodes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">member_uptimes</span><span class="p">)</span>
         <span class="n">u_</span> <span class="o">=</span> <span class="p">[</span><span class="n">member_uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">member_uptime</span> <span class="ow">in</span> <span class="n">member_uptimes</span><span class="p">]</span>
@@ -772,11 +748,12 @@
         <span class="k">return</span> <span class="n">u_</span></div>
 
 <div class="viewcode-block" id="HiveCluster.new_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.new_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">new_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Creates a new transition matrix to be distributed among hive members.</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new transition matrix that is likely to be a Markov Matrix.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The labeled matrix that has the fastests mixing rate from all</span>
-<span class="sd">            the pondered strategies.</span>
+<span class="sd">            :py:class:`~pd:pandas.DataFrame`:</span>
+<span class="sd">                The labeled matrix that has the fastests mixing rate from all</span>
+<span class="sd">                the pondered strategies.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">node_uptimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">node_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -798,7 +775,7 @@
 <span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.HiveNode&gt;`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            m (:py:class:`pd:pandas.DataFrame`)</span>
+<span class="sd">            m (:py:class:`~pd:pandas.DataFrame`)</span>
 <span class="sd">                A matrix to be broadcasted to the network nodes</span>
 <span class="sd">                belonging who are currently members of the Cluster instance.</span>
 
@@ -848,9 +825,9 @@
         <span class="c1"># converges.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">broadcast_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
 
+    <span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="HiveCluster.select_fastest_topology"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.select_fastest_topology">[docs]</a>    <span class="k">def</span> <span class="nf">select_fastest_topology</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates multiple transition matrices and selects the fastest.</span>
 
 <span class="sd">        The fastest of the created transition matrices corresponds to the one</span>
@@ -859,7 +836,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            a:</span>
 <span class="sd">                An adjacency matrix that represents the network topology.</span>
-<span class="sd">            v_:</span>
+<span class="sd">            `v_`:</span>
 <span class="sd">                A desired distribution vector that defines the returned</span>
 <span class="sd">                matrix steady state property.</span>
 
@@ -903,14 +880,15 @@
 <span class="sd">        entries of ``target_distribution``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            transition_matrix (:py:class:`pd:pandas.DataFrame`):</span>
+<span class="sd">            transition_matrix (:py:class:`~pd:pandas.DataFrame`):</span>
 <span class="sd">                The matrix to be verified.</span>
-<span class="sd">            target_distribution (:py:class:`pd:pandas.DataFrame`):</span>
+<span class="sd">            target_distribution (:py:class:`~pd:pandas.DataFrame`):</span>
 <span class="sd">                The steady state the ``transition_matrix`` is expected to have.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            True if the matrix converges to the ``target_distribution``,</span>
-<span class="sd">            otherwise False. I.e., if ``transition_matrix`` is a markov matrix.</span>
+<span class="sd">            ``True`` if the matrix converges to the ``target_distribution``,</span>
+<span class="sd">            otherwise ``False``. I.e., if ``transition_matrix`` is a</span>
+<span class="sd">            markov matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">t_pow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="mi">4096</span><span class="p">)</span>
         <span class="n">column_count</span> <span class="o">=</span> <span class="n">t_pow</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -988,8 +966,8 @@
         <span class="sd">&quot;&quot;&quot;Pretty prints a PSQL formatted table for visual vector comparison.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            target (:py:class:`pd:pandas.DataFrame`):</span>
-<span class="sd">                The :py:class:`pd:pandas.DataFrame` object to be formatted</span>
+<span class="sd">            target (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">                The :py:class:`~pd:pandas.DataFrame` object to be formatted</span>
 <span class="sd">                as PSQL table.</span>
 <span class="sd">            atol:</span>
 <span class="sd">                The allowed absolute tolerance.</span>
@@ -1010,31 +988,32 @@
 <div class="viewcode-block" id="HiveClusterExt"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt">[docs]</a><span class="k">class</span> <span class="nc">HiveClusterExt</span><span class="p">(</span><span class="n">HiveCluster</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents a group of network nodes persisting a file.</span>
 
-<span class="sd">    HiveClusterExt instances differ from</span>
-<span class="sd">    :py:class:`app.domain.cluster_groups.HiveCluster` because their members are</span>
-<span class="sd">    of type :py:class:`Network Nodes &lt;app.domain.network_nodes.HiveNodeExt&gt;`</span>
-<span class="sd">    . When combined these classes give nodes the responsibility of</span>
-<span class="sd">    collaborating in the detection of faulty members of the `HiveClusterExt`</span>
-<span class="sd">    and eventually kicking them out of the group.</span>
+<span class="sd">    ``HiveClusterExt`` instances differ from</span>
+<span class="sd">    :py:class:`~app.domain.cluster_groups.HiveCluster` because their members are</span>
+<span class="sd">    of type :py:class:`~app.domain.network_nodes.HiveNodeExt`. When combined</span>
+<span class="sd">    these classes give nodes the responsibility of collaborating in the</span>
+<span class="sd">    detection of faulty members of the ``HiveClusterExt`` and eventually</span>
+<span class="sd">    kicking them out of the group.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        complaint_threshold:</span>
+<span class="sd">        complaint_threshold (float):</span>
 <span class="sd">            Reference value that defines the maximum number of complaints a</span>
-<span class="sd">            :py:mod:`Network Node &lt;app.domain.network_nodes&gt;` can receive before</span>
-<span class="sd">            it is evicted from the HiveClusterExt.</span>
-<span class="sd">        nodes_complaints:</span>
-<span class="sd">            A dictionary mapping :py:mod:`Network</span>
-<span class="sd">            Nodes&#39; &lt;app.domain.network_nodes&gt;` identifiers to their respective</span>
-<span class="sd">            number of received complaints. When complaints becomes bigger than</span>
-<span class="sd">            `complaint_threshold`, the respective complaintee is evicted</span>
-<span class="sd">            from the `HiveClusterExt`.</span>
-<span class="sd">        suspicious_nodes:</span>
-<span class="sd">            A dict containing the unique identifiers of known suspicious</span>
-<span class="sd">            nodes and how many epochs have passed since they changed to that</span>
+<span class="sd">            :py:class:`network node &lt;app.domain.network_nodes.HiveNodeExt&gt;`</span>
+<span class="sd">            can receive before it is evicted from the ``HiveClusterExt``.</span>
+<span class="sd">        nodes_complaints (Dict[str, int]):</span>
+<span class="sd">            A dictionary mapping :py:attr:`network node identifiers&#39;</span>
+<span class="sd">            &lt;app.domain.network_nodes.Node.id&gt;` to the number of complaints</span>
+<span class="sd">            made against them by other :py:attr:`~Cluster.members`. When</span>
+<span class="sd">            complaints becomes bigger than py:py:attr:`complaint_threshold`</span>
+<span class="sd">            the complaintee is evicted from the group.</span>
+<span class="sd">        suspicious_nodes (Dict[str, int]):</span>
+<span class="sd">            A dictionary containing the unique :py:attr:`node identifiers</span>
+<span class="sd">            &lt;app.domain.network_nodes.Node.id&gt;` of known suspicious</span>
+<span class="sd">            members and how many epochs have passed since they changed to such</span>
 <span class="sd">            status.</span>
-<span class="sd">        _epoch_complaints:</span>
+<span class="sd">        _epoch_complaints (set):</span>
 <span class="sd">            A set of unique identifiers formed from the concatenation of</span>
-<span class="sd">            :py:attr:`node identifiers &lt;app.domain.network_nodes.HiveNode.id&gt;`,</span>
+<span class="sd">            :py:attr:`node identifiers &lt;app.domain.network_nodes.Node.id&gt;`,</span>
 <span class="sd">            to avoid multiple complaint registrations on the same epoch,</span>
 <span class="sd">            done by the same source towards the same target. The set is</span>
 <span class="sd">            reset every epoch.</span>
@@ -1072,7 +1051,7 @@
 <span class="sd">                The identifier of the</span>
 <span class="sd">                :py:class:`~app.domain.network_nodes.HiveNodeExt`</span>
 <span class="sd">                being complained about.</span>
-<span class="sd">            reason:</span>
+<span class="sd">            reason (:py:data:`app.type_hints.HttpResponse`):</span>
 <span class="sd">                The :py:class:`http code &lt;app.domain.helpers.enums.HttpCodes&gt;`</span>
 <span class="sd">                that led to the complaint.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1092,11 +1071,6 @@
 
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="HiveClusterExt.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Instructs the cluster to execute an epoch.</span>
-
-<span class="sd">        Extends:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_epoch_complaints</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
@@ -1104,17 +1078,21 @@
         <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.HiveCluster.nodes_execute`. It</span>
-<span class="sd">            considers nodes as Suspects until it receives enough complaints</span>
-<span class="sd">            from member nodes. This is important because lost parts can not</span>
-<span class="sd">            be logged multiple times. Yet suspected network_nodes need to be</span>
-<span class="sd">            contabilized as offline for simulation purposes without being</span>
-<span class="sd">            evicted from the group until said detection occurs.</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.HiveCluster.nodes_execute`.</span>
+
+<span class="sd">            Offline :py:class:`network nodes &lt;app.domain.network_nodes.HiveNodeExt&gt;`</span>
+<span class="sd">            are considered suspects until enough complaints</span>
+<span class="sd">            from other ``HiveNodeExt`` :py:attr:`~Cluster.members` are received.</span>
+<span class="sd">            This is important because lost parts can not be logged multiple</span>
+<span class="sd">            times. Yet suspected :py:class:`network nodes</span>
+<span class="sd">            &lt;app.domain.network_nodes.HiveNodeExt&gt;` need to be contabilized</span>
+<span class="sd">            as offline for simulation purposes without being evicted from the</span>
+<span class="sd">            group until they are detected by their peers as being offline.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">             A collection of members who disconnected during the current</span>
-<span class="sd">             epoch.</span>
-<span class="sd">             See :py:meth:`domain.network_nodes.HiveNode.get_epoch_status`.</span>
+<span class="sd">            A collection of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">            during the current epoch.</span>
+<span class="sd">            See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1153,14 +1131,12 @@
         <span class="k">return</span> <span class="n">off_nodes</span></div>
 
 <div class="viewcode-block" id="HiveClusterExt.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Evicts any node whose number of complaints as surpassed the</span>
-<span class="sd">        `complaint_threshold`.</span>
+        <span class="sd">&quot;&quot;&quot;Evicts any :py:class:`network node</span>
+<span class="sd">        &lt;app.domain.network_nodes.HiveNodeExt&gt;` who has</span>
+<span class="sd">        been complained about more than :py:attr:`complaint_threshold` times.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`domain.cluster_groups.HiveCluster.maintain`.</span>
-<span class="sd">            Considers parameters that belong HiveClusterExt. Such as</span>
-<span class="sd">            :py:attr:`domain.cluster_groups.HiveClusterExt.suspicious_nodes`</span>
-<span class="sd">            and :py:attr:`domain.cluster_groups.HiveClusterExt.nodes_complaints`</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [o] Evicted suspect </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -1248,15 +1224,15 @@
 
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="HDFSCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Queries all :py:attr:`Cluster.members` to execute the epoch.</span>
+        <span class="sd">&quot;&quot;&quot;Queries all :py:attr:`~Cluster.members` to execute the epoch.</span>
 
 <span class="sd">        Overrides:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A collection of :py:attr:`Cluster.members` who disconnected</span>
+<span class="sd">            A collection of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">            during the current epoch.</span>
-<span class="sd">            See :py:meth:`app.domain.network_nodes.HiveNode.get_epoch_status`.</span>
+<span class="sd">            See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lost_replicas_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1321,7 +1297,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            off_nodes:</span>
-<span class="sd">                The subset of :py:attr:`Cluster.members` who disconnected</span>
+<span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">                during the current epoch.</span>
 <span class="sd">        Overrides:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.</span>

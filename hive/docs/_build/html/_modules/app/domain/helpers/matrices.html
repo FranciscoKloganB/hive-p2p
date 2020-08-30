@@ -559,14 +559,14 @@
 <span class="sd">             The length of the square matrix.</span>
 <span class="sd">        allow_sloops:</span>
 <span class="sd">            Indicates if the generated adjacency matrix allows diagonal</span>
-<span class="sd">            entries representing self-loops. If false, then, all diagonal</span>
+<span class="sd">            entries representing self-loops. If ``False``, then, all diagonal</span>
 <span class="sd">            entries must be zeros. Otherwise, they can be zeros or ones.</span>
 <span class="sd">        force_sloops:</span>
 <span class="sd">            Indicates if the diagonal of the generated matrix should be</span>
-<span class="sd">            filled with ones. If false, valid diagonal entries are decided by</span>
-<span class="sd">            `allow_self_loops` param. Otherwise, diagonal entries are filled</span>
-<span class="sd">            with ones. If `allow_self_loops` is False and `enforce_loops` is</span>
-<span class="sd">            True, an error is raised.</span>
+<span class="sd">            filled with ones. If ``False``, valid diagonal entries are</span>
+<span class="sd">            decided by `allow_self_loops` param. Otherwise, diagonal entries</span>
+<span class="sd">            are filled with ones. If `allow_self_loops` is ``False``</span>
+<span class="sd">            and `enforce_loops` is ``True``, an error is raised.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The adjency matrix representing the connections between a</span>
@@ -574,8 +574,8 @@
 
 <span class="sd">    Raises:</span>
 <span class="sd">        IllegalArgumentError:</span>
-<span class="sd">            When `allow_self_loops` (False) conflicts with</span>
-<span class="sd">            `enforce_loops` (True).</span>
+<span class="sd">            When `allow_self_loops` (``False``) conflicts with</span>
+<span class="sd">            `enforce_loops` (``True``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_sloops</span> <span class="ow">and</span> <span class="n">force_sloops</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">IllegalArgumentError</span><span class="p">(</span><span class="s2">&quot;Can not invoke new_symmetric_matrix with:</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -659,7 +659,7 @@
 <span class="sd">            is 1e-8).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        True if the matrix is symmetric, else False.</span>
+<span class="sd">        ``True`` if the matrix is symmetric, else ``False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="n">m</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)</span></div>
 
@@ -673,10 +673,10 @@
 <span class="sd">            The matrix to be verified.</span>
 <span class="sd">        directed:</span>
 <span class="sd">            If the matrix edges are directed, i.e., if the matrix is an adjency</span>
-<span class="sd">            matrix are the edges bidirectional, where false means they are.</span>
+<span class="sd">            matrix are the edges bidirectional, where ``False`` means they are.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        True if the matrix is a connected graph, else False.</span>
+<span class="sd">        True if the matrix is a connected graph, else ``False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">cc_labels</span> <span class="o">=</span> <span class="n">connected_components</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="n">directed</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span></div>

@@ -412,7 +412,7 @@ simulation’s current epoch.</p>
 <dt id="app.domain.cluster_groups.Cluster._set_fail">
 <code class="sig-name descname">_set_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._set_fail"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Ends the Cluster instance simulation.</p>
-<p>Sets <a class="reference internal" href="#app.domain.cluster_groups.Cluster.running" title="app.domain.cluster_groups.Cluster.running"><code class="xref py py-attr docutils literal notranslate"><span class="pre">running</span></code></a> to False and orders
+<p>Sets <a class="reference internal" href="#app.domain.cluster_groups.Cluster.running" title="app.domain.cluster_groups.Cluster.running"><code class="xref py py-attr docutils literal notranslate"><span class="pre">running</span></code></a> to <code class="docutils literal notranslate"><span class="pre">False</span></code> and orders
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData" title="app.domain.helpers.smart_dataclasses.FileData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileData</span></code></a> to write
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">collected</span> <span class="pre">logs</span></code></a>
 to disk and close it’s
@@ -457,7 +457,7 @@ overridden in sub classes if required.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>complainter</strong> (<em>str</em>) – The identifier of the complaining <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>.</p></li>
 <li><p><strong>complainee</strong> (<em>str</em>) – The identifier of the <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a> being complained about.</p></li>
-<li><p><strong>reason</strong> (<em>th.HttpResponse</em>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.HttpCodes" title="app.domain.helpers.enums.HttpCodes"><code class="xref py py-class docutils literal notranslate"><span class="pre">http</span> <span class="pre">code</span></code></a>
+<li><p><strong>reason</strong> (<a class="reference internal" href="app.html#app.type_hints.HttpResponse" title="app.type_hints.HttpResponse"><code class="xref py py-data docutils literal notranslate"><span class="pre">app.type_hints.HttpResponse</span></code></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.HttpCodes" title="app.domain.helpers.enums.HttpCodes"><code class="xref py py-class docutils literal notranslate"><span class="pre">http</span> <span class="pre">code</span></code></a>
 that led to the complaint.</p></li>
 </ul>
 </dd>
@@ -473,12 +473,8 @@ that led to the complaint.</p></li>
 <dd><p>Evaluates and logs the health, possibly other parameters, of the
 <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> at every epoch.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><strong>NotImplementedError</strong> – When children of this class do not implement the abstract
-    method.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -502,8 +498,8 @@ collected results.</p>
 to it’s managing <a class="reference internal" href="#app.domain.cluster_groups.Cluster.master" title="app.domain.cluster_groups.Cluster.master"><code class="xref py py-attr docutils literal notranslate"><span class="pre">master</span></code></a> entity.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>False if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.file" title="app.domain.cluster_groups.Cluster.file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code></a> it was
-responsible for, otherwise True.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">False</span></code> if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.file" title="app.domain.cluster_groups.Cluster.file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code></a> it was
+responsible for, otherwise <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None</p>
@@ -536,12 +532,8 @@ attempts to recruit new ones.</p>
 <dd class="field-odd"><p><strong>off_nodes</strong> (<em>List</em><em>[</em><em>th.NodeType</em><em>]</em>) – The subset of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who disconnected during the
 current epoch.</p>
 </dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>NotImplementedError</strong> – When children of this class do not implement the abstract
-    method.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -577,14 +569,10 @@ Similarly it logs the number of members who disconnected.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>List of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> that disconnected during the
 <a class="reference internal" href="#app.domain.cluster_groups.Cluster.current_epoch" title="app.domain.cluster_groups.Cluster.current_epoch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code></a>. See
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_epoch_status()</span></code>.</p>
+<a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.</p>
 </dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>NotImplementedError</strong> – When children of this class do not implement the abstract
-    method.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>List[th.NodeType]</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[th.NodeType]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -651,12 +639,8 @@ replicas, without replication.</p></li>
 the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>NotImplementedError</strong> – When children of this class do not implement the abstract
-    method.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -751,7 +735,7 @@ the simulation process.</p></li>
 whose heartbeats in <a class="reference internal" href="#app.domain.cluster_groups.HDFSCluster.data_node_heartbeats" title="app.domain.cluster_groups.HDFSCluster.data_node_heartbeats"><code class="xref py py-attr docutils literal notranslate"><span class="pre">data_node_heartbeats</span></code></a> reached zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>off_nodes</strong> (<em>List</em><em>[</em><em>th.NodeType</em><em>]</em>) – The subset of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cluster.members</span></code></a> who disconnected
+<dd class="field-odd"><p><strong>off_nodes</strong> (<em>List</em><em>[</em><em>th.NodeType</em><em>]</em>) – The subset of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who disconnected
 during the current epoch.</p>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -783,16 +767,16 @@ of the <code class="docutils literal notranslate"><span class="pre">Cluster</spa
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.nodes_execute">
 <code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Queries all <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cluster.members</span></code></a> to execute the epoch.</p>
+<dd><p>Queries all <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> to execute the epoch.</p>
 <dl class="simple">
 <dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.nodes_execute" title="app.domain.cluster_groups.Cluster.nodes_execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.nodes_execute()</span></code></a></p>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A collection of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cluster.members</span></code></a> who disconnected
+<dd class="field-odd"><p>A collection of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who disconnected
 during the current epoch.
-See <code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode.get_epoch_status()</span></code>.</p>
+See <a class="reference internal" href="#app.domain.network_nodes.HDFSNode.get_status" title="app.domain.network_nodes.HDFSNode.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HDFSNode.get_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[th.NodeType]</p>
@@ -907,7 +891,7 @@ simulation’s current epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>target</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>) – The <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a> object to be formatted
+<li><p><strong>target</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> object to be formatted
 as PSQL table.</p></li>
 <li><p><strong>atol</strong> (<em>float</em>) – The allowed absolute tolerance.</p></li>
 <li><p><strong>rtol</strong> (<em>float</em>) – The allowed relative tolerance.</p></li>
@@ -930,13 +914,14 @@ entries of <code class="docutils literal notranslate"><span class="pre">target_d
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>transition_matrix</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>) – The matrix to be verified.</p></li>
-<li><p><strong>target_distribution</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>) – The steady state the <code class="docutils literal notranslate"><span class="pre">transition_matrix</span></code> is expected to have.</p></li>
+<li><p><strong>transition_matrix</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The matrix to be verified.</p></li>
+<li><p><strong>target_distribution</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The steady state the <code class="docutils literal notranslate"><span class="pre">transition_matrix</span></code> is expected to have.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>True if the matrix converges to the <code class="docutils literal notranslate"><span class="pre">target_distribution</span></code>,
-otherwise False. I.e., if <code class="docutils literal notranslate"><span class="pre">transition_matrix</span></code> is a markov matrix.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the matrix converges to the <code class="docutils literal notranslate"><span class="pre">target_distribution</span></code>,
+otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>. I.e., if <code class="docutils literal notranslate"><span class="pre">transition_matrix</span></code> is a
+markov matrix.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool</p>
@@ -973,7 +958,7 @@ for more details.</p>
 <a class="reference internal" href="#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>m</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>) – A matrix to be broadcasted to the network nodes
+<dd class="field-odd"><p><strong>m</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – A matrix to be broadcasted to the network nodes
 belonging who are currently members of the Cluster instance.</p>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1036,14 +1021,8 @@ otherwise, it returns <code class="docutils literal notranslate"><span class="pr
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.evaluate">
 <code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Verifies file block distribution and hive health status.</p>
-<p>Among other things it compares the current file block distribution
-to the desired distribution, evicts and recruits new network nodes
-for the Cluster and, performs logging invocations.</p>
-<dl class="simple">
-<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.evaluate" title="app.domain.cluster_groups.Cluster.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.evaluate()</span></code></a>.</p>
-</dd>
-</dl>
+<dd><p>Evaluates and logs the health, possibly other parameters, of the
+<code class="docutils literal notranslate"><span class="pre">Cluster</span></code> at every epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>None</p>
@@ -1054,15 +1033,12 @@ for the Cluster and, performs logging invocations.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.maintain">
 <code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Evicts disconnected network_nodes from the Cluster and
+<dd><p>Evicts disconnected <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> from the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> and
 attempts to recruit new ones.</p>
-<dl class="simple">
-<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.maintain" title="app.domain.cluster_groups.Cluster.maintain"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.maintain()</span></code></a>.</p>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>off_nodes</strong> (<em>List</em><em>[</em><em>th.NodeType</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>off_nodes</strong> (<em>List</em><em>[</em><em>th.NodeType</em><em>]</em>) – The subset of <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> who disconnected during the
+current epoch.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -1073,18 +1049,22 @@ attempts to recruit new ones.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.membership_maintenance">
 <code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Recruit new <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a>.</p>
-<dl class="simple">
-<dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.membership_maintenance" title="app.domain.cluster_groups.Cluster.membership_maintenance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.membership_maintenance()</span></code></a>.
-The implementation of membership_maintenance in <cite>HiveCluster</cite>
-class also adds and removes cloud references depending on the
-number of network nodes active in the membership before
-maintenance is performed.</p>
+<dd><p>Attempts to recruits new
+<a class="reference internal" href="#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> as members
+of the <code class="docutils literal notranslate"><span class="pre">HiveCluster</span></code>.</p>
+<dl>
+<dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.membership_maintenance" title="app.domain.cluster_groups.Cluster.membership_maintenance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.membership_maintenance()</span></code></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">HiveCluster.membership_maintenance</span></code> adds and removes cloud
+references depending depending on the length of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a>
+before maintenance is performed.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>th.NodeDict</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary that is empty if membership did not change.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>th.NodeDict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1092,22 +1072,39 @@ maintenance is performed.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.new_desired_distribution">
 <code class="sig-name descname">new_desired_distribution</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">member_ids</span></em>, <em class="sig-param"><span class="n">member_uptimes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.new_desired_distribution"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Sets a new desired distribution for the Cluster instance.</p>
-<p>Normalizes the received uptimes to create a stochastic representation
-of the desired distribution, which can be used by the different
-transition matrix generation strategies.</p>
+<dd><p>Sets a new <a class="reference internal" href="#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">desired</span> <span class="pre">distribution</span></code></a> for the
+<code class="docutils literal notranslate"><span class="pre">HiveCluster</span></code>.</p>
+<p>Received <code class="docutils literal notranslate"><span class="pre">member_uptimes</span></code> are normalized to create a stochastic
+representation of the desired distribution, which can be used by the
+different transition matrix generation strategies.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>member_ids</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of network node identifiers currently belonging
-to the Cluster membership.</p></li>
-<li><p><strong>member_uptimes</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – A list in which each index contains the uptime of the network
-node with the same index in <cite>member_ids</cite>.</p></li>
+<li><p><strong>member_ids</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> who are
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> of the <code class="docutils literal notranslate"><span class="pre">HiveCluster</span></code>.</p></li>
+<li><p><strong>member_uptimes</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – A list of <a class="reference internal" href="#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of floats with normalized uptimes which represent the
-‘reliability’ of network nodes.</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">member_ids</span></code> and <code class="docutils literal notranslate"><span class="pre">member_uptimes</span></code> elements at each index should
+belong to each other, i.e., they should originate from from the
+same <a class="reference internal" href="#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A list of floats with normalized uptimes which represent the
+“reliability” of network nodes.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>member_ids</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – </p></li>
+<li><p><strong>member_uptimes</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – </p></li>
+</ul>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>List[float]</p>
@@ -1118,14 +1115,14 @@ node with the same index in <cite>member_ids</cite>.</p></li>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.new_transition_matrix">
 <code class="sig-name descname">new_transition_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.new_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Creates a new transition matrix to be distributed among hive members.</p>
+<dd><p>Creates a new transition matrix that is likely to be a Markov Matrix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The labeled matrix that has the fastests mixing rate from all
 the pondered strategies.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>pandas.core.frame.DataFrame</p>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1142,7 +1139,7 @@ the pondered strategies.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A collection of members who disconnected during the current
 epoch. See
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_epoch_status()</span></code>.</p>
+<a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[th.NodeType]</p>
@@ -1175,9 +1172,8 @@ with a faster mixing rate.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – An adjacency matrix that represents the network topology.</p></li>
-<li><p><strong>v</strong> – A desired distribution vector that defines the returned
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A desired distribution vector that defines the returned
 matrix steady state property.</p></li>
-<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1208,8 +1204,7 @@ objects among the <a class="reference internal" href="#app.domain.cluster_groups
 replicas, without replication.</p></li>
 <li><p><strong>strat</strong> (<em>str</em>) – <p>Defines how <code class="docutils literal notranslate"><span class="pre">replicas</span></code> will be initially distributed in
 the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
-<blockquote>
-<div><dl class="simple">
+<dl class="simple">
 <dt>u</dt><dd><p>Distributed uniformly across network.</p>
 </dd>
 <dt>a</dt><dd><p>Give all file block replicas to N different members,
@@ -1224,7 +1219,6 @@ applicatable to clusters of type or with ancestor type
 <a class="reference internal" href="#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiveCluster</span></code></a>.</p>
 </dd>
 </dl>
-</div></blockquote>
 </p></li>
 </ul>
 </dd>
@@ -1241,46 +1235,65 @@ applicatable to clusters of type or with ancestor type
 <em class="property">class </em><code class="sig-name descname">HiveClusterExt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster</span></code></a></p>
 <p>Represents a group of network nodes persisting a file.</p>
-<p>HiveClusterExt instances differ from
-<a class="reference internal" href="#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster</span></code></a> because their members are
-of type <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt" title="app.domain.network_nodes.HiveNodeExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a>
-. When combined these classes give nodes the responsibility of
-collaborating in the detection of faulty members of the <cite>HiveClusterExt</cite>
-and eventually kicking them out of the group.</p>
+<p><code class="docutils literal notranslate"><span class="pre">HiveClusterExt</span></code> instances differ from
+<a class="reference internal" href="#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiveCluster</span></code></a> because their members are
+of type <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt" title="app.domain.network_nodes.HiveNodeExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiveNodeExt</span></code></a>. When combined
+these classes give nodes the responsibility of collaborating in the
+detection of faulty members of the <code class="docutils literal notranslate"><span class="pre">HiveClusterExt</span></code> and eventually
+kicking them out of the group.</p>
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.HiveClusterExt.complaint_threshold">
 <code class="sig-name descname">complaint_threshold</code></dt>
 <dd><p>Reference value that defines the maximum number of complaints a
-<a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> can receive before
-it is evicted from the HiveClusterExt.</p>
+<a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt" title="app.domain.network_nodes.HiveNodeExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>
+can receive before it is evicted from the <code class="docutils literal notranslate"><span class="pre">HiveClusterExt</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.HiveClusterExt.nodes_complaints">
 <code class="sig-name descname">nodes_complaints</code></dt>
-<dd><p>A dictionary mapping <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span>
-<span class="pre">Nodes'</span></code></a> identifiers to their respective
-number of received complaints. When complaints becomes bigger than
-<cite>complaint_threshold</cite>, the respective complaintee is evicted
-from the <cite>HiveClusterExt</cite>.</p>
+<dd><p>A dictionary mapping <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span> <span class="pre">identifiers'</span></code></a> to the number of complaints
+made against them by other <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a>. When
+complaints becomes bigger than py:py:attr:<cite>complaint_threshold</cite>
+the complaintee is evicted from the group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict[str, int]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.HiveClusterExt.suspicious_nodes">
 <code class="sig-name descname">suspicious_nodes</code></dt>
-<dd><p>A dict containing the unique identifiers of known suspicious
-nodes and how many epochs have passed since they changed to that
+<dd><p>A dictionary containing the unique <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> of known suspicious
+members and how many epochs have passed since they changed to such
 status.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict[str, int]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.HiveClusterExt._epoch_complaints">
 <code class="sig-name descname">_epoch_complaints</code></dt>
 <dd><p>A set of unique identifiers formed from the concatenation of
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code>,
+<a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a>,
 to avoid multiple complaint registrations on the same epoch,
 done by the same source towards the same target. The set is
 reset every epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>set</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1327,7 +1340,7 @@ of the complainter and the complainee unique identifiers.</p>
 <li><p><strong>complainee</strong> (<em>str</em>) – The identifier of the
 <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt" title="app.domain.network_nodes.HiveNodeExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiveNodeExt</span></code></a>
 being complained about.</p></li>
-<li><p><strong>reason</strong> (<em>th.HttpResponse</em>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.HttpCodes" title="app.domain.helpers.enums.HttpCodes"><code class="xref py py-class docutils literal notranslate"><span class="pre">http</span> <span class="pre">code</span></code></a>
+<li><p><strong>reason</strong> (<a class="reference internal" href="app.html#app.type_hints.HttpResponse" title="app.type_hints.HttpResponse"><code class="xref py py-data docutils literal notranslate"><span class="pre">app.type_hints.HttpResponse</span></code></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.HttpCodes" title="app.domain.helpers.enums.HttpCodes"><code class="xref py py-class docutils literal notranslate"><span class="pre">http</span> <span class="pre">code</span></code></a>
 that led to the complaint.</p></li>
 </ul>
 </dd>
@@ -1340,17 +1353,27 @@ that led to the complaint.</p></li>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveClusterExt.execute_epoch">
 <code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Instructs the cluster to execute an epoch.</p>
-<dl class="simple">
-<dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.execute_epoch" title="app.domain.cluster_groups.Cluster.execute_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.execute_epoch()</span></code></a>.</p>
-</dd>
-</dl>
+<dd><p>Orders all <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> to execute their epoch.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> terminates early, before it reaches
+<a class="reference internal" href="#app.domain.master_servers.Master.MAX_EPOCHS" title="app.domain.master_servers.Master.MAX_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MAX_EPOCHS</span></code></a>,
+nothing should be logged in
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggingData</span></code></a>
+at the specified <code class="docutils literal notranslate"><span class="pre">epoch</span></code> to avoid skewing previously
+collected results.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – </p>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – The epoch the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> should currently be in, according
+to it’s managing <code class="xref py py-attr docutils literal notranslate"><span class="pre">master</span></code> entity.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">False</span></code> if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code> it was
+responsible for, otherwise <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1358,13 +1381,10 @@ that led to the complaint.</p></li>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveClusterExt.maintain">
 <code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.maintain"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Evicts any node whose number of complaints as surpassed the
-<cite>complaint_threshold</cite>.</p>
+<dd><p>Evicts any <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt" title="app.domain.network_nodes.HiveNodeExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a> who has
+been complained about more than <a class="reference internal" href="#app.domain.cluster_groups.HiveClusterExt.complaint_threshold" title="app.domain.cluster_groups.HiveClusterExt.complaint_threshold"><code class="xref py py-attr docutils literal notranslate"><span class="pre">complaint_threshold</span></code></a> times.</p>
 <dl class="simple">
-<dt>Overrides:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">domain.cluster_groups.HiveCluster.maintain()</span></code>.
-Considers parameters that belong HiveClusterExt. Such as
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">domain.cluster_groups.HiveClusterExt.suspicious_nodes</span></code>
-and <code class="xref py py-attr docutils literal notranslate"><span class="pre">domain.cluster_groups.HiveClusterExt.nodes_complaints</span></code></p>
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.maintain" title="app.domain.cluster_groups.Cluster.maintain"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.maintain()</span></code></a>.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
@@ -1381,20 +1401,22 @@ and <code class="xref py py-attr docutils literal notranslate"><span class="pre"
 <dt id="app.domain.cluster_groups.HiveClusterExt.nodes_execute">
 <code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Queries all network node members execute the epoch.</p>
-<dl class="simple">
-<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.HiveCluster.nodes_execute" title="app.domain.cluster_groups.HiveCluster.nodes_execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster.nodes_execute()</span></code></a>. It
-considers nodes as Suspects until it receives enough complaints
-from member nodes. This is important because lost parts can not
-be logged multiple times. Yet suspected network_nodes need to be
-contabilized as offline for simulation purposes without being
-evicted from the group until said detection occurs.</p>
+<dl>
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.HiveCluster.nodes_execute" title="app.domain.cluster_groups.HiveCluster.nodes_execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster.nodes_execute()</span></code></a>.</p>
+<p>Offline <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt" title="app.domain.network_nodes.HiveNodeExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>
+are considered suspects until enough complaints
+from other <code class="docutils literal notranslate"><span class="pre">HiveNodeExt</span></code> <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> are received.
+This is important because lost parts can not be logged multiple
+times. Yet suspected <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt" title="app.domain.network_nodes.HiveNodeExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> need to be contabilized
+as offline for simulation purposes without being evicted from the
+group until they are detected by their peers as being offline.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A collection of members who disconnected during the current
-epoch.
-See <code class="xref py py-meth docutils literal notranslate"><span class="pre">domain.network_nodes.HiveNode.get_epoch_status()</span></code>.</p>
+<dd class="field-odd"><p>A collection of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who disconnected
+during the current epoch.
+See <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt.get_status" title="app.domain.network_nodes.HiveNodeExt.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNodeExt.get_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[th.NodeType]</p>
@@ -1833,7 +1855,7 @@ blocks should be routed.</p></li>
 <code class="sig-name descname">get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.get_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Used to obtain the status of the worker.</p>
 <dl class="simple">
-<dt>Overrides:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode.get_epoch_status()</span></code>.
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.
 When not ONLINE the node sets itself as Suspect and will only become
 offline when the monitor marks him as so (e.g.: due to complaints).</p>
 </dd>
@@ -2063,7 +2085,7 @@ groups’ peers, concerning suspicious behaviors.</p>
 <code class="sig-name descname">get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNodeExt.get_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Used to obtain the status of the worker.</p>
 <dl class="simple">
-<dt>Overrides:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode.get_epoch_status()</span></code>.
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.
 When not ONLINE the node sets itself as Suspect and will only become
 offline when the monitor marks him as so (e.g.: due to complaints).</p>
 </dd>
@@ -2173,9 +2195,8 @@ blocks.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fid</strong> (<em>str</em>) – Name of the file the file block replica belongs to.</p></li>
 <li><p><strong>number</strong> (<em>int</em>) – The part number that uniquely identifies the file block.</p></li>
-<li><p><strong>corrupt</strong> (<em>bool</em>) – optional; If discard is being invoked due to identified file
-block corruption, e.g., Sha256 does not match the expected (
-default False).</p></li>
+<li><p><strong>corrupt</strong> (<em>bool</em>) – If discard is being invoked due to identified file
+block corruption, e.g., Sha256 does not match the expected.</p></li>
 <li><p><strong>cluster</strong> (<em>th.ClusterType</em>) – Gateway Cluster that will set the recovery epoch (see
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster.set_recovery_epoch()</span></code>
 or mark the simulation as failed.</p></li>
@@ -2192,18 +2213,14 @@ or mark the simulation as failed.</p></li>
 <code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Instructs the HiveNode instance to execute the epoch.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><strong>NotImplementedError</strong> – When the class or one of its children does not implement
-    their own <cite>execute_epoch</cite> method.</p>
-</dd>
-<dt class="field-even">Parameters</dt>
-<dd class="field-even"><ul class="simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
 <li><p><strong>cluster</strong> (<em>th.ClusterType</em>) – </p></li>
 <li><p><strong>fid</strong> (<em>str</em>) – </p></li>
 </ul>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
