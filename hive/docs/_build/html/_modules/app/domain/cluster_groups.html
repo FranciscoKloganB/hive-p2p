@@ -136,7 +136,7 @@
     <span class="sd">&quot;&quot;&quot;Represents a group of network nodes ensuring the durability of a file.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        id (str):</span>
+<span class="sd">        id:</span>
 <span class="sd">            A unique identifier of the Cluster instance.</span>
 <span class="sd">        current_epoch:</span>
 <span class="sd">            The simulation&#39;s current epoch.</span>
@@ -183,7 +183,7 @@
 <span class="sd">            method calls throughout the :py:attr:`current_epoch`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="Cluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
                  <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
@@ -225,7 +225,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sufficient_size</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
 
     <span class="c1"># region Cluster API</span>
 <div class="viewcode-block" id="Cluster.route_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.route_part">[docs]</a>    <span class="k">def</span> <span class="nf">route_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -549,7 +549,7 @@
 <span class="sd">        cv_ (pandas DataFrame):</span>
 <span class="sd">            Tracks the file current density distribution, updated at each epoch.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="HiveCluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
                  <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
@@ -563,7 +563,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">create_and_bcast_new_transition_matrix</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_and_bcast_new_transition_matrix</span><span class="p">()</span></div>
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="HiveCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -987,7 +987,7 @@
 <span class="sd">            reset every epoch.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="HiveClusterExt.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
                  <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
@@ -1002,7 +1002,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_epoch_complaints</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epoch_complaints</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
 
     <span class="c1"># region Cluster API</span>
 <div class="viewcode-block" id="HiveClusterExt.complain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt.complain">[docs]</a>    <span class="k">def</span> <span class="nf">complain</span><span class="p">(</span>
@@ -1149,7 +1149,7 @@
 <span class="sd">            miss five beats in a row, i.e., when the dictionary value count</span>
 <span class="sd">            is zero, they are evicted from the cluster.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="HDFSCluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
                  <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
@@ -1164,7 +1164,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="mi">5</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="p">}</span>
+        <span class="p">}</span></div>
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="HDFSCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

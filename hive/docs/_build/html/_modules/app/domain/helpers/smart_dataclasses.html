@@ -146,7 +146,7 @@
 <span class="sd">            File output stream to where captured data is written in append mode.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="FileData.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates an instance of FileData</span>
 
 <span class="sd">        Args:</span>
@@ -170,7 +170,7 @@
                     <span class="n">Path</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
                     <span class="n">sim_id</span><span class="p">,</span>
                     <span class="s2">&quot;json&quot;</span><span class="p">)</span>
-            <span class="p">),</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FileData.fwrite"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.fwrite">[docs]</a>    <span class="k">def</span> <span class="nf">fwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Writes a message to the output file referenced by the FileData object.</span>
@@ -323,7 +323,7 @@
 <span class="sd">            The hash value of data resulting from a SHA256 digest.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="FileBlockData.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">hive_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates an instance of `FileBlockData`.</span>
@@ -345,7 +345,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">convertions</span><span class="o">.</span><span class="n">bytes_to_base64_string</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">crypto</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">crypto</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation Interface</span>
 <div class="viewcode-block" id="FileBlockData.set_replication_epoch"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -529,7 +529,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># region Class Variables, Instance Variables and Constructors</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="LoggingData.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Instanciates a LoggingData object for simulation event logging.&quot;&quot;&quot;</span>
 
         <span class="n">max_epochs</span> <span class="o">=</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span>
@@ -560,7 +560,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">matrices_nodes_degrees</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">off_node_count</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transmissions_failed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transmissions_failed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span></div>
         <span class="c1">###############################</span>
 
     <span class="c1"># endregion</span>

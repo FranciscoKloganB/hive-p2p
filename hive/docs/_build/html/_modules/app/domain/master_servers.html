@@ -157,7 +157,7 @@
     <span class="n">MAX_EPOCHS</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">MAX_EPOCHS_PLUS_ONE</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="Master.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -193,7 +193,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">simfile_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">simfile_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__process_simfile__</span><span class="p">(</span><span class="n">simfile_path</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__process_simfile__</span><span class="p">(</span><span class="n">simfile_path</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="Master.__process_simfile__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.__process_simfile__">[docs]</a>    <span class="k">def</span> <span class="nf">__process_simfile__</span><span class="p">(</span>
@@ -403,13 +403,13 @@
 
 
 <div class="viewcode-block" id="HiveMaster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HiveMaster">[docs]</a><span class="k">class</span> <span class="nc">HiveMaster</span><span class="p">(</span><span class="n">Master</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="HiveMaster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HiveMaster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
 
     <span class="c1"># region Master API</span>
 <div class="viewcode-block" id="HiveMaster.get_cloud_reference"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HiveMaster.get_cloud_reference">[docs]</a>    <span class="k">def</span> <span class="nf">get_cloud_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -430,13 +430,13 @@
 
 
 <div class="viewcode-block" id="HDFSMaster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster">[docs]</a><span class="k">class</span> <span class="nc">HDFSMaster</span><span class="p">(</span><span class="n">Master</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="HDFSMaster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                  <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="HDFSMaster.__process_simfile__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster.__process_simfile__">[docs]</a>    <span class="k">def</span> <span class="nf">__process_simfile__</span><span class="p">(</span>

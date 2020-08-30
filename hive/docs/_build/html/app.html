@@ -178,11 +178,6 @@ distributions to be considered equal and thus marking the epoch as convergent.</
 <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.equal_distributions" title="app.domain.cluster_groups.HiveCluster.equal_distributions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster.equal_distributions()</span></code></a> along
 with a relative tolerance that is the minimum value in
 <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -190,11 +185,6 @@ with a relative tolerance that is the minimum value in
 <code class="sig-name descname">DEBUG</code><em class="property">: bool</em><em class="property"> = False</em></dt>
 <dd><p>Indicates if some debug related actions or prints to the terminal should
 be performed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -202,11 +192,6 @@ be performed.</p>
 <code class="sig-name descname">LOSS_CHANCE</code><em class="property">: float</em><em class="property"> = 0.04</em></dt>
 <dd><p>Defines the probability of a message not being delivered to a destination
 due to network link problems, in the simulation environment.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -214,11 +199,6 @@ due to network link problems, in the simulation environment.</p>
 <code class="sig-name descname">MATLAB_DIR</code><em class="property">: str</em><em class="property"> = 'C:\\GitHub\\hive-msc-thesis\\hive\\docs\\scripts\\matlab'</em></dt>
 <dd><p>Path the folder where matlab scripts are located. Used by
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatlabEngineContainer</span></code></a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -226,11 +206,6 @@ due to network link problems, in the simulation environment.</p>
 <code class="sig-name descname">MAX_REPLICATION_DELAY</code><em class="property">: int</em><em class="property"> = 4</em></dt>
 <dd><p>The maximum amount of epoch time steps replica file block blocks take to
 be regenerated after their are lost.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -240,11 +215,6 @@ be regenerated after their are lost.</p>
 <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiveCluster</span></code></a> must converge before epochs
 start being marked with verified convergence in
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.LoggingData.convergence_set</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -252,11 +222,6 @@ start being marked with verified convergence in
 <code class="sig-name descname">MIN_REPLICATION_DELAY</code><em class="property">: int</em><em class="property"> = 1</em></dt>
 <dd><p>The minimum amount of epoch time steps replica file block blocks take to
 be regenerated after their are lost.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -265,11 +230,6 @@ be regenerated after their are lost.</p>
 <dd><p>Defines how many epochs (discrete time steps) a month is represented with.
 With the default value of 21600 each epoch would represent two minutes. See
 <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.__assign_disk_error_chance__" title="app.domain.cluster_groups.Cluster.__assign_disk_error_chance__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__assign_disk_error_chance__()</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -277,11 +237,6 @@ With the default value of 21600 each epoch would represent two minutes. See
 <code class="sig-name descname">OUTFILE_ROOT</code><em class="property">: str</em><em class="property"> = 'C:\\GitHub\\hive-msc-thesis\\hive\\docs\\static\\outfiles'</em></dt>
 <dd><p>Path to the folder where simulation output files are located will be
 stored.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -292,22 +247,12 @@ stored.</p>
 object.</p>
 <p>Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
 1MB = 1048576B; 20MB = 20971520B }.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
 <dt id="app.environment_settings.REPLICATION_LEVEL">
 <code class="sig-name descname">REPLICATION_LEVEL</code><em class="property">: int</em><em class="property"> = 3</em></dt>
 <dd><p>The amount of blocks each file block has.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -315,11 +260,6 @@ object.</p>
 <code class="sig-name descname">SHARED_ROOT</code><em class="property">: str</em><em class="property"> = 'C:\\GitHub\\hive-msc-thesis\\hive\\docs\\static\\shared'</em></dt>
 <dd><p>Path to the folder where files to be persisted during the simulation are
 located.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -327,11 +267,6 @@ located.</p>
 <code class="sig-name descname">SIMULATION_ROOT</code><em class="property">: str</em><em class="property"> = 'C:\\GitHub\\hive-msc-thesis\\hive\\docs\\static\\simfiles'</em></dt>
 <dd><p>Path to the folder where simulation files to be executed by
 <a class="reference internal" href="#module-app.hive_simulation" title="app.hive_simulation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.hive_simulation</span></code></a> are located.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>
@@ -516,6 +451,15 @@ matrices like so:</p>
 “new_sdp_mh_transition_matrix”, “new_go_transition_matrix”,
 “new_mgo_transition_matrix” }</p>
 </div>
+<dl class="py function">
+<dt id="app.mixing_rate_sampler.main">
+<code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/mixing_rate_sampler.html#main"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Compares the mixing rate of the markov matrices generated by all
+specified <cite>functions</cite>, <cite>samples</cite> times.</p>
+<p>The execution of the main method results in a JSON file outputed to
+<code class="xref py py-const docutils literal notranslate"><span class="pre">MIXING_RATE_SAMPLE_ROOT</span></code> folder.</p>
+</dd></dl>
+
 <dl class="py data">
 <dt id="app.mixing_rate_sampler._ResultsDict">
 <code class="sig-name descname">_ResultsDict</code><em class="property">: OrderedDict<span class="p">[</span>str<span class="p">, </span><a class="reference internal" href="#app.mixing_rate_sampler._SizeResultsDict" title="app.mixing_rate_sampler._SizeResultsDict">_SizeResultsDict</a><span class="p">]</span></em></dt>
@@ -525,15 +469,6 @@ matrices like so:</p>
 <dt id="app.mixing_rate_sampler._SizeResultsDict">
 <code class="sig-name descname">_SizeResultsDict</code><em class="property">: OrderedDict<span class="p">[</span>str<span class="p">, </span>List<span class="p">[</span>float<span class="p">]</span><span class="p">]</span></em></dt>
 <dd></dd></dl>
-
-<dl class="py function">
-<dt id="app.mixing_rate_sampler.main">
-<code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/mixing_rate_sampler.html#main"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Compares the mixing rate of the markov matrices generated by all
-specified <cite>functions</cite>, <cite>samples</cite> times.</p>
-<p>The execution of the main method results in a JSON file outputed to
-<code class="xref py py-const docutils literal notranslate"><span class="pre">MIXING_RATE_SAMPLE_ROOT</span></code> folder.</p>
-</dd></dl>
 
 </div>
 <div class="section" id="module-app.simfile_generator">
@@ -735,11 +670,6 @@ method <code class="docutils literal notranslate"><span class="pre">n</span></co
  <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">aa</span><span class="p">,</span> <span class="n">ab</span><span class="p">,</span> <span class="n">ac</span><span class="p">,</span> <span class="n">ad</span><span class="p">]</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
 </dd></dl>
 
 </div>

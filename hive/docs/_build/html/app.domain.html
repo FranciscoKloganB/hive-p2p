@@ -148,18 +148,13 @@
 storage nodes.</p>
 <dl class="py class">
 <dt id="app.domain.cluster_groups.Cluster">
-<em class="property">class </em><code class="sig-name descname">Cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">Cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Represents a group of network nodes ensuring the durability of a file.</p>
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.id">
 <code class="sig-name descname">id</code></dt>
 <dd><p>A unique identifier of the Cluster instance.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -255,7 +250,7 @@ method calls throughout the <a class="reference internal" href="#app.domain.clus
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.__assign_disk_error_chance__">
-<code class="sig-name descname">__assign_disk_error_chance__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__assign_disk_error_chance__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__assign_disk_error_chance__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__assign_disk_error_chance__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Defines the probability of a file block being corrupted while stored
 at the disk of a
 <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a>.</p>
@@ -287,8 +282,36 @@ errors, at an epoch basis.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="app.domain.cluster_groups.Cluster.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an <cite>Cluster</cite> object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>master</strong> (<em>th.MasterType</em>) – A reference to an <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a>
+object that manages the <cite>Cluster</cite> being initialized.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – The name of the file this <cite>:py:class:`Cluster
+&lt;app.domain.cluster_groups.Cluster&gt;</cite> is responsible for
+persisting.</p></li>
+<li><p><strong>members</strong> (<em>th.NodeDict</em>) – A dictionary mapping unique identifiers
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Clusters'</span></code></a>
+identifiers to their instances.</p></li>
+<li><p><strong>sim_id</strong> (<em>int</em>) – optional; Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – optional; The name of the simulation file name that started
+the simulation process.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.__log_evaluation__">
-<code class="sig-name descname">__log_evaluation__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">pcount</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__log_evaluation__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__log_evaluation__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcount</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__log_evaluation__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that performs evaluate step related logging.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -303,7 +326,7 @@ simulation’s current epoch.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.__setup_epoch__">
-<code class="sig-name descname">__setup_epoch__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__setup_epoch__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__setup_epoch__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__setup_epoch__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Initializes some attributes of the Cluster during
 its initialization.</p>
 <p>The helper method is used to isolate the initialization of some
@@ -320,7 +343,7 @@ simulation related attributes for eaasier comprehension.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster._get_new_members">
-<code class="sig-name descname">_get_new_members</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._get_new_members"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">_get_new_members</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._get_new_members"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that gets adds network nodes, if possible,
 to the Cluster.</p>
 <dl class="field-list simple">
@@ -336,7 +359,7 @@ objects (<a class="reference internal" href="#module-app.domain.network_nodes" t
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster._set_fail">
-<code class="sig-name descname">_set_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._set_fail"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">_set_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._set_fail"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Ends the Cluster instance simulation.</p>
 <p>Sets <a class="reference internal" href="#app.domain.cluster_groups.Cluster.running" title="app.domain.cluster_groups.Cluster.running"><code class="xref py py-attr docutils literal notranslate"><span class="pre">running</span></code></a> to False and instructs
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData" title="app.domain.helpers.smart_dataclasses.FileData"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileData</span></code></a> to persist
@@ -356,7 +379,7 @@ early termination.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.complain">
-<code class="sig-name descname">complain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">complainter</span></em>, <em class="sig-param"><span class="n">complainee</span></em>, <em class="sig-param"><span class="n">reason</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.complain"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">complain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">complainter</span></em>, <em class="sig-param"><span class="n">complainee</span></em>, <em class="sig-param"><span class="n">reason</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.complain"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Registers a complaint against a possibly offline node.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -380,7 +403,7 @@ that led to the complaint.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Abstract method that requires implementation in children of this
 class.</p>
 <p>This method functionality is to log the simulation status and verify
@@ -395,7 +418,7 @@ Cluster instance at every epoch time.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.execute_epoch">
-<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Orders all network node members to execute their epoch</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -422,7 +445,7 @@ responsible for, otherwise True.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.get_cluster_status">
-<code class="sig-name descname">get_cluster_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.get_cluster_status"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">get_cluster_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.get_cluster_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Evaluates the cluster status.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -436,7 +459,7 @@ responsible for, otherwise True.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.maintain">
-<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Evicts disconnected network_nodes from the Cluster and
 attempts to recruit new ones.</p>
 <dl class="field-list simple">
@@ -452,7 +475,7 @@ current epoch.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.membership_maintenance">
-<code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Recruit new <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -467,7 +490,7 @@ change.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.nodes_execute">
-<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Queries all network node members execute the epoch.</p>
 <p>This method logs the amount of lost replicas throughout the current
 epoch according to the members who went offline and the file replicas
@@ -489,7 +512,7 @@ epoch. See
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.route_part">
-<code class="sig-name descname">route_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">sender</span></em>, <em class="sig-param"><span class="n">receiver</span></em>, <em class="sig-param"><span class="n">replica</span></em>, <em class="sig-param"><span class="n">fresh_replica</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.route_part"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">route_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sender</span></em>, <em class="sig-param"><span class="n">receiver</span></em>, <em class="sig-param"><span class="n">replica</span></em>, <em class="sig-param"><span class="n">fresh_replica</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.route_part"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Sends one file block replica to some other network node.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -513,7 +536,7 @@ This argument facilitates simulation. (default: False)</p></li>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.set_replication_epoch">
-<code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.set_replication_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.set_replication_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Delegates to <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch" title="app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -528,7 +551,7 @@ file block replica that was lost.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.spread_files">
-<code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Distributes files among members of the cluster. Members are
 instances of classes belonging to module
 <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.network_nodes</span></code></a>.</p>
@@ -565,7 +588,7 @@ distributed among members of the cluster.</p>
 
 <dl class="py class">
 <dt id="app.domain.cluster_groups.HDFSCluster">
-<em class="property">class </em><code class="sig-name descname">HDFSCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">HDFSCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a></p>
 <p>Represents a group of network nodes persisting a file in a Hadoop
 Distributed File System scenario.</p>
@@ -594,8 +617,32 @@ is zero, they are evicted from the cluster.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="app.domain.cluster_groups.HDFSCluster.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an <cite>HiveClusterExt</cite> object.</p>
+<dl class="simple">
+<dt>Extends:</dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster</span></code>.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>master</strong> (<em>th.MasterType</em>) – </p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>members</strong> (<em>th.NodeDict</em>) – </p></li>
+<li><p><strong>sim_id</strong> (<em>int</em>) – </p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p><cite>HDFSCluster</cite> evaluate method merely logs the number of existing
 replicas in the system.</p>
 <dl class="simple">
@@ -611,7 +658,7 @@ replicas in the system.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.maintain">
-<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Evicts any <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code> whose
 heartbeats in <cite>data_node_heartbeats</cite> reached zero.</p>
 <dl class="simple">
@@ -630,7 +677,7 @@ heartbeats in <cite>data_node_heartbeats</cite> reached zero.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.membership_maintenance">
-<code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Recruit new <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code>.</p>
 <dl class="simple">
 <dt>Extends:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster.membership_maintenance()</span></code>.
@@ -647,7 +694,7 @@ New members are given five lives in
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.nodes_execute">
-<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Queries all network node members execute the epoch.</p>
 <dl class="simple">
 <dt>Overrides:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster.nodes_execute()</span></code>
@@ -670,7 +717,7 @@ See <code class="xref py py-meth docutils literal notranslate"><span class="pre"
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.spread_files">
-<code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Distributes files among members of the cluster. Members are
 instances of classes belonging to module
 <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.network_nodes</span></code></a>.</p>
@@ -707,7 +754,7 @@ distributed among members of the cluster.</p>
 
 <dl class="py class">
 <dt id="app.domain.cluster_groups.HiveCluster">
-<em class="property">class </em><code class="sig-name descname">HiveCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">HiveCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a></p>
 <p>Represents a group of network nodes persisting a file using swarm
 guidance algorithm.</p>
@@ -735,8 +782,32 @@ realizations for ideal persistence of the file.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="app.domain.cluster_groups.HiveCluster.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an <cite>HiveClusterExt</cite> object.</p>
+<dl class="simple">
+<dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a>.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>master</strong> (<em>th.MasterType</em>) – </p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>members</strong> (<em>th.NodeDict</em>) – </p></li>
+<li><p><strong>sim_id</strong> (<em>int</em>) – </p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.__log_evaluation__">
-<code class="sig-name descname">__log_evaluation__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">pcount</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.__log_evaluation__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__log_evaluation__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcount</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.__log_evaluation__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that performs evaluate step related logging.</p>
 <dl class="simple">
 <dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.__log_evaluation__" title="app.domain.cluster_groups.Cluster.__log_evaluation__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.__log_evaluation__()</span></code></a></p>
@@ -754,7 +825,7 @@ realizations for ideal persistence of the file.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.__pretty_print_eq_distr_table__">
-<code class="sig-name descname">__pretty_print_eq_distr_table__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">atol</span></em>, <em class="sig-param"><span class="n">rtol</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.__pretty_print_eq_distr_table__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__pretty_print_eq_distr_table__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">atol</span></em>, <em class="sig-param"><span class="n">rtol</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.__pretty_print_eq_distr_table__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Pretty prints a PSQL formatted table for visual vector comparison.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -772,7 +843,7 @@ realizations for ideal persistence of the file.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster._validate_transition_matrix">
-<code class="sig-name descname">_validate_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">transition_matrix</span></em>, <em class="sig-param"><span class="n">target_distribution</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster._validate_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">_validate_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">transition_matrix</span></em>, <em class="sig-param"><span class="n">target_distribution</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster._validate_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Verifies that a selected transition matrix is a Markov Matrix.</p>
 <p>Verification is done by raising the matrix to the power of 4096
 (just a large number) and checking if all column vectors are equal
@@ -796,7 +867,7 @@ otherwise False.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.add_cloud_reference">
-<code class="sig-name descname">add_cloud_reference</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.add_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">add_cloud_reference</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.add_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Adds a cloud server reference to the membership.</p>
 <p>This method is used when Cluster membership size becomes compromised
 and a backup solution using cloud approaches is desired. The idea
@@ -815,7 +886,7 @@ for more details.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.broadcast_transition_matrix">
-<code class="sig-name descname">broadcast_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">m</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.broadcast_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">broadcast_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.broadcast_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Slices a transition matrix and delivers them to respective
 network nodes.</p>
 <p>Gives each member his respective slice (vector column) of the
@@ -839,19 +910,11 @@ scenarios, decreasing the load done to metadata servers, through
 queries and matrix calculations. For simplicity of implementation
 each Cluster only manages one file for now.</p>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-<dt class="field-even">Parameters</dt>
-<dd class="field-even"><p><strong>m</strong> (<em>pandas.core.frame.DataFrame</em>) – </p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.create_and_bcast_new_transition_matrix">
-<code class="sig-name descname">create_and_bcast_new_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.create_and_bcast_new_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">create_and_bcast_new_transition_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.create_and_bcast_new_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Tries to create a valid transition matrix and distributes between
 members of the Cluster.</p>
 <p>After creating a transition matrix it ensures that the matrix is a
@@ -868,7 +931,7 @@ reason.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.equal_distributions">
-<code class="sig-name descname">equal_distributions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.equal_distributions"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">equal_distributions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.equal_distributions"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Infers if <a class="reference internal" href="#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a> and
 <a class="reference internal" href="#app.domain.cluster_groups.HiveCluster.cv_" title="app.domain.cluster_groups.HiveCluster.cv_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cv_</span></code></a> are equal.</p>
 <p>Equalility is calculated using numpy allclose function which has the
@@ -889,7 +952,7 @@ otherwise, it returns False.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Verifies file block distribution and hive health status.</p>
 <p>Among other things it compares the current file block distribution
 to the desired distribution, evicts and recruits new network nodes
@@ -907,7 +970,7 @@ for the Cluster and, performs logging invocations.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.maintain">
-<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Evicts disconnected network_nodes from the Cluster and
 attempts to recruit new ones.</p>
 <dl class="simple">
@@ -926,7 +989,7 @@ attempts to recruit new ones.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.membership_maintenance">
-<code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Recruit new <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a>.</p>
 <dl class="simple">
 <dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.membership_maintenance" title="app.domain.cluster_groups.Cluster.membership_maintenance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.membership_maintenance()</span></code></a>.
@@ -945,7 +1008,7 @@ maintenance is performed.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.new_desired_distribution">
-<code class="sig-name descname">new_desired_distribution</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">member_ids</span></em>, <em class="sig-param"><span class="n">member_uptimes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.new_desired_distribution"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">new_desired_distribution</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">member_ids</span></em>, <em class="sig-param"><span class="n">member_uptimes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.new_desired_distribution"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Sets a new desired distribution for the Cluster instance.</p>
 <p>Normalizes the received uptimes to create a stochastic representation
 of the desired distribution, which can be used by the different
@@ -971,7 +1034,7 @@ node with the same index in <cite>member_ids</cite>.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.new_transition_matrix">
-<code class="sig-name descname">new_transition_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.new_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">new_transition_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.new_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Creates a new transition matrix to be distributed among hive members.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -986,7 +1049,7 @@ the pondered strategies.</p>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.nodes_execute">
-<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Queries all network node members execute the epoch.</p>
 <dl class="simple">
 <dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.nodes_execute" title="app.domain.cluster_groups.Cluster.nodes_execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.nodes_execute()</span></code></a>.</p>
@@ -1006,7 +1069,7 @@ epoch. See
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.remove_cloud_reference">
-<code class="sig-name descname">remove_cloud_reference</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.remove_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">remove_cloud_reference</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.remove_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Remove cloud references and delete files within it</p>
 <p class="rubric">Notes</p>
 <p>TODO: This method requires implementation at the user descretion.</p>
@@ -1019,7 +1082,7 @@ epoch. See
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.select_fastest_topology">
-<code class="sig-name descname">select_fastest_topology</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.select_fastest_topology"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">select_fastest_topology</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.select_fastest_topology"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Creates multiple transition matrices and selects the fastest.</p>
 <p>The fastest of the created transition matrices corresponds to the one
 with a faster mixing rate.</p>
@@ -1027,7 +1090,7 @@ with a faster mixing rate.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<em>numpy.ndarray</em>) – An adjacency matrix that represents the network topology.</p></li>
-<li><p><strong>v</strong> (<em>numpy.ndarray</em>) – A desired distribution vector that defines the returned
+<li><p><strong>v</strong> – A desired distribution vector that defines the returned
 matrix steady state property.</p></li>
 <li><p><strong>v_</strong> (<em>numpy.ndarray</em>) – </p></li>
 </ul>
@@ -1045,7 +1108,7 @@ steady state is <code class="docutils literal notranslate"><span class="pre">v_<
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.spread_files">
-<code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Batch distributes files to Cluster members.</p>
 <p>This method is used at the start of a simulation to give all file
 replicas including the replicas to members of the hive. Different
@@ -1067,7 +1130,7 @@ distribution options can be used depending on the selected <cite>strategy</cite>
 
 <dl class="py class">
 <dt id="app.domain.cluster_groups.HiveClusterExt">
-<em class="property">class </em><code class="sig-name descname">HiveClusterExt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">HiveClusterExt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster</span></code></a></p>
 <p>Represents a group of network nodes persisting a file.</p>
 <p>HiveClusterExt instances differ from
@@ -1113,8 +1176,32 @@ reset every epoch.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="app.domain.cluster_groups.HiveClusterExt.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an <cite>HiveClusterExt</cite> object.</p>
+<dl class="simple">
+<dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a>.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>master</strong> (<em>th.MasterType</em>) – </p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>members</strong> (<em>th.NodeDict</em>) – </p></li>
+<li><p><strong>sim_id</strong> (<em>int</em>) – </p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.cluster_groups.HiveClusterExt.complain">
-<code class="sig-name descname">complain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">complainter</span></em>, <em class="sig-param"><span class="n">complainee</span></em>, <em class="sig-param"><span class="n">reason</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.complain"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">complain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">complainter</span></em>, <em class="sig-param"><span class="n">complainee</span></em>, <em class="sig-param"><span class="n">reason</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.complain"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Registers a complaint against a possibly offline node.</p>
 <p>A unique identifier for the complaint is generated by concatenation
 of the complainter and the complainee unique identifiers.</p>
@@ -1142,7 +1229,7 @@ that led to the complaint.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveClusterExt.execute_epoch">
-<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Instructs the cluster to execute an epoch.</p>
 <dl class="simple">
 <dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.execute_epoch" title="app.domain.cluster_groups.Cluster.execute_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.execute_epoch()</span></code></a>.</p>
@@ -1160,7 +1247,7 @@ that led to the complaint.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveClusterExt.maintain">
-<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.maintain"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.maintain"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Evicts any node whose number of complaints as surpassed the
 <cite>complaint_threshold</cite>.</p>
 <dl class="simple">
@@ -1182,7 +1269,7 @@ and <code class="xref py py-attr docutils literal notranslate"><span class="pre"
 
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveClusterExt.nodes_execute">
-<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Queries all network node members execute the epoch.</p>
 <dl class="simple">
 <dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.HiveCluster.nodes_execute" title="app.domain.cluster_groups.HiveCluster.nodes_execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster.nodes_execute()</span></code></a>. It
@@ -1214,22 +1301,35 @@ See <code class="xref py py-meth docutils literal notranslate"><span class="pre"
 <code class="xref py py-mod docutils literal notranslate"><span class="pre">domain.cluster_groups</span></code> of a simulation instance.</p>
 <dl class="py class">
 <dt id="app.domain.master_servers.HDFSMaster">
-<em class="property">class </em><code class="sig-name descname">HDFSMaster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">HDFSMaster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a></p>
+<dl class="py method">
+<dt id="app.domain.master_servers.HDFSMaster.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an Master object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>simfile_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>sid</strong> (<em>int</em>) – </p></li>
-<li><p><strong>epochs</strong> (<em>int</em>) – </p></li>
-<li><p><strong>cluster_class</strong> (<em>str</em>) – </p></li>
-<li><p><strong>node_class</strong> (<em>str</em>) – </p></li>
+<li><p><strong>simfile_name</strong> (<em>str</em>) – A path to the simulation file to be run by the simulator.</p></li>
+<li><p><strong>sid</strong> (<em>int</em>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps the simulation lasts.</p></li>
+<li><p><strong>cluster_class</strong> (<em>str</em>) – The name of the class used to instantiate cluster group
+instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p></li>
+<li><p><strong>node_class</strong> (<em>str</em>) – The name of the class used to instantiate network node
+instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code>.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
 </dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="app.domain.master_servers.HDFSMaster.__process_simfile__">
-<code class="sig-name descname">__process_simfile__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster.__process_simfile__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__process_simfile__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HDFSMaster.__process_simfile__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Opens and processes the simulation filed referenced in <cite>path</cite>.</p>
 <dl>
 <dt>Overrides:</dt><dd><p>py:mod:<cite>app.domain.master_servers.Master.__process_simfile__</cite>. The
@@ -1275,22 +1375,35 @@ stationary on data nodes until they die.</p>
 
 <dl class="py class">
 <dt id="app.domain.master_servers.HiveMaster">
-<em class="property">class </em><code class="sig-name descname">HiveMaster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HiveMaster"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">HiveMaster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HiveMaster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a></p>
+<dl class="py method">
+<dt id="app.domain.master_servers.HiveMaster.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HiveMaster.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an Master object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>simfile_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>sid</strong> (<em>int</em>) – </p></li>
-<li><p><strong>epochs</strong> (<em>int</em>) – </p></li>
-<li><p><strong>cluster_class</strong> (<em>str</em>) – </p></li>
-<li><p><strong>node_class</strong> (<em>str</em>) – </p></li>
+<li><p><strong>simfile_name</strong> (<em>str</em>) – A path to the simulation file to be run by the simulator.</p></li>
+<li><p><strong>sid</strong> (<em>int</em>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps the simulation lasts.</p></li>
+<li><p><strong>cluster_class</strong> (<em>str</em>) – The name of the class used to instantiate cluster group
+instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p></li>
+<li><p><strong>node_class</strong> (<em>str</em>) – The name of the class used to instantiate network node
+instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code>.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
 </dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="app.domain.master_servers.HiveMaster.get_cloud_reference">
-<code class="sig-name descname">get_cloud_reference</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HiveMaster.get_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">get_cloud_reference</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HiveMaster.get_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Use to obtain a reference to 3rd party cloud storage provider</p>
 <p>The cloud storage provider can be used to temporarely host files
 belonging to Hives in bad status, thus increasing file durability
@@ -1313,7 +1426,7 @@ in the system.</p>
 
 <dl class="py class">
 <dt id="app.domain.master_servers.Master">
-<em class="property">class </em><code class="sig-name descname">Master</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">Master</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simulation manager class. Plays the role of a master server for all
 Hives of the distributed backup system.</p>
@@ -1358,30 +1471,9 @@ network nodes of the distributed backup system, regardless of
 their participation on any Cluster.</p>
 </dd></dl>
 
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>simfile_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>sid</strong> (<em>int</em>) – </p></li>
-<li><p><strong>epochs</strong> (<em>int</em>) – </p></li>
-<li><p><strong>cluster_class</strong> (<em>str</em>) – </p></li>
-<li><p><strong>node_class</strong> (<em>str</em>) – </p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt id="app.domain.master_servers.Master.MAX_EPOCHS">
-<code class="sig-name descname">MAX_EPOCHS</code><em class="property">: Optional<span class="p">[</span>int<span class="p">]</span></em><em class="property"> = None</em></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="app.domain.master_servers.Master.MAX_EPOCHS_PLUS_ONE">
-<code class="sig-name descname">MAX_EPOCHS_PLUS_ONE</code><em class="property">: Optional<span class="p">[</span>int<span class="p">]</span></em><em class="property"> = None</em></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt id="app.domain.master_servers.Master.__create_network_nodes__">
-<code class="sig-name descname">__create_network_nodes__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">json</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__create_network_nodes__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__create_network_nodes__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">json</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__create_network_nodes__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that instantiates all
 <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a> that are
 specified in the simulation file.</p>
@@ -1399,8 +1491,32 @@ specified in the simulation file.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="app.domain.master_servers.Master.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an Master object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>simfile_name</strong> (<em>str</em>) – A path to the simulation file to be run by the simulator.</p></li>
+<li><p><strong>sid</strong> (<em>int</em>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>epochs</strong> (<em>int</em>) – The number of discrete time steps the simulation lasts.</p></li>
+<li><p><strong>cluster_class</strong> (<em>str</em>) – The name of the class used to instantiate cluster group
+instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p></li>
+<li><p><strong>node_class</strong> (<em>str</em>) – The name of the class used to instantiate network node
+instances through reflection. See <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.master_servers.Master.__new_cluster_group__">
-<code class="sig-name descname">__new_cluster_group__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__new_cluster_group__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__new_cluster_group__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__new_cluster_group__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that initializes a new Cluster group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1423,7 +1539,7 @@ initial member size.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.master_servers.Master.__new_network_node__">
-<code class="sig-name descname">__new_network_node__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">node_class</span></em>, <em class="sig-param"><span class="n">nid</span></em>, <em class="sig-param"><span class="n">node_uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__new_network_node__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__new_network_node__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_class</span></em>, <em class="sig-param"><span class="n">nid</span></em>, <em class="sig-param"><span class="n">node_uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__new_network_node__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that initializes a new Node.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1446,7 +1562,7 @@ uptime of the network node.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.master_servers.Master.__process_simfile__">
-<code class="sig-name descname">__process_simfile__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__process_simfile__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__process_simfile__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__process_simfile__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Opens and processes the simulation filed referenced in <cite>path</cite>.</p>
 <p>This method opens the file reads the json data inside it and combined
 with <code class="xref py py-mod docutils literal notranslate"><span class="pre">environment_settings</span></code>, sets up the class instances to
@@ -1473,7 +1589,7 @@ instances through reflection. See <code class="xref py py-mod docutils literal n
 
 <dl class="py method">
 <dt id="app.domain.master_servers.Master.__split_files__">
-<code class="sig-name descname">__split_files__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">bsize</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__split_files__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__split_files__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">bsize</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.__split_files__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that splits the files into multiple blocks to be
 persisted in a <code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_group.Cluster</span></code>.</p>
 <dl class="field-list simple">
@@ -1495,7 +1611,7 @@ read and splitted.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.master_servers.Master.execute_simulation">
-<code class="sig-name descname">execute_simulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.execute_simulation"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">execute_simulation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.execute_simulation"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Runs a stochastic swarm guidance algorithm applied
 to a P2P network.</p>
 <dl class="field-list simple">
@@ -1507,7 +1623,7 @@ to a P2P network.</p>
 
 <dl class="py method">
 <dt id="app.domain.master_servers.Master.find_replacement_node">
-<code class="sig-name descname">find_replacement_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">exclusion_dict</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.find_replacement_node"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">find_replacement_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exclusion_dict</span></em>, <em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#Master.find_replacement_node"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Finds a collection of online network nodes that can be used to
 replace offline ones in an Cluster.</p>
 <dl class="field-list simple">
@@ -1529,6 +1645,16 @@ i.e., this argument is a blacklist.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt id="app.domain.master_servers.Master.MAX_EPOCHS">
+<code class="sig-name descname">MAX_EPOCHS</code><em class="property">: Optional<span class="p">[</span>int<span class="p">]</span></em><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.master_servers.Master.MAX_EPOCHS_PLUS_ONE">
+<code class="sig-name descname">MAX_EPOCHS_PLUS_ONE</code><em class="property">: Optional<span class="p">[</span>int<span class="p">]</span></em><em class="property"> = None</em></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py data">
@@ -1544,20 +1670,30 @@ responsible for the storage of file blocks. These could be reliable servers
 or P2P nodes.</p>
 <dl class="py class">
 <dt id="app.domain.network_nodes.HDFSNode">
-<em class="property">class </em><code class="sig-name descname">HDFSNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">HDFSNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node</span></code></a></p>
 <p>Represents a data node in the Hadoop Distribute File System.</p>
+<dl class="py method">
+<dt id="app.domain.network_nodes.HDFSNode.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates a HDFSNode object.</p>
+<p>These represent hadoop distributed file system data nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>uid</strong> (<em>str</em>) – </p></li>
-<li><p><strong>uptime</strong> (<em>float</em>) – </p></li>
+<li><p><strong>uid</strong> (<em>str</em>) – An unique identifier for the worker instance.</p></li>
+<li><p><strong>uptime</strong> (<em>float</em>) – The availability of the worker instance.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
 </dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="app.domain.network_nodes.HDFSNode.execute_epoch">
-<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Instructs the Node instance to execute the epoch.</p>
 <p>The method iterates all file block blocks in <code class="xref py py-attr docutils literal notranslate"><span class="pre">files</span></code> and
 silentry tries to corrupt them. In HDFS files’ Sha256 is only
@@ -1584,7 +1720,7 @@ blocks should be routed.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.HDFSNode.get_status">
-<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.get_status"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.get_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Used to obtain the status of the worker.</p>
 <dl class="simple">
 <dt>Overrides:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode.get_epoch_status()</span></code>.
@@ -1605,7 +1741,7 @@ offline when the monitor marks him as so (e.g.: due to complaints).</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.HDFSNode.replicate_part">
-<code class="sig-name descname">replicate_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.replicate_part"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">replicate_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.replicate_part"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Tries to restore the <cite>replica</cite>’s
 <code class="xref py py-const docutils literal notranslate"><span class="pre">REPLICATION_LEVEL</span></code>.</p>
 <p>The file block replica is sent selectively in descending order to the
@@ -1631,7 +1767,7 @@ most reliable Nodes in the Cluster down to the least reliable.</p>
 
 <dl class="py class">
 <dt id="app.domain.network_nodes.HiveNode">
-<em class="property">class </em><code class="sig-name descname">HiveNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">HiveNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node</span></code></a></p>
 <p>Represents a network node that executes a Swarm Guidance algorithm.</p>
 <p>Workers work in one or more cluster_groups
@@ -1660,17 +1796,28 @@ HiveNode is a member of.</p>
 block blocks to other HiveNode instances.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt id="app.domain.network_nodes.HiveNode.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates a HiveNode object.</p>
+<p>Workers are the network nodes responsible for persisting file block
+blocks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>uid</strong> (<em>str</em>) – </p></li>
-<li><p><strong>uptime</strong> (<em>float</em>) – </p></li>
+<li><p><strong>uid</strong> (<em>str</em>) – An unique identifier for the worker instance.</p></li>
+<li><p><strong>uptime</strong> (<em>float</em>) – The availability of the worker instance.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
 </dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNode.execute_epoch">
-<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Instructs the HiveNode instance to execute the epoch.</p>
 <p>The method iterates all file block blocks in <code class="xref py py-attr docutils literal notranslate"><span class="pre">files</span></code> and
 independently decides if they should be sent to other HiveNode
@@ -1706,7 +1853,7 @@ blocks should be routed.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNode.remove_file_routing">
-<code class="sig-name descname">remove_file_routing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.remove_file_routing"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">remove_file_routing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.remove_file_routing"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Removes a file id from the routing table.</p>
 <p>This method is called when a HiveNode is evicted from the Cluster
 and results in the complete deletion of all file blocks with that
@@ -1724,7 +1871,7 @@ removed from routing_table.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNode.replicate_part">
-<code class="sig-name descname">replicate_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.replicate_part"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">replicate_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.replicate_part"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Tries to restore the <cite>replica</cite>’s
 <code class="xref py py-const docutils literal notranslate"><span class="pre">REPLICATION_LEVEL</span></code>.</p>
 <p>The file block replica is sent selectively in descending order to the
@@ -1751,7 +1898,7 @@ stochastic swarm guidance routing.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNode.select_destination">
-<code class="sig-name descname">select_destination</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.select_destination"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">select_destination</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.select_destination"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Selects a random message destination according to <cite>routing_table</cite>
 probabilities for the specified file name.</p>
 <dl class="field-list simple">
@@ -1769,7 +1916,7 @@ probabilities for the specified file name.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNode.set_file_routing">
-<code class="sig-name descname">set_file_routing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">fid</span></em>, <em class="sig-param"><span class="n">transition_vector</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.set_file_routing"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">set_file_routing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fid</span></em>, <em class="sig-param"><span class="n">transition_vector</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.set_file_routing"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Maps a file id with a transition column vector used for routing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1795,7 +1942,7 @@ persistence of the file block blocks.</p></li>
 
 <dl class="py class">
 <dt id="app.domain.network_nodes.HiveNodeExt">
-<em class="property">class </em><code class="sig-name descname">HiveNodeExt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNodeExt"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">HiveNodeExt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNodeExt"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode</span></code></a></p>
 <p>Represents a network node that executes a Swarm Guidance algorithm.</p>
 <p>HiveNodeExt instances differ from HiveNode in the sense that the
@@ -1803,7 +1950,7 @@ persistence of the file block blocks.</p></li>
 groups’ peers, concerning suspicious behaviors.</p>
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNodeExt.get_status">
-<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNodeExt.get_status"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNodeExt.get_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Used to obtain the status of the worker.</p>
 <dl class="simple">
 <dt>Overrides:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode.get_epoch_status()</span></code>.
@@ -1826,7 +1973,7 @@ offline when the monitor marks him as so (e.g.: due to complaints).</p>
 
 <dl class="py class">
 <dt id="app.domain.network_nodes.Node">
-<em class="property">class </em><code class="sig-name descname">Node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">Node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>This class contains basic network node functionality that should
 always be useful.</p>
@@ -1876,14 +2023,6 @@ respective contents. This collection represents the file block
 blocks that are currently hosted in the HiveNode instance.</p>
 </dd></dl>
 
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>uid</strong> (<em>str</em>) – </p></li>
-<li><p><strong>uptime</strong> (<em>float</em>) – </p></li>
-</ul>
-</dd>
-</dl>
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.__eq__">
 <code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.__eq__"><span class="viewcode-link">[source]</span></a></dt>
@@ -1897,8 +2036,27 @@ blocks that are currently hosted in the HiveNode instance.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="app.domain.network_nodes.Node.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates a HiveNode object.</p>
+<p>Workers are the network nodes responsible for persisting file block
+blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uid</strong> (<em>str</em>) – An unique identifier for the worker instance.</p></li>
+<li><p><strong>uptime</strong> (<em>float</em>) – The availability of the worker instance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.network_nodes.Node.discard_part">
-<code class="sig-name descname">discard_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">fid</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">corrupt</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cluster</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.discard_part"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">discard_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fid</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">corrupt</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cluster</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.discard_part"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Safely deletes a part from the HiveNode instance’s disk.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1921,7 +2079,7 @@ or mark the simulation as failed.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.execute_epoch">
-<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Instructs the HiveNode instance to execute the epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
@@ -1942,7 +2100,7 @@ or mark the simulation as failed.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.get_file_parts">
-<code class="sig-name descname">get_file_parts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.get_file_parts"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">get_file_parts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.get_file_parts"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Gets collection of file parts that correspond to the named file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1961,7 +2119,7 @@ containers.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.get_file_parts_count">
-<code class="sig-name descname">get_file_parts_count</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.get_file_parts_count"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">get_file_parts_count</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.get_file_parts_count"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Counts the number of file block blocks owned by the HiveNode
 for a given file identifier.</p>
 <dl class="field-list simple">
@@ -1980,7 +2138,7 @@ instance possesses.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.get_status">
-<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.get_status"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.get_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Used to obtain the status of the worker.</p>
 <p>This method simulates a ping. When invoked, the HiveNode instance
 decides if it should switch its status from ONLINE to some other
@@ -1998,7 +2156,7 @@ depending on the time it has been active in the Cluster.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.receive_part">
-<code class="sig-name descname">receive_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.receive_part"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">receive_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.receive_part"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Endpoint for file block replica reception.</p>
 <p>Invoking this method results in the worker keeping store a new
 file block replica in his <a class="reference internal" href="#app.domain.network_nodes.Node.files" title="app.domain.network_nodes.Node.files"><code class="xref py py-attr docutils literal notranslate"><span class="pre">files</span></code></a> collection, along the ones
@@ -2024,7 +2182,7 @@ i.e., the delivery is successful.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.replicate_part">
-<code class="sig-name descname">replicate_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.replicate_part"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">replicate_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.replicate_part"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Tries to restore the <cite>replica</cite>’s
 <code class="xref py py-const docutils literal notranslate"><span class="pre">environment_settings.REPLICATION_LEVEL</span></code>.</p>
 <p>Similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">domain.network_nodes.Node.send_part()</span></code> but with
@@ -2046,7 +2204,7 @@ some destination HiveNode.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.send_part">
-<code class="sig-name descname">send_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">destination</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.send_part"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">send_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">destination</span></em>, <em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.send_part"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Attempts to send a replica to some other network node.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

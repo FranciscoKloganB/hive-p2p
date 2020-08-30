@@ -46,15 +46,22 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.viewcode",
     "sphinx.ext.autodoc",
+    "sphinx.ext.autodoc.typehints",
     "sphinx.ext.napoleon",
-    # "sphinx.ext.autodoc.typehints",
-    "sphinx_autodoc_future_annotations",
+    # "sphinx_autodoc_future_annotations",
 ]
 
 # show type hints in doc body instead of signature
-autodoc_typehints = "description"
-# get docstring from class level and init simultaneously
-autoclass_content = "both"
+autodoc_typehints = "description"  # signature, description, none
+autoclass_content = "class"  # class, init, both
+
+autodoc_default_options = {
+    'members': True,
+    'member-order': 'groupwise',  # alphabetical, groupwise, bysource
+    'special-members': '__init__',
+    'undoc-members': True,
+    'exclude-members': '__weakref__'
+}
 
 napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True

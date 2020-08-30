@@ -26,7 +26,7 @@ class Cluster:
     """Represents a group of network nodes ensuring the durability of a file.
 
     Attributes:
-        id (str):
+        id:
             A unique identifier of the Cluster instance.
         current_epoch:
             The simulation's current epoch.
