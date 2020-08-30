@@ -5,7 +5,7 @@ You can start a simulation by executing the following command::
     $ python hive_simulation.py --file=a_simulation_name.json --iters=30
 
 You can also execute all simulation file that exist in
-:py:const:`environment_settings.SIMULATION_ROOT` by instead executing::
+:py:const:`~app.environment_settings.SIMULATION_ROOT` by instead executing::
 
     $ python hive_simulation.py -d -i 24
 
@@ -182,14 +182,15 @@ def main(threads_count: int,
             single thread).
         sdir:
             Indicates if the user wishes to execute all simulation files
-            that exist in :py:const:`environment_settings.SIMULATION_ROOT` or
+            that exist in
+            :py:const:`~app.environment_settings.SIMULATION_ROOT` or
             if he wishes to run one single simulation file, which must be
             explicitly specified in `sname`.
         sname:
             When `sdir` is set to False, `sname` needs to be specified as a
             non blank string containing the name of the simulation file to
             be executed. The named file must exist in
-            :py:const:`environment_settings.SIMULATION_ROOT`.
+            :py:const:`~app.environment_settings.SIMULATION_ROOT`.
         iters:
             The number of times the same simulation file should be executed.
         epochs:

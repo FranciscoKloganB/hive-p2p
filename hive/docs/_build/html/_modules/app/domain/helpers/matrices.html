@@ -160,15 +160,12 @@
 
 <div class="viewcode-block" id="new_sdp_mh_transition_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.new_sdp_mh_transition_matrix">[docs]</a><span class="k">def</span> <span class="nf">new_sdp_mh_transition_matrix</span><span class="p">(</span>
         <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Constructs an optimized transition matrix using cvxpy and MOSEK solver.</span>
+    <span class="sd">&quot;&quot;&quot;Constructs a transition matrix using semi-definite programming techniques.</span>
 
 <span class="sd">    Constructs a transition matrix using metropolis-hastings algorithm  for</span>
 <span class="sd">    the specified steady state ``v``. The provided adjacency matrix A is first</span>
 <span class="sd">    optimized with semi-definite programming techniques for the uniform</span>
 <span class="sd">    distribution vector.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        This function only works if you have a valid MOSEK license.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
@@ -193,15 +190,12 @@
 
 <div class="viewcode-block" id="new_go_transition_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.new_go_transition_matrix">[docs]</a><span class="k">def</span> <span class="nf">new_go_transition_matrix</span><span class="p">(</span>
         <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;Constructs an optimized transition matrix using cvxpy and MOSEK solver.</span>
+    <span class="sd">&quot;&quot;&quot;Constructs a transition matrix using global optimization techniques.</span>
 
 <span class="sd">    Constructs an optimized markov matrix using linear programming relaxations</span>
 <span class="sd">    and convex envelope approximations for the specified steady state ``v``.</span>
 <span class="sd">    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform</span>
 <span class="sd">    Matrix, 2) is equal to the markov matrix eigenvalue.</span>
-
-<span class="sd">    Note:</span>
-<span class="sd">        This function only works if you have a valid MOSEK license.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
@@ -298,9 +292,10 @@
 <span class="sd">    with the the same length as the inputed symmetric matrix.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        1. This function only works if you have a valid MOSEK license.</span>
-<span class="sd">        2. The input Matrix hould have no transient states/absorbent nodes, \</span>
-<span class="sd">        but this is not enforced or verified.</span>
+<span class="sd">        This function tries to use</span>
+<span class="sd">        `Mosek Solver &lt;https://docs.mosek.com/9.2/pythonapi/index.html&gt;`,</span>
+<span class="sd">        if a valid license is not found, it uses</span>
+<span class="sd">        `SCS Solver &lt;https://github.com/cvxgrp/scs&gt;` instead.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
@@ -344,10 +339,10 @@
         <span class="k">if</span> <span class="n">cvx</span><span class="o">.</span><span class="n">MOSEK</span> <span class="ow">in</span> <span class="n">cvx</span><span class="o">.</span><span class="n">installed_solvers</span><span class="p">():</span>
             <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="n">cvx</span><span class="o">.</span><span class="n">MOSEK</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+            <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="n">cvx</span><span class="o">.</span><span class="n">SCS</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">MosekException</span><span class="p">:</span>
         <span class="c1"># catches invalid MosekException invalid license.</span>
-        <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+        <span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="n">cvx</span><span class="o">.</span><span class="n">SCS</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">problem</span><span class="p">,</span> <span class="n">a_opt</span></div>
 

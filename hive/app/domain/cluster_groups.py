@@ -26,10 +26,8 @@ class Cluster:
     """Represents a group of network nodes ensuring the durability of a file.
 
     Attributes:
-        id:
-            An uuid that uniquely identifies the Cluster.
-            Usefull for when there are multiple Cluster instances in a
-            simulation environment.
+        id (str):
+            A unique identifier of the Cluster instance.
         current_epoch:
             The simulation's current epoch.
         corruption_chances:

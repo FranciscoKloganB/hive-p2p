@@ -115,7 +115,7 @@
 <span class="sd">    $ python hive_simulation.py --file=a_simulation_name.json --iters=30</span>
 
 <span class="sd">You can also execute all simulation file that exist in</span>
-<span class="sd">:py:const:`environment_settings.SIMULATION_ROOT` by instead executing::</span>
+<span class="sd">:py:const:`~app.environment_settings.SIMULATION_ROOT` by instead executing::</span>
 
 <span class="sd">    $ python hive_simulation.py -d -i 24</span>
 
@@ -292,14 +292,15 @@
 <span class="sd">            single thread).</span>
 <span class="sd">        sdir:</span>
 <span class="sd">            Indicates if the user wishes to execute all simulation files</span>
-<span class="sd">            that exist in :py:const:`environment_settings.SIMULATION_ROOT` or</span>
+<span class="sd">            that exist in</span>
+<span class="sd">            :py:const:`~app.environment_settings.SIMULATION_ROOT` or</span>
 <span class="sd">            if he wishes to run one single simulation file, which must be</span>
 <span class="sd">            explicitly specified in `sname`.</span>
 <span class="sd">        sname:</span>
 <span class="sd">            When `sdir` is set to False, `sname` needs to be specified as a</span>
 <span class="sd">            non blank string containing the name of the simulation file to</span>
 <span class="sd">            be executed. The named file must exist in</span>
-<span class="sd">            :py:const:`environment_settings.SIMULATION_ROOT`.</span>
+<span class="sd">            :py:const:`~app.environment_settings.SIMULATION_ROOT`.</span>
 <span class="sd">        iters:</span>
 <span class="sd">            The number of times the same simulation file should be executed.</span>
 <span class="sd">        epochs:</span>

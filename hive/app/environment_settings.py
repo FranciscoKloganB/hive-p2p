@@ -39,7 +39,7 @@ be performed."""
 # region Simulation Settings
 READ_SIZE: int = 131072
 """Defines the raw size of each file block before it's wrapped in a 
-:py:class:`app.domain.helpers.smart_dataclasses.FileBlockData` instance 
+:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instance 
 object. 
 
 Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B; 
@@ -102,7 +102,7 @@ SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 
 MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlab')
 """Path the folder where matlab scripts are located. Used by 
-:py:class:`app.domain.helpers.matlab_utils.MatlabEngineContainer`"""
+:py:class:`~app.domain.helpers.matlab_utils.MatlabEngineContainer`"""
 
 MIXING_RATE_SAMPLE_ROOT: str = os.path.join(
     OUTFILE_ROOT, 'mixing_rate_samples')

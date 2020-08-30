@@ -46,8 +46,8 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.viewcode",
     "sphinx.ext.autodoc",
-    "sphinx.ext.autodoc.typehints",
     "sphinx.ext.napoleon",
+    "sphinx_autodoc_future_annotations",
 ]
 
 autodoc_typehints = "description"

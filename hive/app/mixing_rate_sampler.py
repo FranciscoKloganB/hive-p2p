@@ -47,7 +47,7 @@ def main():
     specified `functions`, `samples` times.
 
     The execution of the main method results in a JSON file outputed to
-    :py:const:`environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.
+    :py:const:`~app.environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.
     """
     if not os.path.exists(MIXING_RATE_SAMPLE_ROOT):
         os.makedirs(MIXING_RATE_SAMPLE_ROOT)
