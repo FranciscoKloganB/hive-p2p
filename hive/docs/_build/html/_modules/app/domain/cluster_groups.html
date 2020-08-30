@@ -306,20 +306,19 @@
 <div class="viewcode-block" id="Cluster._assign_disk_error_chance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._assign_disk_error_chance">[docs]</a>    <span class="k">def</span> <span class="nf">_assign_disk_error_chance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Defines the probability of a file block being corrupted while stored</span>
 <span class="sd">        at the disk of a</span>
-<span class="sd">        :py:class:`Network Node &lt;app.domain.network_nodes.Node&gt;`.</span>
+<span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Recommended value should be based on the paper named</span>
 <span class="sd">            `An Analysis of Data Corruption in the Storage Stack</span>
-<span class="sd">            &lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;`. Thus</span>
+<span class="sd">            &lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;`_. Thus</span>
 <span class="sd">            the current implementation follows this formula:</span>
 
-<span class="sd">                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` * ``P(Xt ≥ L)``) / :py:const:`~app.environment_settings.MONTH_EPOCHS`</span>
+<span class="sd">                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`~app.environment_settings.MONTH_EPOCHS`) * ``P(Xt ≥ L)``)</span>
 
 <span class="sd">            The notation ``P(Xt ≥ L)`` denotes the probability of a disk</span>
 <span class="sd">            developing at least L checksum mismatches within T months since</span>
-<span class="sd">            the disk’s first use in the field. Found in the paper&#39;s</span>
-<span class="sd">            results.</span>
+<span class="sd">            the disk’s first use in the field. As described in linked paper.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A two element list with respectively, the probability of losing</span>

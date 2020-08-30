@@ -196,20 +196,19 @@ class Cluster:
     def _assign_disk_error_chance(self) -> List[float]:
         """Defines the probability of a file block being corrupted while stored
         at the disk of a
-        :py:class:`Network Node <app.domain.network_nodes.Node>`.
+        :py:class:`network node <app.domain.network_nodes.Node>`.
 
         Note:
             Recommended value should be based on the paper named
             `An Analysis of Data Corruption in the Storage Stack
-            <http://www.cs.toronto.edu/bianca/papers/fast08.pdf>`. Thus
+            <http://www.cs.toronto.edu/bianca/papers/fast08.pdf>`_. Thus
             the current implementation follows this formula:
 
-                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` * ``P(Xt ≥ L)``) / :py:const:`~app.environment_settings.MONTH_EPOCHS`
+                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`~app.environment_settings.MONTH_EPOCHS`) * ``P(Xt ≥ L)``)
 
             The notation ``P(Xt ≥ L)`` denotes the probability of a disk
             developing at least L checksum mismatches within T months since
-            the disk’s first use in the field. Found in the paper's
-            results.
+            the disk’s first use in the field. As described in linked paper.
 
         Returns:
             A two element list with respectively, the probability of losing

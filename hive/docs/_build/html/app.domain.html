@@ -345,20 +345,18 @@ the simulation process.</p></li>
 <code class="sig-name descname">_assign_disk_error_chance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._assign_disk_error_chance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Defines the probability of a file block being corrupted while stored
 at the disk of a
-<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a>.</p>
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Recommended value should be based on the paper named
-<cite>An Analysis of Data Corruption in the Storage Stack
-&lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;</cite>. Thus
+<a class="reference external" href="http://www.cs.toronto.edu/bianca/papers/fast08.pdf">An Analysis of Data Corruption in the Storage Stack</a>. Thus
 the current implementation follows this formula:</p>
 <blockquote>
-<div><p>(<a class="reference internal" href="#app.domain.master_servers.Master.MAX_EPOCHS" title="app.domain.master_servers.Master.MAX_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MAX_EPOCHS</span></code></a> * <code class="docutils literal notranslate"><span class="pre">P(Xt</span> <span class="pre">≥</span> <span class="pre">L)</span></code>) / <a class="reference internal" href="app.html#app.environment_settings.MONTH_EPOCHS" title="app.environment_settings.MONTH_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MONTH_EPOCHS</span></code></a></p>
+<div><p>(<a class="reference internal" href="#app.domain.master_servers.Master.MAX_EPOCHS" title="app.domain.master_servers.Master.MAX_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MAX_EPOCHS</span></code></a> / <a class="reference internal" href="app.html#app.environment_settings.MONTH_EPOCHS" title="app.environment_settings.MONTH_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MONTH_EPOCHS</span></code></a>) * <code class="docutils literal notranslate"><span class="pre">P(Xt</span> <span class="pre">≥</span> <span class="pre">L)</span></code>)</p>
 </div></blockquote>
 <p>The notation <code class="docutils literal notranslate"><span class="pre">P(Xt</span> <span class="pre">≥</span> <span class="pre">L)</span></code> denotes the probability of a disk
 developing at least L checksum mismatches within T months since
-the disk’s first use in the field. Found in the paper’s
-results.</p>
+the disk’s first use in the field. As described in linked paper.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
