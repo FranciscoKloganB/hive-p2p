@@ -8,6 +8,11 @@ import domain.network_nodes as nn
 import domain.helpers.enums as e
 import domain.helpers.smart_dataclasses as sd
 
+NodeDict: Dict[str, NodeType]
+ClusterDict: Dict[str, ClusterType]
+ReplicasDict: Dict[int, sd.FileBlockData]
+HttpResponse: Union[int, e.HttpCodes]
+
 MasterType: Union[
     ms.Master
 ]
@@ -23,8 +28,3 @@ NodeType: Union[
     nn.HiveNodeExt,
     nn.HDFSNode
 ]
-
-NodeDict: Dict[str, NodeType]
-ClusterDict: Dict[str, ClusterType]
-ReplicasDict: Dict[int, sd.FileBlockData]
-HttpResponse: Union[int, e.HttpCodes]

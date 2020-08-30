@@ -49,9 +49,13 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.napoleon",
-    "sphinx_autodoc_future_annotations",
+    # "sphinx_autodoc_future_annotations",
 ]
 
+intersphinx_mapping = {
+    "pd": ("https://pandas.pydata.org/docs/", None),
+    "np": ("https://numpy.org/doc/stable/", None),
+}
 # show type hints in doc body instead of signature
 autodoc_typehints = "description"  # signature, description, none
 autoclass_content = "class"  # class, init, both

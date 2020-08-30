@@ -154,43 +154,74 @@ storage nodes.</p>
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.id">
 <code class="sig-name descname">id</code></dt>
-<dd><p>A unique identifier of the Cluster instance.</p>
+<dd><p>A unique identifier of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.current_epoch">
 <code class="sig-name descname">current_epoch</code></dt>
 <dd><p>The simulation’s current epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.corruption_chances">
 <code class="sig-name descname">corruption_chances</code></dt>
-<dd><p>A two-element list containing the probability of file block replica
+<dd><p>A two-element list containing the probability of
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
 being corrupted and not being corrupted, respectively. See
-<a class="reference internal" href="#app.domain.cluster_groups.Cluster.__assign_disk_error_chance__" title="app.domain.cluster_groups.Cluster.__assign_disk_error_chance__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__assign_disk_error_chance__()</span></code></a>
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster._assign_disk_error_chance" title="app.domain.cluster_groups.Cluster._assign_disk_error_chance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_assign_disk_error_chance()</span></code></a>
 for corruption chance configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[float]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.master">
 <code class="sig-name descname">master</code></dt>
-<dd><p>A reference to <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a> that
-coordinates this Cluster instance.</p>
+<dd><p>A reference to a server that coordinates or monitors the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.members">
 <code class="sig-name descname">members</code></dt>
-<dd><p>A collection of network nodes that belong to the Cluster
-instance. See also <a class="reference internal" href="#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNode</span></code></a>.</p>
+<dd><p>A collection of network nodes that belong to the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Node</span></code></a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.file">
 <code class="sig-name descname">file</code></dt>
-<dd><p>A reference to <code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.FileData</span></code> object that
-represents the file being persisted by the Cluster instance.</p>
+<dd><p>A reference to
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData" title="app.domain.helpers.smart_dataclasses.FileData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileData</span></code></a>
+object that represents the file being persisted by the Cluster
+instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData" title="app.domain.helpers.smart_dataclasses.FileData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileData</span></code></a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -198,21 +229,36 @@ represents the file being persisted by the Cluster instance.</p>
 <code class="sig-name descname">critical_size</code></dt>
 <dd><p>Minimum number of network nodes plus required to exist in the
 Cluster to assure the target replication level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.sufficient_size">
 <code class="sig-name descname">sufficient_size</code></dt>
-<dd><p>Sum of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.critical_size" title="app.domain.cluster_groups.Cluster.critical_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.critical_size</span></code></a>
+<dd><p>Sum of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.critical_size" title="app.domain.cluster_groups.Cluster.critical_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">critical_size</span></code></a>
 and the number of nodes expected to fail between two successive
 recovery phases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.original_size">
 <code class="sig-name descname">original_size</code></dt>
 <dd><p>The initial and theoretically optimal
-<a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a> size.</p>
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a> size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -220,14 +266,24 @@ recovery phases.</p>
 <code class="sig-name descname">redundant_size</code></dt>
 <dd><p>Application-specific parameter, which indicates that membership
 of the Cluster must be pruned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.Cluster.running">
 <code class="sig-name descname">running</code></dt>
-<dd><p>Indicates if the Cluster instance is active. This attribute is
-used by <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a> to manage the
-simulation process.</p>
+<dd><p>Indicates if the Cluster instance is active. Used by
+<a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a> to manage the
+simulation processes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -235,8 +291,13 @@ simulation process.</p>
 <code class="sig-name descname">_recovery_epoch_sum</code></dt>
 <dd><p>Helper attribute that facilitates the storage of the sum of the
 values returned by all
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileBlockData</span>
-<span class="pre">.set_recovery_epoch()</span></code> method calls. Important for logging purposes.</p>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">set_recovery_epoch()</span></code>
+method calls. Important for logging purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -244,13 +305,44 @@ values returned by all
 <code class="sig-name descname">_recovery_epoch_calls</code></dt>
 <dd><p>Helper attribute that facilitates the storage of the sum of the
 values returned by all
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch()</span></code>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">set_recovery_epoch()</span></code>
 method calls throughout the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.current_epoch" title="app.domain.cluster_groups.Cluster.current_epoch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.Cluster.__assign_disk_error_chance__">
-<code class="sig-name descname">__assign_disk_error_chance__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__assign_disk_error_chance__"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.cluster_groups.Cluster.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>master</strong> (<em>th.MasterType</em>) – A reference to an <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a>
+object that manages the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> being initialized.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – The name of the file the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> is responsible for
+persisting.</p></li>
+<li><p><strong>members</strong> (<em>th.NodeDict</em>) – A dictionary where keys are <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> and values are their
+instance objects.</p></li>
+<li><p><strong>sim_id</strong> (<em>int</em>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – The name of the simulation file name that started
+the simulation process.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.Cluster._assign_disk_error_chance">
+<code class="sig-name descname">_assign_disk_error_chance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._assign_disk_error_chance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Defines the probability of a file block being corrupted while stored
 at the disk of a
 <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a>.</p>
@@ -260,11 +352,10 @@ at the disk of a
 <cite>An Analysis of Data Corruption in the Storage Stack
 &lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;</cite>. Thus
 the current implementation follows this formula:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>:py:const:`MAX_EPOCHS &lt;app.domain.master_servers.Master.MAX_EPOCHS&gt;`
-* P(Xt ≥ L) * / :py:const:`MONTH_EPOCHS &lt;app.environment_settings.MONTH_EPOCHS&gt;`
-</pre></div>
-</div>
-<p>The notation P(Xt ≥ L) denotes the probability of a disk
+<blockquote>
+<div><p>(<a class="reference internal" href="#app.domain.master_servers.Master.MAX_EPOCHS" title="app.domain.master_servers.Master.MAX_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MAX_EPOCHS</span></code></a> * <code class="docutils literal notranslate"><span class="pre">P(Xt</span> <span class="pre">≥</span> <span class="pre">L)</span></code>) / <a class="reference internal" href="app.html#app.environment_settings.MONTH_EPOCHS" title="app.environment_settings.MONTH_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MONTH_EPOCHS</span></code></a></p>
+</div></blockquote>
+<p>The notation <code class="docutils literal notranslate"><span class="pre">P(Xt</span> <span class="pre">≥</span> <span class="pre">L)</span></code> denotes the probability of a disk
 developing at least L checksum mismatches within T months since
 the disk’s first use in the field. Found in the paper’s
 results.</p>
@@ -282,36 +373,27 @@ errors, at an epoch basis.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.Cluster.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Instantiates an <cite>Cluster</cite> object</p>
+<dt id="app.domain.cluster_groups.Cluster._get_new_members">
+<code class="sig-name descname">_get_new_members</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._get_new_members"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper method that searches for possible
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a> by querying
+the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.master" title="app.domain.cluster_groups.Cluster.master"><code class="xref py py-attr docutils literal notranslate"><span class="pre">master</span></code></a> of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>master</strong> (<em>th.MasterType</em>) – A reference to an <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a>
-object that manages the <cite>Cluster</cite> being initialized.</p></li>
-<li><p><strong>file_name</strong> (<em>str</em>) – The name of the file this <cite>:py:class:`Cluster
-&lt;app.domain.cluster_groups.Cluster&gt;</cite> is responsible for
-persisting.</p></li>
-<li><p><strong>members</strong> (<em>th.NodeDict</em>) – A dictionary mapping unique identifiers
-<a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Clusters'</span></code></a>
-identifiers to their instances.</p></li>
-<li><p><strong>sim_id</strong> (<em>int</em>) – optional; Identifier that generates unique output file names,
-thus guaranteeing that different simulation instances do not
-overwrite previous out files.</p></li>
-<li><p><strong>origin</strong> (<em>str</em>) – optional; The name of the simulation file name that started
-the simulation process.</p></li>
-</ul>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary mapping where keys are
+<a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a>
+and values are
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">node</span> <span class="pre">instances</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-even"><p>th.NodeDict</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.Cluster.__log_evaluation__">
-<code class="sig-name descname">__log_evaluation__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcount</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__log_evaluation__"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.cluster_groups.Cluster._log_evaluation">
+<code class="sig-name descname">_log_evaluation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcount</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._log_evaluation"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that performs evaluate step related logging.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -325,15 +407,18 @@ simulation’s current epoch.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.Cluster.__setup_epoch__">
-<code class="sig-name descname">__setup_epoch__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.__setup_epoch__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Initializes some attributes of the Cluster during
-its initialization.</p>
-<p>The helper method is used to isolate the initialization of some
-simulation related attributes for eaasier comprehension.</p>
+<dt id="app.domain.cluster_groups.Cluster._set_fail">
+<code class="sig-name descname">_set_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._set_fail"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Ends the Cluster instance simulation.</p>
+<p>Sets <a class="reference internal" href="#app.domain.cluster_groups.Cluster.running" title="app.domain.cluster_groups.Cluster.running"><code class="xref py py-attr docutils literal notranslate"><span class="pre">running</span></code></a> to False and orders
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData" title="app.domain.helpers.smart_dataclasses.FileData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileData</span></code></a> to write
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">collected</span> <span class="pre">logs</span></code></a>
+to disk and close it’s
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.out_file" title="app.domain.helpers.smart_dataclasses.FileData.out_file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">out_file</span></code></a>
+stream.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – The simulation’s current epoch.</p>
+<dd class="field-odd"><p><strong>message</strong> (<em>str</em>) – A short explanation of why the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> terminated early.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -342,34 +427,13 @@ simulation related attributes for eaasier comprehension.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.Cluster._get_new_members">
-<code class="sig-name descname">_get_new_members</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._get_new_members"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Helper method that gets adds network nodes, if possible,
-to the Cluster.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A dictionary mapping network node identifiers and their instance
-objects (<a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a>).</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>th.NodeDict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="app.domain.cluster_groups.Cluster._set_fail">
-<code class="sig-name descname">_set_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._set_fail"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Ends the Cluster instance simulation.</p>
-<p>Sets <a class="reference internal" href="#app.domain.cluster_groups.Cluster.running" title="app.domain.cluster_groups.Cluster.running"><code class="xref py py-attr docutils literal notranslate"><span class="pre">running</span></code></a> to False and instructs
-<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData" title="app.domain.helpers.smart_dataclasses.FileData"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileData</span></code></a> to persist
-<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.LoggingData</span></code></a> to disk
-and close its IO stream (
-py:attr:<cite>app.domain.helpers.smart_dataclasses.FileData.out_file</cite>).</p>
+<dt id="app.domain.cluster_groups.Cluster._setup_epoch">
+<code class="sig-name descname">_setup_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._setup_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Initializes some attributes of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> during
+its initialization.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>message</strong> (<em>str</em>) – A short explanation of why the Cluster suffered
-early termination.</p>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – The simulation’s current epoch.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -389,8 +453,8 @@ overridden in sub classes if required.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>complainter</strong> (<em>str</em>) – The identifier of the complaining <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a>.</p></li>
-<li><p><strong>complainee</strong> (<em>str</em>) – The identifier of the <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> being complained about.</p></li>
+<li><p><strong>complainter</strong> (<em>str</em>) – The identifier of the complaining <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>.</p></li>
+<li><p><strong>complainee</strong> (<em>str</em>) – The identifier of the <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a> being complained about.</p></li>
 <li><p><strong>reason</strong> (<em>th.HttpResponse</em>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.HttpCodes" title="app.domain.helpers.enums.HttpCodes"><code class="xref py py-class docutils literal notranslate"><span class="pre">http</span> <span class="pre">code</span></code></a>
 that led to the complaint.</p></li>
 </ul>
@@ -404,14 +468,15 @@ that led to the complaint.</p></li>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.evaluate">
 <code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Abstract method that requires implementation in children of this
-class.</p>
-<p>This method functionality is to log the simulation status and verify
-properties specified by the user and should be invoked by every
-Cluster instance at every epoch time.</p>
+<dd><p>Evaluates and logs the health, possibly other parameters, of the
+<code class="docutils literal notranslate"><span class="pre">Cluster</span></code> at every epoch.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – When children of this class do not implement the abstract
+    method.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -419,22 +484,23 @@ Cluster instance at every epoch time.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.execute_epoch">
 <code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Orders all network node members to execute their epoch</p>
+<dd><p>Orders all <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> to execute their epoch.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>If the Cluster terminates early, i.e., if it terminates before
-reaching <code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.MAX_EPOCHS</span></code>,
-no logging should be done in
-<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.LoggingData</span></code></a>
-the received <cite>epoch</cite> to avoid skewing previously collected results.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> terminates early, before it reaches
+<a class="reference internal" href="#app.domain.master_servers.Master.MAX_EPOCHS" title="app.domain.master_servers.Master.MAX_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MAX_EPOCHS</span></code></a>,
+nothing should be logged in
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggingData</span></code></a>
+at the specified <code class="docutils literal notranslate"><span class="pre">epoch</span></code> to avoid skewing previously
+collected results.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – The epoch the Cluster should currently be in, according
-to it’s managing Master.</p>
+<dd class="field-odd"><p><strong>epoch</strong> (<em>int</em>) – The epoch the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> should currently be in, according
+to it’s managing <a class="reference internal" href="#app.domain.cluster_groups.Cluster.master" title="app.domain.cluster_groups.Cluster.master"><code class="xref py py-attr docutils literal notranslate"><span class="pre">master</span></code></a> entity.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>False if Cluster failed to persist the file it was
+<dd class="field-even"><p>False if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.file" title="app.domain.cluster_groups.Cluster.file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code></a> it was
 responsible for, otherwise True.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
@@ -446,10 +512,11 @@ responsible for, otherwise True.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.get_cluster_status">
 <code class="sig-name descname">get_cluster_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.get_cluster_status"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Evaluates the cluster status.</p>
+<dd><p>Determines the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>’s status based on the length of the
+current <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> list.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The status of the cluster as a string.</p>
+<dd class="field-odd"><p>The status of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> as a string.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>str</p>
@@ -460,15 +527,19 @@ responsible for, otherwise True.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.maintain">
 <code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Evicts disconnected network_nodes from the Cluster and
+<dd><p>Evicts disconnected <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> from the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> and
 attempts to recruit new ones.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>off_nodes</strong> (<em>List</em><em>[</em><em>th.NodeType</em><em>]</em>) – The collection of members who disconnected during the
+<dd class="field-odd"><p><strong>off_nodes</strong> (<em>List</em><em>[</em><em>th.NodeType</em><em>]</em>) – The subset of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who disconnected during the
 current epoch.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – When children of this class do not implement the abstract
+    method.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -476,11 +547,12 @@ current epoch.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.membership_maintenance">
 <code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Recruit new <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a>.</p>
+<dd><p>Attempts to recruits new
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> as members
+of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A collection of new members, that is empty if membership did not
-change.</p>
+<dd class="field-odd"><p>A dictionary that is empty if membership did not change.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>th.NodeDict</p>
@@ -491,21 +563,26 @@ change.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.nodes_execute">
 <code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Queries all network node members execute the epoch.</p>
-<p>This method logs the amount of lost replicas throughout the current
-epoch according to the members who went offline and the file replicas
-replicas they posssed and is responsible for setting up a recovery
-epoch for those replicas. See
-(<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.set_recovery_epoch()</span></code>).
+<dd><p>Queries all <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> to execute the epoch.</p>
+<p>This method logs the amount of lost replicas throughout
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.current_epoch" title="app.domain.cluster_groups.Cluster.current_epoch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code></a> according to the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who went
+offline and the
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
+replicas they posssed and is responsible for
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.set_replication_epoch" title="app.domain.cluster_groups.Cluster.set_replication_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setting</span> <span class="pre">a</span> <span class="pre">replication</span> <span class="pre">epoch</span></code></a>.
 Similarly it logs the number of members who disconnected.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A collection of members who disconnected during the current
-epoch. See
+<dd class="field-odd"><p>List of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> that disconnected during the
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.current_epoch" title="app.domain.cluster_groups.Cluster.current_epoch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code></a>. See
 <code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_epoch_status()</span></code>.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>List[th.NodeType]</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – When children of this class do not implement the abstract
+    method.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[th.NodeType]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -513,20 +590,28 @@ epoch. See
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.route_part">
 <code class="sig-name descname">route_part</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sender</span></em>, <em class="sig-param"><span class="n">receiver</span></em>, <em class="sig-param"><span class="n">replica</span></em>, <em class="sig-param"><span class="n">fresh_replica</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.route_part"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Sends one file block replica to some other network node.</p>
+<dd><p>Sends a <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replica</span></code></a> to some other
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a> in
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sender</strong> (<em>str</em>) – An identifier of the network node who is sending the message.</p></li>
-<li><p><strong>receiver</strong> (<em>str</em>) – The destination network node identifier.</p></li>
-<li><p><strong>replica</strong> (<em>sd.FileBlockData</em>) – The file block replica send to specified destination.</p></li>
-<li><p><strong>fresh_replica</strong> (<em>bool</em>) – optional; Prevents recently created replicas from being
+<li><p><strong>sender</strong> (<em>str</em>) – An identifier of the
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>
+who is sending the message.</p></li>
+<li><p><strong>receiver</strong> (<em>str</em>) – The destination
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>
+identifier.</p></li>
+<li><p><strong>replica</strong> (<em>sd.FileBlockData</em>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replica</span></code></a>
+to be sent specified destination: <code class="docutils literal notranslate"><span class="pre">receiver</span></code>.</p></li>
+<li><p><strong>fresh_replica</strong> (<em>bool</em>) – Prevents recently created replicas from being
 corrupted, since they are not likely to be corrupted in disk.
-This argument facilitates simulation. (default: False)</p></li>
+This argument facilitates simulation.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An HTTP code sent by destination network node.</p>
+<dd class="field-even"><p>The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.HttpCodes" title="app.domain.helpers.enums.HttpCodes"><code class="xref py py-class docutils literal notranslate"><span class="pre">http</span> <span class="pre">code</span></code></a>
+received as reply from the destination of this message.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>th.HttpResponse</p>
@@ -537,11 +622,11 @@ This argument facilitates simulation. (default: False)</p></li>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.set_replication_epoch">
 <code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replica</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.set_replication_epoch"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Delegates to <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch" title="app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch()</span></code></a>.</p>
+<dd><p>Delegates to <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch" title="app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_replication_epoch()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>replica</strong> (<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><em>domain.helpers.smart_dataclasses.FileBlockData</em></a>) – A reference to a <code class="docutils literal notranslate"><span class="pre">FileBlockData</span></code> instance that represents a
-file block replica that was lost.</p>
+<dd class="field-odd"><p><strong>replica</strong> (<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><em>domain.helpers.smart_dataclasses.FileBlockData</em></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replica</span></code></a> that
+was lost.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -590,28 +675,28 @@ distributed among members of the cluster.</p>
 <dt id="app.domain.cluster_groups.HDFSCluster">
 <em class="property">class </em><code class="sig-name descname">HDFSCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a></p>
-<p>Represents a group of network nodes persisting a file in a Hadoop
-Distributed File System scenario.</p>
+<p>Represents a group of network nodes ensuring the durability of a file
+in a Hadoop Distributed File System scenario.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Differs from <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a> in the sense
-that <a class="reference internal" href="#app.domain.network_nodes.HDFSNode" title="app.domain.network_nodes.HDFSNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a> do not
+that <a class="reference internal" href="#app.domain.network_nodes.HDFSNode" title="app.domain.network_nodes.HDFSNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> do not
 perform swarm guidance behaviors and instead report with regular
-heartbeats to their
-<a class="reference internal" href="#app.domain.cluster_groups.HDFSCluster" title="app.domain.cluster_groups.HDFSCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">HDFSCluster</span> <span class="pre">monitors</span></code></a>.
-This class would represent a NameNode Server in HDFS or a Master server
-in GFS.</p>
+heartbeats to their <a class="reference internal" href="#app.domain.cluster_groups.HDFSCluster" title="app.domain.cluster_groups.HDFSCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">monitors</span></code></a>. This class could be a
+<em>NameNode Server</em> in HDFS or a <em>master server</em> in GFS.</p>
+</div>
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.HDFSCluster.suspicious_nodes">
 <code class="sig-name descname">suspicious_nodes</code></dt>
-<dd><p>A set containing the unique identifiers of known suspicious
-nodes.</p>
+<dd><p>A set containing the identifiers of suspicious
+<a class="reference internal" href="#app.domain.network_nodes.HDFSNode" title="app.domain.network_nodes.HDFSNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.HDFSCluster.data_node_heartbeats">
 <code class="sig-name descname">data_node_heartbeats</code></dt>
-<dd><p>A dictionary mapping <a class="reference internal" href="#app.domain.network_nodes.HDFSNode" title="app.domain.network_nodes.HDFSNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">HDFSNode</span></code></a>
-identifiers to their respective number of received complaints.
-Each node enters the dictionary with at five beats. When they
+<dd><p>A dictionary mapping <code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code> to the number of
+complaints made against them. Each node has five lives. When they
 miss five beats in a row, i.e., when the dictionary value count
 is zero, they are evicted from the cluster.</p>
 </dd></dl>
@@ -619,19 +704,21 @@ is zero, they are evicted from the cluster.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Instantiates an <cite>HiveClusterExt</cite> object.</p>
-<dl class="simple">
-<dt>Extends:</dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster</span></code>.</p>
-</dd>
-</dl>
+<dd><p>Instantiates an <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>master</strong> (<em>th.MasterType</em>) – </p></li>
-<li><p><strong>file_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>members</strong> (<em>th.NodeDict</em>) – </p></li>
-<li><p><strong>sim_id</strong> (<em>int</em>) – </p></li>
-<li><p><strong>origin</strong> (<em>str</em>) – </p></li>
+<li><p><strong>master</strong> (<em>th.MasterType</em>) – A reference to an <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a>
+object that manages the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> being initialized.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – The name of the file the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> is responsible for
+persisting.</p></li>
+<li><p><strong>members</strong> (<em>th.NodeDict</em>) – A dictionary where keys are <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> and values are their
+instance objects.</p></li>
+<li><p><strong>sim_id</strong> (<em>int</em>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – The name of the simulation file name that started
+the simulation process.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -643,10 +730,9 @@ is zero, they are evicted from the cluster.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.evaluate">
 <code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p><cite>HDFSCluster</cite> evaluate method merely logs the number of existing
-replicas in the system.</p>
+<dd><p>Logs the number of existing replicas in the <code class="docutils literal notranslate"><span class="pre">HDFSCluster</span></code>.</p>
 <dl class="simple">
-<dt>Overrides:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster.evaluate()</span></code>.</p>
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.evaluate" title="app.domain.cluster_groups.Cluster.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.evaluate()</span></code></a>.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
@@ -659,10 +745,10 @@ replicas in the system.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.maintain">
 <code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Evicts any <code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code> whose
-heartbeats in <cite>data_node_heartbeats</cite> reached zero.</p>
+<dd><p>Evicts any <a class="reference internal" href="#app.domain.network_nodes.HDFSNode" title="app.domain.network_nodes.HDFSNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>
+whose heartbeats in <a class="reference internal" href="#app.domain.cluster_groups.HDFSCluster.data_node_heartbeats" title="app.domain.cluster_groups.HDFSCluster.data_node_heartbeats"><code class="xref py py-attr docutils literal notranslate"><span class="pre">data_node_heartbeats</span></code></a> reached zero.</p>
 <dl class="simple">
-<dt>Overrides:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">domain.cluster_groups.Cluster.execute_epoch()</span></code>.</p>
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.execute_epoch" title="app.domain.cluster_groups.Cluster.execute_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.execute_epoch()</span></code></a>.</p>
 </dd>
 </dl>
 <dl class="field-list simple">
@@ -765,7 +851,7 @@ guidance algorithm.</p>
 realizations for ideal persistence of the file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>pandas DataFrame</p>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -776,7 +862,7 @@ realizations for ideal persistence of the file.</p>
 <dd><p>Tracks the file current density distribution, updated at each epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>pandas DataFrame</p>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -784,19 +870,21 @@ realizations for ideal persistence of the file.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Instantiates an <cite>HiveClusterExt</cite> object.</p>
-<dl class="simple">
-<dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a>.</p>
-</dd>
-</dl>
+<dd><p>Instantiates an <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>master</strong> (<em>th.MasterType</em>) – </p></li>
-<li><p><strong>file_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>members</strong> (<em>th.NodeDict</em>) – </p></li>
-<li><p><strong>sim_id</strong> (<em>int</em>) – </p></li>
-<li><p><strong>origin</strong> (<em>str</em>) – </p></li>
+<li><p><strong>master</strong> (<em>th.MasterType</em>) – A reference to an <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a>
+object that manages the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> being initialized.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – The name of the file the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> is responsible for
+persisting.</p></li>
+<li><p><strong>members</strong> (<em>th.NodeDict</em>) – A dictionary where keys are <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> and values are their
+instance objects.</p></li>
+<li><p><strong>sim_id</strong> (<em>int</em>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – The name of the simulation file name that started
+the simulation process.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -806,11 +894,11 @@ realizations for ideal persistence of the file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.HiveCluster.__log_evaluation__">
-<code class="sig-name descname">__log_evaluation__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcount</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.__log_evaluation__"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.cluster_groups.HiveCluster._log_evaluation">
+<code class="sig-name descname">_log_evaluation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcount</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster._log_evaluation"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Helper method that performs evaluate step related logging.</p>
 <dl class="simple">
-<dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.__log_evaluation__" title="app.domain.cluster_groups.Cluster.__log_evaluation__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.__log_evaluation__()</span></code></a></p>
+<dt>Extends:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.__log_evaluation__()</span></code></p>
 </dd>
 </dl>
 <dl class="field-list simple">
@@ -824,8 +912,8 @@ realizations for ideal persistence of the file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.HiveCluster.__pretty_print_eq_distr_table__">
-<code class="sig-name descname">__pretty_print_eq_distr_table__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">atol</span></em>, <em class="sig-param"><span class="n">rtol</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.__pretty_print_eq_distr_table__"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.cluster_groups.HiveCluster._pretty_print_eq_distr_table">
+<code class="sig-name descname">_pretty_print_eq_distr_table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target</span></em>, <em class="sig-param"><span class="n">atol</span></em>, <em class="sig-param"><span class="n">rtol</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster._pretty_print_eq_distr_table"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Pretty prints a PSQL formatted table for visual vector comparison.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1089,10 +1177,10 @@ with a faster mixing rate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – An adjacency matrix that represents the network topology.</p></li>
+<li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – An adjacency matrix that represents the network topology.</p></li>
 <li><p><strong>v</strong> – A desired distribution vector that defines the returned
 matrix steady state property.</p></li>
-<li><p><strong>v_</strong> (<em>numpy.ndarray</em>) – </p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1101,7 +1189,7 @@ steady state is <code class="docutils literal notranslate"><span class="pre">v_<
 <a class="reference internal" href="#app.domain.cluster_groups.HiveCluster._validate_transition_matrix" title="app.domain.cluster_groups.HiveCluster._validate_transition_matrix"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_validate_transition_matrix()</span></code></a>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1178,19 +1266,21 @@ reset every epoch.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveClusterExt.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveClusterExt.__init__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Instantiates an <cite>HiveClusterExt</cite> object.</p>
-<dl class="simple">
-<dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a>.</p>
-</dd>
-</dl>
+<dd><p>Instantiates an <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>master</strong> (<em>th.MasterType</em>) – </p></li>
-<li><p><strong>file_name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>members</strong> (<em>th.NodeDict</em>) – </p></li>
-<li><p><strong>sim_id</strong> (<em>int</em>) – </p></li>
-<li><p><strong>origin</strong> (<em>str</em>) – </p></li>
+<li><p><strong>master</strong> (<em>th.MasterType</em>) – A reference to an <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a>
+object that manages the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> being initialized.</p></li>
+<li><p><strong>file_name</strong> (<em>str</em>) – The name of the file the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> is responsible for
+persisting.</p></li>
+<li><p><strong>members</strong> (<em>th.NodeDict</em>) – A dictionary where keys are <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> and values are their
+instance objects.</p></li>
+<li><p><strong>sim_id</strong> (<em>int</em>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – The name of the simulation file name that started
+the simulation process.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
