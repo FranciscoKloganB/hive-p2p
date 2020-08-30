@@ -17,18 +17,18 @@ Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator
    notedocs
    indices
 
-This project was born during the development and writing of my master's
+This project was born during the development and writing of a master's
 dissertation in Computer Science and Engineering, through a research
-sponsorship granted to me by ISR_ (ISR) to participate in the project
-*UID/EEA/50009/2019 - 1801P.00920.1.02 DSOR*. ISR is a research and
-development institution affiliated with IST_, the university where my
-dissertation will be submitted.
+sponsorship granted by ISR_ for the participation in the project
+*UID/EEA/50009/2019 - 1801P.00920.1.02 DSOR*. ISR is research and
+development institution affiliated with IST_, the university where said
+dissertation is submitted at.
 
-My work consisted of adapting and optimizing a few algorithms widely used and
-studied in robotics and control research fields to a P2P scenario where the
-peers form the basis for a Distributed Backup System. Throughout this process,
-I ended up writing my own cycle based simulator, and the result was
-*Hives* due to the lack of other viable options.
+The project's work consisted of adapting and optimizing a few algorithms widely
+used and studied in robotics and control research fields to a P2P scenario
+where the peers form the basis for a Distributed Backup System. Throughout this
+process, due to the lack of other viable options, the researchers wrote their
+own cycle based simulator, and the result was *Hives*.
 
 Hives is a P2P Stochastic Swarm Guidance Simulator that facilitates
 research by allowing developers to prototype P2P networks based on swarm

@@ -13,7 +13,7 @@ This simulator uses Python 3.7.7. You are free to use any version you desire,
 but we do not guarantee the simulator will work under such conditions.
 Any version launched before 3.7.x will not run this project due to retro
 compatibility errors. We recommend using an IDE such as PyCharm or equivalent
-for easier inspection, usage, and setups.
+for easier code inspection, usage and overall faster and, more stable workflows.
 
 Installation - Part I
 ~~~~~~~~~~~~~~~~~~~~~
@@ -60,16 +60,14 @@ otherwise read `Disabling Licensed Components`_.
 Installation - Part II
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Throughout the development of the project, convex optimization problems had to
-be solved.
-
-We used the CVXPY_ package to tackle that issue; unfortunately, the
-solvers available to Python_ are few and not very powerful, specially when it
-comes to open-source ones. For semi-definite programming problems with utilized
-Mosek_. We let CVXPY select the solver for global optimization problems, from
-among the pool of installed solvers. We also use BMIBNB_ solver from MatLab_
-(through the MatLabEngine_) using YALMIP_ because the latter supports
-non-convex constraints.
+Throughout the development of the project, a handful of convex optimization
+problems had to be solved. We used the CVXPY_ package to tackle that issue;
+unfortunately, the solvers available to Python_ are few and not very powerful,
+specially when it comes to open-source ones. For semi-definite programming
+problems with utilized Mosek_. We let CVXPY select the solver for global
+optimization problems, from among the pool of installed solvers. We also use
+BMIBNB_ solver from MatLab_ (through the MatLabEngine_) using YALMIP_ because
+the latter supports non-convex constraints.
 
 To use MOSEK along with CVXPY follow the installation instructions linked below:
 

@@ -50,15 +50,12 @@ def new_mh_transition_matrix(
 
 def new_sdp_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
-    """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
+    """Constructs a transition matrix using semi-definite programming techniques.
 
     Constructs a transition matrix using metropolis-hastings algorithm  for
     the specified steady state ``v``. The provided adjacency matrix A is first
     optimized with semi-definite programming techniques for the uniform
     distribution vector.
-
-    Note:
-        This function only works if you have a valid MOSEK license.
 
     Args:
         a:
@@ -83,15 +80,12 @@ def new_sdp_mh_transition_matrix(
 
 def new_go_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
-    """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
+    """Constructs a transition matrix using global optimization techniques.
 
     Constructs an optimized markov matrix using linear programming relaxations
     and convex envelope approximations for the specified steady state ``v``.
     Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform
     Matrix, 2) is equal to the markov matrix eigenvalue.
-
-    Note:
-        This function only works if you have a valid MOSEK license.
 
     Args:
         a:
@@ -188,9 +182,10 @@ def _adjency_matrix_sdp_optimization(
     with the the same length as the inputed symmetric matrix.
 
     Note:
-        1. This function only works if you have a valid MOSEK license.
-        2. The input Matrix hould have no transient states/absorbent nodes, \
-        but this is not enforced or verified.
+        This function tries to use
+        `Mosek Solver <https://docs.mosek.com/9.2/pythonapi/index.html>`,
+        if a valid license is not found, it uses
+        `SCS Solver <https://github.com/cvxgrp/scs>` instead.
 
     Args:
         a:
@@ -234,10 +229,10 @@ def _adjency_matrix_sdp_optimization(
         if cvx.MOSEK in cvx.installed_solvers():
             problem.solve(solver=cvx.MOSEK)
         else:
-            problem.solve()
+            problem.solve(solver=cvx.SCS)
     except MosekException:
         # catches invalid MosekException invalid license.
-        problem.solve()
+        problem.solve(solver=cvx.SCS)
 
     return problem, a_opt
 
