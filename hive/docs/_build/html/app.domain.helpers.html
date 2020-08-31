@@ -479,7 +479,7 @@ matrices use <a class="reference internal" href="#app.domain.helpers.matrices._g
 <li><p><strong>rw</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A random walk over an adjacency matrix.</p></li>
 <li><p><strong>r</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A matrix whose entries contain acceptance probabilities for <code class="docutils literal notranslate"><span class="pre">rw</span></code>.</p></li>
 <li><p><strong>i</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The diagonal-index of <code class="docutils literal notranslate"><span class="pre">rw</span></code> where summation needs to
-be performed on.</p></li>
+be performed on. E.g.: <code class="docutils literal notranslate"><span class="pre">rw[i,</span> <span class="pre">i]</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

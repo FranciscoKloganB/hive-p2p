@@ -377,7 +377,7 @@ def _get_diagonal_entry_probability_v1(
             A matrix whose entries contain acceptance probabilities for ``rw``.
         i:
             The diagonal-index of ``rw`` where summation needs to
-            be performed on.
+            be performed on. E.g.: ``rw[i, i]``.
 
     Returns:
         A probability to be inserted at entry ``(i, i)`` of the transition
