@@ -829,7 +829,7 @@ parameters, e.g., replica control such or file block integrity.</p>
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.hive_id">
 <code class="sig-name descname">hive_id</code></dt>
-<dd><p>Unique identifier of the hive that manages the file block.</p>
+<dd><p>Unique identifier of the cluster that manages the file block.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -887,7 +887,7 @@ Until a loss occurs and after a loss is recovered,
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>hive_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Unique identifier of the hive that manages the file block.</p></li>
+<li><p><strong>hive_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Unique identifier of the cluster that manages the file block.</p></li>
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the file the file block belongs to.</p></li>
 <li><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number that uniquely identifies the file block.</p></li>
 <li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – Actual file block data as a sequence of bytes.</p></li>
@@ -1002,8 +1002,10 @@ attempt will be done in the next epoch.</p>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Holds essential simulation data concerning files being persisted.</p>
 <p>FileData is a helper class which has responsabilities such as tracking
-how many parts including blocks exist of the named file and managing
-the persistence of logged simulation data to disk.</p>
+how many file block replicas currently existing in a
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a>
+but also keeping simulation events logged in RAM until the simulation
+ends, at which point the logs are written to disk.</p>
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.name">
 <code class="sig-name descname">name</code></dt>
@@ -1016,8 +1018,8 @@ the persistence of logged simulation data to disk.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="app.domain.helpers.smart_dataclasses.FileData.parts_in_hive">
-<code class="sig-name descname">parts_in_hive</code></dt>
+<dt id="app.domain.helpers.smart_dataclasses.FileData.existing_replicas">
+<code class="sig-name descname">existing_replicas</code></dt>
 <dd><p>The number of file parts including blocks that exist for the
 named file that exist in the simulation. Updated every epoch.</p>
 <dl class="field-list simple">
@@ -1032,11 +1034,10 @@ named file that exist in the simulation. Updated every epoch.</p>
 <code class="sig-name descname">logger</code></dt>
 <dd><p>Object that stores captured simulation data. Stored data can be
 post-processed using user defined scripts to create items such
-has graphs and figures. See
-<code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.SimulationData</span></code></p>
+has graphs and figures.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData">LoggingData</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggingData</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1044,34 +1045,12 @@ has graphs and figures. See
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.out_file">
 <code class="sig-name descname">out_file</code></dt>
-<dd><p>File output stream to where captured data is written in append mode.</p>
+<dd><p>File output stream to where captured data is written in append
+mode and to which <code class="docutils literal notranslate"><span class="pre">logger</span></code> will be written to at the end of the
+simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str/bytes/int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="app.domain.helpers.smart_dataclasses.FileData.__eq__">
-<code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.__eq__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Compares if two instances of FileData are equal.</p>
-<p>Equality is based on name equality.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the name attribute of both instances is the same,
-otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="app.domain.helpers.smart_dataclasses.FileData.__hash__">
-<code class="sig-name descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.__hash__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Override to allows a network node object to be used as a dict key</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The hash of value of the referenced file <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.name" title="app.domain.helpers.smart_dataclasses.FileData.name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">name</span></code></a>.</p>
+<dd class="field-odd"><p>Union[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>, <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)">bytes</a>, <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1079,16 +1058,18 @@ otherwise <code class="docutils literal notranslate"><span class="pre">False</sp
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.__init__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Creates an instance of FileData</p>
+<dd><p>Creates an instance of <code class="docutils literal notranslate"><span class="pre">FileData</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Name of the file to be referenced by the FileData object.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Name of the file to be referenced by the <code class="docutils literal notranslate"><span class="pre">FileData</span></code> object.</p></li>
 <li><p><strong>sim_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Identifier that generates unique output file names,
 thus guaranteeing that different simulation instances do not
-overwrite previous out files.</p></li>
+overwrite previous <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.out_file" title="app.domain.helpers.smart_dataclasses.FileData.out_file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">output</span> <span class="pre">files</span></code></a>.</p></li>
 <li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the simulation file name that started
-the simulation process.</p></li>
+the simulation process. See
+<a class="reference internal" href="app.domain.html#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a> and
+<a class="reference internal" href="app.html#module-app.hive_simulation" title="app.hive_simulation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">hive_simulation</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1098,19 +1079,13 @@ the simulation process.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.helpers.smart_dataclasses.FileData.__ne__">
-<code class="sig-name descname">__ne__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.__ne__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Compares if two instances of FileData are not equal.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.fclose">
 <code class="sig-name descname">fclose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fclose"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Closes the output file controlled by the FileData instance.</p>
+<dd><p>Closes the output stream controlled by the <code class="docutils literal notranslate"><span class="pre">FileData</span></code> instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>msg</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – If filled, a termination message is logged into the
-output file that is being closed.</p>
+<dd class="field-odd"><p><strong>msg</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – If filled, a termination message is appended to
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.out_file" title="app.domain.helpers.smart_dataclasses.FileData.out_file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">out_file</span></code></a>, before closing it.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
@@ -1121,11 +1096,11 @@ output file that is being closed.</p>
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.fwrite">
 <code class="sig-name descname">fwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fwrite"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Writes a message to the output file referenced by the FileData object.</p>
-<p>The method fwrite automatically adds a new line to the inputted message.</p>
+<dd><p>Appends a message to the output stream of <code class="docutils literal notranslate"><span class="pre">FileData</span></code>.</p>
+<p>The method automatically adds a new line character to <code class="docutils literal notranslate"><span class="pre">msg</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The message to be logged on the output file.</p>
+<dd class="field-odd"><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The message to be logged on the <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.out_file" title="app.domain.helpers.smart_dataclasses.FileData.out_file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">out_file</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
@@ -1135,21 +1110,21 @@ output file that is being closed.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.jwrite">
-<code class="sig-name descname">jwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive</span></em>, <em class="sig-param"><span class="n">origin</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.jwrite"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Writes a JSON string of the LoggingData instance to the output file.</p>
-<p>The logged data is defined by the attributes of the
-<code class="xref py py-class docutils literal notranslate"><span class="pre">LoggingData</span> <span class="pre">&lt;app.domain.helpers.smart_dataclasses.</span>
-<span class="pre">LoggingData</span></code> class.</p>
+<code class="sig-name descname">jwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">origin</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.jwrite"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Appends a json string to the output stream of <code class="docutils literal notranslate"><span class="pre">FileData</span></code>.</p>
+<p>The logged data are all attributes belonging to <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.logger" title="app.domain.helpers.smart_dataclasses.FileData.logger"><code class="xref py py-attr docutils literal notranslate"><span class="pre">logger</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>hive</strong> (<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><em>domain.cluster_groups.Cluster</em></a>) – The <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a>
+<li><p><strong>cluster</strong> (<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><em>domain.cluster_groups.Cluster</em></a>) – The <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a>
 object that manages the simulated persistence of the
-referenced file.</p></li>
-<li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the simulation file that started the simulation
-process.</p></li>
-<li><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The epoch at which the LoggingData was logged into the
-output file.</p></li>
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.name" title="app.domain.helpers.smart_dataclasses.FileData.name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">named</span> <span class="pre">file</span></code></a>.</p></li>
+<li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the simulation file name that started
+the simulation process. See
+<a class="reference internal" href="app.domain.html#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a> and
+<a class="reference internal" href="app.html#module-app.hive_simulation" title="app.hive_simulation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">hive_simulation</span></code></a>.</p></li>
+<li><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The epoch at which the <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.logger" title="app.domain.helpers.smart_dataclasses.FileData.logger"><code class="xref py py-attr docutils literal notranslate"><span class="pre">logger</span></code></a> was appended to
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.out_file" title="app.domain.helpers.smart_dataclasses.FileData.out_file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">out_file</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1394,7 +1369,7 @@ network at each epoch.</p>
 <p class="admonition-title">Note</p>
 <p>This method should only be called when simulation terminates due
 to a failure such as a the loss of all blocks of a file block
-or the simultaneous disconnection of all network nodes in the hive.</p>
+or the simultaneous disconnection of all network nodes in the cluster.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1446,7 +1421,7 @@ or the simultaneous disconnection of all network nodes in the hive.</p>
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance">
 <code class="sig-name descname">log_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">status_bm</span></em>, <em class="sig-param"><span class="n">status_am</span></em>, <em class="sig-param"><span class="n">size_bm</span></em>, <em class="sig-param"><span class="n">size_am</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_maintenance"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Logs hive membership status and size at an epoch.</p>
+<dd><p>Logs cluster membership status and size at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1454,8 +1429,8 @@ or the simultaneous disconnection of all network nodes in the hive.</p>
 maintenance.</p></li>
 <li><p><strong>status_am</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A string that describes the status of the cluster after
 maintenance.</p></li>
-<li><p><strong>size_bm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of network nodes in the hive before maintenance.</p></li>
-<li><p><strong>size_am</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of network nodes in the hive after maintenance.</p></li>
+<li><p><strong>size_bm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of network nodes in the cluster before maintenance.</p></li>
+<li><p><strong>size_am</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of network nodes in the cluster after maintenance.</p></li>
 <li><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – A simulation epoch at which termination occurred.</p></li>
 </ul>
 </dd>

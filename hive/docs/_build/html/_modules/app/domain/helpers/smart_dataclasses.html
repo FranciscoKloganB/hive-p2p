@@ -128,40 +128,45 @@
     <span class="sd">&quot;&quot;&quot;Holds essential simulation data concerning files being persisted.</span>
 
 <span class="sd">    FileData is a helper class which has responsabilities such as tracking</span>
-<span class="sd">    how many parts including blocks exist of the named file and managing</span>
-<span class="sd">    the persistence of logged simulation data to disk.</span>
+<span class="sd">    how many file block replicas currently existing in a </span>
+<span class="sd">    :py:class:`cluster group &lt;app.domain.cluster_groups.Cluster&gt;`</span>
+<span class="sd">    but also keeping simulation events logged in RAM until the simulation </span>
+<span class="sd">    ends, at which point the logs are written to disk.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        name (str):</span>
 <span class="sd">            The name of the original file.</span>
-<span class="sd">        parts_in_hive (int):</span>
+<span class="sd">        existing_replicas (int):</span>
 <span class="sd">            The number of file parts including blocks that exist for the</span>
 <span class="sd">            named file that exist in the simulation. Updated every epoch.</span>
-<span class="sd">        logger (LoggingData):</span>
+<span class="sd">        logger (:py:class:`~app.domain.helpers.smart_dataclasses.LoggingData`):</span>
 <span class="sd">            Object that stores captured simulation data. Stored data can be</span>
 <span class="sd">            post-processed using user defined scripts to create items such</span>
-<span class="sd">            has graphs and figures. See</span>
-<span class="sd">            :py:class:`app.domain.helpers.smart_dataclasses.SimulationData`</span>
-<span class="sd">        out_file (str/bytes/int):</span>
-<span class="sd">            File output stream to where captured data is written in append mode.</span>
+<span class="sd">            has graphs and figures.</span>
+<span class="sd">        out_file (Union[str, bytes, int]):</span>
+<span class="sd">            File output stream to where captured data is written in append</span>
+<span class="sd">            mode and to which ``logger`` will be written to at the end of the</span>
+<span class="sd">            simulation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="FileData.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Creates an instance of FileData</span>
+        <span class="sd">&quot;&quot;&quot;Creates an instance of ``FileData``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name:</span>
-<span class="sd">                Name of the file to be referenced by the FileData object.</span>
+<span class="sd">                Name of the file to be referenced by the ``FileData`` object.</span>
 <span class="sd">            sim_id:</span>
-<span class="sd">                 Identifier that generates unique output file names,</span>
+<span class="sd">                Identifier that generates unique output file names,</span>
 <span class="sd">                thus guaranteeing that different simulation instances do not</span>
-<span class="sd">                overwrite previous out files.</span>
+<span class="sd">                overwrite previous :py:attr:`output files &lt;out_file&gt;`.</span>
 <span class="sd">            origin:</span>
-<span class="sd">                 The name of the simulation file name that started</span>
-<span class="sd">                the simulation process.</span>
+<span class="sd">                The name of the simulation file name that started</span>
+<span class="sd">                the simulation process. See</span>
+<span class="sd">                :py:class:`~app.domain.master_servers.Master` and</span>
+<span class="sd">                :py:mod:`~app.hive_simulation`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parts_in_hive</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">existing_replicas</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span> <span class="n">LoggingData</span> <span class="o">=</span> <span class="n">LoggingData</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">:</span> <span class="n">IO</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span>
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -173,35 +178,34 @@
             <span class="p">),</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FileData.fwrite"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.fwrite">[docs]</a>    <span class="k">def</span> <span class="nf">fwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Writes a message to the output file referenced by the FileData object.</span>
+        <span class="sd">&quot;&quot;&quot;Appends a message to the output stream of ``FileData``.</span>
 
-<span class="sd">        The method fwrite automatically adds a new line to the inputted message.</span>
+<span class="sd">        The method automatically adds a new line character to ``msg``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            msg:</span>
-<span class="sd">                The message to be logged on the output file.</span>
+<span class="sd">                The message to be logged on the :py:attr:`out_file`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="FileData.jwrite"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.jwrite">[docs]</a>    <span class="k">def</span> <span class="nf">jwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hive</span><span class="p">:</span> <span class="n">cg</span><span class="o">.</span><span class="n">Cluster</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Writes a JSON string of the LoggingData instance to the output file.</span>
+<div class="viewcode-block" id="FileData.jwrite"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.jwrite">[docs]</a>    <span class="k">def</span> <span class="nf">jwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">cg</span><span class="o">.</span><span class="n">Cluster</span><span class="p">,</span> <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends a json string to the output stream of ``FileData``.</span>
 
-<span class="sd">        The logged data is defined by the attributes of the</span>
-<span class="sd">        :py:class:`LoggingData &lt;app.domain.helpers.smart_dataclasses.</span>
-<span class="sd">        LoggingData` class.</span>
+<span class="sd">        The logged data are all attributes belonging to :py:attr:`logger`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            hive:</span>
+<span class="sd">            cluster:</span>
 <span class="sd">                The :py:class:`Cluster &lt;app.domain.cluster_groups.Cluster&gt;`</span>
 <span class="sd">                object that manages the simulated persistence of the</span>
-<span class="sd">                referenced file.</span>
+<span class="sd">                :py:attr:`named file &lt;name&gt;`.</span>
 <span class="sd">            origin:</span>
-<span class="sd">                The name of the simulation file that started the simulation</span>
-<span class="sd">                process.</span>
+<span class="sd">                The name of the simulation file name that started</span>
+<span class="sd">                the simulation process. See</span>
+<span class="sd">                :py:class:`~app.domain.master_servers.Master` and</span>
+<span class="sd">                :py:mod:`~app.hive_simulation`.</span>
 <span class="sd">            epoch:</span>
-<span class="sd">                The epoch at which the LoggingData was logged into the</span>
-<span class="sd">                output file.</span>
-
+<span class="sd">                The epoch at which the :py:attr:`logger` was appended to</span>
+<span class="sd">                :py:attr:`out_file`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sd</span><span class="p">:</span> <span class="n">LoggingData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span>
 
@@ -227,20 +231,20 @@
 
         <span class="n">extras</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;simfile_name&quot;</span><span class="p">:</span> <span class="n">origin</span><span class="p">,</span>
-            <span class="s2">&quot;hive_id&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;hive_id&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
             <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;read_size&quot;</span><span class="p">:</span> <span class="n">READ_SIZE</span><span class="p">,</span>
-            <span class="s2">&quot;critical_size_threshold&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">critical_size</span><span class="p">,</span>
-            <span class="s2">&quot;sufficient_size_threshold&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">sufficient_size</span><span class="p">,</span>
-            <span class="s2">&quot;original_hive_size&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span>
-            <span class="s2">&quot;redundant_size&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">,</span>
+            <span class="s2">&quot;critical_size_threshold&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">critical_size</span><span class="p">,</span>
+            <span class="s2">&quot;sufficient_size_threshold&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sufficient_size</span><span class="p">,</span>
+            <span class="s2">&quot;original_hive_size&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span>
+            <span class="s2">&quot;redundant_size&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">,</span>
             <span class="s2">&quot;max_epochs&quot;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">,</span>
             <span class="s2">&quot;min_replication_delay&quot;</span><span class="p">:</span> <span class="n">MIN_REPLICATION_DELAY</span><span class="p">,</span>
             <span class="s2">&quot;max_replication_delay&quot;</span><span class="p">:</span> <span class="n">MAX_REPLICATION_DELAY</span><span class="p">,</span>
             <span class="s2">&quot;replication_level&quot;</span><span class="p">:</span> <span class="n">REPLICATION_LEVEL</span><span class="p">,</span>
             <span class="s2">&quot;convergence_treshold&quot;</span><span class="p">:</span> <span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">,</span>
             <span class="s2">&quot;channel_loss&quot;</span><span class="p">:</span> <span class="n">LOSS_CHANCE</span><span class="p">,</span>
-            <span class="s2">&quot;corruption_chance_tod&quot;</span><span class="p">:</span> <span class="n">hive</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="s2">&quot;corruption_chance_tod&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="p">}</span>
 
         <span class="n">sim_data_dict</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="vm">__dict__</span>
@@ -251,44 +255,28 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fwrite</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FileData.fclose"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.fclose">[docs]</a>    <span class="k">def</span> <span class="nf">fclose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Closes the output file controlled by the FileData instance.</span>
+        <span class="sd">&quot;&quot;&quot;Closes the output stream controlled by the ``FileData`` instance.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">             msg:</span>
-<span class="sd">                 If filled, a termination message is logged into the</span>
-<span class="sd">                output file that is being closed.</span>
+<span class="sd">                 If filled, a termination message is appended to</span>
+<span class="sd">                 :py:attr:`out_file`, before closing it.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fwrite</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
     <span class="c1"># region Overrides</span>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
 
-<div class="viewcode-block" id="FileData.__hash__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.__hash__">[docs]</a>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Override to allows a network node object to be used as a dict key</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The hash of value of the referenced file :py:attr:`name`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div>
-
-<div class="viewcode-block" id="FileData.__eq__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compares if two instances of FileData are equal.</span>
-
-<span class="sd">        Equality is based on name equality.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            ``True`` if the name attribute of both instances is the same,</span>
-<span class="sd">            otherwise ``False``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">FileData</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span>
 
-<div class="viewcode-block" id="FileData.__ne__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.__ne__">[docs]</a>    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Compares if two instances of FileData are not equal.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span> <span class="o">==</span> <span class="n">other</span><span class="p">)</span></div></div>
-
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span> <span class="o">==</span> <span class="n">other</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
 
@@ -300,7 +288,7 @@
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        hive_id:</span>
-<span class="sd">            Unique identifier of the hive that manages the file block.</span>
+<span class="sd">            Unique identifier of the cluster that manages the file block.</span>
 <span class="sd">        name:</span>
 <span class="sd">            The name of the file the file block belongs to.</span>
 <span class="sd">        number:</span>
@@ -330,7 +318,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            hive_id:</span>
-<span class="sd">                Unique identifier of the hive that manages the file block.</span>
+<span class="sd">                Unique identifier of the cluster that manages the file block.</span>
 <span class="sd">            name:</span>
 <span class="sd">                The name of the file the file block belongs to.</span>
 <span class="sd">            number:</span>
@@ -731,7 +719,7 @@
 <span class="sd">        Note:</span>
 <span class="sd">            This method should only be called when simulation terminates due</span>
 <span class="sd">            to a failure such as a the loss of all blocks of a file block</span>
-<span class="sd">            or the simultaneous disconnection of all network nodes in the hive.</span>
+<span class="sd">            or the simultaneous disconnection of all network nodes in the cluster.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            message:</span>
@@ -749,7 +737,7 @@
                         <span class="n">size_bm</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                         <span class="n">size_am</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                         <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Logs hive membership status and size at an epoch.</span>
+        <span class="sd">&quot;&quot;&quot;Logs cluster membership status and size at an epoch.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            status_bm:</span>
@@ -759,9 +747,9 @@
 <span class="sd">                A string that describes the status of the cluster after</span>
 <span class="sd">                maintenance.</span>
 <span class="sd">            size_bm:</span>
-<span class="sd">                The number of network nodes in the hive before maintenance.</span>
+<span class="sd">                The number of network nodes in the cluster before maintenance.</span>
 <span class="sd">            size_am:</span>
-<span class="sd">                The number of network nodes in the hive after maintenance.</span>
+<span class="sd">                The number of network nodes in the cluster after maintenance.</span>
 <span class="sd">            epoch:</span>
 <span class="sd">                A simulation epoch at which termination occurred.</span>
 <span class="sd">        &quot;&quot;&quot;</span>

@@ -826,7 +826,7 @@ guidance algorithm.</p>
 <dl class="py attribute">
 <dt id="app.domain.cluster_groups.HiveCluster.v_">
 <code class="sig-name descname">v_</code></dt>
-<dd><p>Density distribution hive members must achieve with independent
+<dd><p>Density distribution cluster members must achieve with independent
 realizations for ideal persistence of the file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -973,7 +973,7 @@ belonging who are currently members of the Cluster instance.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>An optimization could be made that configures a transition matrix
-for the hive, independent of of file names, i.e., turn cluster
+for the cluster, independent of of file names, i.e., turn cluster
 groups into groups persisting multiple files instead of only one,
 thus reducing simulation spaceoverheads and in real-life
 scenarios, decreasing the load done to metadata servers, through
@@ -1546,7 +1546,7 @@ instances through reflection. See <a class="reference internal" href="#module-ap
 <code class="sig-name descname">get_cloud_reference</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#HiveMaster.get_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Use to obtain a reference to 3rd party cloud storage provider</p>
 <p>The cloud storage provider can be used to temporarely host files
-belonging to <code class="xref py py-class docutils literal notranslate"><span class="pre">hive</span> <span class="pre">clusters</span></code> in bad
+belonging to <code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">clusters</span></code> in bad
 conditions that may compromise the file durability of the files they
 are responsible for persisting.</p>
 <div class="admonition note">

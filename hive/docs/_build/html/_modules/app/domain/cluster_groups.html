@@ -468,7 +468,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_existing_file_blocks</span><span class="p">(</span><span class="n">pcount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">pcount</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining parts.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parts_in_hive</span> <span class="o">=</span> <span class="n">pcount</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span> <span class="o">=</span> <span class="n">pcount</span></div>
 
 <div class="viewcode-block" id="Cluster._set_fail"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._set_fail">[docs]</a>    <span class="k">def</span> <span class="nf">_set_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Ends the Cluster instance simulation.</span>
@@ -545,7 +545,7 @@
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        v_ (:py:class:`~pd:pandas.DataFrame`):</span>
-<span class="sd">            Density distribution hive members must achieve with independent</span>
+<span class="sd">            Density distribution cluster members must achieve with independent</span>
 <span class="sd">            realizations for ideal persistence of the file.</span>
 <span class="sd">        cv_ (:py:class:`~pd:pandas.DataFrame`):</span>
 <span class="sd">            Tracks the file current density distribution, updated at each epoch.</span>
@@ -656,7 +656,7 @@
                                        <span class="sa">f</span><span class="s2">&quot;id: </span><span class="si">{</span><span class="n">replica</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All hive members disconnected before maintenance.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All cluster members disconnected before maintenance.&quot;</span><span class="p">)</span>
 
         <span class="n">sf</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">LoggingData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span>
         <span class="n">sf</span><span class="o">.</span><span class="n">log_off_nodes</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
@@ -785,7 +785,7 @@
 
 <span class="sd">        Note:</span>
 <span class="sd">            An optimization could be made that configures a transition matrix</span>
-<span class="sd">            for the hive, independent of of file names, i.e., turn cluster</span>
+<span class="sd">            for the cluster, independent of of file names, i.e., turn cluster</span>
 <span class="sd">            groups into groups persisting multiple files instead of only one,</span>
 <span class="sd">            thus reducing simulation spaceoverheads and in real-life</span>
 <span class="sd">            scenarios, decreasing the load done to metadata servers, through</span>
@@ -947,7 +947,7 @@
 <span class="sd">            ``True`` if distributions are close enough to be considered equal,</span>
 <span class="sd">            otherwise, it returns ``False``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">pcount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parts_in_hive</span>
+        <span class="n">pcount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span>
         <span class="n">rtol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
         <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">ABS_TOLERANCE</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">pcount</span>
@@ -1126,7 +1126,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All hive members disconnected before maintenance.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All cluster members disconnected before maintenance.&quot;</span><span class="p">)</span>
 
         <span class="n">sf</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">LoggingData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span>
         <span class="n">sf</span><span class="o">.</span><span class="n">log_off_nodes</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>

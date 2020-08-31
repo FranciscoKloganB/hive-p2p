@@ -29,12 +29,11 @@ class FileData:
         existing_replicas (int):
             The number of file parts including blocks that exist for the
             named file that exist in the simulation. Updated every epoch.
-        logger (:py:class:`~app.domain.helpers.smart_dataclasses.LoggingData):
+        logger (:py:class:`~app.domain.helpers.smart_dataclasses.LoggingData`):
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
-            has graphs and figures. See
-            :py:class:`~app.domain.helpers.smart_dataclasses.LoggingData`
-        out_file (Union[str, bytes, int):
+            has graphs and figures.
+        out_file (Union[str, bytes, int]):
             File output stream to where captured data is written in append
             mode and to which ``logger`` will be written to at the end of the
             simulation.
@@ -49,7 +48,7 @@ class FileData:
             sim_id:
                 Identifier that generates unique output file names,
                 thus guaranteeing that different simulation instances do not
-                overwrite previous out files.
+                overwrite previous :py:attr:`output files <out_file>`.
             origin:
                 The name of the simulation file name that started
                 the simulation process. See
