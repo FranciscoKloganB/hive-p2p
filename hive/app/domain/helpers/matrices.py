@@ -183,9 +183,9 @@ def _adjency_matrix_sdp_optimization(
 
     Note:
         This function tries to use
-        `Mosek Solver <https://docs.mosek.com/9.2/pythonapi/index.html>`,
+        `Mosek Solver <https://docs.mosek.com/9.2/pythonapi/index.html>`_,
         if a valid license is not found, it uses
-        `SCS Solver <https://github.com/cvxgrp/scs>` instead.
+        `SCS Solver <https://github.com/cvxgrp/scs>`_ instead.
 
     Args:
         a:
@@ -258,10 +258,10 @@ def _metropolis_hastings(a: np.ndarray,
             A stochastic vector that is the steady state of the resulting
             transition matrix.
         column_major_out:
-            optional; Indicates whether to return transition_matrix output
+             Indicates whether to return transition_matrix output
             is in row or column major form.
         version:
-            optional; Indicates which version of the algorith should be used
+             Indicates which version of the algorith should be used
             (default is version 2).
 
     Returns:

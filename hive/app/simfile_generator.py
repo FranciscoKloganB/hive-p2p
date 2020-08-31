@@ -59,10 +59,10 @@ def _input_bounded_integer(
         message:
             The message to be printed to the user upon first input request.
         lower_bound:
-            optional; Any input equal or smaller than `lower_bound` is
+             Any input equal or smaller than `lower_bound` is
             rejected.
         upper_bound:
-            optional; Any input equal or bigger than `upper_bound` is rejected.
+             Any input equal or bigger than `upper_bound` is rejected.
 
     Returns:
         An integer inputed by the user.
@@ -89,9 +89,9 @@ def _input_bounded_float(
         message:
             The message to be printed to the user upon first input request.
         lower_bound:
-            optional; Any input smaller than`lower_bound` is rejected.
+             Any input smaller than`lower_bound` is rejected.
         upper_bound:
-            optional; Any input bigger than `upper_bound` is rejected.
+             Any input bigger than `upper_bound` is rejected.
 
     Returns:
         An float inputed by the user.

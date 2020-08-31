@@ -18,9 +18,9 @@ def generate_skewed_samples(
 
     Args:
         sample_count:
-            optional; The number of skewed results to be drawn.
+             The number of skewed results to be drawn.
         skewness:
-            optional; Where peak density will be found. Negative values make
+             Where peak density will be found. Negative values make
              the plot left skewed, positive values make it right skewed.
 
     Returns:
@@ -53,11 +53,11 @@ def generate_skewed_samples_extended(bin_count: int = 7001,
 
     Args:
         bin_count:
-            optional; The number of bins to be created.
+             The number of bins to be created.
         sample_count:
-            optional; The number of skewed results to be drawn.
+             The number of skewed results to be drawn.
         skewness:
-            optional; Where peak density will be found. Negative values make
+             Where peak density will be found. Negative values make
              the plot left skewed, positive values make it right skewed.
     Returns:
         The sampled bins and respective frequencies.
@@ -91,11 +91,11 @@ def plot_uptime_distribution(
 
     Args:
         bin_count:
-            optional; The number of bins the plot should have. With default
+             The number of bins the plot should have. With default
             matplotlib.pyplot module's functions chooses
             a probably adequate bin count.
         skewness:
-             optional; Where peak density will be found. Negative values make
+              Where peak density will be found. Negative values make
              the plot left skewed, positive values make it right skewed.
     """
     results: np.array = generate_skewed_samples(skewness=skewness)

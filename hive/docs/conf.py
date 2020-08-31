@@ -57,6 +57,7 @@ intersphinx_mapping = {
     "pd": ("https://pandas.pydata.org/docs/", None),
     "np": ("https://numpy.org/doc/stable/", None),
 }
+
 # show type hints in doc body instead of signature
 autodoc_typehints = "description"  # signature, description, none
 autoclass_content = "class"  # class, init, both

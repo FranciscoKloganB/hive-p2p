@@ -403,9 +403,9 @@ with the the same length as the inputed symmetric matrix.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This function tries to use
-<cite>Mosek Solver &lt;https://docs.mosek.com/9.2/pythonapi/index.html&gt;</cite>,
+<a class="reference external" href="https://docs.mosek.com/9.2/pythonapi/index.html">Mosek Solver</a>,
 if a valid license is not found, it uses
-<cite>SCS Solver &lt;https://github.com/cvxgrp/scs&gt;</cite> instead.</p>
+<a class="reference external" href="https://github.com/cvxgrp/scs">SCS Solver</a> instead.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -539,9 +539,9 @@ but this is not enforced or verified.</p>
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A symmetric adjency matrix.</p></li>
 <li><p><strong>v</strong> – A stochastic vector that is the steady state of the resulting
 transition matrix.</p></li>
-<li><p><strong>column_major_out</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – optional; Indicates whether to return transition_matrix output
+<li><p><strong>column_major_out</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – Indicates whether to return transition_matrix output
 is in row or column major form.</p></li>
-<li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – optional; Indicates which version of the algorith should be used
+<li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Indicates which version of the algorith should be used
 (default is version 2).</p></li>
 <li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
@@ -1084,10 +1084,10 @@ otherwise <code class="docutils literal notranslate"><span class="pre">False</sp
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Name of the file to be referenced by the FileData object.</p></li>
-<li><p><strong>sim_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – optional; Identifier that generates unique output file names,
+<li><p><strong>sim_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Identifier that generates unique output file names,
 thus guaranteeing that different simulation instances do not
 overwrite previous out files.</p></li>
-<li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – optional; The name of the simulation file name that started
+<li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the simulation file name that started
 the simulation process.</p></li>
 </ul>
 </dd>
@@ -1109,7 +1109,7 @@ the simulation process.</p></li>
 <dd><p>Closes the output file controlled by the FileData instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>msg</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – optional; If filled, a termination message is logged into the
+<dd class="field-odd"><p><strong>msg</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – If filled, a termination message is logged into the
 output file that is being closed.</p>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1399,7 +1399,7 @@ or the simultaneous disconnection of all network nodes in the hive.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – optional; A log error message.</p></li>
+<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A log error message.</p></li>
 <li><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – A simulation epoch at which termination occurred.</p></li>
 </ul>
 </dd>

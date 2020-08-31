@@ -43,11 +43,11 @@ class FileData:
             name:
                 Name of the file to be referenced by the FileData object.
             sim_id:
-                optional; Identifier that generates unique output file names,
+                 Identifier that generates unique output file names,
                 thus guaranteeing that different simulation instances do not
                 overwrite previous out files.
             origin:
-                optional; The name of the simulation file name that started
+                 The name of the simulation file name that started
                 the simulation process.
         """
         self.name: str = name
@@ -145,7 +145,7 @@ class FileData:
 
         Args:
              msg:
-                optional; If filled, a termination message is logged into the
+                 If filled, a termination message is logged into the
                 output file that is being closed.
         """
         if msg:
@@ -625,7 +625,7 @@ class LoggingData:
 
         Args:
             message:
-                optional; A log error message.
+                 A log error message.
             epoch:
                 A simulation epoch at which termination occurred.
         """
