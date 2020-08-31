@@ -63,16 +63,17 @@ class Node:
             hosted at the ``Node``.
     """
     def __init__(self, uid: str, uptime: float) -> None:
-        """Instantiates a HiveNode object.
+        """Instantiates a ``Node`` object.
 
-        Workers are the network nodes responsible for persisting file block
-        blocks.
+        These are network nodes responsible for persisting
+        :py:class:`file block replicas <app.domain.helpers.smart_dataclasses
+        .FileBlockData>`.
 
         Args:
             uid:
-                An unique identifier for the worker instance.
+                An unique identifier for the ``Node`` instance.
             uptime:
-                The availability of the worker instance.
+                The availability of the ``Node`` instance.
         """
         if uptime == 1.0:
             uptime = float('inf')
@@ -161,9 +162,11 @@ class Node:
         Similar to :py:meth:`send_part` but with
         slightly different instructions. In particular new ``replicas``
         can not be corrupted at the current node, at the current epoch.
-        There are no guarantees that
-        :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be
-        completely restored during the execution of this method.
+
+        Note:
+            There are no guarantees that
+            :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be
+            completely restored during the execution of this method.
 
         Args:
             cluster (:py:class:`~app.type_hints.ClusterType`):
@@ -330,17 +333,6 @@ class HiveNode(Node):
             block blocks to other HiveNode instances.
     """
     def __init__(self, uid: str, uptime: float) -> None:
-        """Instantiates a HiveNode object.
-
-        Workers are the network nodes responsible for persisting file block
-        blocks.
-
-        Args:
-            uid:
-                An unique identifier for the worker instance.
-            uptime:
-                The availability of the worker instance.
-        """
         super().__init__(uid, uptime)
         self.hives: Dict[str, th.ClusterType] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
@@ -350,27 +342,17 @@ class HiveNode(Node):
         """Instructs the ``Node`` instance to execute the epoch.
 
         The method iterates all file block blocks in :py:attr:`files` and
-        independently decides if they should be sent to other ``HiveNode``
-        instances by following :py:attr:`routing_table` column vectors.
-
-        When a file block is sent to some other HiveNode a reply is
-        awaited. In real world environments this should be assynchronous,
-        but for simulation purposes it's synchronous and instantaneous. When the
-        destination replies with OK, meaning it accepted the replica,
-        this HiveNode instance deletes the replica from his disk. If it
-        replies with a BAD_REQUEST the replica is discarded and the worker
-        starts a recovery process in the Cluster. Any other code response
-        results in the HiveNode instance keeping replica in his disk
-        for at least one more epoch times. See
-        :py:class:`~app.domain.helpers.enums.HttpCodes`.
+        independently decides if they should be sent to another ``HiveNode``
+        by following the probabilities in :py:attr:`routing_table` column
+        vectors.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.execute_epoch`.
 
         Args:
-            cluster:
+            cluster (:py:class:`~app.type_hints.ClusterType`):
                 A reference to the
-                :py:class:`~app.domain.cluster_groups.HiveCluster` that invoked
+                :py:class:`~app.domain.cluster_groups.Cluster` that invoked
                 the ``Node`` method.
             fid:
                 The :py:attr:`file name identifier
@@ -413,6 +395,7 @@ class HiveNode(Node):
             :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be
             completely restored during the execution of this method.
 
+        Args:
             cluster (:py:class:`~app.type_hints.ClusterType`):
                 A reference to the
                 :py:class:`~app.domain.cluster_groups.Cluster` that will
@@ -444,12 +427,15 @@ class HiveNode(Node):
     def set_file_routing(
             self, fid: str, transition_vector: Union[pd.Series, pd.DataFrame]
     ) -> None:
-        """Maps a file id with a transition column vector used for routing.
+        """Maps a file name identifier with a transition column vector used
+        for file block replica routing.
 
         Args:
             fid:
-                The identifier of the file the Cluster is persisting.
-            transition_vector:
+                The :py:attr:`file name identifier
+                <app.domain.helpers.smart_dataclasses.FileData.name>`
+                of the file whose routing is being configured.
+            transition_vector (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):
                 A column vector with probabilities that dictate the odds of
                 sending file block blocks belonging to the file with
                 specified id to other Cluster members also working on the
@@ -457,8 +443,8 @@ class HiveNode(Node):
 
         Raises:
             ValueError:
-                If ``transition_vector`` is not a pandas DataFrame and cannot
-                be directly converted to it.
+                If ``transition_vector`` is not a :py:class:`~pd:pandas.DataFrame` and cannot
+                be casted to it.
 
     """
         if isinstance(transition_vector, pd.Series):
@@ -513,23 +499,30 @@ class HiveNode(Node):
 class HiveNodeExt(HiveNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
-    HiveNodeExt instances differ from HiveNode in the sense that the
-    :py:class:`HiveClusterExt Nodes <domain.domain.HiveNode>` do not monitor their
-    groups' peers, concerning suspicious behaviors.
+    ``HiveNodeExt`` instances differ from :py:class:`HiveNode` in the sense
+    that the latter does not monitor the peers belonging to his
+    :py:class:`cluster groups <app.domain.cluster_groups.HiveClusterExt>`,
+    concerning their connectivity :py:attr:`~Node.status` or suspicious
+    behaviours.
     """
 
     # region Get methods
     def get_status(self) -> int:
-        """Used to obtain the status of the worker.
+        """Used to obtain the status of the ``HiveNodeExt``.
+
+        This method equates a ping. When invoked, the ``HiveNodeExt``
+        decides if it should remain online or change some other state
+        depending on his remaining :py:attr:`~Node.uptime`.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.get_status`.
+
             When not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
 
         Returns:
-            The status of the worker. See
-            :py:class:`app.domain.helpers.enums.Status`.
+            :py:class:`~app.domain.helpers.enums.Status`:
+                The the status of the ``Node``.
         """
         if self.status == e.Status.ONLINE:
             self.uptime -= 1
@@ -543,37 +536,30 @@ class HiveNodeExt(HiveNode):
 class HDFSNode(Node):
     """Represents a data node in the Hadoop Distribute File System."""
     def __init__(self, uid: str, uptime: float) -> None:
-        """Instantiates a HDFSNode object.
-
-        These represent hadoop distributed file system data nodes.
-
-        Args:
-            uid:
-                An unique identifier for the worker instance.
-            uptime:
-                The availability of the worker instance.
-        """
         super().__init__(uid, uptime)
 
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
-        """Instructs the Node instance to execute the epoch.
+        """Instructs the ``HDFSNode`` instance to execute the epoch.
 
-        The method iterates all file block blocks in :py:attr:`~files` and
-        silentry tries to corrupt them. In HDFS files' Sha256 is only
-        verified when a user or client accesses the remote replica. Thus,
-        no recovery epoch is not setted up when a corruption occurs. The
+        The method iterates :py:attr:`files` held in disk and attempts to
+        corrupt them silently. In HDFS file blocks' ``sha256`` are only
+        verified when a user or client accesses the remote replica. Hence,
+        no replication epoch is set up when a corruption occurs. The
         corruption is still logged in the output file.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.execute_epoch`.
 
         Args:
-            cluster:
-                Cluster instance that ordered execution of the epoch.
+            cluster (:py:class:`~app.type_hints.ClusterType`):
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.Cluster` that invoked
+                the ``Node`` method.
             fid:
-                The identifier that determines which file blocks
-                blocks should be routed.
+                The :py:attr:`file name identifier
+                <app.domain.helpers.smart_dataclasses.FileData.name>`
+                of the file being simulated.
         """
         file_view: th.ReplicasDict = self.files.get(fid, {}).copy()
         for number, replica in file_view.items():
@@ -634,16 +620,21 @@ class HDFSNode(Node):
 
     # region Get Methods
     def get_status(self) -> int:
-        """Used to obtain the status of the worker.
+        """Used to obtain the status of the ``HDFSNode``.
+
+        This method equates a ping. When invoked, the ``HDFSNode``
+        decides if it should remain online or change some other state
+        depending on his remaining :py:attr:`~Node.uptime`.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.get_status`.
+
             When not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
 
         Returns:
-            The status of the worker. See
-            :py:class:`app.domain.helpers.enums.Status`.
+            :py:class:`~app.domain.helpers.enums.Status`:
+                The the status of the ``HDFSNode``.
         """
         if self.status == e.Status.ONLINE:
             self.uptime -= 1
