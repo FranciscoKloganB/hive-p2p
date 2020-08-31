@@ -25,31 +25,42 @@ class Node:
     always be useful.
 
     Attributes:
-        id:
+        id (str):
             A unique identifier for the ``Node`` instance.
-        uptime:
+        uptime (float):
             The amount of time the ``Node`` is expected to remain online
             without disconnecting. Current uptime implementation is based on
-            availability percentages. Furthermore, when a HiveNode joins
-            an Cluster as a replacement for some other HiveNode, in
-            :py:meth:`app.domain.cluster_groups.Cluster._membership_maintenance`
-            , the time the worker has been online is not considered. Thus,
-            if a HiveNode belongs to only one Cluster he is guaranteed to
-            remain online for exactly `uptime` *
-            :py:attr:`environment_settings.MAX_EPOCHS`. If he belongs to
-            multiple Hives in the simulation, than there is a possibility
-            that he may go offline earlier.
-        status:
+            availability percentages.
+
+            Note:
+                Current implementation expects ``network nodes`` joining a
+                :py:class:`cluster group <app.domain.cluster_groups.Cluster>`
+                to remain online for approximately:
+
+                    ``time_to_live`` =
+                    :py:attr:`~app.domain.network_nodes.Node.uptime`
+                    *
+                    :py:attr:`~app.domain.master_servers.Master.MAX_EPOCHS`.
+
+                However, a ``network node`` who belongs to multiple
+                :py:class:`cluster groups <app.domain.cluster_groups.Cluster>`
+                may disconnect earlier than that, i.e.,
+                ``network nodes`` remain online ``time_to_live`` after
+                their first operation on the distributed backup system.
+        status (:py:class:`app.domain.helpers.enums.Status`):
             Indicates if the ``Node`` instance is online or offline. In later
-            releases this could also contain a 'suspect' status. See
-            :py:class:`app.domain.helpers.enums.Status`.
-        suspicious_replies:
-            Set that contains :py:class:`app.domain.helpers.enums.HttpCodes`
-            that trigger complaints to monitors.
-        files:
-            A dictionary mapping file names to file block identifiers and their
-            respective contents. This collection represents the file block
-            blocks that are currently hosted in the HiveNode instance.
+            releases this could also contain a 'suspect' status.
+        suspicious_replies (:py:class:`~py:set`):
+            Collection that contains
+            :py:class:`http codes <app.domain.helpers.enums.HttpCodes>`
+            that when received, trigger complaints to monitors about the
+            replier.
+        files (Dict[str, :py:class:`~app.type_hints.ReplicasDict`]):
+            A dictionary mapping file names to dictionaries of file block
+            identifiers and their respective contents, i.e.,
+            the :py:class:`file block replicas
+            <app.domain.helpers.smart_dataclasses.FileBlockData>`
+            hosted at the ``Node``.
     """
     def __init__(self, uid: str, uptime: float) -> None:
         """Instantiates a HiveNode object.
@@ -80,7 +91,22 @@ class Node:
 
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
-        """Instructs the HiveNode instance to execute the epoch."""
+        """Instructs the ``Node`` instance to execute the epoch.
+
+        Args:
+            cluster:
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.Cluster` that invoked
+                the ``Node`` method.
+            fid:
+                The :py:attr:`file name identifier
+                <app.domain.helpers.smart_dataclasses.FileData.name>`
+                of the file being simulated.
+
+        Raises:
+            NotImplementedError:
+                When children of ``Node`` do not implement the abstract method.
+        """
         raise NotImplementedError("All children of class Node must "
                                   "implement their own execute_epoch.")
     # endregion
@@ -89,22 +115,27 @@ class Node:
     def receive_part(self, replica: sd.FileBlockData) -> int:
         """Endpoint for file block replica reception.
 
-        Invoking this method results in the worker keeping store a new
-        file block replica in his :py:attr:`files` collection, along the ones
-        already there.
+        The ``Node`` stores a new :py:class:`file block replica
+        <app.domain.helpers.smart_dataclasses.FileBlockData>` in
+        :py:attr:`files` if he does not have a replica with same
+        :py:attr:`identifier
+        <app.domain.helpers.smart_dataclasses.FileBlockData.id>`.
 
         Args:
             replica:
-               The file block container to be received by the worker instance.
+               The :py:class:`file block replica
+               <app.domain.helpers.smart_dataclasses.FileBlockData>` to be
+               received by ``Node``.
 
         Returns:
-             An HTTP code defined in
-             :py:class:`domain.helpers.enums.HttpCodes`. If upon integrity
-             verification the sha256 hashvalue differs from the expected,
-             the worker replies with a BAD_REQUEST code. If the HiveNode already
-             owns a replica with the same number identifier it
-             replies with NOT_ACCEPTABLE. Otherwise it replies with a OK,
-             i.e., the delivery is successful.
+             :py:class:`~app.domain.helpers.enums.HttpCodes`:
+                If upon integrity verification the ``sha256``
+                hashvalue differs from the expected, the worker replies with
+                a BAD_REQUEST. If the ``Node`` already owns a replica with the
+                same :py:attr:`identifier
+                <app.domain.helpers.smart_dataclasses.FileBlockData.id>` it
+                replies with NOT_ACCEPTABLE. Otherwise it replies with a OK,
+                i.e., the delivery is successful.
         """
         if replica.name not in self.files:
             # init dict that accepts <key: id, value: sfp> pairs for the file
@@ -124,19 +155,29 @@ class Node:
 
     def replicate_part(
             self, cluster: th.ClusterType, replica: sd.FileBlockData) -> None:
-        """Tries to restore the `replica`'s
-        :py:const:`environment_settings.REPLICATION_LEVEL`.
+        """Attempts to restore the replication level of the specified file
+        block replica.
 
-        Similar to :py:meth:`domain.network_nodes.Node.send_part` but with
-        slightly different instructions. In particular newly replicate
-        replicas can not be corrupted at the current node, at the current epoch.
+        Similar to :py:meth:`send_part` but with
+        slightly different instructions. In particular new ``replicas``
+        can not be corrupted at the current node, at the current epoch.
+        There are no guarantees that
+        :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be
+        completely restored during the execution of this method.
 
         Args:
-            cluster:
-                Gateway Cluster that will deliver the file block replica to
-                some destination HiveNode.
-            replica:
-                The file block replica to be delivered.
+            cluster (:py:class:`~app.type_hints.ClusterType`):
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.Cluster` that will
+                deliver the new ``replica``.
+            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):
+                The :py:class:`file block replica
+                <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                to be delivered.
+
+        Raises:
+            NotImplementedError:
+                When children of ``Node`` do not implement the abstract method.
         """
         raise NotImplementedError("")
 
@@ -147,7 +188,7 @@ class Node:
         """Attempts to send a replica to some other network node.
 
         Args:
-            cluster:
+            cluster (:py:class:`~app.type_hints.ClusterType`):
                 :py:mod:`Cluster Group Monitor <domain.cluster_groups>` that
                 will act as a courier for the message to be sent. In a real
                 world implementation this argument would not be needed and
@@ -156,13 +197,12 @@ class Node:
             destination:
                 The name, address or another unique identifier of the node
                 that will receive the file block `replica`.
-            replica:
+            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):
                 The file block container to be sent to some other worker.
 
         Returns:
-             An HTTP code defined in
-             :py:class:`domain.helpers.enums.HttpCodes` and the destination
-             the part was sent to.
+             :py:class:`~app.domain.helpers.enums.HttpCodes`:
+                An http code.
         """
         return cluster.route_part(self.id, destination, replica)
 
@@ -182,8 +222,9 @@ class Node:
                 If discard is being invoked due to identified file
                 block corruption, e.g., Sha256 does not match the expected.
             cluster:
-                Gateway Cluster that will set the recovery epoch (see
-                :py:meth:`domain.cluster_groups.Cluster.set_recovery_epoch`
+                :py:class:`~app.domain.cluster_groups.Cluster` that
+                will :py:meth:`set the replication epoch
+                <app.domain.cluster_groups.Cluster.set_replication_epoch>`
                 or mark the simulation as failed.
         """
         replica: sd.FileBlockData = self.files.get(fid, {}).pop(number, None)
@@ -201,38 +242,48 @@ class Node:
 
         Args:
             fid:
-                The identifier that designates the file block blocks
-                the caller wishes to obtain from the HiveNode instance.
+                The :py:attr:`file name identifier
+                <app.domain.helpers.smart_dataclasses.FileData.name>` that
+                designates the :py:class:`file block replicas
+                <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                to be retrieved.
 
         Returns:
-             A collection that maps file block identifiers to file block
-             containers.
+             :py:class:`~app.type_hints.ReplicasDict`:
+                A dictionary where keys are :py:attr:`file block numbers
+                <app.domain.helpers.smart_dataclasses.FileBlockData.number>` and
+                values are :py:class:`file block replicas
+                <app.domain.helpers.smart_dataclasses.FileBlockData>`
         """
         return self.files.get(fid, {})
 
     def get_file_parts_count(self, fid: str) -> int:
-        """Counts the number of file block blocks owned by the HiveNode
-        for a given file identifier.
+        """Counts the number of file block replicas of a specific file owned
+        by the ``Node``.
 
         Args:
-             fid:
-                An identifier of the file caller wishes to count.
+            fid:
+                The :py:attr:`file name identifier
+                <app.domain.helpers.smart_dataclasses.FileData.name>` that
+                designates the :py:class:`file block replicas
+                <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                to be counted.
+
         Returns:
-            The number of file block blocks from the named file the HiveNode
-            instance possesses.
+            The number of counted replicas.
         """
         return len(self.files.get(fid, {}))
 
     def get_status(self) -> int:
-        """Used to obtain the status of the worker.
+        """Used to obtain the status of the ``Node``.
 
-        This method simulates a ping. When invoked, the HiveNode instance
-        decides if it should switch its status from ONLINE to some other
-        depending on the time it has been active in the Cluster.
+        This method equates a ping. When invoked, the ``Node`` decides if it
+        should remain online or change some other state depending on his
+        remaining :py:attr:`uptime`.
 
         Returns:
-            The status of the worker. See
-            :py:class:`domain.helpers.enums.e.Status`.
+            :py:class:`~app.domain.helpers.enums.Status`:
+                The the status of the ``Node``.
         """
         if self.status == e.Status.ONLINE:
             self.uptime -= 1
@@ -243,11 +294,9 @@ class Node:
 
     # region Python dunder methods' overrides
     def __hash__(self):
-        """Can use Node instance or id as dictionary key."""
         return hash(str(self.id))
 
     def __eq__(self, other):
-        """Node equality is based solely on HiveNode id."""
         return self.id == other
 
     def __ne__(self, other):
@@ -297,10 +346,10 @@ class HiveNode(Node):
 
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
-        """Instructs the HiveNode instance to execute the epoch.
+        """Instructs the ``Node`` instance to execute the epoch.
 
         The method iterates all file block blocks in :py:attr:`files` and
-        independently decides if they should be sent to other HiveNode
+        independently decides if they should be sent to other ``HiveNode``
         instances by following :py:attr:`routing_table` column vectors.
 
         When a file block is sent to some other HiveNode a reply is
@@ -312,18 +361,20 @@ class HiveNode(Node):
         starts a recovery process in the Cluster. Any other code response
         results in the HiveNode instance keeping replica in his disk
         for at least one more epoch times. See
-        :py:class:`domain.helpers.enums.HttpCodes` for more information on
-        possible HTTP Codes.
+        :py:class:`~app.domain.helpers.enums.HttpCodes`.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.execute_epoch`.
 
         Args:
             cluster:
-                Cluster instance that ordered execution of the epoch.
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.HiveCluster` that invoked
+                the ``Node`` method.
             fid:
-                The identifier that determines which file blocks
-                blocks should be routed.
+                The :py:attr:`file name identifier
+                <app.domain.helpers.smart_dataclasses.FileData.name>`
+                of the file being simulated.
         """
         file_view: th.ReplicasDict = self.files.get(fid, {}).copy()
         for number, replica in file_view.items():
@@ -342,17 +393,33 @@ class HiveNode(Node):
     # region File block management
     def replicate_part(
             self, cluster: th.ClusterType, replica: sd.FileBlockData) -> None:
-        """Tries to restore the `replica`'s
-        :py:const:`~environment_settings.REPLICATION_LEVEL`.
+        """Attempts to restore the replication level of the specified file
+        block replica.
 
-        The file block replica is sent selectively in descending order to the
-        most reliable Nodes in the Cluster down to the least
-        reliable. Whereas
-        :py:meth:`app.domain.network_nodes.HiveNode.send_part`. follows
+        Similar to :py:meth:`send_part` but with
+        slightly different instructions. In particular new ``replicas``
+        can not be corrupted at the current node, at the current epoch. The
+        replicas are also sent selectively in descending order to the
+        most reliable Nodes in the ``Cluster`` down to the least
+        reliable. Whereas :py:meth:`.send_part`. follows
         stochastic swarm guidance routing.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.replicate_part`.
+
+        Note:
+            There are no guarantees that
+            :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be
+            completely restored during the execution of this method.
+
+            cluster (:py:class:`~app.type_hints.ClusterType`):
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.Cluster` that will
+                deliver the new ``replica``.
+            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):
+                The :py:class:`file block replica
+                <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                to be delivered.
         """
         # Number of times the block needs to be replicated.
         lost_replicas: int = replica.can_replicate(cluster.current_epoch)
@@ -522,14 +589,30 @@ class HDFSNode(Node):
     # region File block management
     def replicate_part(
             self, cluster: th.ClusterType, replica: sd.FileBlockData) -> None:
-        """Tries to restore the `replica`'s
-        :py:const:`~environment_settings.REPLICATION_LEVEL`.
+        """Attempts to restore the replication level of the specified file
+        block replica.
 
-        The file block replica is sent selectively in descending order to the
-        most reliable Nodes in the Cluster down to the least reliable.
+        Replicas are sent selectively in descending order to the
+        most reliable Nodes in the ``Cluster`` down to the least
+        reliable.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.replicate_part`.
+
+        Note:
+            There are no guarantees that
+            :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be
+            completely restored during the execution of this method.
+
+        Args:
+            cluster (:py:class:`~app.type_hints.ClusterType`):
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.Cluster` that will
+                deliver the new ``replica``.
+            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):
+                The :py:class:`file block replica
+                <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                to be delivered.
         """
         # Number of times the block needs to be replicated.
         lost_replicas: int = replica.can_replicate(cluster.current_epoch)

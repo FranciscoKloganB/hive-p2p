@@ -53,6 +53,7 @@ extensions = [
 ]
 
 intersphinx_mapping = {
+    "py": ("https://docs.python.org/3.7/", None),
     "pd": ("https://pandas.pydata.org/docs/", None),
     "np": ("https://numpy.org/doc/stable/", None),
 }
@@ -61,11 +62,11 @@ autodoc_typehints = "description"  # signature, description, none
 autoclass_content = "class"  # class, init, both
 
 autodoc_default_options = {
-    'members': True,
-    'member-order': 'groupwise',  # alphabetical, groupwise, bysource
-    'special-members': '__init__',
-    'undoc-members': True,
-    'exclude-members': '__weakref__'
+    "members": True,
+    "member-order": "groupwise",  # alphabetical, groupwise, bysource
+    "special-members": "__init__",
+    "undoc-members": True,
+    "exclude-members": "__weakref__,__eq__,__hash__,__repr__,__str__"
 }
 
 napoleon_include_private_with_doc = True

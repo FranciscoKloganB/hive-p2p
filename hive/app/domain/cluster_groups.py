@@ -146,8 +146,8 @@ class Cluster:
                 This argument facilitates simulation.
 
         Returns:
-            The :py:class:`http code <app.domain.helpers.enums.HttpCodes>`
-            received as reply from the destination of this message.
+            :py:class:`~app.domain.helpers.enums.HttpCodes`:
+                An http code sent by the ``receiver``.
         """
         if sender == receiver:
             return e.HttpCodes.DUMMY

@@ -256,8 +256,8 @@
 <span class="sd">                This argument facilitates simulation.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The :py:class:`http code &lt;app.domain.helpers.enums.HttpCodes&gt;`</span>
-<span class="sd">            received as reply from the destination of this message.</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.HttpCodes`:</span>
+<span class="sd">                An http code sent by the ``receiver``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">sender</span> <span class="o">==</span> <span class="n">receiver</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">DUMMY</span>
