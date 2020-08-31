@@ -290,18 +290,24 @@ representation and some other dimensions are given.</p>
 <em class="property">class </em><code class="sig-name descname">MatlabEngineContainer</code><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Singleton class wrapper containing thread safe access to a MatlabEngine.</p>
-<p>The purpose of this class is to provide a thread-safe way to access the
-matlab engine instance object when running simulations in threaded mode.</p>
+<p>This class provides a thread-safe way to access one singleton
+matlab engine object when running simulations in threaded mode. Having
+one single engine is important, since starting up an engine takes
+approximately 12s (machine dependant), not including the time matlab
+scripts are executing and data convertions between python and matlab and
+back.</p>
 <dl class="py attribute">
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.eng">
 <code class="sig-name descname">eng</code></dt>
-<dd><p>A matlab engine instance object used for matrix and vector
-optimization operations throughout the simulations.
-Do not access this directly. MatlabEngine objects are not
-officially thread safe, thus it is recommended that you utilize
-the wrapped function, unless you are not running the
-<a class="reference internal" href="app.html#module-app.hive_simulation" title="app.hive_simulation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.hive_simulation</span></code></a> with -t flag, i.e., you are not using
-the multithreaded mode to speed up simulations.</p>
+<dd><p>A matlab engine instance, which can be used for example for matrix
+and vector optimization operations throughout the simulations.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>MatlabEngine objects are not thread safe, thus it
+is recommended that you utilize  the a wrapper function that
+obtains <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer._LOCK" title="app.domain.helpers.matlab_utils.MatlabEngineContainer._LOCK"><code class="xref py py-const docutils literal notranslate"><span class="pre">_LOCK</span></code></a>, before you send any requests to
+<code class="docutils literal notranslate"><span class="pre">eng</span></code>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -310,8 +316,8 @@ the multithreaded mode to speed up simulations.</p>
 <dd><p>Instantiates a new MatlabEngineContainer object.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Do not directly invoke constructor, instead use:
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.helpers.matlab_utils.MatlabEngineContainer.getInstance()</span></code>.</p>
+<p>Do not directly invoke constructor, use <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance" title="app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_instance()</span></code></a>
+instead.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -323,12 +329,13 @@ the multithreaded mode to speed up simulations.</p>
 <dl class="py method">
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance">
 <em class="property">static </em><code class="sig-name descname">get_instance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.get_instance"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Used to obtain a singleton instance of <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">MatlabEngineContainer</span></code></a></p>
+<dd><p>Used to obtain a singleton instance of <code class="docutils literal notranslate"><span class="pre">MatlabEngineContainer</span></code>.</p>
 <p>If one instance already exists that instance is returned,
 otherwise a new one is created and returned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A reference to the existing MatlabEngineContainer instance.</p>
+<dd class="field-odd"><p>A reference to the existing <code class="docutils literal notranslate"><span class="pre">MatlabEngineContainer</span></code>
+<a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer._instance" title="app.domain.helpers.matlab_utils.MatlabEngineContainer._instance"><code class="xref py py-const docutils literal notranslate"><span class="pre">instance</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">app.domain.helpers.matlab_utils.MatlabEngineContainer</a></p>
@@ -342,26 +349,25 @@ otherwise a new one is created and returned.</p>
 <dd><p>Constructs an optimized transition matrix using the matlab engine.</p>
 <p>Constructs an optimized transition matrix using linear programming
 relaxations and convex envelope approximations for the specified steady
-state <code class="docutils literal notranslate"><span class="pre">v</span></code>, this is done by invoke the matlabscript matrixGlobalOpt
-in the project folder name matlab.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This function can only be invoked if you have a valid matlab license.</p>
-</div>
+state <code class="docutils literal notranslate"><span class="pre">v_</span></code>, this is done by invoke the matlabscript
+<em>matrixGlobalOpt.m</em> located inside
+<a class="reference internal" href="app.html#app.environment_settings.MATLAB_DIR" title="app.environment_settings.MATLAB_DIR"><code class="xref py py-const docutils literal notranslate"><span class="pre">MATLAB_DIR</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A non-optimized symmetric adjency matrix.</p></li>
-<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Markov Matrix with <code class="docutils literal notranslate"><span class="pre">v_</span></code> as steady state distribution and the
-respective mixing rate or None.</p>
+respective <a class="reference internal" href="#app.domain.helpers.matrices.get_mixing_rate" title="app.domain.helpers.matrices.get_mixing_rate"><code class="xref py py-func docutils literal notranslate"><span class="pre">mixing</span> <span class="pre">rate</span></code></a> or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Any</p>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>EngineError</strong> – If you do not have a valid MatLab license.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Any</p>
 </dd>
 </dl>
 </dd></dl>
