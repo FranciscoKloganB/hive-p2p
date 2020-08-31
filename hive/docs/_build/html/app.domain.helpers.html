@@ -395,59 +395,6 @@ matrices for the simulation.</p>
 as well as any steady-state or transition matrix optimization algorithms in
 this module.</p>
 <dl class="py function">
-<dt id="app.domain.helpers.matrices.__get_diagonal_entry_probability">
-<code class="sig-name descname">__get_diagonal_entry_probability</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span></em>, <em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Helper function used by
-<a class="reference internal" href="#app.domain.helpers.matrices._metropolis_hastings" title="app.domain.helpers.matrices._metropolis_hastings"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices._metropolis_hastings()</span></code></a> function.</p>
-<p>Calculates the value that should be assigned to the entry (i, i) of the
-transition matrix being calculated by the metropolis hastings algorithm
-by considering the rejection probability over the random walk that was
-performed on an adjacency matrix.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>rw</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A random_walk over an adjacency matrix.</p></li>
-<li><p><strong>r</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A matrix whose entries contain acceptance probabilities for rw.</p></li>
-<li><p><strong>i</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The diagonal-index of the random walk where summation needs to
-be performed on.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A probability to be inserted at entry (i, i) of the transition matrix
-outputed by the _metropolis_hastings function.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.float64</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="app.domain.helpers.matrices.__get_diagonal_entry_probability_v2">
-<code class="sig-name descname">__get_diagonal_entry_probability_v2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#__get_diagonal_entry_probability_v2"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Helper function used by _metropolis_hastings function.</p>
-<p>Calculates the value that should be assigned to the entry (i, i) of the
-transition matrix being calculated by the metropolis hastings algorithm
-by considering the rejection probability over the random walk that was
-performed on an adjacency matrix.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – The matrix to receive the diagonal entry value.</p></li>
-<li><p><strong>i</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The diagonal entry index. E.g.: m[i, i].</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A probability to be inserted at entry (i, i) of the transition matrix
-outputed by the _metropolis_hastings function.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.float64</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt id="app.domain.helpers.matrices._adjency_matrix_sdp_optimization">
 <code class="sig-name descname">_adjency_matrix_sdp_optimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_adjency_matrix_sdp_optimization"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Optimizes a symmetric adjacency matrix using Semidefinite Programming.</p>
@@ -507,6 +454,72 @@ if a valid license is not found, it uses
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices._get_diagonal_entry_probability_v1">
+<code class="sig-name descname">_get_diagonal_entry_probability_v1</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rw</span></em>, <em class="sig-param"><span class="n">r</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_get_diagonal_entry_probability_v1"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper function used during the metropolis-hastings algorithm.</p>
+<p>Calculates the value that should be assigned to the entry <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">i)</span></code> of the
+transition matrix being calculated by the metropolis hastings algorithm
+by considering the rejection probability over the random walk that was
+performed on an adjacency matrix.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method does considers element-wise rejection probabilities
+for random walk matrices. If you wish to implement a modification of
+the metropolis-hastings algorithm and you do not utilize rejection
+matrices use <a class="reference internal" href="#app.domain.helpers.matrices._get_diagonal_entry_probability_v2" title="app.domain.helpers.matrices._get_diagonal_entry_probability_v2"><code class="xref py py-func docutils literal notranslate"><span class="pre">_get_diagonal_entry_probability_v2()</span></code></a> instead.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rw</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A random walk over an adjacency matrix.</p></li>
+<li><p><strong>r</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A matrix whose entries contain acceptance probabilities for <code class="docutils literal notranslate"><span class="pre">rw</span></code>.</p></li>
+<li><p><strong>i</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The diagonal-index of <code class="docutils literal notranslate"><span class="pre">rw</span></code> where summation needs to
+be performed on.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A probability to be inserted at entry <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">i)</span></code> of the transition
+matrix outputed by the <a class="reference internal" href="#app.domain.helpers.matrices._metropolis_hastings" title="app.domain.helpers.matrices._metropolis_hastings"><code class="xref py py-func docutils literal notranslate"><span class="pre">_metropolis_hastings()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.domain.helpers.matrices._get_diagonal_entry_probability_v2">
+<code class="sig-name descname">_get_diagonal_entry_probability_v2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#_get_diagonal_entry_probability_v2"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Helper function used during the metropolis-hastings algorithm.</p>
+<p>Calculates the value that should be assigned to the entry <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">i)</span></code> of the
+transition matrix being calculated by the metropolis hastings algorithm
+by considering the rejection probability over the random walk that was
+performed on an adjacency matrix.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method does not consider element-wise rejection probabilities
+for random walk matrices. If you wish to implement a modification of
+the metropolis-hastings algorithm and you utilize rejection matrices
+use <a class="reference internal" href="#app.domain.helpers.matrices._get_diagonal_entry_probability_v1" title="app.domain.helpers.matrices._get_diagonal_entry_probability_v1"><code class="xref py py-func docutils literal notranslate"><span class="pre">_get_diagonal_entry_probability_v1()</span></code></a> instead.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – The matrix to receive the diagonal entry value.</p></li>
+<li><p><strong>i</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The diagonal entry index. E.g.: <code class="docutils literal notranslate"><span class="pre">m[i,</span> <span class="pre">i]</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A probability to be inserted at entry <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">i)</span></code> of the transition matrix
+outputed by the <a class="reference internal" href="#app.domain.helpers.matrices._metropolis_hastings" title="app.domain.helpers.matrices._metropolis_hastings"><code class="xref py py-func docutils literal notranslate"><span class="pre">_metropolis_hastings()</span></code></a>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.float64</p>
 </dd>
 </dl>
 </dd></dl>

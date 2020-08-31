@@ -298,9 +298,9 @@ def _metropolis_hastings(a: np.ndarray,
             if i != j:
                 m[i, j] = rw[i, j] * min(1, r[i, j])
         if version == 1:
-            m[i, i] = __get_diagonal_entry_probability(rw, r, i)
+            m[i, i] = _get_diagonal_entry_probability_v1(rw, r, i)
         elif version == 2:
-            m[i, i] = __get_diagonal_entry_probability_v2(m, i)
+            m[i, i] = _get_diagonal_entry_probability_v2(m, i)
 
     if column_major_out:
         return m.transpose()
@@ -355,28 +355,33 @@ def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
     return r
 
 
-def __get_diagonal_entry_probability(
+def _get_diagonal_entry_probability_v1(
         rw: np.ndarray, r: np.ndarray, i: int) -> np.float64:
-    """Helper function used by
-    :py:func:`app.domain.helpers.matrices._metropolis_hastings` function.
+    """Helper function used during the metropolis-hastings algorithm.
 
-    Calculates the value that should be assigned to the entry (i, i) of the
+    Calculates the value that should be assigned to the entry ``(i, i)`` of the
     transition matrix being calculated by the metropolis hastings algorithm
     by considering the rejection probability over the random walk that was
     performed on an adjacency matrix.
 
+    Note:
+        This method does considers element-wise rejection probabilities
+        for random walk matrices. If you wish to implement a modification of
+        the metropolis-hastings algorithm and you do not utilize rejection
+        matrices use :py:func:`_get_diagonal_entry_probability_v2` instead.
+
     Args:
         rw:
-            A random_walk over an adjacency matrix.
+            A random walk over an adjacency matrix.
         r:
-            A matrix whose entries contain acceptance probabilities for rw.
+            A matrix whose entries contain acceptance probabilities for ``rw``.
         i:
-            The diagonal-index of the random walk where summation needs to
+            The diagonal-index of ``rw`` where summation needs to
             be performed on.
 
     Returns:
-        A probability to be inserted at entry (i, i) of the transition matrix
-        outputed by the _metropolis_hastings function.
+        A probability to be inserted at entry ``(i, i)`` of the transition
+        matrix outputed by the :py:func:`_metropolis_hastings`.
     """
     size: int = rw.shape[0]
     pii: np.float64 = rw[i, i]
@@ -385,24 +390,30 @@ def __get_diagonal_entry_probability(
     return pii
 
 
-def __get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
-    """Helper function used by _metropolis_hastings function.
+def _get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
+    """Helper function used during the metropolis-hastings algorithm.
 
-        Calculates the value that should be assigned to the entry (i, i) of the
-        transition matrix being calculated by the metropolis hastings algorithm
-        by considering the rejection probability over the random walk that was
-        performed on an adjacency matrix.
+    Calculates the value that should be assigned to the entry ``(i, i)`` of the
+    transition matrix being calculated by the metropolis hastings algorithm
+    by considering the rejection probability over the random walk that was
+    performed on an adjacency matrix.
 
-        Args:
-            m:
-                The matrix to receive the diagonal entry value.
-            i:
-                The diagonal entry index. E.g.: m[i, i].
+    Note:
+        This method does not consider element-wise rejection probabilities
+        for random walk matrices. If you wish to implement a modification of
+        the metropolis-hastings algorithm and you utilize rejection matrices
+        use :py:func:`_get_diagonal_entry_probability_v1` instead.
 
-        Returns:
-            A probability to be inserted at entry (i, i) of the transition matrix
-            outputed by the _metropolis_hastings function.
-        """
+    Args:
+        m:
+            The matrix to receive the diagonal entry value.
+        i:
+            The diagonal entry index. E.g.: ``m[i, i]``.
+
+    Returns:
+        A probability to be inserted at entry ``(i, i)`` of the transition matrix
+        outputed by the :py:func:`_metropolis_hastings`.
+    """
     return 1 - np.sum(m[i, :])
 
 
