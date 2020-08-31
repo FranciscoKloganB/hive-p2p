@@ -193,16 +193,16 @@
         <span class="sd">&quot;&quot;&quot;Instantiates an ``Cluster`` object</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            master:</span>
+<span class="sd">            master (:py:class:`~app.type_hints.MasterType`):</span>
 <span class="sd">                A reference to an :py:class:`~app.domain.master_servers.Master`</span>
 <span class="sd">                object that manages the ``Cluster`` being initialized.</span>
 <span class="sd">            file_name:</span>
 <span class="sd">                The name of the file the ``Cluster`` is responsible for</span>
 <span class="sd">                persisting.</span>
-<span class="sd">            members:</span>
+<span class="sd">            members (:py:class:`~app.type_hints.NodeDict`):</span>
 <span class="sd">                A dictionary where keys are :py:attr:`node identifiers</span>
 <span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` and values are their</span>
-<span class="sd">                instance objects.</span>
+<span class="sd">                :py:class:`instance objects &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">            sim_id:</span>
 <span class="sd">                Identifier that generates unique output file names,</span>
 <span class="sd">                thus guaranteeing that different simulation instances do not</span>
@@ -348,7 +348,7 @@
 <span class="sd">        objects among the :py:attr:`members` of the ``Cluster``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            replicas:</span>
+<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
 <span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
 <span class="sd">                replicas, without replication.</span>
 <span class="sd">            strat:</span>
@@ -404,9 +404,10 @@
 <span class="sd">        Similarly it logs the number of members who disconnected.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">             List of :py:attr:`members` that disconnected during the</span>
-<span class="sd">             :py:attr:`current_epoch`. See</span>
-<span class="sd">             :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                List of :py:attr:`members` that disconnected during the</span>
+<span class="sd">                :py:attr:`current_epoch`. See</span>
+<span class="sd">                :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
@@ -421,9 +422,9 @@
 <span class="sd">        attempts to recruit new ones.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            off_nodes:</span>
-<span class="sd">                The subset of :py:attr:`members` who disconnected during the</span>
-<span class="sd">                current epoch.</span>
+<span class="sd">            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):</span>
+<span class="sd">                The subset of :py:attr:`members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
@@ -433,7 +434,8 @@
 <span class="sd">        of the ``Cluster``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A dictionary that is empty if membership did not change.</span>
+<span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
+<span class="sd">                A dictionary that is empty if membership did not change.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sbm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="n">status_bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cluster_status</span><span class="p">()</span>
@@ -491,10 +493,11 @@
 <span class="sd">        the :py:attr:`master` of the ``Cluster``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A dictionary mapping where keys are</span>
-<span class="sd">            :py:attr:`node identifiers &lt;app.domain.network_nodes.Node.id&gt;`</span>
-<span class="sd">            and values are</span>
-<span class="sd">            :py:class:`node instances &lt;app.domain.network_nodes.Node&gt;`.</span>
+<span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
+<span class="sd">                A dictionary mapping where keys are</span>
+<span class="sd">                :py:attr:`node identifiers &lt;app.domain.network_nodes.Node.id&gt;`</span>
+<span class="sd">                and values are</span>
+<span class="sd">                :py:class:`node instances &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_online_nodes</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">))</span></div>
@@ -568,7 +571,7 @@
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            replicas:</span>
+<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
 <span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
 <span class="sd">                replicas, without replication.</span>
 <span class="sd">            strat:</span>
@@ -632,9 +635,10 @@
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">             A collection of members who disconnected during the current</span>
-<span class="sd">             epoch. See</span>
-<span class="sd">             :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                 A collection of members who disconnected during the current</span>
+<span class="sd">                 epoch. See</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -694,7 +698,8 @@
 <span class="sd">            before maintenance is performed.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A dictionary that is empty if membership did not change.</span>
+<span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
+<span class="sd">                A dictionary that is empty if membership did not change.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">s</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span><span class="p">:</span>
@@ -923,9 +928,7 @@
 <span class="sd">        Note:</span>
 <span class="sd">            This method is virtual.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-        <span class="c1"># noinspection PyUnusedLocal</span>
-        <span class="n">cloud_ref</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">get_cloud_reference</span><span class="p">()</span></div>
+        <span class="k">pass</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
@@ -1090,9 +1093,10 @@
 <span class="sd">            group until they are detected by their peers as being offline.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A collection of :py:attr:`~Cluster.members` who disconnected</span>
-<span class="sd">            during the current epoch.</span>
-<span class="sd">            See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
+<span class="sd">                See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1137,6 +1141,11 @@
 
 <span class="sd">        Overrides:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):</span>
+<span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [o] Evicted suspect </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -1195,7 +1204,7 @@
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            replicas:</span>
+<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
 <span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
 <span class="sd">                replicas, without replication.</span>
 <span class="sd">            strat:</span>
@@ -1230,9 +1239,10 @@
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A collection of :py:attr:`~Cluster.members` who disconnected</span>
-<span class="sd">            during the current epoch.</span>
-<span class="sd">            See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
+<span class="sd">                See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lost_replicas_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1295,12 +1305,13 @@
         <span class="sd">&quot;&quot;&quot;Evicts any :py:class:`network node &lt;app.domain.network_nodes.HDFSNode&gt;`</span>
 <span class="sd">        whose heartbeats in :py:attr:`data_node_heartbeats` reached zero.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            off_nodes:</span>
-<span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
-<span class="sd">                during the current epoch.</span>
 <span class="sd">        Overrides:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):</span>
+<span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [o] Evicted suspect </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>

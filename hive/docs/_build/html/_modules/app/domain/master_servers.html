@@ -282,7 +282,7 @@
 <span class="sd">                The name of the file located in</span>
 <span class="sd">                :py:const:`~app.environment_settings.SHARED_ROOT` folder to be</span>
 <span class="sd">                read and splitted.</span>
-<span class="sd">            cluster:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
 <span class="sd">                A reference to the :py:class:`cluster group</span>
 <span class="sd">                &lt;app.domain.cluster_groups.Cluster&gt;` whose</span>
 <span class="sd">                :py:attr:`~app.domain.cluster_groups.Cluster.members` will be</span>
@@ -292,11 +292,12 @@
 <span class="sd">                The maximum amount of bytes each file block can have.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A dictionary in which the keys are integers and values are</span>
-<span class="sd">            :py:class:`file blocks</span>
-<span class="sd">            &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`, whose</span>
-<span class="sd">            attribute :py:attr:`~app.domain.helpers.smart_dataclasses.FileBlockData.number`</span>
-<span class="sd">            is the key.</span>
+<span class="sd">            :py:class:`~app.type_hints.ReplicasDict`:</span>
+<span class="sd">                A dictionary in which the keys are integers and values are</span>
+<span class="sd">                :py:class:`file blocks</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`, whose</span>
+<span class="sd">                attribute :py:attr:`~app.domain.helpers.smart_dataclasses.FileBlockData.number`</span>
+<span class="sd">                is the key.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">bid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -337,7 +338,7 @@
 <span class="sd">        ``Master`` and whose status is online.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            blacklist:</span>
+<span class="sd">            blacklist (:py:class:`~app.type_hints.NodeDict`):</span>
 <span class="sd">                A collection of :py:attr:`nodes identifiers</span>
 <span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` and their object</span>
 <span class="sd">                instances, which specify nodes the requesting entity has</span>
@@ -350,7 +351,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
 <span class="sd">                A collection of :py:class:`network nodes &lt;app.domain.network_nodes.Node&gt;`</span>
-<span class="sd">                which is at most as big as ``n``.</span>
+<span class="sd">                which is at most as big as ``n``, which does not include any</span>
+<span class="sd">                node named in ``blacklist``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">selected</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
@@ -386,7 +388,8 @@
 <span class="sd">                The name of the fille being stored in the cluster.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The :py:class:`~app.domain.cluster_groups.Cluster` instance.</span>
+<span class="sd">            :py:class:`~app.type_hints.ClusterType`:</span>
+<span class="sd">                The :py:class:`~app.domain.cluster_groups.Cluster` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cluster_members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
@@ -421,7 +424,8 @@
 <span class="sd">                uptime of the network node.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The :py:class:`~app.domain.network_nodes.Node` instance.</span>
+<span class="sd">            :py:class:`~app.type_hints.NodeType`:</span>
+<span class="sd">                The :py:class:`~app.domain.network_nodes.Node` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">class_name_to_obj</span><span class="p">(</span><span class="n">NETWORK_NODES</span><span class="p">,</span> <span class="n">node_class</span><span class="p">,</span> <span class="p">[</span><span class="n">nid</span><span class="p">,</span> <span class="n">node_uptime</span><span class="p">])</span></div></div>
     <span class="c1"># endregion</span>

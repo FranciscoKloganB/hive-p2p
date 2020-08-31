@@ -83,16 +83,16 @@ class Cluster:
         """Instantiates an ``Cluster`` object
 
         Args:
-            master:
+            master (:py:class:`~app.type_hints.MasterType`):
                 A reference to an :py:class:`~app.domain.master_servers.Master`
                 object that manages the ``Cluster`` being initialized.
             file_name:
                 The name of the file the ``Cluster`` is responsible for
                 persisting.
-            members:
+            members (:py:class:`~app.type_hints.NodeDict`):
                 A dictionary where keys are :py:attr:`node identifiers
                 <app.domain.network_nodes.Node.id>` and values are their
-                instance objects.
+                :py:class:`instance objects <app.domain.network_nodes.Node>`.
             sim_id:
                 Identifier that generates unique output file names,
                 thus guaranteeing that different simulation instances do not
@@ -238,7 +238,7 @@ class Cluster:
         objects among the :py:attr:`members` of the ``Cluster``.
 
         Args:
-            replicas:
+            replicas (:py:class:`~app.type_hints.ReplicasDict`):
                 The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
                 replicas, without replication.
             strat:
@@ -294,9 +294,10 @@ class Cluster:
         Similarly it logs the number of members who disconnected.
 
         Returns:
-             List of :py:attr:`members` that disconnected during the
-             :py:attr:`current_epoch`. See
-             :py:meth:`app.domain.network_nodes.Node.get_status`.
+            List[:py:class:`~app.type_hints.NodeType`]:
+                List of :py:attr:`members` that disconnected during the
+                :py:attr:`current_epoch`. See
+                :py:meth:`app.domain.network_nodes.Node.get_status`.
         """
         raise NotImplementedError("")
 
@@ -311,9 +312,9 @@ class Cluster:
         attempts to recruit new ones.
 
         Args:
-            off_nodes:
-                The subset of :py:attr:`members` who disconnected during the
-                current epoch.
+            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
+                The subset of :py:attr:`members` who disconnected
+                during the current epoch.
         """
         raise NotImplementedError("")
 
@@ -323,7 +324,8 @@ class Cluster:
         of the ``Cluster``.
 
         Returns:
-            A dictionary that is empty if membership did not change.
+            :py:class:`~app.type_hints.NodeDict`:
+                A dictionary that is empty if membership did not change.
         """
         sbm = len(self.members)
         status_bm = self.get_cluster_status()
@@ -381,10 +383,11 @@ class Cluster:
         the :py:attr:`master` of the ``Cluster``.
 
         Returns:
-            A dictionary mapping where keys are
-            :py:attr:`node identifiers <app.domain.network_nodes.Node.id>`
-            and values are
-            :py:class:`node instances <app.domain.network_nodes.Node>`.
+            :py:class:`~app.type_hints.NodeDict`:
+                A dictionary mapping where keys are
+                :py:attr:`node identifiers <app.domain.network_nodes.Node.id>`
+                and values are
+                :py:class:`node instances <app.domain.network_nodes.Node>`.
         """
         return self.master.find_online_nodes(
             self.members, self.original_size - len(self.members))
@@ -458,7 +461,7 @@ class HiveCluster(Cluster):
             :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.
 
         Args:
-            replicas:
+            replicas (:py:class:`~app.type_hints.ReplicasDict`):
                 The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
                 replicas, without replication.
             strat:
@@ -522,9 +525,10 @@ class HiveCluster(Cluster):
             :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.
 
         Returns:
-             A collection of members who disconnected during the current
-             epoch. See
-             :py:meth:`app.domain.network_nodes.Node.get_status`.
+            List[:py:class:`~app.type_hints.NodeType`]:
+                 A collection of members who disconnected during the current
+                 epoch. See
+                 :py:meth:`app.domain.network_nodes.Node.get_status`.
         """
         lost_parts_count: int = 0
         off_nodes: List[th.NodeType] = []
@@ -584,7 +588,8 @@ class HiveCluster(Cluster):
             before maintenance is performed.
 
         Returns:
-            A dictionary that is empty if membership did not change.
+            :py:class:`~app.type_hints.NodeDict`:
+                A dictionary that is empty if membership did not change.
         """
         s = len(self.members)
         if s <= self.critical_size:
@@ -814,8 +819,6 @@ class HiveCluster(Cluster):
             This method is virtual.
         """
         pass
-        # noinspection PyUnusedLocal
-        cloud_ref: str = self.master.get_cloud_reference()
     # endregion
 
     # region Helpers
@@ -980,9 +983,10 @@ class HiveClusterExt(HiveCluster):
             group until they are detected by their peers as being offline.
 
         Returns:
-            A collection of :py:attr:`~Cluster.members` who disconnected
-            during the current epoch.
-            See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.
+            List[:py:class:`~app.type_hints.NodeType`]:
+                A collection of :py:attr:`~Cluster.members` who disconnected
+                during the current epoch.
+                See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.
         """
         lost_parts_count: int = 0
         off_nodes = []
@@ -1027,6 +1031,11 @@ class HiveClusterExt(HiveCluster):
 
         Overrides:
             :py:meth:`app.domain.cluster_groups.Cluster.maintain`.
+
+        Args:
+            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
+                The subset of :py:attr:`~Cluster.members` who disconnected
+                during the current epoch.
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
@@ -1085,7 +1094,7 @@ class HDFSCluster(Cluster):
             :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.
 
         Args:
-            replicas:
+            replicas (:py:class:`~app.type_hints.ReplicasDict`):
                 The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
                 replicas, without replication.
             strat:
@@ -1120,9 +1129,10 @@ class HDFSCluster(Cluster):
             :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`
 
         Returns:
-            A collection of :py:attr:`~Cluster.members` who disconnected
-            during the current epoch.
-            See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.
+            List[:py:class:`~app.type_hints.NodeType`]:
+                A collection of :py:attr:`~Cluster.members` who disconnected
+                during the current epoch.
+                See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.
         """
         off_nodes = []
         lost_replicas_count: int = 0
@@ -1185,12 +1195,13 @@ class HDFSCluster(Cluster):
         """Evicts any :py:class:`network node <app.domain.network_nodes.HDFSNode>`
         whose heartbeats in :py:attr:`data_node_heartbeats` reached zero.
 
-        Args:
-            off_nodes:
-                The subset of :py:attr:`~Cluster.members` who disconnected
-                during the current epoch.
         Overrides:
             :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.
+
+        Args:
+            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
+                The subset of :py:attr:`~Cluster.members` who disconnected
+                during the current epoch.
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")

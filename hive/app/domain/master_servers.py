@@ -172,7 +172,7 @@ class Master:
                 The name of the file located in
                 :py:const:`~app.environment_settings.SHARED_ROOT` folder to be
                 read and splitted.
-            cluster:
+            cluster (:py:class:`~app.type_hints.ClusterType`):
                 A reference to the :py:class:`cluster group
                 <app.domain.cluster_groups.Cluster>` whose
                 :py:attr:`~app.domain.cluster_groups.Cluster.members` will be
@@ -182,11 +182,12 @@ class Master:
                 The maximum amount of bytes each file block can have.
 
         Returns:
-            A dictionary in which the keys are integers and values are
-            :py:class:`file blocks
-            <app.domain.helpers.smart_dataclasses.FileBlockData>`, whose
-            attribute :py:attr:`~app.domain.helpers.smart_dataclasses.FileBlockData.number`
-            is the key.
+            :py:class:`~app.type_hints.ReplicasDict`:
+                A dictionary in which the keys are integers and values are
+                :py:class:`file blocks
+                <app.domain.helpers.smart_dataclasses.FileBlockData>`, whose
+                attribute :py:attr:`~app.domain.helpers.smart_dataclasses.FileBlockData.number`
+                is the key.
         """
         with open(os.path.join(SHARED_ROOT, fname), "rb") as file:
             bid: int = 0
@@ -227,7 +228,7 @@ class Master:
         ``Master`` and whose status is online.
 
         Args:
-            blacklist:
+            blacklist (:py:class:`~app.type_hints.NodeDict`):
                 A collection of :py:attr:`nodes identifiers
                 <app.domain.network_nodes.Node.id>` and their object
                 instances, which specify nodes the requesting entity has
@@ -240,7 +241,8 @@ class Master:
         Returns:
             :py:class:`~app.type_hints.NodeDict`:
                 A collection of :py:class:`network nodes <app.domain.network_nodes.Node>`
-                which is at most as big as ``n``.
+                which is at most as big as ``n``, which does not include any
+                node named in ``blacklist``.
         """
         selected: th.NodeDict = {}
         if n <= 0:
@@ -276,7 +278,8 @@ class Master:
                 The name of the fille being stored in the cluster.
 
         Returns:
-            The :py:class:`~app.domain.cluster_groups.Cluster` instance.
+            :py:class:`~app.type_hints.ClusterType`:
+                The :py:class:`~app.domain.cluster_groups.Cluster` instance.
         """
         cluster_members: th.NodeDict = {}
         nodes = np.random.choice(
@@ -311,7 +314,8 @@ class Master:
                 uptime of the network node.
 
         Returns:
-            The :py:class:`~app.domain.network_nodes.Node` instance.
+            :py:class:`~app.type_hints.NodeType`:
+                The :py:class:`~app.domain.network_nodes.Node` instance.
         """
         return class_name_to_obj(NETWORK_NODES, node_class, [nid, node_uptime])
     # endregion
