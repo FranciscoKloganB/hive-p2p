@@ -145,9 +145,9 @@
 <dt id="app.domain.helpers.enums.HttpCodes">
 <em class="property">class </em><code class="sig-name descname">HttpCodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/enums.html#HttpCodes"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/enum.html#enum.Enum" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
-<p>Enumerator class used to represent HTTP response codes</p>
-<dl class="simple">
-<dt>The following codes are considered:</dt><dd><ul class="simple">
+<p>Enumerator class used to represent HTTP response codes.</p>
+<p>The following codes are considered:</p>
+<ul class="simple">
 <li><p>DUMMY: Dummy value. Use when no valid HTTP code exists;</p></li>
 <li><p>OK: Callee accepts the sent file;</p></li>
 <li><p>BAD_REQUEST: Callee refuses the integrity of sent file;</p></li>
@@ -156,8 +156,6 @@
 <li><p>TIME_OUT: Message lost in translation;</p></li>
 <li><p>SERVER_DOWN: Metadata server is offline;</p></li>
 </ul>
-</dd>
-</dl>
 <dl class="py attribute">
 <dt id="app.domain.helpers.enums.HttpCodes.BAD_REQUEST">
 <code class="sig-name descname">BAD_REQUEST</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 400</em></dt>
@@ -199,15 +197,13 @@
 <dt id="app.domain.helpers.enums.Status">
 <em class="property">class </em><code class="sig-name descname">Status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/enums.html#Status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/enum.html#enum.Enum" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
-<p>Enumerator that defines connectivity status of a network node</p>
-<dl class="simple">
-<dt>The following status exist:</dt><dd><ul class="simple">
+<p>Enumerator that defines connectivity status of a network node.</p>
+<p>The following status exist:</p>
+<ul class="simple">
 <li><p>SUSPECT: Network node may be offline;</p></li>
 <li><p>OFFLINE: Network node is offline;</p></li>
 <li><p>ONLINE: Network node is online;</p></li>
 </ul>
-</dd>
-</dl>
 <dl class="py attribute">
 <dt id="app.domain.helpers.enums.Status.OFFLINE">
 <code class="sig-name descname">OFFLINE</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 2</em></dt>

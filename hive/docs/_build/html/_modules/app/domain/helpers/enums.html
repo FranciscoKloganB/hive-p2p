@@ -115,12 +115,13 @@
 
 
 <div class="viewcode-block" id="Status"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.enums.Status">[docs]</a><span class="k">class</span> <span class="nc">Status</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Enumerator that defines connectivity status of a network node</span>
+    <span class="sd">&quot;&quot;&quot;Enumerator that defines connectivity status of a network node.</span>
 
 <span class="sd">    The following status exist:</span>
-<span class="sd">        * SUSPECT: Network node may be offline;</span>
-<span class="sd">        * OFFLINE: Network node is offline;</span>
-<span class="sd">        * ONLINE: Network node is online;</span>
+
+<span class="sd">    * SUSPECT: Network node may be offline;</span>
+<span class="sd">    * OFFLINE: Network node is offline;</span>
+<span class="sd">    * ONLINE: Network node is online;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">SUSPECT</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">OFFLINE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
@@ -128,16 +129,17 @@
 
 
 <div class="viewcode-block" id="HttpCodes"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.enums.HttpCodes">[docs]</a><span class="k">class</span> <span class="nc">HttpCodes</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Enumerator class used to represent HTTP response codes</span>
+    <span class="sd">&quot;&quot;&quot;Enumerator class used to represent HTTP response codes.</span>
 
 <span class="sd">    The following codes are considered:</span>
-<span class="sd">        * DUMMY: Dummy value. Use when no valid HTTP code exists;</span>
-<span class="sd">        * OK: Callee accepts the sent file;</span>
-<span class="sd">        * BAD_REQUEST: Callee refuses the integrity of sent file;</span>
-<span class="sd">        * NOT_FOUND: Callee is not a member of the network;</span>
-<span class="sd">        * NOT_ACCEPTABLE: Callee already has a file with same Id;</span>
-<span class="sd">        * TIME_OUT: Message lost in translation;</span>
-<span class="sd">        * SERVER_DOWN: Metadata server is offline;</span>
+
+<span class="sd">    * DUMMY: Dummy value. Use when no valid HTTP code exists;</span>
+<span class="sd">    * OK: Callee accepts the sent file;</span>
+<span class="sd">    * BAD_REQUEST: Callee refuses the integrity of sent file;</span>
+<span class="sd">    * NOT_FOUND: Callee is not a member of the network;</span>
+<span class="sd">    * NOT_ACCEPTABLE: Callee already has a file with same Id;</span>
+<span class="sd">    * TIME_OUT: Message lost in translation;</span>
+<span class="sd">    * SERVER_DOWN: Metadata server is offline;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">DUMMY</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="n">OK</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span>
