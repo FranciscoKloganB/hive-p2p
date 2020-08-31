@@ -189,11 +189,12 @@ class Node:
 
         Args:
             cluster (:py:class:`~app.type_hints.ClusterType`):
-                :py:mod:`Cluster Group Monitor <domain.cluster_groups>` that
-                will act as a courier for the message to be sent. In a real
-                world implementation this argument would not be needed and
-                would not even make sense, but we use it to facilitate
-                simulation management and environment logging.
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.Cluster` that will
+                deliver the new ``replica``. In a real
+                world implementation this argument would not make sense,
+                but we use it to facilitate simulation management and
+                environment logging.
             destination:
                 The name, address or another unique identifier of the node
                 that will receive the file block `replica`.
