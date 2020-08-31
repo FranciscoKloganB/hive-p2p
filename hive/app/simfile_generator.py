@@ -162,23 +162,22 @@ def _in_yes_no(message: str) -> bool:
 def yield_label() -> str:
     """Used to generate an arbrirary numbers of unique labels.
 
+        Examples:
+            The following code snippets illustrate the result of calling this
+            method ``n`` times. ::
+
+                >>> n = 4
+                >>> for s in itertools.islice(yield_label(), n):
+                ...     return s
+                [a, b, c, d]
+
+               >>> n = 4 + 26
+                >>> for s in itertools.islice(yield_label(), n):
+                ...     return s
+                [a, b, c, d, ..., aa, ab, ac, ad]
+
     Yields:
         The next string label in the sequence.
-
-    Examples:
-        The following code snippets illustrate the result of calling this
-        method ``n`` times. ::
-
-            >>> n = 4
-            >>> for s in itertools.islice(yield_label(), n):
-            ...     return s
-            [a, b, c, d]
-
-           >>> n = 4 + 26
-            >>> for s in itertools.islice(yield_label(), n):
-            ...     return s
-            [a, b, c, d, ..., aa, ab, ac, ad]
-
     """
     for size in itertools.count(1):
         for s in itertools.product(string.ascii_lowercase, repeat=size):

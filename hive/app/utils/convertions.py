@@ -122,6 +122,14 @@ def json_string_to_obj(json_string: str) -> Any:
 def class_name_to_obj(module_name: str, class_name: str, args: List[Any]) -> Any:
     """Uses reflection to instanciate a class by name.
 
+        Examples:
+            The next two code snippets are equivalent:
+
+                >>> class_name_to_obj(MASTER_SERVERS, "Master", ["f.jpg", 1, 80])
+
+                >>> import app.domain.master_servers as ms
+                >>> h = ms.Master("f.jpg", 1, 80)
+
     Args:
         module_name:
             The fully qualified path of the module the class is defined in.
@@ -140,14 +148,6 @@ def class_name_to_obj(module_name: str, class_name: str, args: List[Any]) -> Any
             imported causes cyclic import errors.
         ImportError:
             When `module_name` is not a valid module.
-    Examples:
-        You could call this function like so::
-
-            h = class_name_to_obj(MASTER_SERVERS, "Master", ["f.jpg", 1, 80])
-
-        This would be equivalent to calling::
-
-            h = Master("f.jpg", 1, 80)
     """
     module_ = importlib.import_module(module_name)
     instance = getattr(module_, class_name)(*args)

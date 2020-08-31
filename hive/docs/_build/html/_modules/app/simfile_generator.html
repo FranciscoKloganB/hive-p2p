@@ -272,23 +272,22 @@
 <div class="viewcode-block" id="yield_label"><a class="viewcode-back" href="../../app.html#app.simfile_generator.yield_label">[docs]</a><span class="k">def</span> <span class="nf">yield_label</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Used to generate an arbrirary numbers of unique labels.</span>
 
+<span class="sd">        Examples:</span>
+<span class="sd">            The following code snippets illustrate the result of calling this</span>
+<span class="sd">            method ``n`` times. ::</span>
+
+<span class="sd">                &gt;&gt;&gt; n = 4</span>
+<span class="sd">                &gt;&gt;&gt; for s in itertools.islice(yield_label(), n):</span>
+<span class="sd">                ...     return s</span>
+<span class="sd">                [a, b, c, d]</span>
+
+<span class="sd">               &gt;&gt;&gt; n = 4 + 26</span>
+<span class="sd">                &gt;&gt;&gt; for s in itertools.islice(yield_label(), n):</span>
+<span class="sd">                ...     return s</span>
+<span class="sd">                [a, b, c, d, ..., aa, ab, ac, ad]</span>
+
 <span class="sd">    Yields:</span>
 <span class="sd">        The next string label in the sequence.</span>
-
-<span class="sd">    Examples:</span>
-<span class="sd">        The following code snippets illustrate the result of calling this</span>
-<span class="sd">        method ``n`` times. ::</span>
-
-<span class="sd">            &gt;&gt;&gt; n = 4</span>
-<span class="sd">            &gt;&gt;&gt; for s in itertools.islice(yield_label(), n):</span>
-<span class="sd">            ...     return s</span>
-<span class="sd">            [a, b, c, d]</span>
-
-<span class="sd">           &gt;&gt;&gt; n = 4 + 26</span>
-<span class="sd">            &gt;&gt;&gt; for s in itertools.islice(yield_label(), n):</span>
-<span class="sd">            ...     return s</span>
-<span class="sd">            [a, b, c, d, ..., aa, ab, ac, ad]</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">size</span><span class="p">):</span>
