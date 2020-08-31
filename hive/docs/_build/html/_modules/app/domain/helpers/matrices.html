@@ -133,6 +133,7 @@
 
 
 <span class="c1"># region Markov Matrix Constructors</span>
+<span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="new_mh_transition_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.new_mh_transition_matrix">[docs]</a><span class="k">def</span> <span class="nf">new_mh_transition_matrix</span><span class="p">(</span>
         <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot; Constructs a transition matrix using metropolis-hastings.</span>
@@ -147,17 +148,19 @@
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
 <span class="sd">            A symmetric adjency matrix.</span>
-<span class="sd">        v_:</span>
+<span class="sd">        `v_`:</span>
 <span class="sd">            A stochastic steady state distribution vector.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Markov Matrix with ``v_`` as steady state distribution and the</span>
-<span class="sd">        respective mixing rate.</span>
+<span class="sd">        respective mixing rate or ``None, float(&#39;inf&#39;)`` if the problem is</span>
+<span class="sd">        infeasible.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">_metropolis_hastings</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">get_mixing_rate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span></div>
 
 
+<span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="new_sdp_mh_transition_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.new_sdp_mh_transition_matrix">[docs]</a><span class="k">def</span> <span class="nf">new_sdp_mh_transition_matrix</span><span class="p">(</span>
         <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Constructs a transition matrix using semi-definite programming techniques.</span>
@@ -170,12 +173,13 @@
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
 <span class="sd">            A non-optimized symmetric adjency matrix.</span>
-<span class="sd">        v_:</span>
+<span class="sd">        `v_`:</span>
 <span class="sd">            A stochastic steady state distribution vector.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Markov Matrix with ``v_`` as steady state distribution and the</span>
-<span class="sd">        respective mixing rate.</span>
+<span class="sd">        respective mixing rate or ``None, float(&#39;inf&#39;)`` if the problem is</span>
+<span class="sd">        infeasible.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">problem</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">_adjency_matrix_sdp_optimization</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
@@ -188,19 +192,20 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span></div>
 
 
+<span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="new_go_transition_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.new_go_transition_matrix">[docs]</a><span class="k">def</span> <span class="nf">new_go_transition_matrix</span><span class="p">(</span>
         <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Constructs a transition matrix using global optimization techniques.</span>
 
 <span class="sd">    Constructs an optimized markov matrix using linear programming relaxations</span>
 <span class="sd">    and convex envelope approximations for the specified steady state ``v``.</span>
-<span class="sd">    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform</span>
-<span class="sd">    Matrix, 2) is equal to the markov matrix eigenvalue.</span>
+<span class="sd">    Result is only trully optimal if :math:`normal(Mopt - (1 / len(v)), 2)`</span>
+<span class="sd">    is equal to the highest Markov Matrix eigenvalue that is smaller than one.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
 <span class="sd">            A non-optimized symmetric adjency matrix.</span>
-<span class="sd">        v_:</span>
+<span class="sd">        `v_`:</span>
 <span class="sd">            A stochastic steady state distribution vector.</span>
 
 <span class="sd">    Returns:</span>
@@ -242,24 +247,26 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span></div>
 
 
+<span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="new_mgo_transition_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.new_mgo_transition_matrix">[docs]</a><span class="k">def</span> <span class="nf">new_mgo_transition_matrix</span><span class="p">(</span>
         <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;Constructs an optimized transition matrix using the matlab engine.</span>
 
 <span class="sd">    Constructs an optimized transition matrix using linear programming</span>
 <span class="sd">    relaxations and convex envelope approximations for the specified steady</span>
-<span class="sd">    state ``v``. Result is only trully optimal if normal(Tranistion Matrix Opt</span>
-<span class="sd">    - Uniform Matrix, 2) is equal to the markov matrix eigenvalue. The code</span>
-<span class="sd">    is run on a matlab engine because it provides a non-convex SDP solver ç</span>
-<span class="sd">    BMIBNB.</span>
+<span class="sd">    state ``v``.</span>
+<span class="sd">    Result is only trully optimal if :math:`normal(Mopt - (1 / len(v)), 2)`</span>
+<span class="sd">    is equal to the highest Markov Matrix eigenvalue that is smaller than one.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        This function can only be invoked if you have a valid matlab license.</span>
+<span class="sd">        This function&#39;s code runs inside a matlab engine because it provides</span>
+<span class="sd">        a non-convex SDP solver BMIBNB. If you do not have valid matlab</span>
+<span class="sd">        license the output of this function is always ``(None, float(&#39;inf&#39;)``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
 <span class="sd">            A non-optimized symmetric adjency matrix.</span>
-<span class="sd">        v_:</span>
+<span class="sd">        `v_`:</span>
 <span class="sd">            A stochastic steady state distribution vector.</span>
 
 <span class="sd">    Returns:</span>
@@ -278,8 +285,6 @@
         <span class="c1"># EngineError deals with invalid license or unfeasible problems,</span>
         <span class="c1"># AttributeError deals MatlabEngineContainer.eng with None value.</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span></div>
-
-
 <span class="c1"># endregion</span>
 
 
@@ -364,7 +369,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        a:</span>
 <span class="sd">            A symmetric adjency matrix.</span>
-<span class="sd">        v_:</span>
+<span class="sd">        `v_`:</span>
 <span class="sd">            A stochastic vector that is the steady state of the resulting</span>
 <span class="sd">            transition matrix.</span>
 <span class="sd">        column_major_out:</span>
@@ -443,17 +448,17 @@
     <span class="k">return</span> <span class="n">a</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="_construct_rejection_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices._construct_rejection_matrix">[docs]</a><span class="k">def</span> <span class="nf">_construct_rejection_matrix</span><span class="p">(</span><span class="n">rw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="_construct_rejection_matrix"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices._construct_rejection_matrix">[docs]</a><span class="k">def</span> <span class="nf">_construct_rejection_matrix</span><span class="p">(</span><span class="n">rw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Builds a matrix of rejection probabilities for a given random walk.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        v_:</span>
-<span class="sd">            a stochastic desired distribution vector</span>
 <span class="sd">        rw:</span>
 <span class="sd">            a random_walk over an adjacency matrix</span>
+<span class="sd">        `v_`:</span>
+<span class="sd">            a stochastic desired distribution vector</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A matrix whose entries are acceptance probabilities for the random walk.</span>
+<span class="sd">        A matrix whose entries are acceptance probabilities for ``rw``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">shape</span> <span class="o">=</span> <span class="n">rw</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -534,16 +539,16 @@
 <div class="viewcode-block" id="get_mixing_rate"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.get_mixing_rate">[docs]</a><span class="k">def</span> <span class="nf">get_mixing_rate</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Calculats the fast mixing rate the input matrix.</span>
 
-<span class="sd">    The fast mixing rate of matrix M is the highest eigenvalue that is</span>
-<span class="sd">    smaller than one. If returned value is 1.0 than the matrix has transient</span>
-<span class="sd">    states or absorbent nodes.</span>
+<span class="sd">    The fast mixing rate of matrix ``m`` is the highest eigenvalue that is</span>
+<span class="sd">    smaller than one. If returned value is ``1.0`` than the matrix has transient</span>
+<span class="sd">    states or absorbent nodes and as a result is not a markov matrix.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        m:</span>
 <span class="sd">            A matrix.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The highest eigenvalue of `m` that is smaller than one or one.</span>
+<span class="sd">        The highest eigenvalue of ``m`` that is smaller than one or one.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -563,7 +568,8 @@
 
 <span class="sd">    The generated adjacency matrix does not have transient state sets or</span>
 <span class="sd">    absorbent nodes and can effectively represent a network topology</span>
-<span class="sd">    with bidirectional connections between network nodes.</span>
+<span class="sd">    with bidirectional connections between :py:class:`network nodes</span>
+<span class="sd">    &lt;app.domain.network_nodes.Node&gt;`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        size:</span>
@@ -574,19 +580,19 @@
 <span class="sd">            entries must be zeros. Otherwise, they can be zeros or ones.</span>
 <span class="sd">        force_sloops:</span>
 <span class="sd">            Indicates if the diagonal of the generated matrix should be</span>
-<span class="sd">            filled with ones. If ``False``, valid diagonal entries are</span>
-<span class="sd">            decided by `allow_self_loops` param. Otherwise, diagonal entries</span>
-<span class="sd">            are filled with ones. If `allow_self_loops` is ``False``</span>
-<span class="sd">            and `enforce_loops` is ``True``, an error is raised.</span>
+<span class="sd">            filled with ones. If ``False`` valid diagonal entries are</span>
+<span class="sd">            decided by ``allow_self_loops`` param. Otherwise, diagonal entries</span>
+<span class="sd">            are filled with ones. If ``allow_self_loops`` is ``False``</span>
+<span class="sd">            and ``enforce_loops`` is ``True``, an error is raised.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The adjency matrix representing the connections between a</span>
-<span class="sd">        groups of network nodes.</span>
+<span class="sd">        groups of :py:class:`network nodes &lt;app.domain.network_nodes.Node&gt;`.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        IllegalArgumentError:</span>
-<span class="sd">            When `allow_self_loops` (``False``) conflicts with</span>
-<span class="sd">            `enforce_loops` (``True``).</span>
+<span class="sd">            When ``allow_self_loops`` (``False``) conflicts with</span>
+<span class="sd">            ``enforce_loops`` (``True``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_sloops</span> <span class="ow">and</span> <span class="n">force_sloops</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">IllegalArgumentError</span><span class="p">(</span><span class="s2">&quot;Can not invoke new_symmetric_matrix with:</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -613,16 +619,17 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Generates a random symmetric matrix which is also connected.</span>
 
-<span class="sd">    See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix` and</span>
-<span class="sd">    py:func:`app.domain.helpers.matrices.make_connected`.</span>
+<span class="sd">    See :py:func:`new_symmetric_matrix` and :py:func:`make_connected`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        size:</span>
 <span class="sd">            The length of the square matrix.</span>
 <span class="sd">        allow_sloops:</span>
-<span class="sd">            See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.</span>
+<span class="sd">            See :py:func:`~app.domain.helpers.matrices.new_symmetric_matrix`</span>
+<span class="sd">            for clarifications.</span>
 <span class="sd">        force_sloops:</span>
-<span class="sd">            See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.</span>
+<span class="sd">            See :py:func:`~app.domain.helpers.matrices.new_symmetric_matrix`</span>
+<span class="sd">            for clarifications.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        A matrix that represents an adjacency matrix that is also connected.</span>
@@ -641,8 +648,8 @@
 <span class="sd">        m: The matrix to be made connected.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A connected matrix. If the inputed matrix was connected it will</span>
-<span class="sd">        remain so.</span>
+<span class="sd">        A connected matrix. If ``m`` was symmetric the modified matrix will</span>
+<span class="sd">        also be symmetric.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="c1"># Use guilty until proven innocent approach for both checks</span>
@@ -660,17 +667,18 @@
 
 
 <div class="viewcode-block" id="is_symmetric"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matrices.is_symmetric">[docs]</a><span class="k">def</span> <span class="nf">is_symmetric</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Checks if a matrix is symmetric by comparing entries of a and a.T.</span>
+    <span class="sd">&quot;&quot;&quot;Checks if a matrix is symmetric by performing element-wise equality</span>
+<span class="sd">    comparison on entries of ``m`` and  ``m.T``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        m:</span>
 <span class="sd">            The matrix to be verified.</span>
 <span class="sd">        tol:</span>
-<span class="sd">            The tolerance used to verify the entries of the matrix (default</span>
+<span class="sd">            The tolerance used to verify the entries of the ``m`` (default</span>
 <span class="sd">            is 1e-8).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        ``True`` if the matrix is symmetric, else ``False``.</span>
+<span class="sd">        ``True`` if the ``m`` is symmetric, else ``False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">m</span> <span class="o">-</span> <span class="n">m</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">)</span></div>
 
@@ -683,11 +691,12 @@
 <span class="sd">        m:</span>
 <span class="sd">            The matrix to be verified.</span>
 <span class="sd">        directed:</span>
-<span class="sd">            If the matrix edges are directed, i.e., if the matrix is an adjency</span>
-<span class="sd">            matrix are the edges bidirectional, where ``False`` means they are.</span>
+<span class="sd">            If ``m`` edges are directed, i.e., if ``m`` is an adjency</span>
+<span class="sd">            matrix in which the edges bidirectional. ``False`` means they</span>
+<span class="sd">            are. ``True`` means they are not.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        True if the matrix is a connected graph, else ``False``.</span>
+<span class="sd">        ``True`` if the matrix is a connected graph, else ``False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">cc_labels</span> <span class="o">=</span> <span class="n">connected_components</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">directed</span><span class="o">=</span><span class="n">directed</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">1</span></div>
@@ -747,6 +756,7 @@
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../../../../_static/js/theme-min.js"></script> 
 </body>
 </html>

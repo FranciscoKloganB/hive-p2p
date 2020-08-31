@@ -444,13 +444,12 @@ if a valid license is not found, it uses
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>v</strong> – a stochastic desired distribution vector</p></li>
 <li><p><strong>rw</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – a random_walk over an adjacency matrix</p></li>
-<li><p><strong>v_</strong> (<em>numpy.array</em>) – </p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – a stochastic desired distribution vector</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A matrix whose entries are acceptance probabilities for the random walk.</p>
+<dd class="field-even"><p>A matrix whose entries are acceptance probabilities for <code class="docutils literal notranslate"><span class="pre">rw</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
@@ -537,13 +536,12 @@ but this is not enforced or verified.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A symmetric adjency matrix.</p></li>
-<li><p><strong>v</strong> – A stochastic vector that is the steady state of the resulting
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic vector that is the steady state of the resulting
 transition matrix.</p></li>
 <li><p><strong>column_major_out</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – Indicates whether to return transition_matrix output
 is in row or column major form.</p></li>
 <li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Indicates which version of the algorith should be used
 (default is version 2).</p></li>
-<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -565,15 +563,15 @@ is in row or column major form.</p></li>
 <dt id="app.domain.helpers.matrices.get_mixing_rate">
 <code class="sig-name descname">get_mixing_rate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#get_mixing_rate"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Calculats the fast mixing rate the input matrix.</p>
-<p>The fast mixing rate of matrix M is the highest eigenvalue that is
-smaller than one. If returned value is 1.0 than the matrix has transient
-states or absorbent nodes.</p>
+<p>The fast mixing rate of matrix <code class="docutils literal notranslate"><span class="pre">m</span></code> is the highest eigenvalue that is
+smaller than one. If returned value is <code class="docutils literal notranslate"><span class="pre">1.0</span></code> than the matrix has transient
+states or absorbent nodes and as a result is not a markov matrix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A matrix.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The highest eigenvalue of <cite>m</cite> that is smaller than one or one.</p>
+<dd class="field-even"><p>The highest eigenvalue of <code class="docutils literal notranslate"><span class="pre">m</span></code> that is smaller than one or one.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
@@ -590,12 +588,13 @@ components.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – The matrix to be verified.</p></li>
-<li><p><strong>directed</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – If the matrix edges are directed, i.e., if the matrix is an adjency
-matrix are the edges bidirectional, where <code class="docutils literal notranslate"><span class="pre">False</span></code> means they are.</p></li>
+<li><p><strong>directed</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">m</span></code> edges are directed, i.e., if <code class="docutils literal notranslate"><span class="pre">m</span></code> is an adjency
+matrix in which the edges bidirectional. <code class="docutils literal notranslate"><span class="pre">False</span></code> means they
+are. <code class="docutils literal notranslate"><span class="pre">True</span></code> means they are not.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>True if the matrix is a connected graph, else <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the matrix is a connected graph, else <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
@@ -606,17 +605,18 @@ matrix are the edges bidirectional, where <code class="docutils literal notransl
 <dl class="py function">
 <dt id="app.domain.helpers.matrices.is_symmetric">
 <code class="sig-name descname">is_symmetric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">m</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-08</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#is_symmetric"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Checks if a matrix is symmetric by comparing entries of a and a.T.</p>
+<dd><p>Checks if a matrix is symmetric by performing element-wise equality
+comparison on entries of <code class="docutils literal notranslate"><span class="pre">m</span></code> and  <code class="docutils literal notranslate"><span class="pre">m.T</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – The matrix to be verified.</p></li>
-<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – The tolerance used to verify the entries of the matrix (default
+<li><p><strong>tol</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – The tolerance used to verify the entries of the <code class="docutils literal notranslate"><span class="pre">m</span></code> (default
 is 1e-8).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the matrix is symmetric, else <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the <code class="docutils literal notranslate"><span class="pre">m</span></code> is symmetric, else <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
@@ -634,8 +634,8 @@ connected graph.</p>
 <dd class="field-odd"><p><strong>m</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – The matrix to be made connected.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A connected matrix. If the inputed matrix was connected it will
-remain so.</p>
+<dd class="field-even"><p>A connected matrix. If <code class="docutils literal notranslate"><span class="pre">m</span></code> was symmetric the modified matrix will
+also be symmetric.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
@@ -649,14 +649,13 @@ remain so.</p>
 <dd><p>Constructs a transition matrix using global optimization techniques.</p>
 <p>Constructs an optimized markov matrix using linear programming relaxations
 and convex envelope approximations for the specified steady state <code class="docutils literal notranslate"><span class="pre">v</span></code>.
-Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform
-Matrix, 2) is equal to the markov matrix eigenvalue.</p>
+Result is only trully optimal if <span class="math notranslate nohighlight">\(normal(Mopt - (1 / len(v)), 2)\)</span>
+is equal to the highest Markov Matrix eigenvalue that is smaller than one.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A non-optimized symmetric adjency matrix.</p></li>
-<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -675,20 +674,20 @@ respective mixing rate.</p>
 <dd><p>Constructs an optimized transition matrix using the matlab engine.</p>
 <p>Constructs an optimized transition matrix using linear programming
 relaxations and convex envelope approximations for the specified steady
-state <code class="docutils literal notranslate"><span class="pre">v</span></code>. Result is only trully optimal if normal(Tranistion Matrix Opt
-- Uniform Matrix, 2) is equal to the markov matrix eigenvalue. The code
-is run on a matlab engine because it provides a non-convex SDP solver ç
-BMIBNB.</p>
+state <code class="docutils literal notranslate"><span class="pre">v</span></code>.
+Result is only trully optimal if <span class="math notranslate nohighlight">\(normal(Mopt - (1 / len(v)), 2)\)</span>
+is equal to the highest Markov Matrix eigenvalue that is smaller than one.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This function can only be invoked if you have a valid matlab license.</p>
+<p>This function’s code runs inside a matlab engine because it provides
+a non-convex SDP solver BMIBNB. If you do not have valid matlab
+license the output of this function is always <code class="docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">float('inf')</span></code>.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A non-optimized symmetric adjency matrix.</p></li>
-<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -716,13 +715,13 @@ but this is not enforced or verified.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A symmetric adjency matrix.</p></li>
-<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Markov Matrix with <code class="docutils literal notranslate"><span class="pre">v_</span></code> as steady state distribution and the
-respective mixing rate.</p>
+respective mixing rate or <code class="docutils literal notranslate"><span class="pre">None,</span> <span class="pre">float('inf')</span></code> if the problem is
+infeasible.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Tuple[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a>, <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a>]</p>
@@ -742,13 +741,13 @@ distribution vector.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A non-optimized symmetric adjency matrix.</p></li>
-<li><p><strong>v</strong> – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Markov Matrix with <code class="docutils literal notranslate"><span class="pre">v_</span></code> as steady state distribution and the
-respective mixing rate.</p>
+respective mixing rate or <code class="docutils literal notranslate"><span class="pre">None,</span> <span class="pre">float('inf')</span></code> if the problem is
+infeasible.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Tuple[Optional[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a>], <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a>]</p>
@@ -760,14 +759,15 @@ respective mixing rate.</p>
 <dt id="app.domain.helpers.matrices.new_symmetric_connected_matrix">
 <code class="sig-name descname">new_symmetric_connected_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">allow_sloops</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">force_sloops</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_symmetric_connected_matrix"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Generates a random symmetric matrix which is also connected.</p>
-<p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a> and
-py:func:<cite>app.domain.helpers.matrices.make_connected</cite>.</p>
+<p>See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code></a> and <a class="reference internal" href="#app.domain.helpers.matrices.make_connected" title="app.domain.helpers.matrices.make_connected"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_connected()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The length of the square matrix.</p></li>
-<li><p><strong>allow_sloops</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p></li>
-<li><p><strong>force_sloops</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">app.domain.helpers.matrices.new_symmetric_matrix()</span></code></a>.</p></li>
+<li><p><strong>allow_sloops</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code></a>
+for clarifications.</p></li>
+<li><p><strong>force_sloops</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – See <a class="reference internal" href="#app.domain.helpers.matrices.new_symmetric_matrix" title="app.domain.helpers.matrices.new_symmetric_matrix"><code class="xref py py-func docutils literal notranslate"><span class="pre">new_symmetric_matrix()</span></code></a>
+for clarifications.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -785,7 +785,7 @@ py:func:<cite>app.domain.helpers.matrices.make_connected</cite>.</p>
 <dd><p>Generates a random symmetric matrix.</p>
 <p>The generated adjacency matrix does not have transient state sets or
 absorbent nodes and can effectively represent a network topology
-with bidirectional connections between network nodes.</p>
+with bidirectional connections between <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -794,19 +794,19 @@ with bidirectional connections between network nodes.</p>
 entries representing self-loops. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, then, all diagonal
 entries must be zeros. Otherwise, they can be zeros or ones.</p></li>
 <li><p><strong>force_sloops</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – Indicates if the diagonal of the generated matrix should be
-filled with ones. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, valid diagonal entries are
-decided by <cite>allow_self_loops</cite> param. Otherwise, diagonal entries
-are filled with ones. If <cite>allow_self_loops</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code>
-and <cite>enforce_loops</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, an error is raised.</p></li>
+filled with ones. If <code class="docutils literal notranslate"><span class="pre">False</span></code> valid diagonal entries are
+decided by <code class="docutils literal notranslate"><span class="pre">allow_self_loops</span></code> param. Otherwise, diagonal entries
+are filled with ones. If <code class="docutils literal notranslate"><span class="pre">allow_self_loops</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>
+and <code class="docutils literal notranslate"><span class="pre">enforce_loops</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, an error is raised.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The adjency matrix representing the connections between a
-groups of network nodes.</p>
+groups of <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>.</p>
 </dd>
 <dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="app.domain.helpers.exceptions.IllegalArgumentError"><strong>IllegalArgumentError</strong></a> – When <cite>allow_self_loops</cite> (<code class="docutils literal notranslate"><span class="pre">False</span></code>) conflicts with
-    <cite>enforce_loops</cite> (<code class="docutils literal notranslate"><span class="pre">True</span></code>).</p>
+<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.exceptions.IllegalArgumentError" title="app.domain.helpers.exceptions.IllegalArgumentError"><strong>IllegalArgumentError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">allow_self_loops</span></code> (<code class="docutils literal notranslate"><span class="pre">False</span></code>) conflicts with
+    <code class="docutils literal notranslate"><span class="pre">enforce_loops</span></code> (<code class="docutils literal notranslate"><span class="pre">True</span></code>).</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
@@ -1631,6 +1631,7 @@ is not an empty list.</p>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="_static/js/theme-min.js"></script> 
 </body>
 </html>

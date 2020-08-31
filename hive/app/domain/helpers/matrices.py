@@ -23,6 +23,7 @@ OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 
 # region Markov Matrix Constructors
+# noinspection PyIncorrectDocstring
 def new_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """ Constructs a transition matrix using metropolis-hastings.
@@ -37,17 +38,19 @@ def new_mh_transition_matrix(
     Args:
         a:
             A symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic steady state distribution vector.
 
     Returns:
         Markov Matrix with ``v_`` as steady state distribution and the
-        respective mixing rate.
+        respective mixing rate or ``None, float('inf')`` if the problem is
+        infeasible.
     """
     t = _metropolis_hastings(a, v_)
     return t, get_mixing_rate(t)
 
 
+# noinspection PyIncorrectDocstring
 def new_sdp_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
     """Constructs a transition matrix using semi-definite programming techniques.
@@ -60,12 +63,13 @@ def new_sdp_mh_transition_matrix(
     Args:
         a:
             A non-optimized symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic steady state distribution vector.
 
     Returns:
         Markov Matrix with ``v_`` as steady state distribution and the
-        respective mixing rate.
+        respective mixing rate or ``None, float('inf')`` if the problem is
+        infeasible.
     """
     try:
         problem, a = _adjency_matrix_sdp_optimization(a)
@@ -78,19 +82,20 @@ def new_sdp_mh_transition_matrix(
         return None, float('inf')
 
 
+# noinspection PyIncorrectDocstring
 def new_go_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
     """Constructs a transition matrix using global optimization techniques.
 
     Constructs an optimized markov matrix using linear programming relaxations
     and convex envelope approximations for the specified steady state ``v``.
-    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform
-    Matrix, 2) is equal to the markov matrix eigenvalue.
+    Result is only trully optimal if :math:`normal(Mopt - (1 / len(v)), 2)`
+    is equal to the highest Markov Matrix eigenvalue that is smaller than one.
 
     Args:
         a:
             A non-optimized symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic steady state distribution vector.
 
     Returns:
@@ -132,24 +137,26 @@ def new_go_transition_matrix(
         return None, float('inf')
 
 
+# noinspection PyIncorrectDocstring
 def new_mgo_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
     """Constructs an optimized transition matrix using the matlab engine.
 
     Constructs an optimized transition matrix using linear programming
     relaxations and convex envelope approximations for the specified steady
-    state ``v``. Result is only trully optimal if normal(Tranistion Matrix Opt
-    - Uniform Matrix, 2) is equal to the markov matrix eigenvalue. The code
-    is run on a matlab engine because it provides a non-convex SDP solver ç
-    BMIBNB.
+    state ``v``.
+    Result is only trully optimal if :math:`normal(Mopt - (1 / len(v)), 2)`
+    is equal to the highest Markov Matrix eigenvalue that is smaller than one.
 
     Note:
-        This function can only be invoked if you have a valid matlab license.
+        This function's code runs inside a matlab engine because it provides
+        a non-convex SDP solver BMIBNB. If you do not have valid matlab
+        license the output of this function is always ``(None, float('inf')``.
 
     Args:
         a:
             A non-optimized symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic steady state distribution vector.
 
     Returns:
@@ -168,8 +175,6 @@ def new_mgo_transition_matrix(
         # EngineError deals with invalid license or unfeasible problems,
         # AttributeError deals MatlabEngineContainer.eng with None value.
         return None, float('inf')
-
-
 # endregion
 
 
@@ -254,7 +259,7 @@ def _metropolis_hastings(a: np.ndarray,
     Args:
         a:
             A symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic vector that is the steady state of the resulting
             transition matrix.
         column_major_out:
@@ -333,17 +338,17 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     return a / np.sum(a, axis=1)
 
 
-def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
+def _construct_rejection_matrix(rw: np.ndarray, v_: np.ndarray) -> np.ndarray:
     """Builds a matrix of rejection probabilities for a given random walk.
 
     Args:
-        v_:
-            a stochastic desired distribution vector
         rw:
             a random_walk over an adjacency matrix
+        `v_`:
+            a stochastic desired distribution vector
 
     Returns:
-        A matrix whose entries are acceptance probabilities for the random walk.
+        A matrix whose entries are acceptance probabilities for ``rw``.
     """
     shape = rw.shape
     size = shape[0]
@@ -424,16 +429,16 @@ def _get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
 def get_mixing_rate(m: np.ndarray) -> float:
     """Calculats the fast mixing rate the input matrix.
 
-    The fast mixing rate of matrix M is the highest eigenvalue that is
-    smaller than one. If returned value is 1.0 than the matrix has transient
-    states or absorbent nodes.
+    The fast mixing rate of matrix ``m`` is the highest eigenvalue that is
+    smaller than one. If returned value is ``1.0`` than the matrix has transient
+    states or absorbent nodes and as a result is not a markov matrix.
 
     Args:
         m:
             A matrix.
 
     Returns:
-        The highest eigenvalue of `m` that is smaller than one or one.
+        The highest eigenvalue of ``m`` that is smaller than one or one.
     """
     size = m.shape[0]
 
@@ -453,7 +458,8 @@ def new_symmetric_matrix(
 
     The generated adjacency matrix does not have transient state sets or
     absorbent nodes and can effectively represent a network topology
-    with bidirectional connections between network nodes.
+    with bidirectional connections between :py:class:`network nodes
+    <app.domain.network_nodes.Node>`.
 
     Args:
         size:
@@ -464,19 +470,19 @@ def new_symmetric_matrix(
             entries must be zeros. Otherwise, they can be zeros or ones.
         force_sloops:
             Indicates if the diagonal of the generated matrix should be
-            filled with ones. If ``False``, valid diagonal entries are
-            decided by `allow_self_loops` param. Otherwise, diagonal entries
-            are filled with ones. If `allow_self_loops` is ``False``
-            and `enforce_loops` is ``True``, an error is raised.
+            filled with ones. If ``False`` valid diagonal entries are
+            decided by ``allow_self_loops`` param. Otherwise, diagonal entries
+            are filled with ones. If ``allow_self_loops`` is ``False``
+            and ``enforce_loops`` is ``True``, an error is raised.
 
     Returns:
         The adjency matrix representing the connections between a
-        groups of network nodes.
+        groups of :py:class:`network nodes <app.domain.network_nodes.Node>`.
 
     Raises:
         IllegalArgumentError:
-            When `allow_self_loops` (``False``) conflicts with
-            `enforce_loops` (``True``).
+            When ``allow_self_loops`` (``False``) conflicts with
+            ``enforce_loops`` (``True``).
     """
     if not allow_sloops and force_sloops:
         raise IllegalArgumentError("Can not invoke new_symmetric_matrix with:\n"
@@ -503,16 +509,17 @@ def new_symmetric_connected_matrix(
 ) -> np.ndarray:
     """Generates a random symmetric matrix which is also connected.
 
-    See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix` and
-    py:func:`app.domain.helpers.matrices.make_connected`.
+    See :py:func:`new_symmetric_matrix` and :py:func:`make_connected`.
 
     Args:
         size:
             The length of the square matrix.
         allow_sloops:
-            See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.
+            See :py:func:`~app.domain.helpers.matrices.new_symmetric_matrix`
+            for clarifications.
         force_sloops:
-            See :py:func:`app.domain.helpers.matrices.new_symmetric_matrix`.
+            See :py:func:`~app.domain.helpers.matrices.new_symmetric_matrix`
+            for clarifications.
 
     Returns:
         A matrix that represents an adjacency matrix that is also connected.
@@ -531,8 +538,8 @@ def make_connected(m: np.ndarray) -> np.ndarray:
         m: The matrix to be made connected.
 
     Returns:
-        A connected matrix. If the inputed matrix was connected it will
-        remain so.
+        A connected matrix. If ``m`` was symmetric the modified matrix will
+        also be symmetric.
     """
     size = m.shape[0]
     # Use guilty until proven innocent approach for both checks
@@ -550,17 +557,18 @@ def make_connected(m: np.ndarray) -> np.ndarray:
 
 
 def is_symmetric(m: np.ndarray, tol: float = 1e-8) -> bool:
-    """Checks if a matrix is symmetric by comparing entries of a and a.T.
+    """Checks if a matrix is symmetric by performing element-wise equality
+    comparison on entries of ``m`` and  ``m.T``.
 
     Args:
         m:
             The matrix to be verified.
         tol:
-            The tolerance used to verify the entries of the matrix (default
+            The tolerance used to verify the entries of the ``m`` (default
             is 1e-8).
 
     Returns:
-        ``True`` if the matrix is symmetric, else ``False``.
+        ``True`` if the ``m`` is symmetric, else ``False``.
     """
     return np.all(np.abs(m - m.transpose()) < tol)
 
@@ -573,11 +581,12 @@ def is_connected(m: np.ndarray, directed: bool = False) -> bool:
         m:
             The matrix to be verified.
         directed:
-            If the matrix edges are directed, i.e., if the matrix is an adjency
-            matrix are the edges bidirectional, where ``False`` means they are.
+            If ``m`` edges are directed, i.e., if ``m`` is an adjency
+            matrix in which the edges bidirectional. ``False`` means they
+            are. ``True`` means they are not.
 
     Returns:
-        True if the matrix is a connected graph, else ``False``.
+        ``True`` if the matrix is a connected graph, else ``False``.
     """
     n, cc_labels = connected_components(m, directed=directed)
     return n == 1
