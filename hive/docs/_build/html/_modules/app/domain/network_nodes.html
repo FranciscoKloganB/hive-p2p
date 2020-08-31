@@ -204,7 +204,7 @@
         <span class="sd">&quot;&quot;&quot;Instructs the ``Node`` instance to execute the epoch.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            cluster:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
 <span class="sd">                A reference to the</span>
 <span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that invoked</span>
 <span class="sd">                the ``Node`` method.</span>
@@ -299,11 +299,12 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
-<span class="sd">                :py:mod:`Cluster Group Monitor &lt;domain.cluster_groups&gt;` that</span>
-<span class="sd">                will act as a courier for the message to be sent. In a real</span>
-<span class="sd">                world implementation this argument would not be needed and</span>
-<span class="sd">                would not even make sense, but we use it to facilitate</span>
-<span class="sd">                simulation management and environment logging.</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that will</span>
+<span class="sd">                deliver the new ``replica``. In a real</span>
+<span class="sd">                world implementation this argument would not make sense,</span>
+<span class="sd">                but we use it to facilitate simulation management and</span>
+<span class="sd">                environment logging.</span>
 <span class="sd">            destination:</span>
 <span class="sd">                The name, address or another unique identifier of the node</span>
 <span class="sd">                that will receive the file block `replica`.</span>
@@ -331,7 +332,7 @@
 <span class="sd">            corrupt:</span>
 <span class="sd">                If discard is being invoked due to identified file</span>
 <span class="sd">                block corruption, e.g., Sha256 does not match the expected.</span>
-<span class="sd">            cluster:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
 <span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that</span>
 <span class="sd">                will :py:meth:`set the replication epoch</span>
 <span class="sd">                &lt;app.domain.cluster_groups.Cluster.set_replication_epoch&gt;`</span>

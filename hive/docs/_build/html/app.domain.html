@@ -2287,7 +2287,7 @@ blocks.</p>
 <li><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The part number that uniquely identifies the file block.</p></li>
 <li><p><strong>corrupt</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – If discard is being invoked due to identified file
 block corruption, e.g., Sha256 does not match the expected.</p></li>
-<li><p><strong>cluster</strong> (<em>th.ClusterType</em>) – <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a> that
+<li><p><strong>cluster</strong> (<a class="reference internal" href="app.html#app.type_hints.ClusterType" title="app.type_hints.ClusterType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClusterType</span></code></a>) – <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a> that
 will <a class="reference internal" href="#app.domain.cluster_groups.Cluster.set_replication_epoch" title="app.domain.cluster_groups.Cluster.set_replication_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set</span> <span class="pre">the</span> <span class="pre">replication</span> <span class="pre">epoch</span></code></a>
 or mark the simulation as failed.</p></li>
 </ul>
@@ -2305,7 +2305,7 @@ or mark the simulation as failed.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cluster</strong> (<em>th.ClusterType</em>) – A reference to the
+<li><p><strong>cluster</strong> (<a class="reference internal" href="app.html#app.type_hints.ClusterType" title="app.type_hints.ClusterType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClusterType</span></code></a>) – A reference to the
 <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a> that invoked
 the <code class="docutils literal notranslate"><span class="pre">Node</span></code> method.</p></li>
 <li><p><strong>fid</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.name" title="app.domain.helpers.smart_dataclasses.FileData.name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span> <span class="pre">name</span> <span class="pre">identifier</span></code></a>
@@ -2441,11 +2441,12 @@ to be delivered.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>cluster</strong> (<a class="reference internal" href="app.html#app.type_hints.ClusterType" title="app.type_hints.ClusterType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClusterType</span></code></a>) – <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span> <span class="pre">Monitor</span></code> that
-will act as a courier for the message to be sent. In a real
-world implementation this argument would not be needed and
-would not even make sense, but we use it to facilitate
-simulation management and environment logging.</p></li>
+<li><p><strong>cluster</strong> (<a class="reference internal" href="app.html#app.type_hints.ClusterType" title="app.type_hints.ClusterType"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClusterType</span></code></a>) – A reference to the
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cluster</span></code></a> that will
+deliver the new <code class="docutils literal notranslate"><span class="pre">replica</span></code>. In a real
+world implementation this argument would not make sense,
+but we use it to facilitate simulation management and
+environment logging.</p></li>
 <li><p><strong>destination</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name, address or another unique identifier of the node
 that will receive the file block <cite>replica</cite>.</p></li>
 <li><p><strong>replica</strong> (<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>) – The file block container to be sent to some other worker.</p></li>

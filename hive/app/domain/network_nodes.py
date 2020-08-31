@@ -94,7 +94,7 @@ class Node:
         """Instructs the ``Node`` instance to execute the epoch.
 
         Args:
-            cluster:
+            cluster (:py:class:`~app.type_hints.ClusterType`):
                 A reference to the
                 :py:class:`~app.domain.cluster_groups.Cluster` that invoked
                 the ``Node`` method.
@@ -222,7 +222,7 @@ class Node:
             corrupt:
                 If discard is being invoked due to identified file
                 block corruption, e.g., Sha256 does not match the expected.
-            cluster:
+            cluster (:py:class:`~app.type_hints.ClusterType`):
                 :py:class:`~app.domain.cluster_groups.Cluster` that
                 will :py:meth:`set the replication epoch
                 <app.domain.cluster_groups.Cluster.set_replication_epoch>`
