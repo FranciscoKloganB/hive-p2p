@@ -26,11 +26,10 @@ class Node:
 
     Attributes:
         id:
-            A unique identifier of the worker instance on the network.
-            It could be an UUID, a username or an IP-Address.
+            A unique identifier for the ``Node`` instance.
         uptime:
-            The amount of time the worker is expected to remain online
-            without disconnection. Current uptime implementation is based on
+            The amount of time the ``Node`` is expected to remain online
+            without disconnecting. Current uptime implementation is based on
             availability percentages. Furthermore, when a HiveNode joins
             an Cluster as a replacement for some other HiveNode, in
             :py:meth:`app.domain.cluster_groups.Cluster._membership_maintenance`
