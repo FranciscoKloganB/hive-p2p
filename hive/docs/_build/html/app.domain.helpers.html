@@ -1139,7 +1139,7 @@ the simulation process. See
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData">
 <em class="property">class </em><code class="sig-name descname">LoggingData</code><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Logging class that registers simulation state per epoch basis.</p>
+<p>Logger object that stores simulation events and other data.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Some attributes might not be documented, but should be straight
@@ -1150,8 +1150,13 @@ forward to understand after inspecting their usage in the source code.</p>
 <code class="sig-name descname">cswc</code></dt>
 <dd><p>Indicates how many consecutive steps a file as been in
 convergence. Once convergence is not verified by
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.equal_distributions()</span></code>
-this attribute is reseted to zero.</p>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">equal_distributions()</span></code>
+this attribute is reset to zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1160,6 +1165,11 @@ this attribute is reseted to zero.</p>
 <dd><p>Stores the largest convergence window that occurred throughout
 the simulation, i.e., it stores the highest verified
 <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="app.domain.helpers.smart_dataclasses.LoggingData.cswc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cswc</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1169,120 +1179,253 @@ the simulation, i.e., it stores the highest verified
 This list only stores the most up to date convergence set and like
 <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="app.domain.helpers.smart_dataclasses.LoggingData.cswc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cswc</span></code></a> is cleared once convergence is not verified,
 after being appended to <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets">
 <code class="sig-name descname">convergence_sets</code></dt>
-<dd><p>Stores all previous convergence sets.
-See <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>.</p>
+<dd><p>Stores all but the most recent <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>. If
+simulation terminates and <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a> is not an
+empty list, that list will be appended to this one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.terminated">
 <code class="sig-name descname">terminated</code></dt>
 <dd><p>Indicates the epoch at which the simulation was terminated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.terminated_messages">
 <code class="sig-name descname">terminated_messages</code></dt>
 <dd><p>Set of at least one error message that led to the failure
-of the simulation or one success message, at termination epoch
-(<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated" title="app.domain.helpers.smart_dataclasses.LoggingData.terminated"><code class="xref py py-attr docutils literal notranslate"><span class="pre">terminated</span></code></a>).</p>
+of the simulation or one success message, at
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated" title="app.domain.helpers.smart_dataclasses.LoggingData.terminated"><code class="xref py py-attr docutils literal notranslate"><span class="pre">termination</span> <span class="pre">epoch</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.successfull">
 <code class="sig-name descname">successfull</code></dt>
-<dd><p>When the simulation is terminated this value is set to True if
-no errors or failures occurred, i.e., if the simulation managed
-to persist the file throughout
-<code class="xref py py-const docutils literal notranslate"><span class="pre">app.environment_settings.ms.Master.MAX_EPOCHS</span></code> time
-steps.</p>
+<dd><p>When the simulation is <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.terminated" title="app.domain.helpers.smart_dataclasses.LoggingData.terminated"><code class="xref py py-attr docutils literal notranslate"><span class="pre">terminated</span></code></a>, this value is set
+to <code class="docutils literal notranslate"><span class="pre">True</span></code> if no errors or failures occurred, i.e., if the
+simulation managed to persist the file throughout the entire
+<code class="xref py py-const docutils literal notranslate"><span class="pre">simulation</span> <span class="pre">epochs</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.blocks_corrupted">
 <code class="sig-name descname">blocks_corrupted</code></dt>
-<dd><p>The number of file block repllicas lost at each epoch due
-to disk errors.</p>
+<dd><p>The number of <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replicas</span></code></a> lost at
+each simulation epoch due to disk errors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.blocks_existing">
 <code class="sig-name descname">blocks_existing</code></dt>
-<dd><p>The number of existing file block repllicas inside the
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code> members’ storage
+<dd><p>The number of existing <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replicas</span></code></a> inside the
+<a class="reference internal" href="app.domain.html#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a> members’ storage
 disks at each epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.blocks_lost">
 <code class="sig-name descname">blocks_lost</code></dt>
-<dd><p>The number of file block blocks that were lost at each epoch
-due to <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a> going offline.</p>
+<dd><p>The number of <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replicas</span></code></a> that were
+lost at each epoch due to <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> going offline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.blocks_moved">
 <code class="sig-name descname">blocks_moved</code></dt>
-<dd><p>The number of messages containing file block blocks that were
+<dd><p>The number of messages containing <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replicas</span></code></a> that were
 transmited, including those that were not delivered or
 acknowledged, at each epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.cluster_size_bm">
+<code class="sig-name descname">cluster_size_bm</code></dt>
+<dd><p>The number of <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>
+registered at a  <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group's</span> <span class="pre">members</span> <span class="pre">list</span></code></a>,
+before the <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.membership_maintenance" title="app.domain.cluster_groups.Cluster.membership_maintenance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">maintenance</span> <span class="pre">step</span></code></a>
+of the epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.cluster_size_am">
+<code class="sig-name descname">cluster_size_am</code></dt>
+<dd><p>The number of <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>
+registered at a  <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group's</span> <span class="pre">members</span> <span class="pre">list</span></code></a>,
+after the <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.membership_maintenance" title="app.domain.cluster_groups.Cluster.membership_maintenance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">maintenance</span> <span class="pre">step</span></code></a>
+of the epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.cluster_status_bm">
+<code class="sig-name descname">cluster_status_bm</code></dt>
+<dd><p>Strings describing the health of the <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a> at each epoch,
+before the <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.membership_maintenance" title="app.domain.cluster_groups.Cluster.membership_maintenance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">maintenance</span> <span class="pre">step</span></code></a>
+of the epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.cluster_status_am">
+<code class="sig-name descname">cluster_status_am</code></dt>
+<dd><p>Strings describing the health of the <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a> at each epoch,
+after the <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.membership_maintenance" title="app.domain.cluster_groups.Cluster.membership_maintenance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">maintenance</span> <span class="pre">step</span></code></a>
+of the epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.delay_replication">
 <code class="sig-name descname">delay_replication</code></dt>
-<dd><p>Log of the average time it took to recover one or more lost file
-block blocks during each epoch.</p>
+<dd><p>Log of the average time it took to recover one or more lost
+<a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replicas</span></code></a>, at each
+epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.delay_suspects_detection">
 <code class="sig-name descname">delay_suspects_detection</code></dt>
 <dd><p>Log of the time it took for each suspicious
-<a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> to be evicted
-from the <code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>.</p>
+<a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a> to be evicted
+from the his <a class="reference internal" href="app.domain.html#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a>
+after having his <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node.status" title="app.domain.network_nodes.Node.status"><code class="xref py py-attr docutils literal notranslate"><span class="pre">status</span></code></a>
+changed from online to offline or suspicious.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>, <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.initial_spread">
 <code class="sig-name descname">initial_spread</code></dt>
 <dd><p>Records the strategy used distribute file blocks in the
-beggining of the simulation.</p>
+beggining of the simulation. See
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.spread_files" title="app.domain.cluster_groups.Cluster.spread_files"><code class="xref py py-meth docutils literal notranslate"><span class="pre">spread_files()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.matrices_nodes_degrees">
 <code class="sig-name descname">matrices_nodes_degrees</code></dt>
-<dd><p>Stores the in-degree and out-degree of each
-<a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> in the
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">Cluster</span> <span class="pre">Group</span></code>. One dictionary
+<dd><p>Stores the <code class="docutils literal notranslate"><span class="pre">in-degree</span></code> and <code class="docutils literal notranslate"><span class="pre">out-degree</span></code> of each
+<a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a> in the
+<a class="reference internal" href="app.domain.html#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a>. One dictionary
 is kept in the list for each transition matrix used throughout
 the simulation. The integral part of the float value is the
 in-degree, the decimal part is the out-degree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[Dict[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>, <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a>]]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.off_node_count">
 <code class="sig-name descname">off_node_count</code></dt>
-<dd><p>The number of <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Nodes</span></code></a>
-whose status changed to offline at each epoch.</p>
+<dd><p>The number of <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>
+whose status changed to offline or suspicious, at each epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.transmissions_failed">
 <code class="sig-name descname">transmissions_failed</code></dt>
-<dd><p>The number of messages transmissions that were lost in the
-network at each epoch.</p>
+<dd><p>The number of message transmissions that were lost in the
+overlay network of a <a class="reference internal" href="app.domain.html#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">group</span></code></a>, at each epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a>]</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.__init__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Instanciates a LoggingData object for simulation event logging.</p>
+<dd><p>Instanciates a <code class="docutils literal notranslate"><span class="pre">LoggingData</span></code> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
@@ -1296,10 +1439,8 @@ network at each epoch.</p>
 <dd><p>Recusively sums the length of all lists in <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>item</strong> (<em>Any</em>) – A sub list of <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a> that needs that</p></li>
-<li><p><strong>not yet been counted.</strong> (<em>as</em>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>item</strong> (<em>Any</em>) – A sub list of <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a> that needs that
+as not yet been counted.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The number of epochs that were registered at the inputed sub list.</p>
@@ -1420,17 +1561,17 @@ or the simultaneous disconnection of all network nodes in the cluster.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance">
-<code class="sig-name descname">log_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">status_bm</span></em>, <em class="sig-param"><span class="n">status_am</span></em>, <em class="sig-param"><span class="n">size_bm</span></em>, <em class="sig-param"><span class="n">size_am</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_maintenance"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size_bm</span></em>, <em class="sig-param"><span class="n">size_am</span></em>, <em class="sig-param"><span class="n">status_bm</span></em>, <em class="sig-param"><span class="n">status_am</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_maintenance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs cluster membership status and size at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>size_bm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of network nodes in the cluster before maintenance.</p></li>
+<li><p><strong>size_am</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of network nodes in the cluster after maintenance.</p></li>
 <li><p><strong>status_bm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A string that describes the status of the cluster before
 maintenance.</p></li>
 <li><p><strong>status_am</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A string that describes the status of the cluster after
 maintenance.</p></li>
-<li><p><strong>size_bm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of network nodes in the cluster before maintenance.</p></li>
-<li><p><strong>size_am</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of network nodes in the cluster after maintenance.</p></li>
 <li><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – A simulation epoch at which termination occurred.</p></li>
 </ul>
 </dd>
@@ -1443,9 +1584,12 @@ maintenance.</p></li>
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">
 <code class="sig-name descname">log_matrices_degrees</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nodes_degrees</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_matrices_degrees"><span class="viewcode-link">[source]</span></a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Logs the degree of all nodes in a Markov Matrix overlay, at the
+time of its creation, before any faults on the overlay occurs.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>nodes_degrees</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>nodes_degrees</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>]</em>) – A dictionary mapping the <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> to their <code class="docutils literal notranslate"><span class="pre">in-degree</span></code>
+and <code class="docutils literal notranslate"><span class="pre">out-degree</span></code> concatenated as a float.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1509,13 +1653,12 @@ to be offline by the perfect failure detector.</p></li>
 <code class="sig-name descname">register_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.register_convergence"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Increments <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="app.domain.helpers.smart_dataclasses.LoggingData.cswc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cswc</span></code></a> by one and tries to update the <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a></p>
 <p>Checks if the counter for consecutive epoch convergence is bigger
-than the minimum threshold for verified convergence (see
-<code class="xref py py-const docutils literal notranslate"><span class="pre">MIN_CONVERGENCE_THRESHOLD</span></code>
-and if it is, it marks the epoch as part of the current
+than <a class="reference internal" href="app.html#app.environment_settings.MIN_CONVERGENCE_THRESHOLD" title="app.environment_settings.MIN_CONVERGENCE_THRESHOLD"><code class="xref py py-const docutils literal notranslate"><span class="pre">MIN_CONVERGENCE_THRESHOLD</span></code></a>
+and if it is, it appends the <code class="docutils literal notranslate"><span class="pre">epoch</span></code> to the most recent
 <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The A simulation epoch index.</p>
+<dd class="field-odd"><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The simulation epoch at which the convergence was verified.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>

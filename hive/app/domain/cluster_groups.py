@@ -339,7 +339,7 @@ class Cluster:
         status_am = self.get_cluster_status()
 
         epoch = self.current_epoch
-        self.file.logger.log_maintenance(status_bm, status_am, sbm, sam, epoch)
+        self.file.logger.log_maintenance(sbm, sam, status_bm, status_am, epoch)
 
         return new_members
     # endregion

@@ -375,7 +375,7 @@ class LoggingData:
         blocks_existing (List[int]):
             The number of existing :py:class:`file block replicas
             <app.domain.helpers.smart_dataclasses.FileBlockData>` inside the
-            :py:mod:`cluster group <app.domain.cluster_group>` members' storage
+            :py:mod:`cluster group <app.domain.cluster_groups>` members' storage
             disks at each epoch.
         blocks_lost (List[int]):
             The number of :py:class:`file block replicas
@@ -392,44 +392,46 @@ class LoggingData:
             registered at a  :py:attr:`cluster group's members list
             <app.domain.cluster_groups.Cluster.members>`,
             before the :py:meth:`maintenance step
-            <app.domain.cluster_groups.Cluster.membership_maintenance>
+            <app.domain.cluster_groups.Cluster.membership_maintenance>`
             of the epoch.
         cluster_size_am (List[int]):
             The number of :py:mod:`network nodes <app.domain.network_nodes>`
             registered at a  :py:attr:`cluster group's members list
             <app.domain.cluster_groups.Cluster.members>`,
             after the :py:meth:`maintenance step
-            <app.domain.cluster_groups.Cluster.membership_maintenance>
+            <app.domain.cluster_groups.Cluster.membership_maintenance>`
             of the epoch.
         cluster_status_bm (List[str]):
             Strings describing the health of the :py:class:`cluster group
             <app.domain.cluster_groups.Cluster>` at each epoch,
             before the :py:meth:`maintenance step
-            <app.domain.cluster_groups.Cluster.membership_maintenance>
+            <app.domain.cluster_groups.Cluster.membership_maintenance>`
             of the epoch.
         cluster_status_am (List[str]):
             Strings describing the health of the :py:class:`cluster group
             <app.domain.cluster_groups.Cluster>` at each epoch,
             after the :py:meth:`maintenance step
-            <app.domain.cluster_groups.Cluster.membership_maintenance>
+            <app.domain.cluster_groups.Cluster.membership_maintenance>`
             of the epoch.
         delay_replication (List[float]):
             Log of the average time it took to recover one or more lost
             :py:class:`file block replicas
             <app.domain.helpers.smart_dataclasses.FileBlockData>`, at each
             epoch.
-        delay_suspects_detection (List[float]):
+        delay_suspects_detection (Dict[int, str]):
             Log of the time it took for each suspicious
             :py:mod:`network node <app.domain.network_nodes>` to be evicted
-            from the his :py:mod:`cluster group <app.domain.cluster_group>`.
+            from the his :py:mod:`cluster group <app.domain.cluster_groups>`
+            after having his :py:attr:`~app.domain.network_nodes.Node.status`
+            changed from online to offline or suspicious.
         initial_spread (str):
             Records the strategy used distribute file blocks in the
             beggining of the simulation. See
-            :py:meth:`~app.domain.cluster_group.Cluster.spread_files`.
+            :py:meth:`~app.domain.cluster_groups.Cluster.spread_files`.
         matrices_nodes_degrees (List[Dict[str, float]]):
             Stores the ``in-degree`` and ``out-degree`` of each
             :py:mod:`network node <app.domain.network_nodes>` in the
-            :py:mod:`cluster group <app.domain.cluster_group>`. One dictionary
+            :py:mod:`cluster group <app.domain.cluster_groups>`. One dictionary
             is kept in the list for each transition matrix used throughout
             the simulation. The integral part of the float value is the
             in-degree, the decimal part is the out-degree.
@@ -466,10 +468,10 @@ class LoggingData:
         self.blocks_existing: List[int] = [0] * max_epochs
         self.blocks_lost: List[int] = [0] * max_epochs_plus_one
         self.blocks_moved: List[int] = [0] * max_epochs
-        self.cluster_status_bm: List[str] = [""] * max_epochs
-        self.cluster_status_am: List[str] = [""] * max_epochs
         self.cluster_size_bm: List[int] = [0] * max_epochs
         self.cluster_size_am: List[int] = [0] * max_epochs
+        self.cluster_status_bm: List[str] = [""] * max_epochs
+        self.cluster_status_am: List[str] = [""] * max_epochs
         self.delay_replication: List[float] = [0.0] * max_epochs_plus_one
         self.delay_suspects_detection: Dict[int, str] = {}
         self.initial_spread = ""
@@ -486,14 +488,13 @@ class LoggingData:
         """Increments :py:attr:`~cswc` by one and tries to update the :py:attr:`~convergence_set`
 
         Checks if the counter for consecutive epoch convergence is bigger
-        than the minimum threshold for verified convergence (see
-        :py:const:`MIN_CONVERGENCE_THRESHOLD <environment_settings.MIN_CONVERGENCE_THRESHOLD>`
-        and if it is, it marks the epoch as part of the current
+        than :py:const:`~app.environment_settings.MIN_CONVERGENCE_THRESHOLD`
+        and if it is, it appends the ``epoch`` to the most recent
         :py:attr:`~convergence_set`.
 
         Args:
             epoch:
-                The A simulation epoch index.
+                The simulation epoch at which the convergence was verified.
         """
         self.cswc += 1
         if self.cswc >= MIN_CONVERGENCE_THRESHOLD:
@@ -518,8 +519,9 @@ class LoggingData:
         """Recusively sums the length of all lists in :py:attr:`~convergence_sets`.
 
         Args:
-            item: A sub list of :py:attr:`~convergence_sets` that needs that
-            as not yet been counted.
+            item:
+                A sub list of :py:attr:`~convergence_sets` that needs that
+                as not yet been counted.
 
         Returns:
             The number of epochs that were registered at the inputed sub list.
@@ -544,6 +546,15 @@ class LoggingData:
 
     # region Helpers
     def log_matrices_degrees(self, nodes_degrees: Dict[str, float]):
+        """Logs the degree of all nodes in a Markov Matrix overlay, at the
+        time of its creation, before any faults on the overlay occurs.
+
+        Args:
+            nodes_degrees:
+                A dictionary mapping the :py:attr:`node identifiers
+                <app.domain.network_nodes.Node.id>` to their ``in-degree``
+                and ``out-degree`` concatenated as a float.
+        """
         self.matrices_nodes_degrees.append(nodes_degrees)
 
     def log_replication_delay(self, delay: int, calls: int, epoch: int) -> None:
@@ -659,29 +670,29 @@ class LoggingData:
         self.terminated_messages.append(message)
 
     def log_maintenance(self,
-                        status_bm: str,
-                        status_am: str,
                         size_bm: int,
                         size_am: int,
+                        status_bm: str,
+                        status_am: str,
                         epoch: int) -> None:
         """Logs cluster membership status and size at an epoch.
 
         Args:
+            size_bm:
+                The number of network nodes in the cluster before maintenance.
+            size_am:
+                The number of network nodes in the cluster after maintenance.
             status_bm:
                 A string that describes the status of the cluster before
                 maintenance.
             status_am:
                 A string that describes the status of the cluster after
                 maintenance.
-            size_bm:
-                The number of network nodes in the cluster before maintenance.
-            size_am:
-                The number of network nodes in the cluster after maintenance.
             epoch:
                 A simulation epoch at which termination occurred.
         """
-        self.cluster_status_bm[epoch - 1] = status_bm
-        self.cluster_status_am[epoch - 1] = status_am
         self.cluster_size_bm[epoch - 1] = size_bm
         self.cluster_size_am[epoch - 1] = size_am
+        self.cluster_status_bm[epoch - 1] = status_bm
+        self.cluster_status_am[epoch - 1] = status_am
     # endregion
