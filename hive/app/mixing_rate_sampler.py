@@ -3,22 +3,19 @@
 This functionality tests and compares the mixing rate of various
 markov matrices.
 
-    You can start a test by executing the following command::
+You can start a test by executing the following command::
 
-        $ python mixing_rate_sampler.py --samples=1000
+    $ python mixing_rate_sampler.py --samples=1000
 
-    You can also specify the names of the functions used to generate markov
-    matrices like so::
+You can also specify the names of the functions used to generate markov
+matrices like so::
 
-        $ python mixing_rate_sampler.py -s 10 -f afunc,anotherfunc,yetanotherfunc
+    $ python mixing_rate_sampler.py -s 10 -f afunc,anotherfunc,yetanotherfunc
 
-        Default functions set {
-            "new_mh_transition_matrix",
-            "new_sdp_mh_transition_matrix",
-            "new_go_transition_matrix",
-            "new_mgo_transition_matrix"
-        }
-
+Note:
+    Default functions set { "new_mh_transition_matrix",
+    "new_sdp_mh_transition_matrix", "new_go_transition_matrix",
+    "new_mgo_transition_matrix" }
 
 """
 
@@ -50,7 +47,7 @@ def main():
     specified `functions`, `samples` times.
 
     The execution of the main method results in a JSON file outputed to
-    :py:const:`environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.
+    :py:const:`~app.environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.
     """
     if not os.path.exists(MIXING_RATE_SAMPLE_ROOT):
         os.makedirs(MIXING_RATE_SAMPLE_ROOT)
@@ -99,11 +96,11 @@ if __name__ == "__main__":
         "new_mgo_transition_matrix"
     ]
 
-    allow_sloops = True
-    enforce_sloops = True
+    allow_sloops = 1
+    enforce_sloops = 1
 
     try:
-        short_opts = "s:n:m:f:"
+        short_opts = "s:n:m:f:a:e:"
         long_opts = ["samples=", "network_sizes=", "module=", "functions=",
                      "allow_self_loops=", "enforce_loops="]
 
@@ -117,9 +114,9 @@ if __name__ == "__main__":
                 module = str(args).strip()
             if options in ("-f", "--functions"):
                 function_names = str(args).strip().split(',')
-            if options in ("--allow_self_loops"):
+            if options in ("a", "--allow_self_loops"):
                 allow_sloops = int(str(args).strip()) or allow_sloops
-            if options in ("--enforce_loops"):
+            if options in ("e", "--enforce_loops"):
                 enforce_sloops = int(str(args).strip()) or enforce_sloops
 
         module = importlib.import_module(module)

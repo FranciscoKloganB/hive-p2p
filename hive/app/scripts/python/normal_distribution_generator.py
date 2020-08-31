@@ -16,18 +16,18 @@ def generate_samples(surveys: int = 10,
         If you use this sample generation, simply select pick up the elements
         and assign them to a label in sequence. In this case sample_count is
         just the number of samples I wish to take. See also
-        :py:func:`~generate_samples_extended`.
+        :py:func:`generate_samples_extended`.
 
     Args:
         surveys:
-            optional; The number of studies to be performed (default is 10).
+             The number of studies to be performed.
         sample_count:
-            optional; The number of answers in each study. (default is 10000).
+             The number of answers in each study.
         mean:
-             optional; Where peak density will be found (default is 34.0).
+              Where peak density will be found.
         std:
-            optional; The standard deviation for the plotted normal
-            distribution (default is 30.0).
+             The standard deviation for the plotted normal
+            distribution.
 
     Returns:
         The sampled bins.
@@ -53,10 +53,9 @@ def generate_samples_extended(bin_count: int = 7001,
 
     Args:
         bin_count:
-            optional; (default is 7001).
+             The number of bins to be created.
         sample_count:
-            optional; The number of skewed results to be drawn. (default is
-            10000).
+             The number of skewed results to be drawn.
 
     Returns:
         The sampled bins and respective frequencies.
@@ -89,14 +88,14 @@ def plot_uptime_distribution(bin_count: Union[int, str] = 'auto',
 
     Args:
         bin_count:
-            optional; The number of bins the plot should have (default is
-            'auto'), i.e., matplotlib.pyplot module's functions chooses
-            a probably adequate bin count.
+             The number of bins the plot should have. With default
+            matplotlib.pyplot module's functions chooses a probably adequate
+            bin count.
         mean:
-             optional; Where peak density will be found (default is 34.0).
+              Where peak density will be found.
         std:
-            optional; The standard deviation for the plotted normal
-            distribution (default is 30.0).
+             The standard deviation for the plotted normal
+            distribution.
     """
     results: np.array = generate_samples(mean=mean, std=std)
     plt.hist(results, bin_count, density=True)

@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <title>app.domain.network_nodes</title>
+    
+
+    <link rel="stylesheet" href="../../../_static/css/redactor.css" type="text/css" />
+    
+    
+    <link rel="index" title="Index" href="../../../genindex.html"/>
+    <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="Hives - P2P Stochastic Swarm Guidance Simulator" href="../../../index.html"/>
+    <link rel="up" title="Module code" href="../../index.html"/> 
+</head>
+
+<body role="document">
+     
+
+    
+<a href="#" id="js-navigation-toggle" class="navigation-toggle">
+    <i class="mdi mdi-menu"></i><i class="mdi mdi-close"></i>
+</a>
+
+<section class="site-sidebar">
+
+<nav>
+
+
+    <a href="../../../index.html" class="branding-link">
+    
+        Hives
+    
+    
+    
+        
+        
+            <span class="branding-link__version">
+                1.6
+            </span>
+        
+    
+    </a>
+
+    
+<section role="search">
+    <form action="../../../search.html" method="get" class="site-searchform">
+        <input type="text" name="q" placeholder="Search docs" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+</section>
+
+
+
+    <section class="site-nav">
+    
+    
+        <p class="caption"><span class="caption-text">Navbar</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstartdocs.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scriptdocs.html">Scripts and Flags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../app.html">App Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notedocs.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices</a></li>
+</ul>
+
+    
+    </section>
+
+</nav>
+
+</section>
+
+    <main class="site-main" role="main">
+        
+
+
+
+
+
+
+
+
+
+
+
+<nav class="site-breadcrumbs">
+    <ul>
+    
+        <li>
+            <a href="../../../index.html">Docs</a> /
+        </li>
+        
+        <li>
+            <a href="../../index.html">Module code</a> /
+        </li>
+        
+        <li class="site-breadcrumbs__leaf">app.domain.network_nodes</li>
+    
+    </ul>
+</nav>
+        <section class="site-content">
+            <div class="container">
+                
+  <h1>Source code for app.domain.network_nodes</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module contains domain specific classes that represent network nodes</span>
+<span class="sd">responsible for the storage of :py:class:`file blocks</span>
+<span class="sd">&lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`. These could be</span>
+<span class="sd">reliable servers or P2P nodes.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">domain.helpers.smart_dataclasses</span> <span class="k">as</span> <span class="nn">sd</span>
+<span class="kn">import</span> <span class="nn">domain.helpers.enums</span> <span class="k">as</span> <span class="nn">e</span>
+<span class="kn">import</span> <span class="nn">domain.master_servers</span> <span class="k">as</span> <span class="nn">ms</span>
+<span class="kn">import</span> <span class="nn">type_hints</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">crypto</span>
+<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="n">TRUE_FALSE</span>
+
+
+<div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This class contains basic network node functionality that should</span>
+<span class="sd">    always be useful.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (str):</span>
+<span class="sd">            A unique identifier for the ``Node`` instance.</span>
+<span class="sd">        uptime (float):</span>
+<span class="sd">            The amount of time the ``Node`` is expected to remain online</span>
+<span class="sd">            without disconnecting. Current uptime implementation is based on</span>
+<span class="sd">            availability percentages.</span>
+
+<span class="sd">            Note:</span>
+<span class="sd">                Current implementation expects ``network nodes`` joining a</span>
+<span class="sd">                :py:class:`cluster group &lt;app.domain.cluster_groups.Cluster&gt;`</span>
+<span class="sd">                to remain online for approximately:</span>
+
+<span class="sd">                    ``time_to_live`` =</span>
+<span class="sd">                    :py:attr:`~app.domain.network_nodes.Node.uptime`</span>
+<span class="sd">                    *</span>
+<span class="sd">                    :py:attr:`~app.domain.master_servers.Master.MAX_EPOCHS`.</span>
+
+<span class="sd">                However, a ``network node`` who belongs to multiple</span>
+<span class="sd">                :py:class:`cluster groups &lt;app.domain.cluster_groups.Cluster&gt;`</span>
+<span class="sd">                may disconnect earlier than that, i.e.,</span>
+<span class="sd">                ``network nodes`` remain online ``time_to_live`` after</span>
+<span class="sd">                their first operation on the distributed backup system.</span>
+<span class="sd">        status (:py:class:`app.domain.helpers.enums.Status`):</span>
+<span class="sd">            Indicates if the ``Node`` instance is online or offline. In later</span>
+<span class="sd">            releases this could also contain a &#39;suspect&#39; status.</span>
+<span class="sd">        suspicious_replies (:py:class:`~py:set`):</span>
+<span class="sd">            Collection that contains</span>
+<span class="sd">            :py:class:`http codes &lt;app.domain.helpers.enums.HttpCodes&gt;`</span>
+<span class="sd">            that when received, trigger complaints to monitors about the</span>
+<span class="sd">            replier.</span>
+<span class="sd">        files (Dict[str, :py:class:`~app.type_hints.ReplicasDict`]):</span>
+<span class="sd">            A dictionary mapping file names to dictionaries of file block</span>
+<span class="sd">            identifiers and their respective contents, i.e.,</span>
+<span class="sd">            the :py:class:`file block replicas</span>
+<span class="sd">            &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">            hosted at the ``Node``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Node.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instantiates a ``Node`` object.</span>
+
+<span class="sd">        These are network nodes responsible for persisting</span>
+<span class="sd">        :py:class:`file block replicas &lt;app.domain.helpers.smart_dataclasses</span>
+<span class="sd">        .FileBlockData&gt;`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            uid:</span>
+<span class="sd">                An unique identifier for the ``Node`` instance.</span>
+<span class="sd">            uptime:</span>
+<span class="sd">                The availability of the ``Node`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">uptime</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">uptime</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">uptime</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">uptime</span> <span class="o">*</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">uid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">uptime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_replies</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">,</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">TIME_OUT</span><span class="p">,</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">SERVER_DOWN</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="Node.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instructs the ``Node`` instance to execute the epoch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that invoked</span>
+<span class="sd">                the ``Node`` method.</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
+<span class="sd">                of the file being simulated.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError:</span>
+<span class="sd">                When children of ``Node`` do not implement the abstract method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;All children of class Node must &quot;</span>
+                                  <span class="s2">&quot;implement their own execute_epoch.&quot;</span><span class="p">)</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region File block management</span>
+<div class="viewcode-block" id="Node.receive_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.receive_part">[docs]</a>    <span class="k">def</span> <span class="nf">receive_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Endpoint for file block replica reception.</span>
+
+<span class="sd">        The ``Node`` stores a new :py:class:`file block replica</span>
+<span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` in</span>
+<span class="sd">        :py:attr:`files` if he does not have a replica with same</span>
+<span class="sd">        :py:attr:`identifier</span>
+<span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData.id&gt;`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            replica:</span>
+<span class="sd">               The :py:class:`file block replica</span>
+<span class="sd">               &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` to be</span>
+<span class="sd">               received by ``Node``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             :py:class:`~app.domain.helpers.enums.HttpCodes`:</span>
+<span class="sd">                If upon integrity verification the ``sha256``</span>
+<span class="sd">                hashvalue differs from the expected, the worker replies with</span>
+<span class="sd">                a BAD_REQUEST. If the ``Node`` already owns a replica with the</span>
+<span class="sd">                same :py:attr:`identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData.id&gt;` it</span>
+<span class="sd">                replies with NOT_ACCEPTABLE. Otherwise it replies with a OK,</span>
+<span class="sd">                i.e., the delivery is successful.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">replica</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span>
+            <span class="c1"># init dict that accepts &lt;key: id, value: sfp&gt; pairs for the file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">replica</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">crypto</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">replica</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="n">replica</span><span class="o">.</span><span class="n">sha256</span><span class="p">:</span>
+            <span class="c1"># inform sender that his part is corrupt,</span>
+            <span class="c1"># don&#39;t initiate recovery protocol - avoid DoS at current worker.</span>
+            <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">BAD_REQUEST</span>
+        <span class="k">elif</span> <span class="n">replica</span><span class="o">.</span><span class="n">number</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">replica</span><span class="o">.</span><span class="n">name</span><span class="p">]:</span>
+            <span class="c1"># reject repeated blocks even if they are correct</span>
+            <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">NOT_ACCEPTABLE</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># accepted file part</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">[</span><span class="n">replica</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="n">replica</span><span class="o">.</span><span class="n">number</span><span class="p">]</span> <span class="o">=</span> <span class="n">replica</span>
+            <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">OK</span></div>
+
+<div class="viewcode-block" id="Node.replicate_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.replicate_part">[docs]</a>    <span class="k">def</span> <span class="nf">replicate_part</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to restore the replication level of the specified file</span>
+<span class="sd">        block replica.</span>
+
+<span class="sd">        Similar to :py:meth:`send_part` but with</span>
+<span class="sd">        slightly different instructions. In particular new ``replicas``</span>
+<span class="sd">        can not be corrupted at the current node, at the current epoch.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            There are no guarantees that</span>
+<span class="sd">            :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be</span>
+<span class="sd">            completely restored during the execution of this method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that will</span>
+<span class="sd">                deliver the new ``replica``.</span>
+<span class="sd">            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):</span>
+<span class="sd">                The :py:class:`file block replica</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                to be delivered.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NotImplementedError:</span>
+<span class="sd">                When children of ``Node`` do not implement the abstract method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Node.send_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.send_part">[docs]</a>    <span class="k">def</span> <span class="nf">send_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                  <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span>
+                  <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                  <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to send a replica to some other network node.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that will</span>
+<span class="sd">                deliver the new ``replica``. In a real</span>
+<span class="sd">                world implementation this argument would not make sense,</span>
+<span class="sd">                but we use it to facilitate simulation management and</span>
+<span class="sd">                environment logging.</span>
+<span class="sd">            destination:</span>
+<span class="sd">                The name, address or another unique identifier of the node</span>
+<span class="sd">                that will receive the file block `replica`.</span>
+<span class="sd">            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):</span>
+<span class="sd">                The file block container to be sent to some other worker.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             :py:class:`~app.domain.helpers.enums.HttpCodes`:</span>
+<span class="sd">                An http code.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">cluster</span><span class="o">.</span><span class="n">route_part</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Node.discard_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.discard_part">[docs]</a>    <span class="k">def</span> <span class="nf">discard_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                     <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                     <span class="n">corrupt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                     <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Safely deletes a part from the HiveNode instance&#39;s disk.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fid:</span>
+<span class="sd">                Name of the file the file block replica belongs to.</span>
+<span class="sd">            number:</span>
+<span class="sd">                The part number that uniquely identifies the file block.</span>
+<span class="sd">            corrupt:</span>
+<span class="sd">                If discard is being invoked due to identified file</span>
+<span class="sd">                block corruption, e.g., Sha256 does not match the expected.</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that</span>
+<span class="sd">                will :py:meth:`set the replication epoch</span>
+<span class="sd">                &lt;app.domain.cluster_groups.Cluster.set_replication_epoch&gt;`</span>
+<span class="sd">                or mark the simulation as failed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">replica</span> <span class="ow">and</span> <span class="n">corrupt</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">replica</span><span class="o">.</span><span class="n">decrement_and_get_references</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lost last file block replica with id &quot;</span>
+                                  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">replica</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> due to corruption.&quot;</span><span class="p">)</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Get methods</span>
+<div class="viewcode-block" id="Node.get_file_parts"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_file_parts">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Gets collection of file parts that correspond to the named file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;` that</span>
+<span class="sd">                designates the :py:class:`file block replicas</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                to be retrieved.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">             :py:class:`~app.type_hints.ReplicasDict`:</span>
+<span class="sd">                A dictionary where keys are :py:attr:`file block numbers</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData.number&gt;` and</span>
+<span class="sd">                values are :py:class:`file block replicas</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{})</span></div>
+
+<div class="viewcode-block" id="Node.get_file_parts_count"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_file_parts_count">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Counts the number of file block replicas of a specific file owned</span>
+<span class="sd">        by the ``Node``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;` that</span>
+<span class="sd">                designates the :py:class:`file block replicas</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                to be counted.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The number of counted replicas.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{}))</span></div>
+
+<div class="viewcode-block" id="Node.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``Node``.</span>
+
+<span class="sd">        This method equates a ping. When invoked, the ``Node`` decides if it</span>
+<span class="sd">        should remain online or change some other state depending on his</span>
+<span class="sd">        remaining :py:attr:`uptime`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
+<span class="sd">                The the status of the ``Node``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">OFFLINE</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Python dunder methods&#39; overrides</span>
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span><span class="p">(</span><span class="bp">self</span> <span class="o">==</span> <span class="n">other</span><span class="p">)</span></div>
+    <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="HiveNode"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode">[docs]</a><span class="k">class</span> <span class="nc">HiveNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a network node that executes a Swarm Guidance algorithm.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        routing_table (Dict[str, :py:class:`~pd:pandas.DataFrame`]):</span>
+<span class="sd">            Contains the information required to appropriately route file</span>
+<span class="sd">            block blocks to other HiveNode instances.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="HiveNode.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">uptime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hives</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="HiveNode.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instructs the ``Node`` instance to execute the epoch.</span>
+
+<span class="sd">        The method iterates all file block blocks in :py:attr:`files` and</span>
+<span class="sd">        independently decides if they should be sent to another ``HiveNode``</span>
+<span class="sd">        by following the probabilities in :py:attr:`routing_table` column</span>
+<span class="sd">        vectors.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.execute_epoch`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that invoked</span>
+<span class="sd">                the ``Node`` method.</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
+<span class="sd">                of the file being simulated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_view</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">number</span><span class="p">,</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">file_view</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replicate_part</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">replica</span><span class="p">)</span>
+            <span class="n">destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_destination</span><span class="p">(</span><span class="n">replica</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">response_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_part</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">response_code</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">discard_part</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">response_code</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">BAD_REQUEST</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">discard_part</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">corrupt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="n">cluster</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">response_code</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_replies</span><span class="p">:</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">complain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">response_code</span><span class="p">)</span></div>
+            <span class="c1"># Else keep file part for at least one more epoch</span>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region File block management</span>
+<div class="viewcode-block" id="HiveNode.replicate_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.replicate_part">[docs]</a>    <span class="k">def</span> <span class="nf">replicate_part</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to restore the replication level of the specified file</span>
+<span class="sd">        block replica.</span>
+
+<span class="sd">        Similar to :py:meth:`~Node.send_part` but with</span>
+<span class="sd">        slightly different instructions. In particular new ``replicas``</span>
+<span class="sd">        can not be corrupted at the current node, at the current epoch. The</span>
+<span class="sd">        replicas are also sent selectively in descending order to the</span>
+<span class="sd">        most reliable Nodes in the ``Cluster`` down to the least</span>
+<span class="sd">        reliable. Whereas :py:meth:`send_part`. follows</span>
+<span class="sd">        stochastic swarm guidance routing.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.replicate_part`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            There are no guarantees that</span>
+<span class="sd">            :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be</span>
+<span class="sd">            completely restored during the execution of this method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that will</span>
+<span class="sd">                deliver the new ``replica``.</span>
+<span class="sd">            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):</span>
+<span class="sd">                The :py:class:`file block replica</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                to be delivered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Number of times the block needs to be replicated.</span>
+        <span class="n">lost_replicas</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">replica</span><span class="o">.</span><span class="n">can_replicate</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">sorted_members</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">cluster</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">destination</span> <span class="ow">in</span> <span class="n">sorted_members</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">route_part</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">fresh_replica</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
+                    <span class="n">lost_replicas</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">code</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_replies</span><span class="p">:</span>
+                    <span class="n">cluster</span><span class="o">.</span><span class="n">complain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+            <span class="c1"># replication level may have not been completely restored</span>
+            <span class="n">replica</span><span class="o">.</span><span class="n">update_epochs_to_recover</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Routing table management</span>
+<div class="viewcode-block" id="HiveNode.set_file_routing"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.set_file_routing">[docs]</a>    <span class="k">def</span> <span class="nf">set_file_routing</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">transition_vector</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Maps a file name identifier with a transition column vector used</span>
+<span class="sd">        for file block replica routing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
+<span class="sd">                of the file whose routing is being configured.</span>
+<span class="sd">            transition_vector (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):</span>
+<span class="sd">                A column vector with probabilities that dictate the odds of</span>
+<span class="sd">                sending file block blocks belonging to the file with</span>
+<span class="sd">                specified id to other Cluster members also working on the</span>
+<span class="sd">                persistence of the file block blocks.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError:</span>
+<span class="sd">                If ``transition_vector`` is not a :py:class:`~pd:pandas.DataFrame` and cannot</span>
+<span class="sd">                be casted to it.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_vector</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition_vector</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_vector</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition_vector</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;set_file_routing method expects a pandas.Series &quot;</span><span class="p">,</span>
+                             <span class="s2">&quot;or pandas.DataFrame as transition vector type.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HiveNode.remove_file_routing"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.remove_file_routing">[docs]</a>    <span class="k">def</span> <span class="nf">remove_file_routing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Removes a file name from the ``HiveNode`` routing table.</span>
+
+<span class="sd">        This method is called when a ``HiveNode`` is evicted from the</span>
+<span class="sd">        :py:class:`cluster group &lt;app.domain.cluster_groups.HiveCluster&gt;` and</span>
+<span class="sd">        results in the deletion from disk of all :py:class:`file block replicas</span>
+<span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` with</span>
+<span class="sd">        identifier ``fid``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
+<span class="sd">                of the file whose routing is being eliminated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{})</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Swarm guidance</span>
+<div class="viewcode-block" id="HiveNode.select_destination"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.select_destination">[docs]</a>    <span class="k">def</span> <span class="nf">select_destination</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Selects a random message destination according to `routing_table`</span>
+<span class="sd">        probabilities for the specified file name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
+<span class="sd">                to obtain the proper :py:attr:`routing_table` for</span>
+<span class="sd">                destination selection.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The name or address of the selected destination.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">routing_vector</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span>
+        <span class="n">hive_members</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">routing_vector</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">member_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">routing_vector</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">hive_members</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">member_chances</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">vE</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">routing_vector</span><span class="si">}</span><span class="se">\n</span><span class="s2">Stochastic?: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">member_chances</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span>
+                    <span class="n">etype</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">vE</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="n">vE</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="n">vE</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)))</span></div></div>
+    <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="HiveNodeExt"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNodeExt">[docs]</a><span class="k">class</span> <span class="nc">HiveNodeExt</span><span class="p">(</span><span class="n">HiveNode</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a network node that executes a Swarm Guidance algorithm.</span>
+
+<span class="sd">    ``HiveNodeExt`` instances differ from :py:class:`HiveNode` in the sense</span>
+<span class="sd">    that the latter does not monitor the peers belonging to his</span>
+<span class="sd">    :py:class:`cluster groups &lt;app.domain.cluster_groups.HiveClusterExt&gt;`,</span>
+<span class="sd">    concerning their connectivity :py:attr:`~Node.status` or suspicious</span>
+<span class="sd">    behaviours.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># region Get methods</span>
+<div class="viewcode-block" id="HiveNodeExt.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNodeExt.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HiveNodeExt``.</span>
+
+<span class="sd">        This method equates a ping. When invoked, the ``HiveNodeExt``</span>
+<span class="sd">        decides if it should remain online or change some other state</span>
+<span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+
+<span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
+<span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
+<span class="sd">                The the status of the ``Node``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div></div>
+    <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="HDFSNode"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode">[docs]</a><span class="k">class</span> <span class="nc">HDFSNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a data node in the Hadoop Distribute File System.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="HDFSNode.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">uptime</span><span class="p">)</span></div>
+
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="HDFSNode.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instructs the ``HDFSNode`` instance to execute the epoch.</span>
+
+<span class="sd">        The method iterates :py:attr:`files` held in disk and attempts to</span>
+<span class="sd">        corrupt them silently. In HDFS file blocks&#39; ``sha256`` are only</span>
+<span class="sd">        verified when a user or client accesses the remote replica. Hence,</span>
+<span class="sd">        no replication epoch is set up when a corruption occurs. The</span>
+<span class="sd">        corruption is still logged in the output file.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.execute_epoch`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that invoked</span>
+<span class="sd">                the ``Node`` method.</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
+<span class="sd">                of the file being simulated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_view</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">number</span><span class="p">,</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">file_view</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replicate_part</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">replica</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">):</span>
+                <span class="c1"># Don&#39;t set corrupt flag to ``True``, doing so causes</span>
+                <span class="c1"># set_recovery_epoch to be called. HDFS Corruption is silent.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">discard_part</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+                <span class="c1"># Log the corruption in output file.</span>
+                <span class="n">epoch</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_corrupted_file_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region File block management</span>
+<div class="viewcode-block" id="HDFSNode.replicate_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.replicate_part">[docs]</a>    <span class="k">def</span> <span class="nf">replicate_part</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to restore the replication level of the specified file</span>
+<span class="sd">        block replica.</span>
+
+<span class="sd">        Replicas are sent selectively in descending order to the</span>
+<span class="sd">        most reliable Nodes in the ``Cluster`` down to the least</span>
+<span class="sd">        reliable.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.replicate_part`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            There are no guarantees that</span>
+<span class="sd">            :py:const:`~app.environment_settings.REPLICATION_LEVEL` will be</span>
+<span class="sd">            completely restored during the execution of this method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that will</span>
+<span class="sd">                deliver the new ``replica``.</span>
+<span class="sd">            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):</span>
+<span class="sd">                The :py:class:`file block replica</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                to be delivered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Number of times the block needs to be replicated.</span>
+        <span class="n">lost_replicas</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">replica</span><span class="o">.</span><span class="n">can_replicate</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">cluster</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+            <span class="n">choices</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">uptime</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">destination</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">route_part</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">fresh_replica</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
+                    <span class="n">lost_replicas</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c1"># replication level may have not been completely restored</span>
+            <span class="n">replica</span><span class="o">.</span><span class="n">update_epochs_to_recover</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Get Methods</span>
+<div class="viewcode-block" id="HDFSNode.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HDFSNode``.</span>
+
+<span class="sd">        This method equates a ping. When invoked, the ``HDFSNode``</span>
+<span class="sd">        decides if it should remain online or change some other state</span>
+<span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+
+<span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
+<span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
+<span class="sd">                The the status of the ``HDFSNode``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div></div>
+    <span class="c1"># endregion</span>
+</pre></div>
+
+            </div>
+
+        </section>
+
+        
+
+        
+            <div class="source-link">
+            
+                
+            
+            </div>
+        
+
+
+
+    </main>
+
+    <footer class="site-footer">
+<div class="container">
+
+    <div role="contentinfo">
+        <p>
+                &copy; Copyright 2020, Francisco Barros.
+        </p>
+    </div>
+        <p>Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+        <a href="https://github.com/testthedocs/sphinx_ttd_theme">theme</a>
+        provided by <a href="https://testthedocs">TestTheDocs</a>. 
+
+</div>
+</footer>
+
+    
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'1.6.0rc1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/js/theme-min.js"></script> 
+</body>
+</html>

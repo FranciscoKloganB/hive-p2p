@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="utf-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <title>app.domain.helpers.matlab_utils</title>
+    
+
+    <link rel="stylesheet" href="../../../../_static/css/redactor.css" type="text/css" />
+    
+    
+    <link rel="index" title="Index" href="../../../../genindex.html"/>
+    <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="Hives - P2P Stochastic Swarm Guidance Simulator" href="../../../../index.html"/>
+    <link rel="up" title="Module code" href="../../../index.html"/> 
+</head>
+
+<body role="document">
+     
+
+    
+<a href="#" id="js-navigation-toggle" class="navigation-toggle">
+    <i class="mdi mdi-menu"></i><i class="mdi mdi-close"></i>
+</a>
+
+<section class="site-sidebar">
+
+<nav>
+
+
+    <a href="../../../../index.html" class="branding-link">
+    
+        Hives
+    
+    
+    
+        
+        
+            <span class="branding-link__version">
+                1.6
+            </span>
+        
+    
+    </a>
+
+    
+<section role="search">
+    <form action="../../../../search.html" method="get" class="site-searchform">
+        <input type="text" name="q" placeholder="Search docs" />
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+      </form>
+</section>
+
+
+
+    <section class="site-nav">
+    
+    
+        <p class="caption"><span class="caption-text">Navbar</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quickstartdocs.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../scriptdocs.html">Scripts and Flags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../app.html">App Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notedocs.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../indices.html">Indices</a></li>
+</ul>
+
+    
+    </section>
+
+</nav>
+
+</section>
+
+    <main class="site-main" role="main">
+        
+
+
+
+
+
+
+
+
+
+
+
+<nav class="site-breadcrumbs">
+    <ul>
+    
+        <li>
+            <a href="../../../../index.html">Docs</a> /
+        </li>
+        
+        <li>
+            <a href="../../../index.html">Module code</a> /
+        </li>
+        
+        <li class="site-breadcrumbs__leaf">app.domain.helpers.matlab_utils</li>
+    
+    </ul>
+</nav>
+        <section class="site-content">
+            <div class="container">
+                
+  <h1>Source code for app.domain.helpers.matlab_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Module with Matlab related classes.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">matlab.engine</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="n">MATLAB_DIR</span>
+
+
+<div class="viewcode-block" id="MatlabEngineContainer"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer">[docs]</a><span class="k">class</span> <span class="nc">MatlabEngineContainer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Singleton class wrapper containing thread safe access to a MatlabEngine.</span>
+
+<span class="sd">    This class provides a thread-safe way to access one singleton</span>
+<span class="sd">    matlab engine object when running simulations in threaded mode. Having</span>
+<span class="sd">    one single engine is important, since starting up an engine takes</span>
+<span class="sd">    approximately 12s (machine dependant), not including the time matlab</span>
+<span class="sd">    scripts are executing and data convertions between python and matlab and</span>
+<span class="sd">    back.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        eng:</span>
+<span class="sd">            A matlab engine instance, which can be used for example for matrix</span>
+<span class="sd">            and vector optimization operations throughout the simulations.</span>
+
+<span class="sd">            Note:</span>
+<span class="sd">                MatlabEngine objects are not thread safe, thus it</span>
+<span class="sd">                is recommended that you utilize  the a wrapper function that</span>
+<span class="sd">                obtains :py:const:`_LOCK`, before you send any requests to</span>
+<span class="sd">                ``eng``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="c1">#: A re-entrant lock used to make `eng` shareable by multiple threads.</span>
+    <span class="n">_LOCK</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+    <span class="c1">#: A reference to the instance of `MatlabEngineContainer` or `None`.</span>
+    <span class="n">_instance</span><span class="p">:</span> <span class="n">MatlabEngineContainer</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MatlabEngineContainer.get_instance"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_instance</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">MatlabEngineContainer</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to obtain a singleton instance of ``MatlabEngineContainer``.</span>
+
+<span class="sd">        If one instance already exists that instance is returned,</span>
+<span class="sd">        otherwise a new one is created and returned.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A reference to the existing ``MatlabEngineContainer``</span>
+<span class="sd">            :py:const:`instance &lt;_instance&gt;`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_LOCK</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">MatlabEngineContainer</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span></div>
+
+<div class="viewcode-block" id="MatlabEngineContainer.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instantiates a new MatlabEngineContainer object.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Do not directly invoke constructor, use :py:meth:`get_instance`</span>
+<span class="sd">            instead.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading matlab engine... this can take a while.&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">start_matlab</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">MATLAB_DIR</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">EngineError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;MatlabEngineContainer is a Singleton. Use &quot;</span>
+                               <span class="s2">&quot;MatlabEngineContainer.getInstance() to get a &quot;</span>
+                               <span class="s2">&quot;reference to a MatlabEngineContainer object.&quot;</span><span class="p">)</span></div>
+
+    <span class="c1"># noinspection PyIncorrectDocstring</span>
+<div class="viewcode-block" id="MatlabEngineContainer.matrix_global_opt"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer.matrix_global_opt">[docs]</a>    <span class="k">def</span> <span class="nf">matrix_global_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Constructs an optimized transition matrix using the matlab engine.</span>
+
+<span class="sd">        Constructs an optimized transition matrix using linear programming</span>
+<span class="sd">        relaxations and convex envelope approximations for the specified steady</span>
+<span class="sd">        state ``v_``, this is done by invoke the matlabscript</span>
+<span class="sd">        *matrixGlobalOpt.m* located inside</span>
+<span class="sd">        :py:const:`~app.environment_settings.MATLAB_DIR`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            a:</span>
+<span class="sd">                A non-optimized symmetric adjency matrix.</span>
+<span class="sd">            `v_`:</span>
+<span class="sd">                A stochastic steady state distribution vector.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Markov Matrix with ``v_`` as steady state distribution and the</span>
+<span class="sd">            respective :py:func:`mixing rate</span>
+<span class="sd">            &lt;app.domain.helpers.matrices.get_mixing_rate&gt;` or ``None``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            EngineError:</span>
+<span class="sd">                If you do not have a valid MatLab license.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_LOCK</span><span class="p">:</span>
+            <span class="n">ma</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+            <span class="n">mv_</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="n">v_</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">eng</span><span class="o">.</span><span class="n">matrixGlobalOpt</span><span class="p">(</span><span class="n">ma</span><span class="p">,</span> <span class="n">mv_</span><span class="p">,</span> <span class="n">nargout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div></div>
+</pre></div>
+
+            </div>
+
+        </section>
+
+        
+
+        
+            <div class="source-link">
+            
+                
+            
+            </div>
+        
+
+
+
+    </main>
+
+    <footer class="site-footer">
+<div class="container">
+
+    <div role="contentinfo">
+        <p>
+                &copy; Copyright 2020, Francisco Barros.
+        </p>
+    </div>
+        <p>Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+        <a href="https://github.com/testthedocs/sphinx_ttd_theme">theme</a>
+        provided by <a href="https://testthedocs">TestTheDocs</a>. 
+
+</div>
+</footer>
+
+    
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'1.6.0rc1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../../_static/js/theme-min.js"></script> 
+</body>
+</html>

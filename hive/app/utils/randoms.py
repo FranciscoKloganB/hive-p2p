@@ -6,27 +6,25 @@ import numpy as np
 
 
 def excluding_randrange(start, stop, start_again, stop_again, step=1):
-    """Generates a random number
+    """Generates a random number within two different intervals."
 
     Args:
         start:
             Number consideration for generation starts from this.
         stop:
             Numbers less than this are generated unless they are bigger or
-            equal than `start_again`.
+            equal than ``start_again``.
         start_again:
             Number consideration for generation starts again from this.
         stop_again:
             Number consideration stops here and does not include the inputed
             value.
         step:
-            optional; Step point of range, this won't be included. This is
-            optional (default is 1).
-    The random number that is generated is
+            Step point of range, this won't be included.
 
     Returns:
-        A randomly selected element from in the interval [start, stop) or in
-        [start_again, stop_again).
+        A randomly selected element from in the interval ``[start, stop)`` or in
+        ``[start_again, stop_again)``.
     """
     if (stop <= start) or (stop_again <= start_again) or (start_again <= stop):
         raise ValueError(f"Bad range, expected args must adhere to: "
@@ -54,7 +52,7 @@ def random_index(i: int, size: int) -> int:
         size:
             The size of the matrix
     Returns:
-        A random index that is different than `i` and belongs to [0, `size`).
+        A random index that is different than ``i`` and belongs to ``[0, size)``.
     """
     size_minus_one = size - 1
     if i == 0:

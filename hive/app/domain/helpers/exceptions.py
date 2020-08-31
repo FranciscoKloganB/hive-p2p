@@ -33,10 +33,6 @@ class MatrixError(Exception):
 
 
 class IllegalArgumentError(ValueError):
-    """Generic error used to indicate a parameter is not valid or expected.
-
-    Inherits:
-        ValueError
-    """
+    """Generic error used to indicate a parameter is not valid or expected."""
     def __init__(self, value=""):
         super().__init__(value)

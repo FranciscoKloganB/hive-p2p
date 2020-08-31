@@ -1,4 +1,4 @@
-"""Module used by :py:class:`~domain.cluster_groups.Cluster to create transition
+"""Module used by :py:class:`domain.cluster_groups.Cluster` to create transition
 matrices for the simulation.
 
 You should implement your own metropolis-hastings or alternative algorithms
@@ -6,29 +6,30 @@ as well as any steady-state or transition matrix optimization algorithms in
 this module.
 """
 
-from typing import Tuple, Any, Optional
-
 import random
-import numpy as np
-import cvxpy as cvx
+from typing import Tuple, Optional
 
+import cvxpy as cvx
+import numpy as np
 from matlab.engine import EngineError
+from mosek import MosekException
 from scipy.sparse.csgraph import connected_components
 
-from domain.helpers.matlab_utils import MatlabEngineContainer
 from domain.helpers.exceptions import *
+from domain.helpers.matlab_utils import MatlabEngineContainer
 from utils.randoms import random_index
 
 OPTIMAL_STATUS = {cvx.OPTIMAL, cvx.OPTIMAL_INACCURATE}
 
 
 # region Markov Matrix Constructors
+# noinspection PyIncorrectDocstring
 def new_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[np.ndarray, float]:
     """ Constructs a transition matrix using metropolis-hastings.
 
     Constructs a transition matrix using metropolis-hastings algorithm  for
-    the specified steady state `v`.
+    the specified steady state ``v``.
 
     Note:
         The input Matrix hould have no transient states or absorbent nodes,
@@ -37,38 +38,38 @@ def new_mh_transition_matrix(
     Args:
         a:
             A symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic steady state distribution vector.
 
     Returns:
-        Markov Matrix with `v_` as steady state distribution and the
-        respective mixing rate.
+        Markov Matrix with ``v_`` as steady state distribution and the
+        respective mixing rate or ``None, float('inf')`` if the problem is
+        infeasible.
     """
     t = _metropolis_hastings(a, v_)
     return t, get_mixing_rate(t)
 
 
+# noinspection PyIncorrectDocstring
 def new_sdp_mh_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
-    """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
+    """Constructs a transition matrix using semi-definite programming techniques.
 
     Constructs a transition matrix using metropolis-hastings algorithm  for
-    the specified steady state `v`. The provided adjacency matrix A is first
+    the specified steady state ``v``. The provided adjacency matrix A is first
     optimized with semi-definite programming techniques for the uniform
     distribution vector.
-
-    Note:
-        This function only works if you have a valid MOSEK license.
 
     Args:
         a:
             A non-optimized symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic steady state distribution vector.
 
     Returns:
-        Markov Matrix with `v_` as steady state distribution and the
-        respective mixing rate.
+        Markov Matrix with ``v_`` as steady state distribution and the
+        respective mixing rate or ``None, float('inf')`` if the problem is
+        infeasible.
     """
     try:
         problem, a = _adjency_matrix_sdp_optimization(a)
@@ -81,31 +82,30 @@ def new_sdp_mh_transition_matrix(
         return None, float('inf')
 
 
+# noinspection PyIncorrectDocstring
 def new_go_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
-    """Constructs an optimized transition matrix using cvxpy and MOSEK solver.
+    """Constructs a transition matrix using global optimization techniques.
 
     Constructs an optimized markov matrix using linear programming relaxations
-    and convex envelope approximations for the specified steady state `v`.
-    Result is only trully optimal if normal(Tranistion Matrix Opt - Uniform
-    Matrix, 2) is equal to the markov matrix eigenvalue.
-
-    Note:
-        This function only works if you have a valid MOSEK license.
+    and convex envelope approximations for the specified steady state ``v``.
+    Result is only trully optimal if :math:`normal(Mopt - (1 / len(v)), 2)`
+    is equal to the highest Markov Matrix eigenvalue that is smaller than one.
 
     Args:
         a:
             A non-optimized symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic steady state distribution vector.
 
     Returns:
-        Markov Matrix with `v_` as steady state distribution and the
+        Markov Matrix with ``v_`` as steady state distribution and the
         respective mixing rate.
     """
     # Allocate python variables
     n: int = a.shape[0]
-    ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
+    ones_vector: np.ndarray = np.ones(
+        n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
     ones_matrix: np.ndarray = np.ones((n, n))
     zeros_matrix: np.ndarray = np.zeros((n, n))
     u: np.ndarray = np.ones((n, n)) / n
@@ -116,8 +116,10 @@ def new_go_transition_matrix(
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
         t >= 0,  # Aopt entries must be non-negative
-        (t @ ones_vector) == ones_vector,  # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(t, ones_matrix - a) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
+        (t @ ones_vector) == ones_vector,
+        # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
+        cvx.multiply(t, ones_matrix - a) == zeros_matrix,
+        # optimized matrix has no new connections. It may have less than original adjencency matrix
         (v_ @ t) == v_,  # Resulting matrix must be a markov matrix.
     ]
 
@@ -135,28 +137,30 @@ def new_go_transition_matrix(
         return None, float('inf')
 
 
+# noinspection PyIncorrectDocstring
 def new_mgo_transition_matrix(
         a: np.ndarray, v_: np.ndarray) -> Tuple[Optional[np.ndarray], float]:
     """Constructs an optimized transition matrix using the matlab engine.
 
     Constructs an optimized transition matrix using linear programming
     relaxations and convex envelope approximations for the specified steady
-    state `v`. Result is only trully optimal if normal(Tranistion Matrix Opt
-    - Uniform Matrix, 2) is equal to the markov matrix eigenvalue. The code
-    is run on a matlab engine because it provides a non-convex SDP solver ç
-    BMIBNB.
+    state ``v``.
+    Result is only trully optimal if :math:`normal(Mopt - (1 / len(v)), 2)`
+    is equal to the highest Markov Matrix eigenvalue that is smaller than one.
 
     Note:
-        This function can only be invoked if you have a valid matlab license.
+        This function's code runs inside a matlab engine because it provides
+        a non-convex SDP solver BMIBNB. If you do not have valid matlab
+        license the output of this function is always ``(None, float('inf')``.
 
     Args:
         a:
             A non-optimized symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic steady state distribution vector.
 
     Returns:
-        Markov Matrix with `v_` as steady state distribution and the
+        Markov Matrix with ``v_`` as steady state distribution and the
         respective mixing rate.
     """
     matlab_container = MatlabEngineContainer.get_instance()
@@ -167,7 +171,9 @@ def new_mgo_transition_matrix(
             return t, get_mixing_rate(t)
         else:
             return None, float('inf')
-    except EngineError:
+    except (EngineError, AttributeError):
+        # EngineError deals with invalid license or unfeasible problems,
+        # AttributeError deals MatlabEngineContainer.eng with None value.
         return None, float('inf')
 # endregion
 
@@ -181,9 +187,10 @@ def _adjency_matrix_sdp_optimization(
     with the the same length as the inputed symmetric matrix.
 
     Note:
-        1. This function only works if you have a valid MOSEK license.
-        2. The input Matrix hould have no transient states/absorbent nodes, but
-        this is not enforced or verified.
+        This function tries to use
+        `Mosek Solver <https://docs.mosek.com/9.2/pythonapi/index.html>`_,
+        if a valid license is not found, it uses
+        `SCS Solver <https://github.com/cvxgrp/scs>`_ instead.
 
     Args:
         a:
@@ -195,7 +202,8 @@ def _adjency_matrix_sdp_optimization(
 
     # Allocate python variables
     n: int = a.shape[0]
-    ones_vector: np.ndarray = np.ones(n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
+    ones_vector: np.ndarray = np.ones(
+        n)  # np.ones((3,1)) shape is (3, 1)... whereas np.ones(n) shape is (3,), the latter is closer to cvxpy representation of vector
     ones_matrix: np.ndarray = np.ones((n, n))
     zeros_matrix: np.ndarray = np.zeros((n, n))
     u: np.ndarray = np.ones((n, n)) / n
@@ -208,18 +216,32 @@ def _adjency_matrix_sdp_optimization(
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
         a_opt >= 0,  # a_opt entries must be non-negative
-        (a_opt @ ones_vector) == ones_vector,  # a_opt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(a_opt, ones_matrix - a) == zeros_matrix,  # optimized matrix has no new connections. It may have less than original adjencency matrix
-        (a_opt - u) >> (-t * i),  # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
+        (a_opt @ ones_vector) == ones_vector,
+        # a_opt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
+        cvx.multiply(a_opt, ones_matrix - a) == zeros_matrix,
+        # optimized matrix has no new connections. It may have less than original adjencency matrix
+        (a_opt - u) >> (-t * i),
+        # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
         (a_opt - u) << (t * i)  # eigenvalue upper bound
     ]
 
     # Formulate and Solve Problem
     objective = cvx.Minimize(t)
     problem = cvx.Problem(objective, constraints)
-    problem.solve(solver=cvx.MOSEK)
+
+    try:
+        # try using Mosek before any other solver for SDP problem solving.
+        if cvx.MOSEK in cvx.installed_solvers():
+            problem.solve(solver=cvx.MOSEK)
+        else:
+            problem.solve(solver=cvx.SCS)
+    except MosekException:
+        # catches invalid MosekException invalid license.
+        problem.solve(solver=cvx.SCS)
 
     return problem, a_opt
+
+
 # endregion
 
 
@@ -237,24 +259,24 @@ def _metropolis_hastings(a: np.ndarray,
     Args:
         a:
             A symmetric adjency matrix.
-        v_:
+        `v_`:
             A stochastic vector that is the steady state of the resulting
             transition matrix.
         column_major_out:
-            optional; Indicates whether to return transition_matrix output
+             Indicates whether to return transition_matrix output
             is in row or column major form.
         version:
-            optional; Indicates which version of the algorith should be used
-            (default is 2, for version 2).
+             Indicates which version of the algorith should be used
+            (default is version 2).
 
     Returns:
-        An unlabeled transition matrix with steady state v_.
+        An unlabeled transition matrix with steady state ``v_``.
 
     Raises:
         DistributionShapeError:
-            When the length of v_ is not the same as the matrix a.
+            When the length of ``v_`` is not the same as the matrix `a`.
         MatrixNotSquareError:
-            When matrix a is not a square matrix.
+            When matrix `a` is not a square matrix.
     """
 
     if v_.shape[0] != a.shape[1]:
@@ -281,9 +303,9 @@ def _metropolis_hastings(a: np.ndarray,
             if i != j:
                 m[i, j] = rw[i, j] * min(1, r[i, j])
         if version == 1:
-            m[i, i] = __get_diagonal_entry_probability(rw, r, i)
+            m[i, i] = _get_diagonal_entry_probability_v1(rw, r, i)
         elif version == 2:
-            m[i, i] = __get_diagonal_entry_probability_v2(m, i)
+            m[i, i] = _get_diagonal_entry_probability_v2(m, i)
 
     if column_major_out:
         return m.transpose()
@@ -316,17 +338,17 @@ def _construct_random_walk_matrix(a: np.ndarray) -> np.ndarray:
     return a / np.sum(a, axis=1)
 
 
-def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
-    """Builds a rejection matrix for a given rejection matrix rw and vector v_.
+def _construct_rejection_matrix(rw: np.ndarray, v_: np.ndarray) -> np.ndarray:
+    """Builds a matrix of rejection probabilities for a given random walk.
 
     Args:
-        v_:
-            a stochastic desired distribution vector
         rw:
             a random_walk over an adjacency matrix
+        `v_`:
+            a stochastic desired distribution vector
 
     Returns:
-        A matrix whose entries are acceptance probabilities for the random walk.
+        A matrix whose entries are acceptance probabilities for ``rw``.
     """
     shape = rw.shape
     size = shape[0]
@@ -338,27 +360,33 @@ def _construct_rejection_matrix(rw: np.ndarray, v_: np.array) -> np.ndarray:
     return r
 
 
-def __get_diagonal_entry_probability(
+def _get_diagonal_entry_probability_v1(
         rw: np.ndarray, r: np.ndarray, i: int) -> np.float64:
-    """Helper function used by _metropolis_hastings function.
+    """Helper function used during the metropolis-hastings algorithm.
 
-    Calculates the value that should be assigned to the entry (i, i) of the
+    Calculates the value that should be assigned to the entry ``(i, i)`` of the
     transition matrix being calculated by the metropolis hastings algorithm
     by considering the rejection probability over the random walk that was
     performed on an adjacency matrix.
 
+    Note:
+        This method does considers element-wise rejection probabilities
+        for random walk matrices. If you wish to implement a modification of
+        the metropolis-hastings algorithm and you do not utilize rejection
+        matrices use :py:func:`_get_diagonal_entry_probability_v2` instead.
+
     Args:
         rw:
-            A random_walk over an adjacency matrix.
+            A random walk over an adjacency matrix.
         r:
-            A matrix whose entries contain acceptance probabilities for rw.
+            A matrix whose entries contain acceptance probabilities for ``rw``.
         i:
-            The diagonal-index of the random walk where summation needs to
-            be performed on.
+            The diagonal-index of ``rw`` where summation needs to
+            be performed on. E.g.: ``rw[i, i]``.
 
     Returns:
-        A probability to be inserted at entry (i, i) of the transition matrix
-        outputed by the _metropolis_hastings function.
+        A probability to be inserted at entry ``(i, i)`` of the transition
+        matrix outputed by the :py:func:`_metropolis_hastings`.
     """
     size: int = rw.shape[0]
     pii: np.float64 = rw[i, i]
@@ -367,25 +395,33 @@ def __get_diagonal_entry_probability(
     return pii
 
 
-def __get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
-    """Helper function used by _metropolis_hastings function.
+def _get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
+    """Helper function used during the metropolis-hastings algorithm.
 
-        Calculates the value that should be assigned to the entry (i, i) of the
-        transition matrix being calculated by the metropolis hastings algorithm
-        by considering the rejection probability over the random walk that was
-        performed on an adjacency matrix.
+    Calculates the value that should be assigned to the entry ``(i, i)`` of the
+    transition matrix being calculated by the metropolis hastings algorithm
+    by considering the rejection probability over the random walk that was
+    performed on an adjacency matrix.
 
-        Args:
-            m:
-                The matrix to receive the diagonal entry value.
-            i:
-                The diagonal entry index. E.g.: m[i, i].
+    Note:
+        This method does not consider element-wise rejection probabilities
+        for random walk matrices. If you wish to implement a modification of
+        the metropolis-hastings algorithm and you utilize rejection matrices
+        use :py:func:`_get_diagonal_entry_probability_v1` instead.
 
-        Returns:
-            A probability to be inserted at entry (i, i) of the transition matrix
-            outputed by the _metropolis_hastings function.
-        """
+    Args:
+        m:
+            The matrix to receive the diagonal entry value.
+        i:
+            The diagonal entry index. E.g.: ``m[i, i]``.
+
+    Returns:
+        A probability to be inserted at entry ``(i, i)`` of the transition matrix
+        outputed by the :py:func:`_metropolis_hastings`.
+    """
     return 1 - np.sum(m[i, :])
+
+
 # endregion
 
 
@@ -393,16 +429,16 @@ def __get_diagonal_entry_probability_v2(m: np.ndarray, i: int) -> np.float64:
 def get_mixing_rate(m: np.ndarray) -> float:
     """Calculats the fast mixing rate the input matrix.
 
-    The fast mixing rate of matrix M is the highest eigenvalue that is
-    smaller than one. If returned value is 1.0 than the matrix has transient
-    states or absorbent nodes.
+    The fast mixing rate of matrix ``m`` is the highest eigenvalue that is
+    smaller than one. If returned value is ``1.0`` than the matrix has transient
+    states or absorbent nodes and as a result is not a markov matrix.
 
     Args:
         m:
             A matrix.
 
     Returns:
-        The highest eigenvalue of `m` that is smaller than one or one.
+        The highest eigenvalue of ``m`` that is smaller than one or one.
     """
     size = m.shape[0]
 
@@ -420,33 +456,33 @@ def new_symmetric_matrix(
 ) -> np.ndarray:
     """Generates a random symmetric matrix.
 
-     The generated adjacency matrix does not have transient state sets or
-     absorbent nodes and can effectively represent a network topology
-     with bidirectional connections between network nodes.
+    The generated adjacency matrix does not have transient state sets or
+    absorbent nodes and can effectively represent a network topology
+    with bidirectional connections between :py:class:`network nodes
+    <app.domain.network_nodes.Node>`.
 
-     Args:
-         size:
-            The length of the square matrix.
-         allow_sloops:
+    Args:
+        size:
+             The length of the square matrix.
+        allow_sloops:
             Indicates if the generated adjacency matrix allows diagonal
-            entries representing self-loops. If false, then, all diagonal
-                entries must be zeros. Otherwise, they can be zeros or ones (
-                default is True).
-         force_sloops:
+            entries representing self-loops. If ``False``, then, all diagonal
+            entries must be zeros. Otherwise, they can be zeros or ones.
+        force_sloops:
             Indicates if the diagonal of the generated matrix should be
-            filled with ones. If false, valid diagonal entries are decided by
-            `allow_self_loops` param. Otherwise, diagonal entries are filled
-            with ones. If `allow_self_loops` is False and `enforce_loops` is
-            True, an error is raised (default is True).
+            filled with ones. If ``False`` valid diagonal entries are
+            decided by ``allow_self_loops`` param. Otherwise, diagonal entries
+            are filled with ones. If ``allow_self_loops`` is ``False``
+            and ``enforce_loops`` is ``True``, an error is raised.
 
     Returns:
         The adjency matrix representing the connections between a
-        groups of network nodes.
+        groups of :py:class:`network nodes <app.domain.network_nodes.Node>`.
 
     Raises:
         IllegalArgumentError:
-            When `allow_self_loops` (False) conflicts with
-            `enforce_loops` (True).
+            When ``allow_self_loops`` (``False``) conflicts with
+            ``enforce_loops`` (``True``).
     """
     if not allow_sloops and force_sloops:
         raise IllegalArgumentError("Can not invoke new_symmetric_matrix with:\n"
@@ -473,16 +509,17 @@ def new_symmetric_connected_matrix(
 ) -> np.ndarray:
     """Generates a random symmetric matrix which is also connected.
 
-    See :py:func:`~domain.helpers.matrices.new_symmetric_matrix` and
-    py:func:`~domain.helpers.matrices.make_connected`.
+    See :py:func:`new_symmetric_matrix` and :py:func:`make_connected`.
 
-     Args:
-         size:
+    Args:
+        size:
             The length of the square matrix.
-         allow_sloops:
-            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.
-         force_sloops:
-            See :py:func:`~domain.helpers.matrices.new_symmetric_matrix`.
+        allow_sloops:
+            See :py:func:`~app.domain.helpers.matrices.new_symmetric_matrix`
+            for clarifications.
+        force_sloops:
+            See :py:func:`~app.domain.helpers.matrices.new_symmetric_matrix`
+            for clarifications.
 
     Returns:
         A matrix that represents an adjacency matrix that is also connected.
@@ -501,8 +538,8 @@ def make_connected(m: np.ndarray) -> np.ndarray:
         m: The matrix to be made connected.
 
     Returns:
-        A connected matrix. If the inputed matrix was connected it will
-        remain so.
+        A connected matrix. If ``m`` was symmetric the modified matrix will
+        also be symmetric.
     """
     size = m.shape[0]
     # Use guilty until proven innocent approach for both checks
@@ -520,17 +557,18 @@ def make_connected(m: np.ndarray) -> np.ndarray:
 
 
 def is_symmetric(m: np.ndarray, tol: float = 1e-8) -> bool:
-    """Checks if a matrix is symmetric by comparing entries of a and a.T.
+    """Checks if a matrix is symmetric by performing element-wise equality
+    comparison on entries of ``m`` and  ``m.T``.
 
     Args:
         m:
             The matrix to be verified.
         tol:
-            The tolerance used to verify the entries of the matrix (default
+            The tolerance used to verify the entries of the ``m`` (default
             is 1e-8).
 
     Returns:
-        True if the matrix is symmetric, else False.
+        ``True`` if the ``m`` is symmetric, else ``False``.
     """
     return np.all(np.abs(m - m.transpose()) < tol)
 
@@ -543,12 +581,12 @@ def is_connected(m: np.ndarray, directed: bool = False) -> bool:
         m:
             The matrix to be verified.
         directed:
-            If the matrix edges are directed, i.e., if the matrix is an adjency
-            matrix are the edges bidirectional, where false means they are (
-            default is false).
+            If ``m`` edges are directed, i.e., if ``m`` is an adjency
+            matrix in which the edges bidirectional. ``False`` means they
+            are. ``True`` means they are not.
 
     Returns:
-        True if the matrix is a connected graph, else False.
+        ``True`` if the matrix is a connected graph, else ``False``.
     """
     n, cc_labels = connected_components(m, directed=directed)
     return n == 1
