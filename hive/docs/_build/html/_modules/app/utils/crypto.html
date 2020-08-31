@@ -60,7 +60,15 @@
     <section class="site-nav">
     
     
-        <div></div>
+        <p class="caption"><span class="caption-text">Navbar</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstartdocs.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scriptdocs.html">Scripts and Flags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../app.html">App Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notedocs.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices</a></li>
+</ul>
+
     
     </section>
 
@@ -100,7 +108,8 @@
             <div class="container">
                 
   <h1>Source code for app.utils.crypto</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Utility module that includes confidentiality, integrity and authentication functions.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Utility module that includes confidentiality, integrity and authentication</span>
+<span class="sd">functions.</span>
 
 <span class="sd">Note:</span>
 <span class="sd">    As of current release this module only includes one function</span>
@@ -113,14 +122,15 @@
 
 
 <div class="viewcode-block" id="sha256"><a class="viewcode-back" href="../../../app.utils.html#app.utils.crypto.sha256">[docs]</a><span class="k">def</span> <span class="nf">sha256</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Calculates the SHA-256 hash of data. Data can be anything.</span>
+    <span class="sd">&quot;&quot;&quot;Calculates the ``sha256`` hash of ``data``. Data can be anything.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        data: The data to get the hash from. If data is not of type bytes,</span>
-<span class="sd">        it will be converted to bytes before the data is digested.</span>
+<span class="sd">        data:</span>
+<span class="sd">            The data to get the hash from. If ``data`` is not of type bytes,</span>
+<span class="sd">            it will be converted to bytes before the data is digested.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The SHA-256 hash of data.</span>
+<span class="sd">        The hashvalue of ``data`` using ``sha256`` algorithm.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
@@ -177,6 +187,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../../../_static/js/theme-min.js"></script> 
 </body>
 </html>

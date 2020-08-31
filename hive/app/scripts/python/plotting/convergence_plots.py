@@ -76,7 +76,7 @@ def process_file(filepath, convergence_times_list):
         terminated = json_obj["terminated"]
         largest_convergence_window = json_obj["largest_convergence_window"]
         data = json_obj["convergence_sets"]
-        # Calculate how much time the hive was in convergence
+        # Calculate how much time the cluster was in convergence
         smallest_convergence_window = terminated
 
         for convergence_set in data:

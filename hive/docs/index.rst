@@ -3,107 +3,58 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Hives Quickstart
-=============================================================================
-
-Hives is a P2P Stochastic Swarm Guidance Simulator that facilitates research
-by allowing developers to prototype P2P networks based on swarm guidance
-behaviors, quickly. The simulator is written in Python (version 3.7.x) which
-offers users easy access to powerful scientific libraries such as NumPy,
-SciPy and Pandas, which are not readily available in languages like Java or C#
-and as a result of some of the best or most well-known simulators out there.
+Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator
+============================================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 4
+   :caption: Navbar
+   :hidden:
 
-Technology
-----------
+   quickstartdocs
+   scriptdocs
+   app
+   notedocs
+   indices
 
-This simulator uses Python 3.7.7. You are free to use any version you desire,
-but we do not guarantee the simulator will work under such conditions.
-Any version launched before 3.7.x will not run this project due to retro
-compatibility errors. We recommend using an IDE such as PyCharm or equivalent
-for easier inspection, usage, and setups.
+This project was born during the development and writing of a master's
+dissertation in Computer Science and Engineering, through a research
+sponsorship granted by ISR_ for the participation in the project
+*UID/EEA/50009/2019 - 1801P.00920.1.02 DSOR*. ISR is research and
+development institution affiliated with IST_, the university where said
+dissertation is submitted at.
 
-Installation
-~~~~~~~~~~~~
+The project's work consisted of adapting and optimizing a few algorithms widely
+used and studied in robotics and control research fields to a P2P scenario
+where the peers form the basis for a Distributed Backup System. Throughout this
+process, due to the lack of other viable options, the researchers wrote their
+own cycle based simulator, and the result was *Hives*.
 
-1. Download and install Python 3.7.7 if you do not have it yet:
+Hives is a P2P Stochastic Swarm Guidance Simulator that facilitates
+research by allowing developers to prototype P2P networks based on swarm
+guidance behaviors quickly. The simulator is written in Python_ (version 3.7.7),
+which offers users easy access to powerful scientific libraries such as NumPy_,
+SciPy_, and Pandas_, which are not readily available in languages like Java_
+and as a result of some of the best or most well-known simulators out there.
 
-|
-   - https://www.python.org/downloads/release/python-377/
+|pic1| |pic2|
 
-2. Download (clone) our repository at:
+.. |pic1| image:: _static/logos/ist-logo.png
+   :width: 45%
 
-|
-   - https://github.com/FranciscoKloganB/hive-msc-thesis
+.. |pic2| image:: _static/logos/isr-logo.png
+   :width: 45%
 
-3. We recommended using JetBrains' IDEs, but this is not necessary:
+.. _IST: https://tecnico.ulisboa.pt/en/
 
-|
-   - https://www.jetbrains.com/pycharm/download
+.. _ISR: https://welcome.isr.tecnico.ulisboa.pt/
 
-4. Create a virtual environment of your choosing, two example guides are
-linked below:
+.. _Python: http://www.python.org/
 
-|
-   - https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
-|
-   - https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html
+.. _NumPy: https://numpy.org/
 
-5. Navigate to ``hive`` folder located at the root of your recently cloned
-project:
+.. _SciPy: https://www.scipy.org/
 
-|
-   - ``$ cd hive``
+.. _Pandas: https://pandas.pydata.org/
 
-6. Install project dependencies by opening your terminal and inserting the
-command:
-
-|
-   - ``$ pip install -r requirements.txt``
-
-Usage
------
-
-A typical usage of the Hives simulator would include the following sequence of
-commands (see `Scripts and Flags`_ section for flag details), responding
-accordingly to any prompts that appear on your command line terminal:
-
-   ``$ cd hive/app``
-
-   ``$ python simfile_generator.py --file=test01.json``
-
-   ``$ python hive_simulation.py --file=test01.json --iters=30 --epochs=720``
-
-Scripts and Flags
------------------
-
-+------------------------+------------------+-------------------+-------------------+------------------------------------------------------------------------------------------------------------+
-| *simfile_generator.py* |                  |                   |                   |                                                                                                            |
-+========================+==================+===================+===================+============================================================================================================+
-| **Long option**        | **Short Option** | **Argument Type** | **Default Value** | **Description**                                                                                            |
-+------------------------+------------------+-------------------+-------------------+------------------------------------------------------------------------------------------------------------+
-| --file                 | -f               | str               | ``None``          | Creates a simulation file with the specified name in :py:const:`app.environment_settings.SIMULATION_ROOT`. |
-+------------------------+------------------+-------------------+-------------------+------------------------------------------------------------------------------------------------------------+
-
-Future Releases
----------------
-
-In the future, we will focus on improving each simulation's thread performance,
-in the current release, any P2P network with more than 16 peers and many files
-can take a long time to complete due to the amount of *for* statements that
-exist in the code. This is one reason why our program offers the possibility
-of running multiple (different) simulations in different threads, allowing
-researchers to complete more simulations, in less time, by fully utilizing the
-CPU of their machines. Ideally, we would like to offer this speed up using
-multi-threading and fast individual threads.
-
-
-
-
-Indices and tables
-==================
-
-* :ref:`modindex`
+.. _Java: https://www.oracle.com/java/technologies/javase-jdk14-downloads.html/

@@ -60,7 +60,15 @@
     <section class="site-nav">
     
     
-        <div></div>
+        <p class="caption"><span class="caption-text">Navbar</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstartdocs.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scriptdocs.html">Scripts and Flags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../app.html">App Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../notedocs.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../indices.html">Indices</a></li>
+</ul>
+
     
     </section>
 
@@ -101,7 +109,7 @@
                 
   <h1>Source code for app.domain.cluster_groups</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;This module contains domain specific classes that represent groups of</span>
-<span class="sd">storage nodes.&quot;&quot;&quot;</span>
+<span class="sd">:py:mod:`storage nodes &lt;app.domain.network_nodes&gt;`.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
@@ -128,86 +136,84 @@
     <span class="sd">&quot;&quot;&quot;Represents a group of network nodes ensuring the durability of a file.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        id:</span>
-<span class="sd">            An uuid that uniquely identifies the Cluster.</span>
-<span class="sd">            Usefull for when there are multiple Cluster instances in a</span>
-<span class="sd">            simulation environment.</span>
-<span class="sd">        current_epoch:</span>
+<span class="sd">        id (str):</span>
+<span class="sd">            A unique identifier of the ``Cluster`` instance.</span>
+<span class="sd">        current_epoch (int):</span>
 <span class="sd">            The simulation&#39;s current epoch.</span>
-<span class="sd">        corruption_chances:</span>
-<span class="sd">            A two-element list containing the probability of file block replica</span>
+<span class="sd">        corruption_chances (List[float]):</span>
+<span class="sd">            A two-element list containing the probability of</span>
+<span class="sd">            :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
 <span class="sd">            being corrupted and not being corrupted, respectively. See</span>
-<span class="sd">            :py:meth:`~app.domain.cluster_groups.Cluster.__assign_disk_error_chance__`</span>
+<span class="sd">            :py:meth:`~app.domain.cluster_groups.Cluster._assign_disk_error_chance`</span>
 <span class="sd">            for corruption chance configuration.</span>
-<span class="sd">        master:</span>
-<span class="sd">            A reference to :py:class:`app.domain.master_servers.Master` that</span>
-<span class="sd">            coordinates this Cluster instance.</span>
-<span class="sd">        members:</span>
-<span class="sd">            A collection of network nodes that belong to the Cluster</span>
-<span class="sd">            instance. See also :py:class:`app.domain.network_nodes.HiveNode`.</span>
-<span class="sd">        file:</span>
-<span class="sd">            A reference to :py:class:`app.domain.helpers.FileData` object that</span>
-<span class="sd">            represents the file being persisted by the Cluster instance.</span>
-<span class="sd">        critical_size:</span>
+<span class="sd">        master (:py:class:`~app.domain.master_servers.Master`):</span>
+<span class="sd">            A reference to a server that coordinates or monitors the ``Cluster``.</span>
+<span class="sd">        members (List[:py:class:`~app.domain.network_nodes.Node`]):</span>
+<span class="sd">            A collection of network nodes that belong to the ``Cluster``.</span>
+<span class="sd">        file (:py:class:`~app.domain.helpers.smart_dataclasses.FileData`):</span>
+<span class="sd">            A reference to</span>
+<span class="sd">            :py:class:`~app.domain.helpers.smart_dataclasses.FileData`</span>
+<span class="sd">            object that represents the file being persisted by the Cluster</span>
+<span class="sd">            instance.</span>
+<span class="sd">        critical_size (int):</span>
 <span class="sd">            Minimum number of network nodes plus required to exist in the</span>
 <span class="sd">            Cluster to assure the target replication level.</span>
-<span class="sd">        sufficient_size:</span>
-<span class="sd">             Sum of :py:attr:`app.domain.cluster_groups.Cluster.critical_size`</span>
+<span class="sd">        sufficient_size (int):</span>
+<span class="sd">             Sum of :py:attr:`~app.domain.cluster_groups.Cluster.critical_size`</span>
 <span class="sd">             and the number of nodes expected to fail between two successive</span>
 <span class="sd">             recovery phases.</span>
-<span class="sd">        original_size:</span>
+<span class="sd">        original_size (int):</span>
 <span class="sd">            The initial and theoretically optimal</span>
-<span class="sd">            :py:class:`app.domain.cluster_groups.Cluster` size.</span>
-<span class="sd">        redundant_size:</span>
+<span class="sd">            :py:class:`~app.domain.cluster_groups.Cluster` size.</span>
+<span class="sd">        redundant_size (int):</span>
 <span class="sd">            Application-specific parameter, which indicates that membership</span>
 <span class="sd">            of the Cluster must be pruned.</span>
-<span class="sd">        running:</span>
-<span class="sd">            Indicates if the Cluster instance is active. This attribute is</span>
-<span class="sd">            used by :py:class:`app.domain.master_servers.Master` to manage the</span>
-<span class="sd">            simulation process.</span>
-<span class="sd">        _recovery_epoch_sum:</span>
+<span class="sd">        running (bool):</span>
+<span class="sd">            Indicates if the Cluster instance is active. Used by</span>
+<span class="sd">            :py:class:`~app.domain.master_servers.Master` to manage the</span>
+<span class="sd">            simulation processes.</span>
+<span class="sd">        _recovery_epoch_sum (int):</span>
 <span class="sd">            Helper attribute that facilitates the storage of the sum of the</span>
 <span class="sd">            values returned by all</span>
-<span class="sd">            :py:meth:`app.domain.helpers.smart_dataclasses.FileBlockData</span>
-<span class="sd">            .set_recovery_epoch` method calls. Important for logging purposes.</span>
-<span class="sd">        _recovery_epoch_calls:</span>
+<span class="sd">            :py:meth:`~app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`</span>
+<span class="sd">            method calls. Important for logging purposes.</span>
+<span class="sd">        _recovery_epoch_calls (int):</span>
 <span class="sd">            Helper attribute that facilitates the storage of the sum of the</span>
 <span class="sd">            values returned by all</span>
-<span class="sd">            :py:meth:`app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`</span>
+<span class="sd">            :py:meth:`~app.domain.helpers.smart_dataclasses.FileBlockData.set_recovery_epoch`</span>
 <span class="sd">            method calls throughout the :py:attr:`current_epoch`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="Cluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
                  <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
                  <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Instantiates an `Cluster` object</span>
+        <span class="sd">&quot;&quot;&quot;Instantiates an ``Cluster`` object</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            master:</span>
-<span class="sd">                A reference to an :py:class:`app.domain.master_servers.Master`</span>
-<span class="sd">                object that manages the `Cluster` being initialized.</span>
+<span class="sd">            master (:py:class:`~app.type_hints.MasterType`):</span>
+<span class="sd">                A reference to an :py:class:`~app.domain.master_servers.Master`</span>
+<span class="sd">                object that manages the ``Cluster`` being initialized.</span>
 <span class="sd">            file_name:</span>
-<span class="sd">                The name of the file this `:py:class:`Cluster</span>
-<span class="sd">                &lt;app.domain.cluster_groups.Cluster&gt;` is responsible for</span>
+<span class="sd">                The name of the file the ``Cluster`` is responsible for</span>
 <span class="sd">                persisting.</span>
-<span class="sd">            members:</span>
-<span class="sd">                A dictionary mapping unique identifiers</span>
-<span class="sd">                :py:class:`Clusters&#39; &lt;app.domain.cluster_groups.Cluster&gt;`</span>
-<span class="sd">                identifiers to their instances.</span>
+<span class="sd">            members (:py:class:`~app.type_hints.NodeDict`):</span>
+<span class="sd">                A dictionary where keys are :py:attr:`node identifiers</span>
+<span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` and values are their</span>
+<span class="sd">                :py:class:`instance objects &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">            sim_id:</span>
-<span class="sd">                optional; Identifier that generates unique output file names,</span>
+<span class="sd">                Identifier that generates unique output file names,</span>
 <span class="sd">                thus guaranteeing that different simulation instances do not</span>
 <span class="sd">                overwrite previous out files.</span>
 <span class="sd">            origin:</span>
-<span class="sd">                optional; The name of the simulation file name that started</span>
+<span class="sd">                The name of the simulation file name that started</span>
 <span class="sd">                the simulation process.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__assign_disk_error_chance__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assign_disk_error_chance</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="n">members</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span><span class="p">(</span>
@@ -219,7 +225,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sufficient_size</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
 
     <span class="c1"># region Cluster API</span>
 <div class="viewcode-block" id="Cluster.route_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.route_part">[docs]</a>    <span class="k">def</span> <span class="nf">route_part</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -227,22 +233,31 @@
                    <span class="n">receiver</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">,</span>
                    <span class="n">fresh_replica</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Sends one file block replica to some other network node.</span>
+        <span class="sd">&quot;&quot;&quot;Sends a :py:class:`file block replica</span>
+<span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` to some other</span>
+<span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;` in</span>
+<span class="sd">        :py:attr:`members`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            sender:</span>
-<span class="sd">                An identifier of the network node who is sending the message.</span>
+<span class="sd">                An identifier of the</span>
+<span class="sd">                :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`</span>
+<span class="sd">                who is sending the message.</span>
 <span class="sd">            receiver:</span>
-<span class="sd">                The destination network node identifier.</span>
+<span class="sd">                The destination</span>
+<span class="sd">                :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`</span>
+<span class="sd">                identifier.</span>
 <span class="sd">            replica:</span>
-<span class="sd">                The file block replica send to specified destination.</span>
+<span class="sd">                The :py:class:`file block replica &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                to be sent specified destination: ``receiver``.</span>
 <span class="sd">            fresh_replica:</span>
-<span class="sd">                optional; Prevents recently created replicas from being</span>
+<span class="sd">                Prevents recently created replicas from being</span>
 <span class="sd">                corrupted, since they are not likely to be corrupted in disk.</span>
-<span class="sd">                This argument facilitates simulation. (default: False)</span>
+<span class="sd">                This argument facilitates simulation.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            An HTTP code sent by destination network node.</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.HttpCodes`:</span>
+<span class="sd">                An http code sent by the ``receiver``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">sender</span> <span class="o">==</span> <span class="n">receiver</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">DUMMY</span>
@@ -275,12 +290,12 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            complainter:</span>
-<span class="sd">                The identifier of the complaining :py:class:`Network Node</span>
+<span class="sd">                The identifier of the complaining :py:class:`network node</span>
 <span class="sd">                &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">            complainee:</span>
-<span class="sd">                The identifier of the :py:class:`Network Node</span>
+<span class="sd">                The identifier of the :py:class:`network node</span>
 <span class="sd">                &lt;app.domain.network_nodes.Node&gt;` being complained about.</span>
-<span class="sd">            reason:</span>
+<span class="sd">            reason (:py:data:`app.type_hints.HttpResponse`):</span>
 <span class="sd">                The :py:class:`http code &lt;app.domain.helpers.enums.HttpCodes&gt;`</span>
 <span class="sd">                that led to the complaint.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -288,24 +303,22 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="Cluster.__assign_disk_error_chance__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.__assign_disk_error_chance__">[docs]</a>    <span class="k">def</span> <span class="nf">__assign_disk_error_chance__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<div class="viewcode-block" id="Cluster._assign_disk_error_chance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._assign_disk_error_chance">[docs]</a>    <span class="k">def</span> <span class="nf">_assign_disk_error_chance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Defines the probability of a file block being corrupted while stored</span>
 <span class="sd">        at the disk of a</span>
-<span class="sd">        :py:class:`Network Node &lt;app.domain.network_nodes.Node&gt;`.</span>
+<span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            Recommended value should be based on the paper named</span>
 <span class="sd">            `An Analysis of Data Corruption in the Storage Stack</span>
-<span class="sd">            &lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;`. Thus</span>
-<span class="sd">            the current implementation follows this formula::</span>
+<span class="sd">            &lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;`_. Thus</span>
+<span class="sd">            the current implementation follows this formula:</span>
 
-<span class="sd">                :py:const:`MAX_EPOCHS &lt;app.domain.master_servers.Master.MAX_EPOCHS&gt;`</span>
-<span class="sd">                * P(Xt ≥ L) * / :py:const:`MONTH_EPOCHS &lt;app.environment_settings.MONTH_EPOCHS&gt;`</span>
+<span class="sd">                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`~app.environment_settings.MONTH_EPOCHS`) * ``P(Xt ≥ L)``)</span>
 
-<span class="sd">            The notation P(Xt ≥ L) denotes the probability of a disk</span>
+<span class="sd">            The notation ``P(Xt ≥ L)`` denotes the probability of a disk</span>
 <span class="sd">            developing at least L checksum mismatches within T months since</span>
-<span class="sd">            the disk’s first use in the field. Found in the paper&#39;s</span>
-<span class="sd">            results.</span>
+<span class="sd">            the disk’s first use in the field. As described in linked paper.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            A two element list with respectively, the probability of losing</span>
@@ -317,12 +330,9 @@
         <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">ploss_epoch</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Cluster.__setup_epoch__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.__setup_epoch__">[docs]</a>    <span class="k">def</span> <span class="nf">__setup_epoch__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Initializes some attributes of the Cluster during</span>
+<div class="viewcode-block" id="Cluster._setup_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._setup_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">_setup_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initializes some attributes of the ``Cluster`` during</span>
 <span class="sd">        its initialization.</span>
-
-<span class="sd">        The helper method is used to isolate the initialization of some</span>
-<span class="sd">        simulation related attributes for eaasier comprehension.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            epoch:</span>
@@ -333,55 +343,43 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="Cluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Distributes files among members of the cluster. Members are</span>
-<span class="sd">        instances of classes belonging to module</span>
-<span class="sd">        :py:mod:`app.domain.network_nodes`.</span>
+        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
+<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
+<span class="sd">        objects among the :py:attr:`members` of the ``Cluster``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            replicas:</span>
-<span class="sd">                A collection of file replicas, without replication, to be</span>
-<span class="sd">                distributed between the Cluster members according to</span>
-<span class="sd">                the desired `strategy`.</span>
+<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
+<span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
+<span class="sd">                replicas, without replication.</span>
 <span class="sd">            strat:</span>
-<span class="sd">                A user defined way of identifying the way files are initially</span>
-<span class="sd">                distributed among members of the cluster. ::</span>
-
-<span class="sd">                    u</span>
-<span class="sd">                        Distributed uniformly across network.</span>
-<span class="sd">                    a</span>
-<span class="sd">                        Give all file block replicas to N different network</span>
-<span class="sd">                        nodes, where N is the replication level.</span>
-<span class="sd">                    i</span>
-<span class="sd">                        Distribute all file block replicas following such</span>
-<span class="sd">                        that the simulation starts with all file replicas and</span>
-<span class="sd">                        their replicas distributed with a bias towards the</span>
-<span class="sd">                        ideal steady state distribution.</span>
-
+<span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
+<span class="sd">                the ``Cluster``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="Cluster.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Orders all network node members to execute their epoch</span>
+        <span class="sd">&quot;&quot;&quot;Orders all :py:attr:`members` to execute their epoch.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            If the Cluster terminates early, i.e., if it terminates before</span>
-<span class="sd">            reaching :py:const:`app.environment_settings.MAX_EPOCHS`,</span>
-<span class="sd">            no logging should be done in</span>
-<span class="sd">            :py:class:`app.domain.helpers.smart_dataclasses.LoggingData`</span>
-<span class="sd">            the received `epoch` to avoid skewing previously collected results.</span>
+<span class="sd">            If the ``Cluster`` terminates early, before it reaches</span>
+<span class="sd">            :py:const:`~app.domain.master_servers.Master.MAX_EPOCHS`,</span>
+<span class="sd">            nothing should be logged in</span>
+<span class="sd">            :py:class:`~app.domain.helpers.smart_dataclasses.LoggingData`</span>
+<span class="sd">            at the specified ``epoch`` to avoid skewing previously</span>
+<span class="sd">            collected results.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            epoch:</span>
-<span class="sd">                The epoch the Cluster should currently be in, according</span>
-<span class="sd">                to it&#39;s managing Master.</span>
+<span class="sd">                The epoch the ``Cluster`` should currently be in, according</span>
+<span class="sd">                to it&#39;s managing :py:attr:`master` entity.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            False if Cluster failed to persist the file it was</span>
-<span class="sd">            responsible for, otherwise True.</span>
+<span class="sd">            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it was</span>
+<span class="sd">            responsible for, otherwise ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__setup_epoch__</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
 
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes_execute</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
@@ -394,49 +392,50 @@
                                                <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
+        <span class="sd">&quot;&quot;&quot;Queries all :py:attr:`members` to execute the epoch.</span>
 
-<span class="sd">        This method logs the amount of lost replicas throughout the current</span>
-<span class="sd">        epoch according to the members who went offline and the file replicas</span>
-<span class="sd">        replicas they posssed and is responsible for setting up a recovery</span>
-<span class="sd">        epoch for those replicas. See</span>
-<span class="sd">        (:py:meth:`app.domain.cluster_groups.Cluster.set_recovery_epoch`).</span>
+<span class="sd">        This method logs the amount of lost replicas throughout</span>
+<span class="sd">        :py:attr:`current_epoch` according to the :py:attr:`members` who went</span>
+<span class="sd">        offline and the</span>
+<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
+<span class="sd">        replicas they posssed and is responsible for</span>
+<span class="sd">        :py:meth:`setting a replication epoch</span>
+<span class="sd">        &lt;app.domain.cluster_groups.Cluster.set_replication_epoch&gt;`.</span>
 <span class="sd">        Similarly it logs the number of members who disconnected.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">             A collection of members who disconnected during the current</span>
-<span class="sd">             epoch. See</span>
-<span class="sd">             :py:meth:`app.domain.network_nodes.Node.get_epoch_status`.</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                List of :py:attr:`members` that disconnected during the</span>
+<span class="sd">                :py:attr:`current_epoch`. See</span>
+<span class="sd">                :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Abstract method that requires implementation in children of this</span>
-<span class="sd">        class.</span>
-
-<span class="sd">        This method functionality is to log the simulation status and verify</span>
-<span class="sd">        properties specified by the user and should be invoked by every</span>
-<span class="sd">        Cluster instance at every epoch time.</span>
+        <span class="sd">&quot;&quot;&quot;Evaluates and logs the health, possibly other parameters, of the</span>
+<span class="sd">        ``Cluster`` at every epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Evicts disconnected network_nodes from the Cluster and</span>
+        <span class="sd">&quot;&quot;&quot;Evicts disconnected :py:attr:`members` from the ``Cluster`` and</span>
 <span class="sd">        attempts to recruit new ones.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            off_nodes:</span>
-<span class="sd">                The collection of members who disconnected during the</span>
-<span class="sd">                current epoch.</span>
+<span class="sd">            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):</span>
+<span class="sd">                The subset of :py:attr:`members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Recruit new :py:mod:`Network Nodes &lt;app.domain.network_nodes&gt;`.</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to recruits new</span>
+<span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.Node&gt;` as members</span>
+<span class="sd">        of the ``Cluster``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A collection of new members, that is empty if membership did not</span>
-<span class="sd">            change.</span>
+<span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
+<span class="sd">                A dictionary that is empty if membership did not change.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sbm</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="n">status_bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cluster_status</span><span class="p">()</span>
@@ -450,14 +449,16 @@
         <span class="n">status_am</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cluster_status</span><span class="p">()</span>
 
         <span class="n">epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_maintenance</span><span class="p">(</span><span class="n">status_bm</span><span class="p">,</span> <span class="n">status_am</span><span class="p">,</span> <span class="n">sbm</span><span class="p">,</span> <span class="n">sam</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_maintenance</span><span class="p">(</span><span class="n">sbm</span><span class="p">,</span> <span class="n">sam</span><span class="p">,</span> <span class="n">status_bm</span><span class="p">,</span> <span class="n">status_am</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">new_members</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
-<div class="viewcode-block" id="Cluster.__log_evaluation__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.__log_evaluation__">[docs]</a>    <span class="k">def</span> <span class="nf">__log_evaluation__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Helper method that performs evaluate step related logging.</span>
+<div class="viewcode-block" id="Cluster._log_evaluation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._log_evaluation">[docs]</a>    <span class="k">def</span> <span class="nf">_log_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Helper that collects ``Cluster`` data and registers it on a</span>
+<span class="sd">        :py:class:`logger &lt;app.domain.helpers.smart_dataclasses.LoggingData&gt;`</span>
+<span class="sd">        object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            pcount:</span>
@@ -467,41 +468,46 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_existing_file_blocks</span><span class="p">(</span><span class="n">pcount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">pcount</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining parts.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parts_in_hive</span> <span class="o">=</span> <span class="n">pcount</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span> <span class="o">=</span> <span class="n">pcount</span></div>
 
 <div class="viewcode-block" id="Cluster._set_fail"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._set_fail">[docs]</a>    <span class="k">def</span> <span class="nf">_set_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Ends the Cluster instance simulation.</span>
 
-<span class="sd">        Sets :py:attr:`running` to False and instructs</span>
-<span class="sd">        :py:class:`app.domain.helpers.smart_dataclasses.FileData` to persist</span>
-<span class="sd">        :py:class:`app.domain.helpers.smart_dataclasses.LoggingData` to disk</span>
-<span class="sd">        and close its IO stream (</span>
-<span class="sd">        py:attr:`app.domain.helpers.smart_dataclasses.FileData.out_file`).</span>
+<span class="sd">        Sets :py:attr:`running` to ``False`` and orders</span>
+<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileData` to write</span>
+<span class="sd">        :py:class:`collected logs &lt;app.domain.helpers.smart_dataclasses.LoggingData&gt;`</span>
+<span class="sd">        to disk and close it&#39;s</span>
+<span class="sd">        :py:attr:`~app.domain.helpers.smart_dataclasses.FileData.out_file`</span>
+<span class="sd">        stream.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            message:</span>
-<span class="sd">                A short explanation of why the Cluster suffered</span>
-<span class="sd">                early termination.</span>
+<span class="sd">                A short explanation of why the ``Cluster`` terminated early.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_fail</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster._get_new_members"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._get_new_members">[docs]</a>    <span class="k">def</span> <span class="nf">_get_new_members</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Helper method that gets adds network nodes, if possible,</span>
-<span class="sd">        to the Cluster.</span>
+        <span class="sd">&quot;&quot;&quot;Helper method that searches for possible</span>
+<span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;` by querying</span>
+<span class="sd">        the :py:attr:`master` of the ``Cluster``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A dictionary mapping network node identifiers and their instance</span>
-<span class="sd">            objects (:py:mod:`Network Node &lt;app.domain.network_nodes&gt;`).</span>
+<span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
+<span class="sd">                A dictionary mapping where keys are</span>
+<span class="sd">                :py:attr:`node identifiers &lt;app.domain.network_nodes.Node.id&gt;`</span>
+<span class="sd">                and values are</span>
+<span class="sd">                :py:class:`node instances &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_replacement_node</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_online_nodes</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="Cluster.get_cluster_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.get_cluster_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_cluster_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Evaluates the cluster status.</span>
+        <span class="sd">&quot;&quot;&quot;Determines the ``Cluster``&#39;s status based on the length of the</span>
+<span class="sd">        current :py:attr:`members` list.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The status of the cluster as a string.</span>
+<span class="sd">            The status of the ``Cluster`` as a string.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
 
@@ -519,12 +525,13 @@
             <span class="k">return</span> <span class="s2">&quot;dead&quot;</span></div>
 
 <div class="viewcode-block" id="Cluster.set_replication_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.set_replication_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Delegates to :py:meth:`app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch`.</span>
+        <span class="sd">&quot;&quot;&quot;Delegates to :py:meth:`~app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            replica:</span>
-<span class="sd">                A reference to a ``FileBlockData`` instance that represents a</span>
-<span class="sd">                file block replica that was lost.</span>
+<span class="sd">                The :py:class:`file block replica</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` that</span>
+<span class="sd">                was lost.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">replica</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span> <span class="o">+=</span> <span class="n">s</span>
@@ -537,35 +544,53 @@
 <span class="sd">    guidance algorithm.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        v_ (pandas DataFrame):</span>
-<span class="sd">            Density distribution hive members must achieve with independent</span>
+<span class="sd">        v_ (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">            Density distribution cluster members must achieve with independent</span>
 <span class="sd">            realizations for ideal persistence of the file.</span>
-<span class="sd">        cv_ (pandas DataFrame):</span>
+<span class="sd">        cv_ (:py:class:`~pd:pandas.DataFrame`):</span>
 <span class="sd">            Tracks the file current density distribution, updated at each epoch.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="HiveCluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
                  <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
                  <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Instantiates an `HiveClusterExt` object.</span>
-
-<span class="sd">        Extends:</span>
-<span class="sd">            :py:class:`app.domain.cluster_groups.Cluster`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">create_and_bcast_new_transition_matrix</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_and_bcast_new_transition_matrix</span><span class="p">()</span></div>
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="HiveCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Batch distributes files to Cluster members.</span>
+        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
+<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
+<span class="sd">        objects among the :py:attr:`~Cluster.members` of the ``HiveCluster``.</span>
 
-<span class="sd">        This method is used at the start of a simulation to give all file</span>
-<span class="sd">        replicas including the replicas to members of the hive. Different</span>
-<span class="sd">        distribution options can be used depending on the selected `strategy`.</span>
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
+<span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
+<span class="sd">                replicas, without replication.</span>
+<span class="sd">            strat:</span>
+<span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
+<span class="sd">                the ``Cluster``.</span>
+
+<span class="sd">                u</span>
+<span class="sd">                    Distributed uniformly across network.</span>
+<span class="sd">                a</span>
+<span class="sd">                    Give all file block replicas to N different members,</span>
+<span class="sd">                    where N is equal to</span>
+<span class="sd">                    :py:const:`~app.environment_settings.REPLICATION_LEVEL`.</span>
+<span class="sd">                i</span>
+<span class="sd">                    Distribute all file block replicas following such</span>
+<span class="sd">                    that the simulation starts with all file replicas and</span>
+<span class="sd">                    their replicas distributed with a bias towards the</span>
+<span class="sd">                    ideal steady state distribution. This mode is only</span>
+<span class="sd">                    applicatable to clusters of type or with ancestor type</span>
+<span class="sd">                    :py:class:`~app.domain.cluster_groups.HiveCluster`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="n">strat</span>
 
@@ -610,9 +635,10 @@
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">             A collection of members who disconnected during the current</span>
-<span class="sd">             epoch. See</span>
-<span class="sd">             :py:meth:`app.domain.network_nodes.Node.get_epoch_status`.</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                 A collection of members who disconnected during the current</span>
+<span class="sd">                 epoch. See</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -630,7 +656,7 @@
                                        <span class="sa">f</span><span class="s2">&quot;id: </span><span class="si">{</span><span class="n">replica</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All hive members disconnected before maintenance.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All cluster members disconnected before maintenance.&quot;</span><span class="p">)</span>
 
         <span class="n">sf</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">LoggingData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span>
         <span class="n">sf</span><span class="o">.</span><span class="n">log_off_nodes</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
@@ -639,15 +665,6 @@
         <span class="k">return</span> <span class="n">off_nodes</span></div>
 
 <div class="viewcode-block" id="HiveCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Verifies file block distribution and hive health status.</span>
-
-<span class="sd">        Among other things it compares the current file block distribution</span>
-<span class="sd">        to the desired distribution, evicts and recruits new network nodes</span>
-<span class="sd">        for the Cluster and, performs logging invocations.</span>
-
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.evaluate`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
 
@@ -660,29 +677,29 @@
                 <span class="n">pcount</span> <span class="o">+=</span> <span class="n">node_parts_count</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__log_evaluation__</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HiveCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Evicts disconnected network_nodes from the Cluster and</span>
-<span class="sd">        attempts to recruit new ones.</span>
-
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="n">node</span><span class="o">.</span><span class="n">remove_file_routing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="HiveCluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Recruit new :py:mod:`Network Nodes &lt;app.domain.network_nodes&gt;`.</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to recruits new</span>
+<span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.HiveNode&gt;` as members</span>
+<span class="sd">        of the ``HiveCluster``.</span>
 
 <span class="sd">        Extends:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.membership_maintenance`.</span>
-<span class="sd">            The implementation of membership_maintenance in `HiveCluster`</span>
-<span class="sd">            class also adds and removes cloud references depending on the</span>
-<span class="sd">            number of network nodes active in the membership before</span>
-<span class="sd">            maintenance is performed.</span>
+
+<span class="sd">            ``HiveCluster.membership_maintenance`` adds and removes cloud</span>
+<span class="sd">            references depending depending on the length of :py:attr:`~Cluster.members`</span>
+<span class="sd">            before maintenance is performed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
+<span class="sd">                A dictionary that is empty if membership did not change.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">s</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span><span class="p">:</span>
@@ -700,23 +717,29 @@
 <div class="viewcode-block" id="HiveCluster.new_desired_distribution"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.new_desired_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">new_desired_distribution</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">member_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">member_uptimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Sets a new desired distribution for the Cluster instance.</span>
+        <span class="sd">&quot;&quot;&quot;Sets a new :py:attr:`desired distribution &lt;v_&gt;` for the</span>
+<span class="sd">        ``HiveCluster``.</span>
 
-<span class="sd">        Normalizes the received uptimes to create a stochastic representation</span>
-<span class="sd">        of the desired distribution, which can be used by the different</span>
-<span class="sd">        transition matrix generation strategies.</span>
+<span class="sd">        Received ``member_uptimes`` are normalized to create a stochastic</span>
+<span class="sd">        representation of the desired distribution, which can be used by the</span>
+<span class="sd">        different transition matrix generation strategies.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            member_ids:</span>
-<span class="sd">                A list of network node identifiers currently belonging</span>
-<span class="sd">                to the Cluster membership.</span>
+<span class="sd">                A list of :py:attr:`node identifiers</span>
+<span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` who are</span>
+<span class="sd">                :py:attr:`~Cluster.members` of the ``HiveCluster``.</span>
 <span class="sd">            member_uptimes:</span>
-<span class="sd">                A list in which each index contains the uptime of the network</span>
-<span class="sd">                node with the same index in `member_ids`.</span>
+<span class="sd">                A list of :py:attr:`node identifiers</span>
+<span class="sd">                &lt;app.domain.network_nodes.Node.uptime&gt;`.</span>
 
+<span class="sd">        Note:</span>
+<span class="sd">            ``member_ids`` and ``member_uptimes`` elements at each index should</span>
+<span class="sd">            belong to each other, i.e., they should originate from from the</span>
+<span class="sd">            same :py:class:`network node &lt;app.domain.network_nodes.HiveNode&gt;`.</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of floats with normalized uptimes which represent the</span>
-<span class="sd">            &#39;reliability&#39; of network nodes.</span>
+<span class="sd">            &quot;reliability&quot; of network nodes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">member_uptimes</span><span class="p">)</span>
         <span class="n">u_</span> <span class="o">=</span> <span class="p">[</span><span class="n">member_uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">member_uptime</span> <span class="ow">in</span> <span class="n">member_uptimes</span><span class="p">]</span>
@@ -729,11 +752,12 @@
         <span class="k">return</span> <span class="n">u_</span></div>
 
 <div class="viewcode-block" id="HiveCluster.new_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.new_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">new_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Creates a new transition matrix to be distributed among hive members.</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new transition matrix that is likely to be a Markov Matrix.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            The labeled matrix that has the fastests mixing rate from all</span>
-<span class="sd">            the pondered strategies.</span>
+<span class="sd">            :py:class:`~pd:pandas.DataFrame`:</span>
+<span class="sd">                The labeled matrix that has the fastests mixing rate from all</span>
+<span class="sd">                the pondered strategies.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">node_uptimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">node_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -751,25 +775,22 @@
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">node_ids</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">node_ids</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HiveCluster.broadcast_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.broadcast_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">broadcast_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Slices a transition matrix and delivers them to respective</span>
-<span class="sd">        network nodes.</span>
-
-<span class="sd">        Gives each member his respective slice (vector column) of the</span>
-<span class="sd">        transition matrix the Cluster is currently executing.</span>
+        <span class="sd">&quot;&quot;&quot;Slices a  matrix and delivers columns to the respective</span>
+<span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.HiveNode&gt;`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            m:</span>
-<span class="sd">                A transition matrix to be broadcasted to the network nodes</span>
+<span class="sd">            m (:py:class:`~pd:pandas.DataFrame`)</span>
+<span class="sd">                A matrix to be broadcasted to the network nodes</span>
 <span class="sd">                belonging who are currently members of the Cluster instance.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            An optimization could be made that configures a transition matrix</span>
-<span class="sd">            for the hive, independent of of file names, i.e., turn Cluster</span>
+<span class="sd">            for the cluster, independent of of file names, i.e., turn cluster</span>
 <span class="sd">            groups into groups persisting multiple files instead of only one,</span>
 <span class="sd">            thus reducing simulation spaceoverheads and in real-life</span>
 <span class="sd">            scenarios, decreasing the load done to metadata servers, through</span>
 <span class="sd">            queries and matrix calculations. For simplicity of implementation</span>
-<span class="sd">            each Cluster only manages one file for now.</span>
+<span class="sd">            each cluster only manages one file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">out_degrees</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># columns</span>
@@ -782,14 +803,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_matrices_degrees</span><span class="p">(</span><span class="n">nodes_degrees</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HiveCluster.create_and_bcast_new_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.create_and_bcast_new_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">create_and_bcast_new_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Tries to create a valid transition matrix and distributes between</span>
-<span class="sd">        members of the Cluster.</span>
+        <span class="sd">&quot;&quot;&quot;Helper method that attempts to generate a markov matrix to be</span>
+<span class="sd">        sliced and distributed to the ``HiveCluster``</span>
+<span class="sd">        :py:attr:`~Cluster.members`.</span>
 
-<span class="sd">        After creating a transition matrix it ensures that the matrix is a</span>
-<span class="sd">        markov matrix by invoking :py:meth:`_validate_transition_matrix`.</span>
-<span class="sd">        If this validation fails three times, simulation is resumed with an</span>
-<span class="sd">        invalid matrix until the Cluster membership is changed again for any</span>
-<span class="sd">        reason.</span>
+<span class="sd">        At most three transition matrices will be generated. The first to be</span>
+<span class="sd">        successfully :py:meth:`validated &lt;_validate_transition_matrix&gt;` is</span>
+<span class="sd">        distributed to the :py:class:`network nodes</span>
+<span class="sd">        &lt;app.domain.network_nodes.HiveNode&gt;`. If all matrices are invalid,</span>
+<span class="sd">        the last matrix will be used to prevent infinite loops in the</span>
+<span class="sd">        simulation. This is not an issue as eventually the membership of the</span>
+<span class="sd">        ``HiveCluster`` will change, thus, more opportunities to perform a</span>
+<span class="sd">        correct swarm guidance behavior will be possible.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tries</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">result</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
@@ -804,25 +829,26 @@
         <span class="c1"># converges.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">broadcast_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
 
+    <span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="HiveCluster.select_fastest_topology"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.select_fastest_topology">[docs]</a>    <span class="k">def</span> <span class="nf">select_fastest_topology</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates multiple transition matrices and selects the fastest.</span>
 
 <span class="sd">        The fastest of the created transition matrices corresponds to the one</span>
 <span class="sd">        with a faster mixing rate.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            a:</span>
+<span class="sd">            a (:py:class:`~np:numpy.ndarray`)</span>
 <span class="sd">                An adjacency matrix that represents the network topology.</span>
-<span class="sd">            v_:</span>
+<span class="sd">            `v_` (:py:class:`~np:numpy.ndarray`):</span>
 <span class="sd">                A desired distribution vector that defines the returned</span>
 <span class="sd">                matrix steady state property.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A transition matrix that is likely to be a markov matrix whose</span>
-<span class="sd">            steady state is ``v_``, but is not yet validated. See</span>
-<span class="sd">            :py:meth:`_validate_transition_matrix`.</span>
+<span class="sd">            :py:class:`~np:numpy.ndarray`:</span>
+<span class="sd">                A transition matrix that is likely to be a markov matrix whose</span>
+<span class="sd">                steady state is ``v_``, but is not yet validated. See</span>
+<span class="sd">                :py:meth:`_validate_transition_matrix`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">mm</span><span class="o">.</span><span class="n">new_mh_transition_matrix</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_</span><span class="p">),</span>
@@ -851,15 +877,23 @@
 <div class="viewcode-block" id="HiveCluster._validate_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._validate_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                     <span class="n">transition_matrix</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
                                     <span class="n">target_distribution</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Verifies that a selected transition matrix is a Markov Matrix.</span>
+        <span class="sd">&quot;&quot;&quot;Asserts if ``transition_matrix`` is a Markov Matrix.</span>
 
-<span class="sd">        Verification is done by raising the matrix to the power of 4096</span>
-<span class="sd">        (just a large number) and checking if all column vectors are equal</span>
-<span class="sd">        to the :py:attr:``v_``.</span>
+<span class="sd">        Verification is done by raising the ``transition_matrix`` to the power</span>
+<span class="sd">        of ``4096`` (just a large number) and checking if all columns of the</span>
+<span class="sd">        powered matrix are element-wise equal to the</span>
+<span class="sd">        entries of ``target_distribution``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transition_matrix (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">                The matrix to be verified.</span>
+<span class="sd">            target_distribution (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">                The steady state the ``transition_matrix`` is expected to have.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            True if the matrix can converge to the desired steady state,</span>
-<span class="sd">            otherwise False.</span>
+<span class="sd">            ``True`` if the matrix converges to the ``target_distribution``,</span>
+<span class="sd">            otherwise ``False``. I.e., if ``transition_matrix`` is a</span>
+<span class="sd">            markov matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">t_pow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="mi">4096</span><span class="p">)</span>
         <span class="n">column_count</span> <span class="o">=</span> <span class="n">t_pow</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -875,68 +909,74 @@
 <div class="viewcode-block" id="HiveCluster.remove_cloud_reference"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.remove_cloud_reference">[docs]</a>    <span class="k">def</span> <span class="nf">remove_cloud_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Remove cloud references and delete files within it</span>
 
-<span class="sd">        Notes:</span>
-<span class="sd">            TODO: This method requires implementation at the user descretion.</span>
+<span class="sd">        Note:</span>
+<span class="sd">            This method is virtual.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="HiveCluster.add_cloud_reference"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.add_cloud_reference">[docs]</a>    <span class="k">def</span> <span class="nf">add_cloud_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Adds a cloud server reference to the membership.</span>
+        <span class="sd">&quot;&quot;&quot;Adds a cloud server to the :py:attr:`~Cluster.members` of</span>
+<span class="sd">        the ``HiveCluster``.</span>
 
-<span class="sd">        This method is used when Cluster membership size becomes compromised</span>
-<span class="sd">        and a backup solution using cloud approaches is desired. The idea</span>
-<span class="sd">        is that surviving members upload their replicas to the cloud server,</span>
-<span class="sd">        e.g., an Amazon S3 instance. See Master method</span>
-<span class="sd">        :py:meth:`app.domain.master_servers.Master.get_cloud_reference`</span>
+<span class="sd">        This method is used when ``HiveCluster`` membership size becomes</span>
+<span class="sd">        compromised and a backup solution using cloud approaches is desired.</span>
+<span class="sd">        The idea is that surviving members upload their replicas to the cloud</span>
+<span class="sd">        server, e.g., an Amazon S3 instance. See Master method</span>
+<span class="sd">        :py:meth:`~app.domain.master_servers.HiveMaster.get_cloud_reference`</span>
 <span class="sd">        for more details.</span>
 
-<span class="sd">        Notes:</span>
-<span class="sd">            TODO: This method requires implementation at the user descretion.</span>
+<span class="sd">        Note:</span>
+<span class="sd">            This method is virtual.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-        <span class="c1"># noinspection PyUnusedLocal</span>
-        <span class="n">cloud_ref</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">get_cloud_reference</span><span class="p">()</span></div>
+        <span class="k">pass</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
 <div class="viewcode-block" id="HiveCluster.equal_distributions"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.equal_distributions">[docs]</a>    <span class="k">def</span> <span class="nf">equal_distributions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Infers if :py:attr:`~app.domain.cluster_groups.HiveCluster.v_` and</span>
-<span class="sd">        :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` are equal.</span>
+        <span class="sd">&quot;&quot;&quot;Asserts if the :py:attr:`desired distribution</span>
+<span class="sd">        &lt;app.domain.cluster_groups.HiveCluster.v_&gt;` and</span>
+<span class="sd">        :py:attr:`current distribution</span>
+<span class="sd">        &lt;app.domain.cluster_groups.HiveCluster.cv_&gt;` are equal.</span>
 
 <span class="sd">        Equalility is calculated using numpy allclose function which has the</span>
-<span class="sd">        following formula::</span>
+<span class="sd">        following formula: ::</span>
 
-<span class="sd">            $ absolute(`a` - `b`) &lt;= (`atol` + `rtol` * absolute(`b`))</span>
+<span class="sd">            absolute(`a` - `b`) &lt;= (`atol` + `rtol` * absolute(`b`))</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            True if distributions are close enough to be considered equal,</span>
-<span class="sd">            otherwise, it returns False.</span>
+<span class="sd">            ``True`` if distributions are close enough to be considered equal,</span>
+<span class="sd">            otherwise, it returns ``False``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">pcount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">parts_in_hive</span>
+        <span class="n">pcount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span>
         <span class="n">rtol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
         <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">ABS_TOLERANCE</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">pcount</span>
 
         <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pretty_print_eq_distr_table__</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">atol</span><span class="p">,</span> <span class="n">rtol</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pretty_print_eq_distr_table</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">atol</span><span class="p">,</span> <span class="n">rtol</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="HiveCluster.__log_evaluation__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.__log_evaluation__">[docs]</a>    <span class="k">def</span> <span class="nf">__log_evaluation__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Helper method that performs evaluate step related logging.</span>
-
-<span class="sd">        Extends:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.__log_evaluation__`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__log_evaluation__</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span>
+<div class="viewcode-block" id="HiveCluster._log_evaluation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._log_evaluation">[docs]</a>    <span class="k">def</span> <span class="nf">_log_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equal_distributions</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">register_convergence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">save_sets_and_reset</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="HiveCluster.__pretty_print_eq_distr_table__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.__pretty_print_eq_distr_table__">[docs]</a>    <span class="k">def</span> <span class="nf">__pretty_print_eq_distr_table__</span><span class="p">(</span>
+<div class="viewcode-block" id="HiveCluster._pretty_print_eq_distr_table"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._pretty_print_eq_distr_table">[docs]</a>    <span class="k">def</span> <span class="nf">_pretty_print_eq_distr_table</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Pretty prints a PSQL formatted table for visual vector comparison.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Pretty prints a PSQL formatted table for visual vector comparison.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">                The :py:class:`~pd:pandas.DataFrame` object to be formatted</span>
+<span class="sd">                as PSQL table.</span>
+<span class="sd">            atol:</span>
+<span class="sd">                The allowed absolute tolerance.</span>
+<span class="sd">            rtol:</span>
+<span class="sd">                The allowed relative tolerance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;cv_&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;v_&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
@@ -951,52 +991,48 @@
 <div class="viewcode-block" id="HiveClusterExt"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt">[docs]</a><span class="k">class</span> <span class="nc">HiveClusterExt</span><span class="p">(</span><span class="n">HiveCluster</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents a group of network nodes persisting a file.</span>
 
-<span class="sd">    HiveClusterExt instances differ from</span>
-<span class="sd">    :py:class:`app.domain.cluster_groups.HiveCluster` because their members are</span>
-<span class="sd">    of type :py:class:`Network Nodes &lt;app.domain.network_nodes.HiveNodeExt&gt;`</span>
-<span class="sd">    . When combined these classes give nodes the responsibility of</span>
-<span class="sd">    collaborating in the detection of faulty members of the `HiveClusterExt`</span>
-<span class="sd">    and eventually kicking them out of the group.</span>
+<span class="sd">    ``HiveClusterExt`` instances differ from</span>
+<span class="sd">    :py:class:`~app.domain.cluster_groups.HiveCluster` because their members are</span>
+<span class="sd">    of type :py:class:`~app.domain.network_nodes.HiveNodeExt`. When combined</span>
+<span class="sd">    these classes give nodes the responsibility of collaborating in the</span>
+<span class="sd">    detection of faulty members of the ``HiveClusterExt`` and eventually</span>
+<span class="sd">    kicking them out of the group.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        complaint_threshold:</span>
+<span class="sd">        complaint_threshold (float):</span>
 <span class="sd">            Reference value that defines the maximum number of complaints a</span>
-<span class="sd">            :py:mod:`Network Node &lt;app.domain.network_nodes&gt;` can receive before</span>
-<span class="sd">            it is evicted from the HiveClusterExt.</span>
-<span class="sd">        nodes_complaints:</span>
-<span class="sd">            A dictionary mapping :py:mod:`Network</span>
-<span class="sd">            Nodes&#39; &lt;app.domain.network_nodes&gt;` identifiers to their respective</span>
-<span class="sd">            number of received complaints. When complaints becomes bigger than</span>
-<span class="sd">            `complaint_threshold`, the respective complaintee is evicted</span>
-<span class="sd">            from the `HiveClusterExt`.</span>
-<span class="sd">        suspicious_nodes:</span>
-<span class="sd">            A dict containing the unique identifiers of known suspicious</span>
-<span class="sd">            nodes and how many epochs have passed since they changed to that</span>
+<span class="sd">            :py:class:`network node &lt;app.domain.network_nodes.HiveNodeExt&gt;`</span>
+<span class="sd">            can receive before it is evicted from the ``HiveClusterExt``.</span>
+<span class="sd">        nodes_complaints (Dict[str, int]):</span>
+<span class="sd">            A dictionary mapping :py:attr:`network node identifiers&#39;</span>
+<span class="sd">            &lt;app.domain.network_nodes.Node.id&gt;` to the number of complaints</span>
+<span class="sd">            made against them by other :py:attr:`~Cluster.members`. When</span>
+<span class="sd">            complaints becomes bigger than py:py:attr:`complaint_threshold`</span>
+<span class="sd">            the complaintee is evicted from the group.</span>
+<span class="sd">        suspicious_nodes (Dict[str, int]):</span>
+<span class="sd">            A dictionary containing the unique :py:attr:`node identifiers</span>
+<span class="sd">            &lt;app.domain.network_nodes.Node.id&gt;` of known suspicious</span>
+<span class="sd">            members and how many epochs have passed since they changed to such</span>
 <span class="sd">            status.</span>
-<span class="sd">        _epoch_complaints:</span>
+<span class="sd">        _epoch_complaints (set):</span>
 <span class="sd">            A set of unique identifiers formed from the concatenation of</span>
-<span class="sd">            :py:attr:`node identifiers &lt;app.domain.network_nodes.HiveNode.id&gt;`,</span>
+<span class="sd">            :py:attr:`node identifiers &lt;app.domain.network_nodes.Node.id&gt;`,</span>
 <span class="sd">            to avoid multiple complaint registrations on the same epoch,</span>
 <span class="sd">            done by the same source towards the same target. The set is</span>
 <span class="sd">            reset every epoch.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="HiveClusterExt.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
                  <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
                  <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Instantiates an `HiveClusterExt` object.</span>
-
-<span class="sd">        Extends:</span>
-<span class="sd">            :py:class:`app.domain.cluster_groups.Cluster`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_epoch_complaints</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epoch_complaints</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
 
     <span class="c1"># region Cluster API</span>
 <div class="viewcode-block" id="HiveClusterExt.complain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt.complain">[docs]</a>    <span class="k">def</span> <span class="nf">complain</span><span class="p">(</span>
@@ -1018,7 +1054,7 @@
 <span class="sd">                The identifier of the</span>
 <span class="sd">                :py:class:`~app.domain.network_nodes.HiveNodeExt`</span>
 <span class="sd">                being complained about.</span>
-<span class="sd">            reason:</span>
+<span class="sd">            reason (:py:data:`app.type_hints.HttpResponse`):</span>
 <span class="sd">                The :py:class:`http code &lt;app.domain.helpers.enums.HttpCodes&gt;`</span>
 <span class="sd">                that led to the complaint.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1038,11 +1074,6 @@
 
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="HiveClusterExt.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Instructs the cluster to execute an epoch.</span>
-
-<span class="sd">        Extends:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_epoch_complaints</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
@@ -1050,17 +1081,22 @@
         <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.HiveCluster.nodes_execute`. It</span>
-<span class="sd">            considers nodes as Suspects until it receives enough complaints</span>
-<span class="sd">            from member nodes. This is important because lost parts can not</span>
-<span class="sd">            be logged multiple times. Yet suspected network_nodes need to be</span>
-<span class="sd">            contabilized as offline for simulation purposes without being</span>
-<span class="sd">            evicted from the group until said detection occurs.</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.HiveCluster.nodes_execute`.</span>
+
+<span class="sd">            Offline :py:class:`network nodes &lt;app.domain.network_nodes.HiveNodeExt&gt;`</span>
+<span class="sd">            are considered suspects until enough complaints</span>
+<span class="sd">            from other ``HiveNodeExt`` :py:attr:`~Cluster.members` are received.</span>
+<span class="sd">            This is important because lost parts can not be logged multiple</span>
+<span class="sd">            times. Yet suspected :py:class:`network nodes</span>
+<span class="sd">            &lt;app.domain.network_nodes.HiveNodeExt&gt;` need to be contabilized</span>
+<span class="sd">            as offline for simulation purposes without being evicted from the</span>
+<span class="sd">            group until they are detected by their peers as being offline.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">             A collection of members who disconnected during the current</span>
-<span class="sd">             epoch.</span>
-<span class="sd">             See :py:meth:`domain.network_nodes.HiveNode.get_epoch_status`.</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
+<span class="sd">                See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1090,7 +1126,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All hive members disconnected before maintenance.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All cluster members disconnected before maintenance.&quot;</span><span class="p">)</span>
 
         <span class="n">sf</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">LoggingData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span>
         <span class="n">sf</span><span class="o">.</span><span class="n">log_off_nodes</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
@@ -1099,14 +1135,17 @@
         <span class="k">return</span> <span class="n">off_nodes</span></div>
 
 <div class="viewcode-block" id="HiveClusterExt.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Evicts any node whose number of complaints as surpassed the</span>
-<span class="sd">        `complaint_threshold`.</span>
+        <span class="sd">&quot;&quot;&quot;Evicts any :py:class:`network node</span>
+<span class="sd">        &lt;app.domain.network_nodes.HiveNodeExt&gt;` who has</span>
+<span class="sd">        been complained about more than :py:attr:`complaint_threshold` times.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`domain.cluster_groups.HiveCluster.maintain`.</span>
-<span class="sd">            Considers parameters that belong HiveClusterExt. Such as</span>
-<span class="sd">            :py:attr:`domain.cluster_groups.HiveClusterExt.suspicious_nodes`</span>
-<span class="sd">            and :py:attr:`domain.cluster_groups.HiveClusterExt.nodes_complaints`</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):</span>
+<span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [o] Evicted suspect </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -1121,47 +1160,58 @@
 
 
 <div class="viewcode-block" id="HDFSCluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster">[docs]</a><span class="k">class</span> <span class="nc">HDFSCluster</span><span class="p">(</span><span class="n">Cluster</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Represents a group of network nodes persisting a file in a Hadoop</span>
-<span class="sd">    Distributed File System scenario.</span>
+    <span class="sd">&quot;&quot;&quot;Represents a group of network nodes ensuring the durability of a file</span>
+<span class="sd">    in a Hadoop Distributed File System scenario.</span>
 
-<span class="sd">    Differs from :py:class:`~app.domain.cluster_groups.Cluster` in the sense</span>
-<span class="sd">    that :py:class:`Network Nodes &lt;app.domain.network_nodes.HDFSNode&gt;` do not</span>
-<span class="sd">    perform swarm guidance behaviors and instead report with regular</span>
-<span class="sd">    heartbeats to their</span>
-<span class="sd">    :py:class:`HDFSCluster monitors &lt;app.domain.cluster_groups.HDFSCluster&gt;`.</span>
-<span class="sd">    This class would represent a NameNode Server in HDFS or a Master server</span>
-<span class="sd">    in GFS.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        Members of ``HDFSCluster`` are of type</span>
+<span class="sd">        :py:class:`~app.domain.network_nodes.HDFSNode`, they do not</span>
+<span class="sd">        perform swarm guidance behaviors and instead report with regular</span>
+<span class="sd">        heartbeats to their :py:class:`monitors</span>
+<span class="sd">        &lt;app.domain.cluster_groups.HDFSCluster&gt;`. This class could be a</span>
+<span class="sd">        *NameNode Server* in HDFS or a *master server* in GFS.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        suspicious_nodes:</span>
-<span class="sd">            A set containing the unique identifiers of known suspicious</span>
-<span class="sd">            nodes.</span>
-<span class="sd">        data_node_heartbeats:</span>
-<span class="sd">            A dictionary mapping :py:class:`~app.domain.network_nodes.HDFSNode`</span>
-<span class="sd">            identifiers to their respective number of received complaints.</span>
-<span class="sd">            Each node enters the dictionary with at five beats. When they</span>
+<span class="sd">        suspicious_nodes (set):</span>
+<span class="sd">            A set containing the identifiers of suspicious</span>
+<span class="sd">            :py:class:`network nodes &lt;app.domain.network_nodes.HDFSNode&gt;`.</span>
+<span class="sd">        data_node_heartbeats (Dict[str, int]):</span>
+<span class="sd">            A dictionary mapping :py:attr:`node identifiers</span>
+<span class="sd">            &lt;app.domain.network_nodes.Node.id&gt;` to the number of</span>
+<span class="sd">            complaints made against them. Each node has five lives. When they</span>
 <span class="sd">            miss five beats in a row, i.e., when the dictionary value count</span>
 <span class="sd">            is zero, they are evicted from the cluster.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="HDFSCluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
                  <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
                  <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Instantiates an `HiveClusterExt` object.</span>
-
-<span class="sd">        Extends:</span>
-<span class="sd">            :py:class:`domain.cluster_groups.Cluster`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="mi">5</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="p">}</span>
+        <span class="p">}</span></div>
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="HDFSCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
+<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
+<span class="sd">        objects among the :py:attr:`~Cluster.members` of the ``HDFSCluster``.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
+<span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
+<span class="sd">                replicas, without replication.</span>
+<span class="sd">            strat:</span>
+<span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
+<span class="sd">                the ``Cluster``. Regardless of the received value, the body</span>
+<span class="sd">                of this method will always set ``strat`` to default ``&quot;i&quot;``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span>
 
         <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
@@ -1183,19 +1233,16 @@
 
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="HDFSCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
+        <span class="sd">&quot;&quot;&quot;Queries all :py:attr:`~Cluster.members` to execute the epoch.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`domain.cluster_groups.Cluster.nodes_execute`</span>
-<span class="sd">            regarding the behavior of :py:mod:`Network Nodes</span>
-<span class="sd">            &lt;domain.network_nodes&gt;`. They only send heartbeats to the</span>
-<span class="sd">            `HDFSCluster` and do nothing else in their epochs unless</span>
-<span class="sd">            specifically asked to do so.</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">             A collection of members who disconnected during the current</span>
-<span class="sd">             epoch.</span>
-<span class="sd">             See :py:meth:`domain.network_nodes.HiveNode.get_epoch_status`.</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
+<span class="sd">                See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lost_replicas_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1238,11 +1285,10 @@
         <span class="k">return</span> <span class="n">off_nodes</span></div>
 
 <div class="viewcode-block" id="HDFSCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;`HDFSCluster` evaluate method merely logs the number of existing</span>
-<span class="sd">        replicas in the system.</span>
+        <span class="sd">&quot;&quot;&quot;Logs the number of existing replicas in the ``HDFSCluster``.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`domain.cluster_groups.Cluster.evaluate`.</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.evaluate`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
@@ -1253,14 +1299,19 @@
             <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="n">pcount</span> <span class="o">+=</span> <span class="n">node_replicas</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__log_evaluation__</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HDFSCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Evicts any :py:mod:`Network Node &lt;domain.network_nodes&gt;` whose</span>
-<span class="sd">        heartbeats in `data_node_heartbeats` reached zero.</span>
+        <span class="sd">&quot;&quot;&quot;Evicts any :py:class:`network node &lt;app.domain.network_nodes.HDFSNode&gt;`</span>
+<span class="sd">        whose heartbeats in :py:attr:`data_node_heartbeats` reached zero.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`domain.cluster_groups.Cluster.execute_epoch`.</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):</span>
+<span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [o] Evicted suspect </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -1271,13 +1322,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="HDFSCluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Recruit new :py:mod:`Network Nodes &lt;domain.network_nodes&gt;`.</span>
-
-<span class="sd">        Extends:</span>
-<span class="sd">            :py:meth:`domain.cluster_groups.Cluster.membership_maintenance`.</span>
-<span class="sd">            New members are given five lives in</span>
-<span class="sd">            :py:attr:`domain.cluster_groups.HDFSCluster.data_node_heartbeats`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_members</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">nid</span> <span class="ow">in</span> <span class="n">new_members</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">nid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span>
@@ -1333,6 +1377,7 @@
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../../../_static/js/theme-min.js"></script> 
 </body>
 </html>

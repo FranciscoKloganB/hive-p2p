@@ -60,7 +60,15 @@
     <section class="site-nav">
     
     
-        <div></div>
+        <p class="caption"><span class="caption-text">Navbar</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstartdocs.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scriptdocs.html">Scripts and Flags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../app.html">App Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notedocs.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../indices.html">Indices</a></li>
+</ul>
+
     
     </section>
 
@@ -149,7 +157,7 @@
 <span class="sd">    specified `functions`, `samples` times.</span>
 
 <span class="sd">    The execution of the main method results in a JSON file outputed to</span>
-<span class="sd">    :py:const:`environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.</span>
+<span class="sd">    :py:const:`~app.environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">MIXING_RATE_SAMPLE_ROOT</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">MIXING_RATE_SAMPLE_ROOT</span><span class="p">)</span>
@@ -198,11 +206,11 @@
         <span class="s2">&quot;new_mgo_transition_matrix&quot;</span>
     <span class="p">]</span>
 
-    <span class="n">allow_sloops</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">enforce_sloops</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">allow_sloops</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">enforce_sloops</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">short_opts</span> <span class="o">=</span> <span class="s2">&quot;s:n:m:f:&quot;</span>
+        <span class="n">short_opts</span> <span class="o">=</span> <span class="s2">&quot;s:n:m:f:a:e:&quot;</span>
         <span class="n">long_opts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;samples=&quot;</span><span class="p">,</span> <span class="s2">&quot;network_sizes=&quot;</span><span class="p">,</span> <span class="s2">&quot;module=&quot;</span><span class="p">,</span> <span class="s2">&quot;functions=&quot;</span><span class="p">,</span>
                      <span class="s2">&quot;allow_self_loops=&quot;</span><span class="p">,</span> <span class="s2">&quot;enforce_loops=&quot;</span><span class="p">]</span>
 
@@ -216,9 +224,9 @@
                 <span class="n">module</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;--functions&quot;</span><span class="p">):</span>
                 <span class="n">function_names</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;--allow_self_loops&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;--allow_self_loops&quot;</span><span class="p">):</span>
                 <span class="n">allow_sloops</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="ow">or</span> <span class="n">allow_sloops</span>
-            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;--enforce_loops&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;--enforce_loops&quot;</span><span class="p">):</span>
                 <span class="n">enforce_sloops</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="ow">or</span> <span class="n">enforce_sloops</span>
 
         <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
@@ -287,6 +295,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../../_static/js/theme-min.js"></script> 
 </body>
 </html>

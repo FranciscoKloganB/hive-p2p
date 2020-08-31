@@ -60,7 +60,15 @@
     <section class="site-nav">
     
     
-        <div></div>
+        <p class="caption"><span class="caption-text">Navbar</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quickstartdocs.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../scriptdocs.html">Scripts and Flags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../app.html">App Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../notedocs.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../indices.html">Indices</a></li>
+</ul>
+
     
     </section>
 
@@ -115,19 +123,24 @@
 <div class="viewcode-block" id="MatlabEngineContainer"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer">[docs]</a><span class="k">class</span> <span class="nc">MatlabEngineContainer</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Singleton class wrapper containing thread safe access to a MatlabEngine.</span>
 
-<span class="sd">    The purpose of this class is to provide a thread-safe way to access the</span>
-<span class="sd">    matlab engine instance object when running simulations in threaded mode.</span>
+<span class="sd">    This class provides a thread-safe way to access one singleton</span>
+<span class="sd">    matlab engine object when running simulations in threaded mode. Having</span>
+<span class="sd">    one single engine is important, since starting up an engine takes</span>
+<span class="sd">    approximately 12s (machine dependant), not including the time matlab</span>
+<span class="sd">    scripts are executing and data convertions between python and matlab and</span>
+<span class="sd">    back.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        eng:</span>
-<span class="sd">            A matlab engine instance object used for matrix and vector</span>
-<span class="sd">            optimization operations throughout the simulations.</span>
-<span class="sd">            Do not access this directly. MatlabEngine objects are not</span>
-<span class="sd">            officially thread safe, thus it is recommended that you utilize</span>
-<span class="sd">            the wrapped function, unless you are not running the</span>
-<span class="sd">            :py:mod:`hive_simulation` with -t flag, i.e., you are not using</span>
-<span class="sd">            the multithreaded mode to speed up simulations.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">            A matlab engine instance, which can be used for example for matrix</span>
+<span class="sd">            and vector optimization operations throughout the simulations.</span>
+
+<span class="sd">            Note:</span>
+<span class="sd">                MatlabEngine objects are not thread safe, thus it</span>
+<span class="sd">                is recommended that you utilize  the a wrapper function that</span>
+<span class="sd">                obtains :py:const:`_LOCK`, before you send any requests to</span>
+<span class="sd">                ``eng``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
     <span class="c1">#: A re-entrant lock used to make `eng` shareable by multiple threads.</span>
     <span class="n">_LOCK</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
@@ -136,13 +149,14 @@
 
 <div class="viewcode-block" id="MatlabEngineContainer.get_instance"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer.get_instance">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_instance</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">MatlabEngineContainer</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Used to obtain a singleton instance of :py:class:`MatlabEngineContainer`</span>
+        <span class="sd">&quot;&quot;&quot;Used to obtain a singleton instance of ``MatlabEngineContainer``.</span>
 
 <span class="sd">        If one instance already exists that instance is returned,</span>
 <span class="sd">        otherwise a new one is created and returned.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A reference to the existing MatlabEngineContainer instance.</span>
+<span class="sd">            A reference to the existing ``MatlabEngineContainer``</span>
+<span class="sd">            :py:const:`instance &lt;_instance&gt;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_LOCK</span><span class="p">:</span>
@@ -150,43 +164,50 @@
                     <span class="n">MatlabEngineContainer</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span></div>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MatlabEngineContainer.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Instantiates a new MatlabEngineContainer object.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            Do not directly invoke this constructor, use</span>
-<span class="sd">            :py:method:`getInstance` instead.</span>
+<span class="sd">            Do not directly invoke constructor, use :py:meth:`get_instance`</span>
+<span class="sd">            instead.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading matlab engine... this can take a while.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">start_matlab</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">eng</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">MATLAB_DIR</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">start_matlab</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">MATLAB_DIR</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">matlab</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">EngineError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">eng</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;MatlabEngineContainer is a Singleton. Use &quot;</span>
                                <span class="s2">&quot;MatlabEngineContainer.getInstance() to get a &quot;</span>
-                               <span class="s2">&quot;reference to a MatlabEngineContainer object.&quot;</span><span class="p">)</span>
+                               <span class="s2">&quot;reference to a MatlabEngineContainer object.&quot;</span><span class="p">)</span></div>
 
+    <span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="MatlabEngineContainer.matrix_global_opt"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer.matrix_global_opt">[docs]</a>    <span class="k">def</span> <span class="nf">matrix_global_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Constructs an optimized transition matrix using the matlab engine.</span>
 
 <span class="sd">        Constructs an optimized transition matrix using linear programming</span>
 <span class="sd">        relaxations and convex envelope approximations for the specified steady</span>
-<span class="sd">        state ``v``, this is done by invoke the matlabscript matrixGlobalOpt</span>
-<span class="sd">        in the project folder name matlab.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            This function can only be invoked if you have a valid matlab license.</span>
+<span class="sd">        state ``v_``, this is done by invoke the matlabscript</span>
+<span class="sd">        *matrixGlobalOpt.m* located inside</span>
+<span class="sd">        :py:const:`~app.environment_settings.MATLAB_DIR`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            a:</span>
 <span class="sd">                A non-optimized symmetric adjency matrix.</span>
-<span class="sd">            v_:</span>
+<span class="sd">            `v_`:</span>
 <span class="sd">                A stochastic steady state distribution vector.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Markov Matrix with ``v_`` as steady state distribution and the</span>
-<span class="sd">            respective mixing rate or None.</span>
+<span class="sd">            respective :py:func:`mixing rate</span>
+<span class="sd">            &lt;app.domain.helpers.matrices.get_mixing_rate&gt;` or ``None``.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            EngineError:</span>
+<span class="sd">                If you do not have a valid MatLab license.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">_LOCK</span><span class="p">:</span>
             <span class="n">ma</span> <span class="o">=</span> <span class="n">matlab</span><span class="o">.</span><span class="n">double</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
@@ -242,6 +263,7 @@
     <script type="text/javascript" src="../../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../../../../_static/js/theme-min.js"></script> 
 </body>
 </html>

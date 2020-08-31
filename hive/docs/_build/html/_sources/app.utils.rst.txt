@@ -1,5 +1,5 @@
-app.utils package
-=================
+app.utils
+=========
 
 .. automodule:: app.utils
    :members:
@@ -10,8 +10,8 @@ app.utils package
 Submodules
 ----------
 
-app.utils.convertions module
-----------------------------
+app.utils.convertions
+---------------------
 
 .. automodule:: app.utils.convertions
    :members:
@@ -19,8 +19,8 @@ app.utils.convertions module
    :show-inheritance:
    :private-members:
 
-app.utils.crypto module
------------------------
+app.utils.crypto
+----------------
 
 .. automodule:: app.utils.crypto
    :members:
@@ -28,8 +28,8 @@ app.utils.crypto module
    :show-inheritance:
    :private-members:
 
-app.utils.randoms module
-------------------------
+app.utils.randoms
+-----------------
 
 .. automodule:: app.utils.randoms
    :members:

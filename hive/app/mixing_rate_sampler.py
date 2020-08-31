@@ -47,7 +47,7 @@ def main():
     specified `functions`, `samples` times.
 
     The execution of the main method results in a JSON file outputed to
-    :py:const:`environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.
+    :py:const:`~app.environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.
     """
     if not os.path.exists(MIXING_RATE_SAMPLE_ROOT):
         os.makedirs(MIXING_RATE_SAMPLE_ROOT)
@@ -96,11 +96,11 @@ if __name__ == "__main__":
         "new_mgo_transition_matrix"
     ]
 
-    allow_sloops = True
-    enforce_sloops = True
+    allow_sloops = 1
+    enforce_sloops = 1
 
     try:
-        short_opts = "s:n:m:f:"
+        short_opts = "s:n:m:f:a:e:"
         long_opts = ["samples=", "network_sizes=", "module=", "functions=",
                      "allow_self_loops=", "enforce_loops="]
 
@@ -114,9 +114,9 @@ if __name__ == "__main__":
                 module = str(args).strip()
             if options in ("-f", "--functions"):
                 function_names = str(args).strip().split(',')
-            if options in ("--allow_self_loops"):
+            if options in ("a", "--allow_self_loops"):
                 allow_sloops = int(str(args).strip()) or allow_sloops
-            if options in ("--enforce_loops"):
+            if options in ("e", "--enforce_loops"):
                 enforce_sloops = int(str(args).strip()) or enforce_sloops
 
         module = importlib.import_module(module)

@@ -60,7 +60,15 @@
     <section class="site-nav">
     
     
-        <div></div>
+        <p class="caption"><span class="caption-text">Navbar</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstartdocs.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scriptdocs.html">Scripts and Flags</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../app.html">App Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notedocs.html">Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../indices.html">Indices</a></li>
+</ul>
+
     
     </section>
 
@@ -107,7 +115,7 @@
 <span class="sd">    $ python hive_simulation.py --file=a_simulation_name.json --iters=30</span>
 
 <span class="sd">You can also execute all simulation file that exist in</span>
-<span class="sd">:py:const:`environment_settings.SIMULATION_ROOT` by instead executing::</span>
+<span class="sd">:py:const:`~app.environment_settings.SIMULATION_ROOT` by instead executing::</span>
 
 <span class="sd">    $ python hive_simulation.py -d -i 24</span>
 
@@ -124,13 +132,14 @@
 
 <span class="sd">Note:</span>
 <span class="sd">    For the simulation to run without errors you must ensure that:</span>
+
 <span class="sd">        1. The specified simulation files exist in \</span>
-<span class="sd">        :py:const:`app.environment_settings.SIMULATION_ROOT`.</span>
+<span class="sd">        :py:const:`~app.environment_settings.SIMULATION_ROOT`.</span>
 <span class="sd">        2. Any file used by the simulation, e.g., a picture or a .pptx \</span>
 <span class="sd">        document is accessible in \</span>
-<span class="sd">        :py:const:`app.environment_settings.SHARED_ROOT`.</span>
+<span class="sd">        :py:const:`~app.environment_settings.SHARED_ROOT`.</span>
 <span class="sd">        3. An output file simdirectory exists with default path being: \</span>
-<span class="sd">        :py:const:`app.environment_settings.OUTFILE_ROOT`.</span>
+<span class="sd">        :py:const:`~app.environment_settings.OUTFILE_ROOT`.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -138,6 +147,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">concurrent.futures.thread</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
 
@@ -154,8 +164,9 @@
 <span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">class_name_to_obj</span>
 
 
-<div class="viewcode-block" id="__makedirs"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__makedirs">[docs]</a><span class="k">def</span> <span class="nf">__makedirs</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates required simulation working directories if they do not exist.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="__makedirs__"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__makedirs__">[docs]</a><span class="k">def</span> <span class="nf">__makedirs__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper method that reates required simulation working directories if</span>
+<span class="sd">    they do not exist.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SHARED_ROOT</span><span class="p">):</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">SHARED_ROOT</span><span class="p">)</span>
 
@@ -166,16 +177,23 @@
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">OUTFILE_ROOT</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="__can_exec_simfile"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__can_exec_simfile">[docs]</a><span class="k">def</span> <span class="nf">__can_exec_simfile</span><span class="p">(</span><span class="n">sname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Verifies if input simulation file name exists in</span>
-<span class="sd">    :py:const:`app.environment_settings.SIMULATION_ROOT`.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="__can_exec_simfile__"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__can_exec_simfile__">[docs]</a><span class="k">def</span> <span class="nf">__can_exec_simfile__</span><span class="p">(</span><span class="n">sname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Asserts if simulation can proceed with user specified file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sname:</span>
+<span class="sd">            The name of the simulation file, including extension,</span>
+<span class="sd">            whose existence inside</span>
+<span class="sd">            :py:const:`~app.environment_settings.SIMULATION_ROOT` will be</span>
+<span class="sd">            checked.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">spath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">sname</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">spath</span><span class="p">):</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Specified simulation file does not exist in SIMULATION_ROOT.&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="__start_simulation"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__start_simulation">[docs]</a><span class="k">def</span> <span class="nf">__start_simulation</span><span class="p">(</span><span class="n">sname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Executes one instance of the simulation</span>
+<div class="viewcode-block" id="__start_simulation__"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__start_simulation__">[docs]</a><span class="k">def</span> <span class="nf">__start_simulation__</span><span class="p">(</span><span class="n">sname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper method that orders execution of one simulation instance.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        sname:</span>
@@ -193,39 +211,78 @@
     <span class="n">master_server</span><span class="o">.</span><span class="n">execute_simulation</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="__parallel_main"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__parallel_main">[docs]</a><span class="k">def</span> <span class="nf">__parallel_main</span><span class="p">(</span>
-        <span class="n">threads_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sdir</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">sname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Helper method that initializes a multi-threaded simulation.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="_parallel_main"><a class="viewcode-back" href="../../app.html#app.hive_simulation._parallel_main">[docs]</a><span class="k">def</span> <span class="nf">_parallel_main</span><span class="p">(</span><span class="n">threads_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                   <span class="n">sdir</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+                   <span class="n">sname</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                   <span class="n">iters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                   <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper method that initializes a multi-threaded simulation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        threads_count:</span>
+<span class="sd">            Number of worker threads that will consume jobs from the Task Pool.</span>
+<span class="sd">        sdir:</span>
+<span class="sd">            Indicates whether or not the program will proceed by executing</span>
+<span class="sd">            all simulations files inside</span>
+<span class="sd">            :py:const:`~app.environment_settings.SIMULATION_ROOT` folder or</span>
+<span class="sd">            if will run with the specified file ``sname``.</span>
+<span class="sd">        sname:</span>
+<span class="sd">            The name of the simulation file to be executed or ``None`` if</span>
+<span class="sd">            ``sdir`` is set to ``True``.</span>
+<span class="sd">        iters:</span>
+<span class="sd">            How many times each simulation file is executed.</span>
+<span class="sd">        epochs:</span>
+<span class="sd">            Number of discrete time steps (epochs) each executed simulation</span>
+<span class="sd">            lasts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">threads_count</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sdir</span><span class="p">:</span>
             <span class="n">snames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">snames</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
-                    <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">__start_simulation</span><span class="p">,</span> <span class="n">sn</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
+                    <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">__start_simulation__</span><span class="p">,</span> <span class="n">sn</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">__can_exec_simfile</span><span class="p">(</span><span class="n">sname</span><span class="p">)</span>
+            <span class="n">__can_exec_simfile__</span><span class="p">(</span><span class="n">sname</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
-                <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">__start_simulation</span><span class="p">,</span> <span class="n">sname</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div>
+                <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">__start_simulation__</span><span class="p">,</span> <span class="n">sname</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="__single_main"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__single_main">[docs]</a><span class="k">def</span> <span class="nf">__single_main</span><span class="p">(</span><span class="n">sdir</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">sname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Helper function that initializes a single-threaded simulation.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="_single_main"><a class="viewcode-back" href="../../app.html#app.hive_simulation._single_main">[docs]</a><span class="k">def</span> <span class="nf">_single_main</span><span class="p">(</span>
+        <span class="n">sdir</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">sname</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">iters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Helper function that initializes a single-threaded simulation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sdir:</span>
+<span class="sd">            Indicates whether or not the program will proceed by executing</span>
+<span class="sd">            all simulations files inside</span>
+<span class="sd">            :py:const:`~app.environment_settings.SIMULATION_ROOT` folder or</span>
+<span class="sd">            if will run with the specified file ``sname``.</span>
+<span class="sd">        sname:</span>
+<span class="sd">            The name of the simulation file to be executed or ``None`` if</span>
+<span class="sd">            ``sdir`` is set to ``True``.</span>
+<span class="sd">        iters:</span>
+<span class="sd">            How many times each simulation file is executed.</span>
+<span class="sd">        epochs:</span>
+<span class="sd">            Number of discrete time steps (epochs) each executed simulation</span>
+<span class="sd">            lasts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">sdir</span><span class="p">:</span>
         <span class="n">snames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">snames</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
-                <span class="n">__start_simulation</span><span class="p">(</span><span class="n">sn</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
+                <span class="n">__start_simulation__</span><span class="p">(</span><span class="n">sn</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">__can_exec_simfile</span><span class="p">(</span><span class="n">sname</span><span class="p">)</span>
+        <span class="n">__can_exec_simfile__</span><span class="p">(</span><span class="n">sname</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
-            <span class="n">__start_simulation</span><span class="p">(</span><span class="n">sname</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div>
+            <span class="n">__start_simulation__</span><span class="p">(</span><span class="n">sname</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div>
 <span class="c1"># endregion</span>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../app.html#app.hive_simulation.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
-        <span class="n">threads_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sdir</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">sname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">iters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../app.html#app.hive_simulation.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">threads_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+         <span class="n">sdir</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+         <span class="n">sname</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+         <span class="n">iters</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+         <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Receives user input and initializes the simulation process.</span>
 
 <span class="sd">    Args:</span>
@@ -235,31 +292,33 @@
 <span class="sd">            single thread).</span>
 <span class="sd">        sdir:</span>
 <span class="sd">            Indicates if the user wishes to execute all simulation files</span>
-<span class="sd">            that exist in :py:const:`environment_settings.SIMULATION_ROOT` or</span>
+<span class="sd">            that exist in</span>
+<span class="sd">            :py:const:`~app.environment_settings.SIMULATION_ROOT` or</span>
 <span class="sd">            if he wishes to run one single simulation file, which must be</span>
 <span class="sd">            explicitly specified in `sname`.</span>
 <span class="sd">        sname:</span>
-<span class="sd">            When `sdir` is set to False, `sname` needs to be specified as a</span>
+<span class="sd">            When `sdir` is set to ``False``, `sname` needs to be specified as a</span>
 <span class="sd">            non blank string containing the name of the simulation file to</span>
 <span class="sd">            be executed. The named file must exist in</span>
-<span class="sd">            :py:const:`environment_settings.SIMULATION_ROOT`.</span>
+<span class="sd">            :py:const:`~app.environment_settings.SIMULATION_ROOT`.</span>
 <span class="sd">        iters:</span>
 <span class="sd">            The number of times the same simulation file should be executed.</span>
 <span class="sd">        epochs:</span>
 <span class="sd">            The number of discrete time steps each iteration of each instance</span>
 <span class="sd">            of a simulation lasts.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Creates a MatlabEngineContainer before any thread starts working.</span>
     <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">threads_count</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">__parallel_main</span><span class="p">(</span>
+        <span class="n">_parallel_main</span><span class="p">(</span>
             <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">threads_count</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">sdir</span><span class="p">,</span> <span class="n">sname</span><span class="p">,</span> <span class="n">iters</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">__single_main</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">sname</span><span class="p">,</span> <span class="n">iters</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div>
+        <span class="n">_single_main</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">sname</span><span class="p">,</span> <span class="n">iters</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">__makedirs</span><span class="p">()</span>
+    <span class="n">__makedirs__</span><span class="p">()</span>
 
     <span class="n">threading</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">simdirectory</span> <span class="o">=</span> <span class="kc">False</span>
@@ -366,6 +425,7 @@
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../../_static/js/theme-min.js"></script> 
 </body>
 </html>

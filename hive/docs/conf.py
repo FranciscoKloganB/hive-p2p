@@ -45,12 +45,30 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.githubpages",
     "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.napoleon",
+    # "sphinx_autodoc_future_annotations",
 ]
 
-autodoc_typehints = "description"
+intersphinx_mapping = {
+    "py": ("https://docs.python.org/3.7/", None),
+    "pd": ("https://pandas.pydata.org/docs/", None),
+    "np": ("https://numpy.org/doc/stable/", None),
+}
+
+# show type hints in doc body instead of signature
+autodoc_typehints = "description"  # signature, description, none
+autoclass_content = "class"  # class, init, both
+
+autodoc_default_options = {
+    "members": True,
+    "member-order": "groupwise",  # alphabetical, groupwise, bysource
+    "special-members": "__init__",
+    "undoc-members": True,
+    "exclude-members": "__weakref__,__eq__,__hash__,__repr__,__str__"
+}
 
 napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
@@ -93,7 +111,9 @@ pygments_style = "sphinx"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+# html_theme_options = {
+#     "stickysidebar": True
+# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -117,6 +137,6 @@ html_theme = "sphinx_redactor_theme"
 html_theme_path = [sphinx_redactor_theme.get_html_theme_path()]
 html_show_sourcelink = False
 html_title = "Hives - P2P Stochastic Swarm Guidance Simulator"
-html_short_title = "Hives"
-html_favicon = "_static/img/bee32.ico"
+html_short_title = "Hives Simulator"
+html_favicon = "_static/img/bee512.png"
 html_add_permalinks = ""

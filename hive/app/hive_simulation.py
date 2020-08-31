@@ -5,7 +5,7 @@ You can start a simulation by executing the following command::
     $ python hive_simulation.py --file=a_simulation_name.json --iters=30
 
 You can also execute all simulation file that exist in
-:py:const:`environment_settings.SIMULATION_ROOT` by instead executing::
+:py:const:`~app.environment_settings.SIMULATION_ROOT` by instead executing::
 
     $ python hive_simulation.py -d -i 24
 
@@ -22,13 +22,14 @@ If you don't have a simulation file yet, run the following instead::
 
 Note:
     For the simulation to run without errors you must ensure that:
+
         1. The specified simulation files exist in \
-        :py:const:`app.environment_settings.SIMULATION_ROOT`.
+        :py:const:`~app.environment_settings.SIMULATION_ROOT`.
         2. Any file used by the simulation, e.g., a picture or a .pptx \
         document is accessible in \
-        :py:const:`app.environment_settings.SHARED_ROOT`.
+        :py:const:`~app.environment_settings.SHARED_ROOT`.
         3. An output file simdirectory exists with default path being: \
-        :py:const:`app.environment_settings.OUTFILE_ROOT`.
+        :py:const:`~app.environment_settings.OUTFILE_ROOT`.
 
 """
 
@@ -36,6 +37,7 @@ import getopt
 import os
 import sys
 from concurrent.futures.thread import ThreadPoolExecutor
+from typing import Optional
 
 import numpy
 
@@ -52,8 +54,9 @@ __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
 from utils.convertions import class_name_to_obj
 
 
-def __makedirs() -> None:
-    """Creates required simulation working directories if they do not exist."""
+def __makedirs__() -> None:
+    """Helper method that reates required simulation working directories if
+    they do not exist."""
     if not os.path.exists(SHARED_ROOT):
         os.makedirs(SHARED_ROOT)
 
@@ -64,16 +67,23 @@ def __makedirs() -> None:
         os.makedirs(OUTFILE_ROOT)
 
 
-def __can_exec_simfile(sname: str) -> None:
-    """Verifies if input simulation file name exists in
-    :py:const:`app.environment_settings.SIMULATION_ROOT`."""
+def __can_exec_simfile__(sname: str) -> None:
+    """Asserts if simulation can proceed with user specified file.
+
+    Args:
+        sname:
+            The name of the simulation file, including extension,
+            whose existence inside
+            :py:const:`~app.environment_settings.SIMULATION_ROOT` will be
+            checked.
+    """
     spath = os.path.join(SIMULATION_ROOT, sname)
     if not os.path.exists(spath):
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
 
 
-def __start_simulation(sname: str, sid: int, epochs: int) -> None:
-    """Executes one instance of the simulation
+def __start_simulation__(sname: str, sid: int, epochs: int) -> None:
+    """Helper method that orders execution of one simulation instance.
 
     Args:
         sname:
@@ -91,39 +101,78 @@ def __start_simulation(sname: str, sid: int, epochs: int) -> None:
     master_server.execute_simulation()
 
 
-def __parallel_main(
-        threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
-) -> None:
-    """Helper method that initializes a multi-threaded simulation."""
+def _parallel_main(threads_count: int,
+                   sdir: bool,
+                   sname: Optional[str],
+                   iters: int,
+                   epochs: int) -> None:
+    """Helper method that initializes a multi-threaded simulation.
+
+    Args:
+        threads_count:
+            Number of worker threads that will consume jobs from the Task Pool.
+        sdir:
+            Indicates whether or not the program will proceed by executing
+            all simulations files inside
+            :py:const:`~app.environment_settings.SIMULATION_ROOT` folder or
+            if will run with the specified file ``sname``.
+        sname:
+            The name of the simulation file to be executed or ``None`` if
+            ``sdir`` is set to ``True``.
+        iters:
+            How many times each simulation file is executed.
+        epochs:
+            Number of discrete time steps (epochs) each executed simulation
+            lasts.
+    """
     with ThreadPoolExecutor(max_workers=threads_count) as executor:
         if sdir:
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
                 for i in range(iters):
-                    executor.submit(__start_simulation, sn, i, epochs)
+                    executor.submit(__start_simulation__, sn, i, epochs)
         else:
-            __can_exec_simfile(sname)
+            __can_exec_simfile__(sname)
             for i in range(iters):
-                executor.submit(__start_simulation, sname, i, epochs)
+                executor.submit(__start_simulation__, sname, i, epochs)
 
 
-def __single_main(sdir: bool, sname: str, iters: int, epochs: int) -> None:
-    """Helper function that initializes a single-threaded simulation."""
+def _single_main(
+        sdir: bool, sname: Optional[str], iters: int, epochs: int) -> None:
+    """Helper function that initializes a single-threaded simulation.
+
+    Args:
+        sdir:
+            Indicates whether or not the program will proceed by executing
+            all simulations files inside
+            :py:const:`~app.environment_settings.SIMULATION_ROOT` folder or
+            if will run with the specified file ``sname``.
+        sname:
+            The name of the simulation file to be executed or ``None`` if
+            ``sdir`` is set to ``True``.
+        iters:
+            How many times each simulation file is executed.
+        epochs:
+            Number of discrete time steps (epochs) each executed simulation
+            lasts.
+    """
     if sdir:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
             for i in range(iters):
-                __start_simulation(sn, i, epochs)
+                __start_simulation__(sn, i, epochs)
     else:
-        __can_exec_simfile(sname)
+        __can_exec_simfile__(sname)
         for i in range(iters):
-            __start_simulation(sname, i, epochs)
+            __start_simulation__(sname, i, epochs)
 # endregion
 
 
-def main(
-        threads_count: int, sdir: bool, sname: str, iters: int, epochs: int
-) -> None:
+def main(threads_count: int,
+         sdir: bool,
+         sname: Optional[str],
+         iters: int,
+         epochs: int) -> None:
     """Receives user input and initializes the simulation process.
 
     Args:
@@ -133,31 +182,33 @@ def main(
             single thread).
         sdir:
             Indicates if the user wishes to execute all simulation files
-            that exist in :py:const:`environment_settings.SIMULATION_ROOT` or
+            that exist in
+            :py:const:`~app.environment_settings.SIMULATION_ROOT` or
             if he wishes to run one single simulation file, which must be
             explicitly specified in `sname`.
         sname:
-            When `sdir` is set to False, `sname` needs to be specified as a
+            When `sdir` is set to ``False``, `sname` needs to be specified as a
             non blank string containing the name of the simulation file to
             be executed. The named file must exist in
-            :py:const:`environment_settings.SIMULATION_ROOT`.
+            :py:const:`~app.environment_settings.SIMULATION_ROOT`.
         iters:
             The number of times the same simulation file should be executed.
         epochs:
             The number of discrete time steps each iteration of each instance
             of a simulation lasts.
     """
+    # Creates a MatlabEngineContainer before any thread starts working.
     MatlabEngineContainer.get_instance()
 
     if threads_count != 0:
-        __parallel_main(
+        _parallel_main(
             numpy.abs(threads_count).item(), sdir, sname, iters, epochs)
     else:
-        __single_main(sdir, sname, iters, epochs)
+        _single_main(sdir, sname, iters, epochs)
 
 
 if __name__ == "__main__":
-    __makedirs()
+    __makedirs__()
 
     threading = 0
     simdirectory = False

@@ -1,5 +1,10 @@
-app package
-===========
+App Documentation
+=================
+
+.. toctree::
+   :maxdepth: 5
+   :caption: App Documentation
+   :name: App Documentation
 
 .. automodule:: app
    :members:
@@ -11,7 +16,7 @@ Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
    app.domain
    app.utils
@@ -19,8 +24,8 @@ Subpackages
 Submodules
 ----------
 
-app.environment\_settings module
---------------------------------
+app.environment\_settings
+-------------------------
 
 .. automodule:: app.environment_settings
    :members:
@@ -28,35 +33,26 @@ app.environment\_settings module
    :show-inheritance:
    :private-members:
 
-app.hive\_simulation module
----------------------------
+app.hive\_simulation
+--------------------
 
 .. automodule:: app.hive_simulation
    :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
 
-app.mixing\_rate\_sampler module
---------------------------------
+app.mixing\_rate\_sampler
+-------------------------
 
 .. automodule:: app.mixing_rate_sampler
    :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
 
-app.simfile\_generator module
------------------------------
+app.simfile\_generator
+----------------------
 
 .. automodule:: app.simfile_generator
    :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
 
-app.type\_hints module
-----------------------
+app.type\_hints
+---------------
 
 .. automodule:: app.type_hints
    :members:
