@@ -116,27 +116,25 @@
 
 
 <div class="viewcode-block" id="excluding_randrange"><a class="viewcode-back" href="../../../app.utils.html#app.utils.randoms.excluding_randrange">[docs]</a><span class="k">def</span> <span class="nf">excluding_randrange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">start_again</span><span class="p">,</span> <span class="n">stop_again</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generates a random number</span>
+    <span class="sd">&quot;&quot;&quot;Generates a random number within two different intervals.&quot;</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        start:</span>
 <span class="sd">            Number consideration for generation starts from this.</span>
 <span class="sd">        stop:</span>
 <span class="sd">            Numbers less than this are generated unless they are bigger or</span>
-<span class="sd">            equal than `start_again`.</span>
+<span class="sd">            equal than ``start_again``.</span>
 <span class="sd">        start_again:</span>
 <span class="sd">            Number consideration for generation starts again from this.</span>
 <span class="sd">        stop_again:</span>
 <span class="sd">            Number consideration stops here and does not include the inputed</span>
 <span class="sd">            value.</span>
 <span class="sd">        step:</span>
-<span class="sd">            optional; Step point of range, this won&#39;t be included. This is</span>
-<span class="sd">            optional.</span>
-<span class="sd">    The random number that is generated is</span>
+<span class="sd">            Step point of range, this won&#39;t be included.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A randomly selected element from in the interval [start, stop) or in</span>
-<span class="sd">        [start_again, stop_again).</span>
+<span class="sd">        A randomly selected element from in the interval ``[start, stop)`` or in</span>
+<span class="sd">        ``[start_again, stop_again)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">stop</span> <span class="o">&lt;=</span> <span class="n">start</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">stop_again</span> <span class="o">&lt;=</span> <span class="n">start_again</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">start_again</span> <span class="o">&lt;=</span> <span class="n">stop</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bad range, expected args must adhere to: &quot;</span>
@@ -164,7 +162,7 @@
 <span class="sd">        size:</span>
 <span class="sd">            The size of the matrix</span>
 <span class="sd">    Returns:</span>
-<span class="sd">        A random index that is different than `i` and belongs to [0, `size`).</span>
+<span class="sd">        A random index that is different than ``i`` and belongs to ``[0, size)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">size_minus_one</span> <span class="o">=</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>

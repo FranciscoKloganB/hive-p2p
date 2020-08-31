@@ -147,8 +147,8 @@ as base64-encoded strings or serialization objects into JSON strings.</p>
 <dd class="field-odd"><p><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – The object to be converted to base64-encoded string.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A sequence of bytesrepresentation of the given object or None if obj
-is not a bytes type.</p>
+<dd class="field-even"><p>A sequence of bytes representation of the given <code class="docutils literal notranslate"><span class="pre">obj</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code>
+if <code class="docutils literal notranslate"><span class="pre">obj</span></code> is not a bytes type.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)">bytes</a>]</p>
@@ -162,11 +162,11 @@ is not a bytes type.</p>
 <dd><p>Converts a base64 string to a sequence of bytes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>string</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – a base64-encoded string to be converted to a byte sequence.</p>
+<dd class="field-odd"><p><strong>string</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A base64-encoded string to be converted to a byte sequence.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A sequence of bytes converted from the given base64-encoded string or
-None string is not a str type.</p>
+<dd class="field-even"><p>A sequence of bytes converted from the given base64-encoded <code class="docutils literal notranslate"><span class="pre">string</span></code>
+or <code class="docutils literal notranslate"><span class="pre">None</span></code> string is not a str type.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)">bytes</a>]</p>
@@ -180,11 +180,11 @@ None string is not a str type.</p>
 <dd><p>Converts a byte sequence or non base64 string to a base64-encoded string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – sequence of bytes to be converted.</p>
+<dd class="field-odd"><p><strong>data</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – Sequence of bytes to be converted.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A base64-encoded string representation of data or None if data is not a
-str or bytes type.</p>
+<dd class="field-even"><p>A base64-encoded string representation of <code class="docutils literal notranslate"><span class="pre">data</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code> if
+<code class="docutils literal notranslate"><span class="pre">data</span></code> is not a str or bytes type.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</p>
@@ -198,11 +198,11 @@ str or bytes type.</p>
 <dd><p>Converts a sequence of bytes a utf-8 string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – sequence of bytes to be converted.</p>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – Sequence of bytes to be converted.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A utf-8 string representation of data or None if data is not a bytes
-type.</p>
+<dd class="field-even"><p>A utf-8 string representation of <code class="docutils literal notranslate"><span class="pre">data</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code> if <code class="docutils literal notranslate"><span class="pre">data</span></code>
+is not a bytes type.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</p>
@@ -241,9 +241,9 @@ The name of the module must be included.</p></li>
 </dd>
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#AttributeError" title="(in Python v3.7)"><strong>AttributeError</strong></a> – When <cite>class_name</cite> does not exist or when <cite>module_name</cite> to be
+<li><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#AttributeError" title="(in Python v3.7)"><strong>AttributeError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">class_name</span></code> does not exist or when <code class="docutils literal notranslate"><span class="pre">module_name</span></code> to be
     imported causes cyclic import errors.</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ImportError" title="(in Python v3.7)"><strong>ImportError</strong></a> – When <cite>module_name</cite> is not a valid module.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ImportError" title="(in Python v3.7)"><strong>ImportError</strong></a> – When <code class="docutils literal notranslate"><span class="pre">module_name</span></code> is not a valid module.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -261,7 +261,7 @@ The name of the module must be included.</p></li>
 <dd class="field-odd"><p><strong>json_string</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The string to be deserialized into a python object.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A python object obtained from the JSON string.</p>
+<dd class="field-even"><p>A python object obtained from the processing <code class="docutils literal notranslate"><span class="pre">json_string</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Any</p>
@@ -278,7 +278,7 @@ The name of the module must be included.</p></li>
 <dd class="field-odd"><p><strong>obj</strong> (<em>Any</em>) – The object to be serialized.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A string representation of the object in JSON format.</p>
+<dd class="field-even"><p>A string representation of the <code class="docutils literal notranslate"><span class="pre">obj</span></code> in JSON format.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
@@ -301,7 +301,8 @@ The name of the module must be included.</p></li>
 <dd class="field-odd"><p><strong>string</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The string to be copied.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>An deep copy of the string or None if the string is not a str type.</p>
+<dd class="field-even"><p>An deep copy of the <code class="docutils literal notranslate"><span class="pre">string</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code> if the <code class="docutils literal notranslate"><span class="pre">string</span></code>
+is not a str type.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a>]</p>
@@ -321,7 +322,7 @@ The name of the module must be included.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The truncated float.</p>
+<dd class="field-even"><p>The truncated float value of <code class="docutils literal notranslate"><span class="pre">f</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
@@ -335,10 +336,11 @@ The name of the module must be included.</p></li>
 <dd><p>Converts utf-8 string to a sequence of bytes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>string</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – a utf-8 string to be converted to bytes.</p>
+<dd class="field-odd"><p><strong>string</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A utf-8 string to be converted to bytes.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The bytes of the utf-8 string or None if string is not a str type.</p>
+<dd class="field-even"><p>The bytes of the utf-8 <code class="docutils literal notranslate"><span class="pre">string</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code> if <code class="docutils literal notranslate"><span class="pre">string</span></code>
+is not a str type.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)">bytes</a>]</p>
@@ -349,7 +351,8 @@ The name of the module must be included.</p></li>
 </div>
 <div class="section" id="module-app.utils.crypto">
 <span id="app-utils-crypto"></span><h2>app.utils.crypto</h2>
-<p>Utility module that includes confidentiality, integrity and authentication functions.</p>
+<p>Utility module that includes confidentiality, integrity and authentication
+functions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>As of current release this module only includes one function
@@ -360,16 +363,14 @@ trustworthy you should implement the crypto related functions here.</p>
 <dl class="py function">
 <dt id="app.utils.crypto.sha256">
 <code class="sig-name descname">sha256</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/crypto.html#sha256"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Calculates the SHA-256 hash of data. Data can be anything.</p>
+<dd><p>Calculates the <code class="docutils literal notranslate"><span class="pre">sha256</span></code> hash of <code class="docutils literal notranslate"><span class="pre">data</span></code>. Data can be anything.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>Any</em>) – The data to get the hash from. If data is not of type bytes,</p></li>
-<li><p><strong>will be converted to bytes before the data is digested.</strong> (<em>it</em>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>data</strong> (<em>Any</em>) – The data to get the hash from. If <code class="docutils literal notranslate"><span class="pre">data</span></code> is not of type bytes,
+it will be converted to bytes before the data is digested.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The SHA-256 hash of data.</p>
+<dd class="field-even"><p>The hashvalue of <code class="docutils literal notranslate"><span class="pre">data</span></code> using <code class="docutils literal notranslate"><span class="pre">sha256</span></code> algorithm.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a></p>
@@ -384,26 +385,22 @@ trustworthy you should implement the crypto related functions here.</p>
 <dl class="py function">
 <dt id="app.utils.randoms.excluding_randrange">
 <code class="sig-name descname">excluding_randrange</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">stop</span></em>, <em class="sig-param"><span class="n">start_again</span></em>, <em class="sig-param"><span class="n">stop_again</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/utils/randoms.html#excluding_randrange"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Generates a random number</p>
+<dd><p>Generates a random number within two different intervals.”</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>start</strong> – Number consideration for generation starts from this.</p></li>
 <li><p><strong>stop</strong> – Numbers less than this are generated unless they are bigger or
-equal than <cite>start_again</cite>.</p></li>
+equal than <code class="docutils literal notranslate"><span class="pre">start_again</span></code>.</p></li>
 <li><p><strong>start_again</strong> – Number consideration for generation starts again from this.</p></li>
 <li><p><strong>stop_again</strong> – Number consideration stops here and does not include the inputed
 value.</p></li>
-<li><p><strong>step</strong> – optional; Step point of range, this won’t be included. This is
-optional.</p></li>
+<li><p><strong>step</strong> – Step point of range, this won’t be included.</p></li>
 </ul>
 </dd>
-</dl>
-<p>The random number that is generated is</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>A randomly selected element from in the interval [start, stop) or in
-[start_again, stop_again).</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A randomly selected element from in the interval <code class="docutils literal notranslate"><span class="pre">[start,</span> <span class="pre">stop)</span></code> or in
+<code class="docutils literal notranslate"><span class="pre">[start_again,</span> <span class="pre">stop_again)</span></code>.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -420,7 +417,7 @@ optional.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A random index that is different than <cite>i</cite> and belongs to [0, <cite>size</cite>).</p>
+<dd class="field-even"><p>A random index that is different than <code class="docutils literal notranslate"><span class="pre">i</span></code> and belongs to <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">size)</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></p>

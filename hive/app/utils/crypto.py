@@ -1,4 +1,5 @@
-"""Utility module that includes confidentiality, integrity and authentication functions.
+"""Utility module that includes confidentiality, integrity and authentication
+functions.
 
 Note:
     As of current release this module only includes one function
@@ -11,14 +12,15 @@ from typing import Any
 
 
 def sha256(data: Any) -> str:
-    """Calculates the SHA-256 hash of data. Data can be anything.
+    """Calculates the ``sha256`` hash of ``data``. Data can be anything.
 
     Args:
-        data: The data to get the hash from. If data is not of type bytes,
-        it will be converted to bytes before the data is digested.
+        data:
+            The data to get the hash from. If ``data`` is not of type bytes,
+            it will be converted to bytes before the data is digested.
 
     Returns:
-        The SHA-256 hash of data.
+        The hashvalue of ``data`` using ``sha256`` algorithm.
 
     """
     if isinstance(data, bytes):
