@@ -24,7 +24,6 @@ app.domain.helpers.exceptions
 
 .. automodule:: app.domain.helpers.exceptions
    :members:
-   :undoc-members:
    :show-inheritance:
    :private-members:
 
