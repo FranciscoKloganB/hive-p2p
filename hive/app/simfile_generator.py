@@ -133,7 +133,7 @@ def _input_filename(message: str) -> str:
             print("Invalid name, falling back to default 'FBZ_0134.NEF'.")
             file_name = "FBZ_0134.NEF"
         if not Path(os.path.join(SHARED_ROOT, file_name)).is_file():
-            print(f"{file_name} is not inside ~/hive/app/static/shared folder.")
+            print(f"{file_name} is not inside ~/cluster/app/static/shared folder.")
         return file_name
 
 
@@ -227,9 +227,9 @@ def _init_persisting_dict() -> Dict[str, Any]:
 
     print(
         "\nAny file you want to simulate persistance of must be inside the "
-        "following folder: ~/hive/app/static/shared\n"
+        "following folder: ~/cluster/app/static/shared\n"
         "You may also want to keep a backup of such file in:  "
-        "~/hive/app/static/shared/shared_backups"
+        "~/cluster/app/static/shared/shared_backups"
     )
 
     add_file: bool = True

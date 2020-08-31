@@ -18,40 +18,46 @@ class FileData:
     """Holds essential simulation data concerning files being persisted.
 
     FileData is a helper class which has responsabilities such as tracking
-    how many parts including blocks exist of the named file and managing
-    the persistence of logged simulation data to disk.
+    how many file block replicas currently existing in a 
+    :py:class:`cluster group <app.domain.cluster_groups.Cluster>`
+    but also keeping simulation events logged in RAM until the simulation 
+    ends, at which point the logs are written to disk.
 
     Attributes:
         name (str):
             The name of the original file.
-        parts_in_hive (int):
+        existing_replicas (int):
             The number of file parts including blocks that exist for the
             named file that exist in the simulation. Updated every epoch.
-        logger (LoggingData):
+        logger (:py:class:`~app.domain.helpers.smart_dataclasses.LoggingData):
             Object that stores captured simulation data. Stored data can be
             post-processed using user defined scripts to create items such
             has graphs and figures. See
-            :py:class:`app.domain.helpers.smart_dataclasses.SimulationData`
-        out_file (str/bytes/int):
-            File output stream to where captured data is written in append mode.
+            :py:class:`~app.domain.helpers.smart_dataclasses.LoggingData`
+        out_file (Union[str, bytes, int):
+            File output stream to where captured data is written in append
+            mode and to which ``logger`` will be written to at the end of the
+            simulation.
     """
 
     def __init__(self, name: str, sim_id: int = 0, origin: str = "") -> None:
-        """Creates an instance of FileData
+        """Creates an instance of ``FileData``.
 
         Args:
             name:
-                Name of the file to be referenced by the FileData object.
+                Name of the file to be referenced by the ``FileData`` object.
             sim_id:
-                 Identifier that generates unique output file names,
+                Identifier that generates unique output file names,
                 thus guaranteeing that different simulation instances do not
                 overwrite previous out files.
             origin:
-                 The name of the simulation file name that started
-                the simulation process.
+                The name of the simulation file name that started
+                the simulation process. See
+                :py:class:`~app.domain.master_servers.Master` and
+                :py:mod:`~app.hive_simulation`.
         """
         self.name: str = name
-        self.parts_in_hive = 0
+        self.existing_replicas = 0
         self.logger: LoggingData = LoggingData()
         self.out_file: IO = open(
             os.path.join(
@@ -63,35 +69,34 @@ class FileData:
             ), "w+")
 
     def fwrite(self, msg: str) -> None:
-        """Writes a message to the output file referenced by the FileData object.
+        """Appends a message to the output stream of ``FileData``.
 
-        The method fwrite automatically adds a new line to the inputted message.
+        The method automatically adds a new line character to ``msg``.
 
         Args:
             msg:
-                The message to be logged on the output file.
+                The message to be logged on the :py:attr:`out_file`.
         """
         self.out_file.write(msg + "\n")
 
-    def jwrite(self, hive: cg.Cluster, origin: str, epoch: int) -> None:
-        """Writes a JSON string of the LoggingData instance to the output file.
+    def jwrite(self, cluster: cg.Cluster, origin: str, epoch: int) -> None:
+        """Appends a json string to the output stream of ``FileData``.
 
-        The logged data is defined by the attributes of the
-        :py:class:`LoggingData <app.domain.helpers.smart_dataclasses.
-        LoggingData` class.
+        The logged data are all attributes belonging to :py:attr:`logger`.
 
         Args:
-            hive:
+            cluster:
                 The :py:class:`Cluster <app.domain.cluster_groups.Cluster>`
                 object that manages the simulated persistence of the
-                referenced file.
+                :py:attr:`named file <name>`.
             origin:
-                The name of the simulation file that started the simulation
-                process.
+                The name of the simulation file name that started
+                the simulation process. See
+                :py:class:`~app.domain.master_servers.Master` and
+                :py:mod:`~app.hive_simulation`.
             epoch:
-                The epoch at which the LoggingData was logged into the
-                output file.
-
+                The epoch at which the :py:attr:`logger` was appended to
+                :py:attr:`out_file`.
         """
         sd: LoggingData = self.logger
 
@@ -117,20 +122,20 @@ class FileData:
 
         extras: Dict[str, Any] = {
             "simfile_name": origin,
-            "hive_id": hive.id,
+            "hive_id": cluster.id,
             "file_name": self.name,
             "read_size": READ_SIZE,
-            "critical_size_threshold": hive.critical_size,
-            "sufficient_size_threshold": hive.sufficient_size,
-            "original_hive_size": hive.original_size,
-            "redundant_size": hive.redundant_size,
+            "critical_size_threshold": cluster.critical_size,
+            "sufficient_size_threshold": cluster.sufficient_size,
+            "original_hive_size": cluster.original_size,
+            "redundant_size": cluster.redundant_size,
             "max_epochs": ms.Master.MAX_EPOCHS,
             "min_replication_delay": MIN_REPLICATION_DELAY,
             "max_replication_delay": MAX_REPLICATION_DELAY,
             "replication_level": REPLICATION_LEVEL,
             "convergence_treshold": MIN_CONVERGENCE_THRESHOLD,
             "channel_loss": LOSS_CHANCE,
-            "corruption_chance_tod": hive.corruption_chances[0]
+            "corruption_chance_tod": cluster.corruption_chances[0]
         }
 
         sim_data_dict = sd.__dict__
@@ -141,44 +146,28 @@ class FileData:
         self.fwrite(json_string)
 
     def fclose(self, msg: str = None) -> None:
-        """Closes the output file controlled by the FileData instance.
+        """Closes the output stream controlled by the ``FileData`` instance.
 
         Args:
              msg:
-                 If filled, a termination message is logged into the
-                output file that is being closed.
+                 If filled, a termination message is appended to
+                 :py:attr:`out_file`, before closing it.
         """
         if msg:
             self.fwrite(msg)
         self.out_file.close()
 
     # region Overrides
-
     def __hash__(self):
-        """Override to allows a network node object to be used as a dict key
-
-        Returns:
-            The hash of value of the referenced file :py:attr:`name`.
-        """
         return hash(str(self.name))
 
     def __eq__(self, other):
-        """Compares if two instances of FileData are equal.
-
-        Equality is based on name equality.
-
-        Returns:
-            ``True`` if the name attribute of both instances is the same,
-            otherwise ``False``.
-        """
         if not isinstance(other, FileData):
             return False
         return self.name == other.name
 
     def __ne__(self, other):
-        """Compares if two instances of FileData are not equal."""
         return not(self == other)
-
     # endregion
 
 
@@ -190,7 +179,7 @@ class FileBlockData:
 
     Attributes:
         hive_id:
-            Unique identifier of the hive that manages the file block.
+            Unique identifier of the cluster that manages the file block.
         name:
             The name of the file the file block belongs to.
         number:
@@ -220,7 +209,7 @@ class FileBlockData:
 
         Args:
             hive_id:
-                Unique identifier of the hive that manages the file block.
+                Unique identifier of the cluster that manages the file block.
             name:
                 The name of the file the file block belongs to.
             number:
@@ -621,7 +610,7 @@ class LoggingData:
         Note:
             This method should only be called when simulation terminates due
             to a failure such as a the loss of all blocks of a file block
-            or the simultaneous disconnection of all network nodes in the hive.
+            or the simultaneous disconnection of all network nodes in the cluster.
 
         Args:
             message:
@@ -639,7 +628,7 @@ class LoggingData:
                         size_bm: int,
                         size_am: int,
                         epoch: int) -> None:
-        """Logs hive membership status and size at an epoch.
+        """Logs cluster membership status and size at an epoch.
 
         Args:
             status_bm:
@@ -649,9 +638,9 @@ class LoggingData:
                 A string that describes the status of the cluster after
                 maintenance.
             size_bm:
-                The number of network nodes in the hive before maintenance.
+                The number of network nodes in the cluster before maintenance.
             size_am:
-                The number of network nodes in the hive after maintenance.
+                The number of network nodes in the cluster after maintenance.
             epoch:
                 A simulation epoch at which termination occurred.
         """

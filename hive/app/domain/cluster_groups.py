@@ -358,7 +358,7 @@ class Cluster:
         self.file.logger.log_existing_file_blocks(pcount, self.current_epoch)
         if pcount <= 0:
             self._set_fail("Cluster has no remaining parts.")
-        self.file.parts_in_hive = pcount
+        self.file.existing_replicas = pcount
 
     def _set_fail(self, message: str) -> None:
         """Ends the Cluster instance simulation.
@@ -435,7 +435,7 @@ class HiveCluster(Cluster):
 
     Attributes:
         v_ (:py:class:`~pd:pandas.DataFrame`):
-            Density distribution hive members must achieve with independent
+            Density distribution cluster members must achieve with independent
             realizations for ideal persistence of the file.
         cv_ (:py:class:`~pd:pandas.DataFrame`):
             Tracks the file current density distribution, updated at each epoch.
@@ -546,7 +546,7 @@ class HiveCluster(Cluster):
                                        f"id: {replica.id}.")
 
         if len(off_nodes) >= len(self.members):
-            self._set_fail("All hive members disconnected before maintenance.")
+            self._set_fail("All cluster members disconnected before maintenance.")
 
         sf: sd.LoggingData = self.file.logger
         sf.log_off_nodes(len(off_nodes), self.current_epoch)
@@ -675,7 +675,7 @@ class HiveCluster(Cluster):
 
         Note:
             An optimization could be made that configures a transition matrix
-            for the hive, independent of of file names, i.e., turn cluster
+            for the cluster, independent of of file names, i.e., turn cluster
             groups into groups persisting multiple files instead of only one,
             thus reducing simulation spaceoverheads and in real-life
             scenarios, decreasing the load done to metadata servers, through
@@ -837,7 +837,7 @@ class HiveCluster(Cluster):
             ``True`` if distributions are close enough to be considered equal,
             otherwise, it returns ``False``.
         """
-        pcount = self.file.parts_in_hive
+        pcount = self.file.existing_replicas
         target = self.v_.multiply(pcount)
         rtol = self.v_[0].min()
         atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
@@ -1016,7 +1016,7 @@ class HiveClusterExt(HiveCluster):
                         self.set_replication_epoch(replica)
 
         if len(self.suspicious_nodes) >= len(self.members):
-            self._set_fail("All hive members disconnected before maintenance.")
+            self._set_fail("All cluster members disconnected before maintenance.")
 
         sf: sd.LoggingData = self.file.logger
         sf.log_off_nodes(len(off_nodes), self.current_epoch)

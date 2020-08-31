@@ -335,7 +335,7 @@ class HiveMaster(Master):
         """Use to obtain a reference to 3rd party cloud storage provider
 
         The cloud storage provider can be used to temporarely host files
-        belonging to :py:class:`hive clusters <app.domain.HiveCluster>` in bad
+        belonging to :py:class:`cluster clusters <app.domain.HiveCluster>` in bad
         conditions that may compromise the file durability of the files they
         are responsible for persisting.
 
