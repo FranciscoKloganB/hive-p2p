@@ -31,6 +31,9 @@ Note:
     :py:const:`~app.environment_settings.SIMULATION_ROOT`.
 """
 import os
+from typing import List
+
+from utils.convertions import truncate_float_value
 
 DEBUG: bool = False
 """Indicates if some debug related actions or prints to the terminal should 
@@ -49,7 +52,7 @@ Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
 MONTH_EPOCHS: int = 21600
 """Defines how many epochs (discrete time steps) a month is represented with. 
 With the default value of 21600 each epoch would represent two minutes. See 
-:py:meth:`~app.domain.cluster_groups.Cluster.__assign_disk_error_chance__`."""
+:py:func:`~get_disk_error_chances`."""
 
 MIN_REPLICATION_DELAY: int = 1
 """The minimum amount of epoch time steps replica file block blocks take to 
@@ -84,6 +87,38 @@ This constant will be used by
 with a relative tolerance that is the minimum value in 
 :py:attr:`~app.domain.cluster_groups.HiveCluster.v_`.
 """
+
+
+def get_disk_error_chances(simulation_epochs: int) -> List[float]:
+    """Defines the probability of a file block being corrupted while stored
+    at the disk of a :py:class:`network node <app.domain.network_nodes.Node>`.
+
+    Note:
+        Recommended value should be based on the paper named
+        `An Analysis of Data Corruption in the Storage Stack
+        <http://www.cs.toronto.edu/bianca/papers/fast08.pdf>`_. Thus
+        the current implementation follows this formula:
+
+            (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`MONTH_EPOCHS`) * ``P(Xt ≥ L)``)
+
+        The notation ``P(Xt ≥ L)`` denotes the probability of a disk
+        developing at least L checksum mismatches within T months since
+        the disk’s first use in the field. As described in linked paper.
+
+    Args:
+        simulation_epochs:
+            The number of epochs the simuulation is expected to run
+            assuming no failures occur.
+
+    Returns:
+        A two element list with respectively, the probability of losing
+        and the probability of not losing a file block due to disk
+        errors, at an epoch basis.
+    """
+    ploss_month = 0.0086
+    ploss_epoch = (simulation_epochs * ploss_month) / MONTH_EPOCHS
+    ploss_epoch = truncate_float_value(ploss_epoch, 6)
+    return [ploss_epoch, 1.0 - ploss_epoch]
 # endregion
 
 # region DO NOT ALTER THESE

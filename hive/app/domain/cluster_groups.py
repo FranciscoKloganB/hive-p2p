@@ -19,8 +19,6 @@ import domain.helpers.smart_dataclasses as sd
 
 from environment_settings import *
 
-from utils.convertions import truncate_float_value
-
 
 class Cluster:
     """Represents a group of network nodes ensuring the durability of a file.
@@ -34,7 +32,7 @@ class Cluster:
             A two-element list containing the probability of
             :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`~app.domain.cluster_groups.Cluster._assign_disk_error_chance`
+            :py:func:`~app.environment_settings.get_disk_error_chances`
             for corruption chance configuration.
         master (:py:class:`~app.domain.master_servers.Master`):
             A reference to a server that coordinates or monitors the ``Cluster``.
@@ -103,7 +101,8 @@ class Cluster:
         """
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-        self.corruption_chances: List[float] = self._assign_disk_error_chance()
+        self.corruption_chances: List[float] = get_disk_error_chances(
+            ms.Master.MAX_EPOCHS)
         self.master = master
         self.members: th.NodeDict = members
         self.file: sd.FileData = sd.FileData(
@@ -193,33 +192,6 @@ class Cluster:
     # endregion
 
     # region Simulation setup
-    def _assign_disk_error_chance(self) -> List[float]:
-        """Defines the probability of a file block being corrupted while stored
-        at the disk of a
-        :py:class:`network node <app.domain.network_nodes.Node>`.
-
-        Note:
-            Recommended value should be based on the paper named
-            `An Analysis of Data Corruption in the Storage Stack
-            <http://www.cs.toronto.edu/bianca/papers/fast08.pdf>`_. Thus
-            the current implementation follows this formula:
-
-                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`~app.environment_settings.MONTH_EPOCHS`) * ``P(Xt ≥ L)``)
-
-            The notation ``P(Xt ≥ L)`` denotes the probability of a disk
-            developing at least L checksum mismatches within T months since
-            the disk’s first use in the field. As described in linked paper.
-
-        Returns:
-            A two element list with respectively, the probability of losing
-            and the probability of not losing a file block due to disk
-            errors, at an epoch basis.
-        """
-        ploss_month = 0.0086
-        ploss_epoch = (ms.Master.MAX_EPOCHS * ploss_month) / MONTH_EPOCHS
-        ploss_epoch = truncate_float_value(ploss_epoch, 6)
-        return [ploss_epoch, 1.0 - ploss_epoch]
-
     def _setup_epoch(self, epoch: int) -> None:
         """Initializes some attributes of the ``Cluster`` during
         its initialization.
