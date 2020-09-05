@@ -39,7 +39,7 @@ DEBUG: bool = False
 """Indicates if some debug related actions or prints to the terminal should 
 be performed."""
 
-# region Simulation Settings
+
 READ_SIZE: int = 131072
 """Defines the raw size of each file block before it's wrapped in a 
 :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instance 
@@ -119,36 +119,36 @@ def get_disk_error_chances(simulation_epochs: int) -> List[float]:
     ploss_epoch = (simulation_epochs * ploss_month) / MONTH_EPOCHS
     ploss_epoch = truncate_float_value(ploss_epoch, 6)
     return [ploss_epoch, 1.0 - ploss_epoch]
+
+
+# region Other simulation constants
+TRUE_FALSE = [True, False]
+DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
+COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 # endregion
 
-# region DO NOT ALTER THESE
-# path constants
+# region OS paths
 SHARED_ROOT: str = os.path.join(os.getcwd(), 'static', 'shared')
 """Path to the folder where files to be persisted during the simulation are 
 located."""
-
-OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
-"""Path to the folder where simulation output files are located will be 
-stored."""
 
 SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 """Path to the folder where simulation files to be executed by 
 :py:mod:`app.hive_simulation` are located."""
 
+OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
+"""Path to the folder where simulation output files are located will be 
+stored."""
+
+MIXING_RATE_SAMPLE_ROOT: str = os.path.join(OUTFILE_ROOT, 'mixing_rate_samples')
+
 MATLAB_DIR: str = os.path.join(os.getcwd(), 'scripts', 'matlab')
 """Path the folder where matlab scripts are located. Used by 
 :py:class:`~app.domain.helpers.matlab_utils.MatlabEngineContainer`"""
+# endregion
 
-MIXING_RATE_SAMPLE_ROOT: str = os.path.join(
-    OUTFILE_ROOT, 'mixing_rate_samples')
-
-# module paths
+# region Module paths
 MASTER_SERVERS: str = 'domain.master_servers'
 CLUSTER_GROUPS: str = 'domain.cluster_groups'
 NETWORK_NODES: str = 'domain.network_nodes'
-
-# Others
-TRUE_FALSE = [True, False]
-DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
-COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 # endregion
