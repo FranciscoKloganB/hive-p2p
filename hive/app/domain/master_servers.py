@@ -322,14 +322,6 @@ class Master:
 
 
 class HiveMaster(Master):
-    def __init__(self,
-                 simfile_name: str,
-                 sid: int,
-                 epochs: int,
-                 cluster_class: str,
-                 node_class: str) -> None:
-        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
-
     # region Master API
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
@@ -350,14 +342,6 @@ class HiveMaster(Master):
 
 
 class HDFSMaster(Master):
-    def __init__(self,
-                 simfile_name: str,
-                 sid: int,
-                 epochs: int,
-                 cluster_class: str,
-                 node_class: str) -> None:
-        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
-
     # region Simulation setup
     def _process_simfile(
             self, path: str, cluster_class: str, node_class: str) -> None:
