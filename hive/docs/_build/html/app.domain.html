@@ -2074,7 +2074,7 @@ destination selection.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNode.set_file_routing">
-<code class="sig-name descname">set_file_routing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fid</span></em>, <em class="sig-param"><span class="n">transition_vector</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.set_file_routing"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">set_file_routing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fid</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNode.set_file_routing"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Maps a file name identifier with a transition column vector used
 for file block replica routing.</p>
 <dl class="field-list simple">
@@ -2082,7 +2082,7 @@ for file block replica routing.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fid</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.name" title="app.domain.helpers.smart_dataclasses.FileData.name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span> <span class="pre">name</span> <span class="pre">identifier</span></code></a>
 of the file whose routing is being configured.</p></li>
-<li><p><strong>transition_vector</strong> (Union[<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>]) – A column vector with probabilities that dictate the odds of
+<li><p><strong>v_</strong> (Union[<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>]) – A column vector with probabilities that dictate the odds of
 sending file block blocks belonging to the file with
 specified id to other Cluster members also working on the
 persistence of the file block blocks.</p></li>

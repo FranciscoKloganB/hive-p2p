@@ -408,8 +408,9 @@ class HiveNode(Node):
     # endregion
 
     # region Routing table management
+    # noinspection PyIncorrectDocstring
     def set_file_routing(
-            self, fid: str, transition_vector: Union[pd.Series, pd.DataFrame]
+            self, fid: str, v_: Union[pd.Series, pd.DataFrame]
     ) -> None:
         """Maps a file name identifier with a transition column vector used
         for file block replica routing.
@@ -419,7 +420,7 @@ class HiveNode(Node):
                 The :py:attr:`file name identifier
                 <app.domain.helpers.smart_dataclasses.FileData.name>`
                 of the file whose routing is being configured.
-            transition_vector (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):
+            `v_` (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):
                 A column vector with probabilities that dictate the odds of
                 sending file block blocks belonging to the file with
                 specified id to other Cluster members also working on the
@@ -431,10 +432,10 @@ class HiveNode(Node):
                 be casted to it.
 
     """
-        if isinstance(transition_vector, pd.Series):
-            self.routing_table[fid] = transition_vector.to_frame()
-        elif isinstance(transition_vector, pd.DataFrame):
-            self.routing_table[fid] = transition_vector
+        if isinstance(v_, pd.Series):
+            self.routing_table[fid] = v_.to_frame()
+        elif isinstance(v_, pd.DataFrame):
+            self.routing_table[fid] = v_
         else:
             raise ValueError("set_file_routing method expects a pandas.Series ",
                              "or pandas.DataFrame as transition vector type.")

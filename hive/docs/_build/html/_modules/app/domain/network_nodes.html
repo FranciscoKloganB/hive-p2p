@@ -518,8 +518,9 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Routing table management</span>
+    <span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="HiveNode.set_file_routing"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.set_file_routing">[docs]</a>    <span class="k">def</span> <span class="nf">set_file_routing</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">transition_vector</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Maps a file name identifier with a transition column vector used</span>
 <span class="sd">        for file block replica routing.</span>
@@ -529,7 +530,7 @@
 <span class="sd">                The :py:attr:`file name identifier</span>
 <span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
 <span class="sd">                of the file whose routing is being configured.</span>
-<span class="sd">            transition_vector (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):</span>
+<span class="sd">            `v_` (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):</span>
 <span class="sd">                A column vector with probabilities that dictate the odds of</span>
 <span class="sd">                sending file block blocks belonging to the file with</span>
 <span class="sd">                specified id to other Cluster members also working on the</span>
@@ -541,10 +542,10 @@
 <span class="sd">                be casted to it.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_vector</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition_vector</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_vector</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition_vector</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;set_file_routing method expects a pandas.Series &quot;</span><span class="p">,</span>
                              <span class="s2">&quot;or pandas.DataFrame as transition vector type.&quot;</span><span class="p">)</span></div>
