@@ -428,8 +428,8 @@ class HiveNode(Node):
 
         Raises:
             ValueError:
-                If ``transition_vector`` is not a :py:class:`~pd:pandas.DataFrame` and cannot
-                be casted to it.
+                If ``transition_vector`` is not a
+                :py:class:`~pd:pandas.DataFrame` and cannot be casted to it.
 
     """
         if isinstance(v_, pd.Series):
