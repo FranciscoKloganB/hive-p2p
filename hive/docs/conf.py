@@ -49,7 +49,9 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.napoleon",
-    "sphinx_autodoc_future_annotations",
+    # "sphinx_autodoc_future_annotations", provides better doc for module
+    # level constants (due to consistency with Class Variables) but creates
+    # duplicate entries of vector variables due to their trailing underscore.
 ]
 
 intersphinx_mapping = {

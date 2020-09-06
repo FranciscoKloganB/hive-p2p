@@ -846,33 +846,32 @@
             <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/=</span> <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fastest_matrix</span></div>
 
-<div class="viewcode-block" id="HiveCluster._validate_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._validate_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                    <span class="n">transition_matrix</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-                                    <span class="n">target_distribution</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Asserts if ``transition_matrix`` is a Markov Matrix.</span>
+<div class="viewcode-block" id="HiveCluster._validate_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._validate_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_transition_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Asserts if ``m`` is a Markov Matrix.</span>
 
-<span class="sd">        Verification is done by raising the ``transition_matrix`` to the power</span>
+<span class="sd">        Verification is done by raising the ``m`` to the power</span>
 <span class="sd">        of ``4096`` (just a large number) and checking if all columns of the</span>
 <span class="sd">        powered matrix are element-wise equal to the</span>
 <span class="sd">        entries of ``target_distribution``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            transition_matrix (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">            m (:py:class:`~pd:pandas.DataFrame`):</span>
 <span class="sd">                The matrix to be verified.</span>
-<span class="sd">            target_distribution (:py:class:`~pd:pandas.DataFrame`):</span>
-<span class="sd">                The steady state the ``transition_matrix`` is expected to have.</span>
+<span class="sd">            `v_` (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">                The steady state the ``m`` is expected to have.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ``True`` if the matrix converges to the ``target_distribution``,</span>
-<span class="sd">            otherwise ``False``. I.e., if ``transition_matrix`` is a</span>
+<span class="sd">            otherwise ``False``. I.e., if ``m`` is a</span>
 <span class="sd">            markov matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t_pow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="mi">4096</span><span class="p">)</span>
+        <span class="n">t_pow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="mi">4096</span><span class="p">)</span>
         <span class="n">column_count</span> <span class="o">=</span> <span class="n">t_pow</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">column_count</span><span class="p">):</span>
             <span class="n">test_target</span> <span class="o">=</span> <span class="n">t_pow</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>  <span class="c1"># gets array column j</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
-                    <span class="n">test_target</span><span class="p">,</span> <span class="n">target_distribution</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-02</span><span class="p">):</span>
+                    <span class="n">test_target</span><span class="p">,</span> <span class="n">v_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-02</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span></div>
     <span class="c1"># endregion</span>
