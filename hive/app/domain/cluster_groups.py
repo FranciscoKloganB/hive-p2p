@@ -136,7 +136,7 @@ class Cluster:
                 The destination
                 :py:class:`network node <app.domain.network_nodes.Node>`
                 identifier.
-            replica:
+            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):
                 The :py:class:`file block replica <app.domain.helpers.smart_dataclasses.FileBlockData>`
                 to be sent specified destination: ``receiver``.
             is_fresh:

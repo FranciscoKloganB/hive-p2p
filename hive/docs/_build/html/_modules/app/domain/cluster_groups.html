@@ -129,8 +129,6 @@
 
 <span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">truncate_float_value</span>
-
 
 <div class="viewcode-block" id="Cluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster">[docs]</a><span class="k">class</span> <span class="nc">Cluster</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Represents a group of network nodes ensuring the durability of a file.</span>
@@ -144,7 +142,7 @@
 <span class="sd">            A two-element list containing the probability of</span>
 <span class="sd">            :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
 <span class="sd">            being corrupted and not being corrupted, respectively. See</span>
-<span class="sd">            :py:meth:`~app.domain.cluster_groups.Cluster._assign_disk_error_chance`</span>
+<span class="sd">            :py:func:`~app.environment_settings.get_disk_error_chances`</span>
 <span class="sd">            for corruption chance configuration.</span>
 <span class="sd">        master (:py:class:`~app.domain.master_servers.Master`):</span>
 <span class="sd">            A reference to a server that coordinates or monitors the ``Cluster``.</span>
@@ -213,7 +211,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assign_disk_error_chance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_disk_error_chances</span><span class="p">(</span>
+            <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="n">members</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span><span class="p">(</span>
@@ -232,7 +231,7 @@
                    <span class="n">sender</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">receiver</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">,</span>
-                   <span class="n">fresh_replica</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
+                   <span class="n">is_fresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sends a :py:class:`file block replica</span>
 <span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` to some other</span>
 <span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;` in</span>
@@ -247,10 +246,10 @@
 <span class="sd">                The destination</span>
 <span class="sd">                :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`</span>
 <span class="sd">                identifier.</span>
-<span class="sd">            replica:</span>
+<span class="sd">            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):</span>
 <span class="sd">                The :py:class:`file block replica &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
 <span class="sd">                to be sent specified destination: ``receiver``.</span>
-<span class="sd">            fresh_replica:</span>
+<span class="sd">            is_fresh:</span>
 <span class="sd">                Prevents recently created replicas from being</span>
 <span class="sd">                corrupted, since they are not likely to be corrupted in disk.</span>
 <span class="sd">                This argument facilitates simulation.</span>
@@ -269,7 +268,7 @@
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">TIME_OUT</span>
 
         <span class="n">is_corrupted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">fresh_replica</span> <span class="ow">and</span> <span class="n">is_corrupted</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_fresh</span> <span class="ow">and</span> <span class="n">is_corrupted</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_corrupted_file_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">BAD_REQUEST</span>
 
@@ -303,33 +302,6 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="Cluster._assign_disk_error_chance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._assign_disk_error_chance">[docs]</a>    <span class="k">def</span> <span class="nf">_assign_disk_error_chance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Defines the probability of a file block being corrupted while stored</span>
-<span class="sd">        at the disk of a</span>
-<span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Recommended value should be based on the paper named</span>
-<span class="sd">            `An Analysis of Data Corruption in the Storage Stack</span>
-<span class="sd">            &lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;`_. Thus</span>
-<span class="sd">            the current implementation follows this formula:</span>
-
-<span class="sd">                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`~app.environment_settings.MONTH_EPOCHS`) * ``P(Xt ≥ L)``)</span>
-
-<span class="sd">            The notation ``P(Xt ≥ L)`` denotes the probability of a disk</span>
-<span class="sd">            developing at least L checksum mismatches within T months since</span>
-<span class="sd">            the disk’s first use in the field. As described in linked paper.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A two element list with respectively, the probability of losing</span>
-<span class="sd">            and the probability of not losing a file block due to disk</span>
-<span class="sd">            errors, at an epoch basis.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ploss_month</span> <span class="o">=</span> <span class="mf">0.0086</span>
-        <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="p">(</span><span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span> <span class="o">*</span> <span class="n">ploss_month</span><span class="p">)</span> <span class="o">/</span> <span class="n">MONTH_EPOCHS</span>
-        <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">ploss_epoch</span><span class="p">]</span></div>
-
 <div class="viewcode-block" id="Cluster._setup_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._setup_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">_setup_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Initializes some attributes of the ``Cluster`` during</span>
 <span class="sd">        its initialization.</span>

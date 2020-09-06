@@ -507,7 +507,7 @@
                 <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">break</span>
                 <span class="n">code</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">route_part</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">fresh_replica</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">is_fresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
                     <span class="n">lost_replicas</span> <span class="o">-=</span> <span class="mi">1</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -710,7 +710,7 @@
                 <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">break</span>
                 <span class="n">code</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">route_part</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">fresh_replica</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">is_fresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
                     <span class="n">lost_replicas</span> <span class="o">-=</span> <span class="mi">1</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>

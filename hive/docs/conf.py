@@ -49,7 +49,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.napoleon",
-    # "sphinx_autodoc_future_annotations",
+    "sphinx_autodoc_future_annotations",
 ]
 
 intersphinx_mapping = {

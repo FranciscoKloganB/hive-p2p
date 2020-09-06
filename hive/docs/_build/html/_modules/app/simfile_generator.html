@@ -257,7 +257,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        ``True`` if user presses yes, otherwise ``False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">char</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">; y/n: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">char</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2"> [y/n]: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -350,15 +350,16 @@
         <span class="n">options_message</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Select how files blocks are spread across &quot;</span>
                            <span class="s2">&quot;clusters at the start of the simulation: {</span><span class="se">\n</span><span class="s2">&quot;</span>
                            <span class="s2">&quot;   u: uniform distribution among network nodes,</span><span class="se">\n</span><span class="s2">&quot;</span>
-                           <span class="s2">&quot;   i: near steady-state distribution,</span><span class="se">\n</span><span class="s2">&quot;</span>
-                           <span class="s2">&quot;   a: all files concentrated on N blocks</span><span class="se">\n</span><span class="s2">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                           <span class="s2">&quot;   i: ideal distribution, e.g., near a steady-state vector, </span><span class="se">\n</span><span class="s2">&quot;</span>
+                           <span class="s2">&quot;   a: all replicas given to N different nodes,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                           <span class="s2">&quot;}: &quot;</span><span class="p">)</span>
         <span class="n">options_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span>
         <span class="n">option_choice</span> <span class="o">=</span> <span class="n">_input_character_option</span><span class="p">(</span><span class="n">options_message</span><span class="p">,</span> <span class="n">options_list</span><span class="p">)</span>
 
         <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">][</span><span class="s2">&quot;spread&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">option_choice</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">][</span><span class="s2">&quot;cluster_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_input_bounded_integer</span><span class="p">(</span>
-            <span class="s2">&quot;Number of nodes that should be sharing the next file: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Number of nodes that should be sharing the next file: &quot;</span><span class="p">)</span>
 
         <span class="n">add_file</span> <span class="o">=</span> <span class="n">_in_yes_no</span><span class="p">(</span>
             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Simulate persistence of another file in simulation?&quot;</span><span class="p">)</span>
