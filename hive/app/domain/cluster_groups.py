@@ -736,33 +736,32 @@ class HiveCluster(Cluster):
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
 
-    def _validate_transition_matrix(self,
-                                    transition_matrix: pd.DataFrame,
-                                    target_distribution: pd.DataFrame) -> bool:
-        """Asserts if ``transition_matrix`` is a Markov Matrix.
+    def _validate_transition_matrix(
+            self, m: pd.DataFrame, v_: pd.DataFrame) -> bool:
+        """Asserts if ``m`` is a Markov Matrix.
 
-        Verification is done by raising the ``transition_matrix`` to the power
+        Verification is done by raising the ``m`` to the power
         of ``4096`` (just a large number) and checking if all columns of the
         powered matrix are element-wise equal to the
         entries of ``target_distribution``.
 
         Args:
-            transition_matrix (:py:class:`~pd:pandas.DataFrame`):
+            m (:py:class:`~pd:pandas.DataFrame`):
                 The matrix to be verified.
-            target_distribution (:py:class:`~pd:pandas.DataFrame`):
-                The steady state the ``transition_matrix`` is expected to have.
+            `v_` (:py:class:`~pd:pandas.DataFrame`):
+                The steady state the ``m`` is expected to have.
 
         Returns:
             ``True`` if the matrix converges to the ``target_distribution``,
-            otherwise ``False``. I.e., if ``transition_matrix`` is a
+            otherwise ``False``. I.e., if ``m`` is a
             markov matrix.
         """
-        t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)
+        t_pow = np.linalg.matrix_power(m.to_numpy(), 4096)
         column_count = t_pow.shape[1]
         for j in range(column_count):
             test_target = t_pow[:, j]  # gets array column j
             if not np.allclose(
-                    test_target, target_distribution[0].values, atol=1e-02):
+                    test_target, v_[0].values, atol=1e-02):
                 return False
         return True
     # endregion
