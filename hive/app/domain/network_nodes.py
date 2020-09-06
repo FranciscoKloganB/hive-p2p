@@ -397,7 +397,7 @@ class HiveNode(Node):
                 if lost_replicas == 0:
                     break
                 code = cluster.route_part(
-                    self.id, destination, replica, fresh_replica=True)
+                    self.id, destination, replica, is_fresh=True)
                 if code == e.HttpCodes.OK:
                     lost_replicas -= 1
                     replica.references += 1
@@ -600,7 +600,7 @@ class HDFSNode(Node):
                 if lost_replicas == 0:
                     break
                 code = cluster.route_part(
-                    self.id, destination, replica, fresh_replica=True)
+                    self.id, destination, replica, is_fresh=True)
                 if code == e.HttpCodes.OK:
                     lost_replicas -= 1
                     replica.references += 1

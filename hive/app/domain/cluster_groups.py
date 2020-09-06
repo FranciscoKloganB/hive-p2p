@@ -121,7 +121,7 @@ class Cluster:
                    sender: str,
                    receiver: str,
                    replica: sd.FileBlockData,
-                   fresh_replica: bool = False) -> th.HttpResponse:
+                   is_fresh: bool = False) -> th.HttpResponse:
         """Sends a :py:class:`file block replica
         <app.domain.helpers.smart_dataclasses.FileBlockData>` to some other
         :py:class:`network node <app.domain.network_nodes.Node>` in
@@ -139,7 +139,7 @@ class Cluster:
             replica:
                 The :py:class:`file block replica <app.domain.helpers.smart_dataclasses.FileBlockData>`
                 to be sent specified destination: ``receiver``.
-            fresh_replica:
+            is_fresh:
                 Prevents recently created replicas from being
                 corrupted, since they are not likely to be corrupted in disk.
                 This argument facilitates simulation.
@@ -158,7 +158,7 @@ class Cluster:
             return e.HttpCodes.TIME_OUT
 
         is_corrupted = np.random.choice(a=TRUE_FALSE, p=self.corruption_chances)
-        if not fresh_replica and is_corrupted:
+        if not is_fresh and is_corrupted:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return e.HttpCodes.BAD_REQUEST
 
