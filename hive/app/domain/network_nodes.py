@@ -526,8 +526,6 @@ class HiveNodeExt(HiveNode):
 
 class HDFSNode(Node):
     """Represents a data node in the Hadoop Distribute File System."""
-    def __init__(self, uid: str, uptime: float) -> None:
-        super().__init__(uid, uptime)
 
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
