@@ -538,8 +538,8 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError:</span>
-<span class="sd">                If ``transition_vector`` is not a :py:class:`~pd:pandas.DataFrame` and cannot</span>
-<span class="sd">                be casted to it.</span>
+<span class="sd">                If ``transition_vector`` is not a</span>
+<span class="sd">                :py:class:`~pd:pandas.DataFrame` and cannot be casted to it.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
@@ -636,8 +636,6 @@
 
 <div class="viewcode-block" id="HDFSNode"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode">[docs]</a><span class="k">class</span> <span class="nc">HDFSNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents a data node in the Hadoop Distribute File System.&quot;&quot;&quot;</span>
-<div class="viewcode-block" id="HDFSNode.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">uptime</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="HDFSNode.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
