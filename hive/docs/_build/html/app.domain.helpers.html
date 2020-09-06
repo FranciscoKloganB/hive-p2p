@@ -287,7 +287,7 @@ representation and some other dimensions are given.</p>
 <p>Module with Matlab related classes.</p>
 <dl class="py class">
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer">
-<em class="property">class </em><code class="sig-name descname">MatlabEngineContainer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">MatlabEngineContainer</code><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Singleton class wrapper containing thread safe access to a MatlabEngine.</p>
 <p>This class provides a thread-safe way to access one singleton
@@ -312,7 +312,7 @@ obtains <a class="reference internal" href="#app.domain.helpers.matlab_utils.Mat
 
 <dl class="py method">
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.__init__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Instantiates a new MatlabEngineContainer object.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -345,7 +345,7 @@ otherwise a new one is created and returned.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer.matrix_global_opt">
-<code class="sig-name descname">matrix_global_opt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.matrix_global_opt"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">matrix_global_opt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matlab_utils.html#MatlabEngineContainer.matrix_global_opt"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Constructs an optimized transition matrix using the matlab engine.</p>
 <p>Constructs an optimized transition matrix using linear programming
 relaxations and convex envelope approximations for the specified steady
@@ -357,7 +357,6 @@ state <code class="docutils literal notranslate"><span class="pre">v_</span></co
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A non-optimized symmetric adjency matrix.</p></li>
 <li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -383,11 +382,6 @@ respective <a class="reference internal" href="#app.domain.helpers.matrices.get_
 <dt id="app.domain.helpers.matlab_utils.MatlabEngineContainer._instance">
 <code class="sig-name descname">_instance</code><em class="property">: <a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">app.domain.helpers.matlab_utils.MatlabEngineContainer</a></em><em class="property"> = None</em></dt>
 <dd><p>A reference to the instance of <cite>MatlabEngineContainer</cite> or <cite>None</cite>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">app.domain.helpers.matlab_utils.MatlabEngineContainer</a></p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
@@ -452,7 +446,6 @@ if a valid license is not found, it uses
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rw</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – a random_walk over an adjacency matrix</p></li>
 <li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – a stochastic desired distribution vector</p></li>
-<li><p><strong>v</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -549,7 +542,6 @@ transition matrix.</p></li>
 is in row or column major form.</p></li>
 <li><p><strong>version</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Indicates which version of the algorith should be used
 (default is version 2).</p></li>
-<li><p><strong>v</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -664,7 +656,6 @@ is equal to the highest Markov Matrix eigenvalue that is smaller than one.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A non-optimized symmetric adjency matrix.</p></li>
 <li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -697,7 +688,6 @@ license the output of this function is always <code class="docutils literal notr
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A non-optimized symmetric adjency matrix.</p></li>
 <li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -726,7 +716,6 @@ but this is not enforced or verified.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A symmetric adjency matrix.</p></li>
 <li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -753,7 +742,6 @@ distribution vector.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A non-optimized symmetric adjency matrix.</p></li>
 <li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – A stochastic steady state distribution vector.</p></li>
-<li><p><strong>v</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><em>numpy.ndarray</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -833,7 +821,7 @@ groups of <a class="reference internal" href="app.domain.html#app.domain.network
 encapsulating attribute and method behaviour.</p>
 <dl class="py class">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData">
-<em class="property">class </em><code class="sig-name descname">FileBlockData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">hive_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">FileBlockData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Wrapping class for the contents of a file block.</p>
 <p>Among other responsabilities <cite>FileBlockData</cite> helps managing simulation
@@ -892,19 +880,9 @@ Until a loss occurs and after a loss is recovered,
 <dd><p>The hash value of data resulting from a SHA256 digest.</p>
 </dd></dl>
 
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>hive_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </p></li>
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </p></li>
-<li><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – </p></li>
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – </p></li>
-</ul>
-</dd>
-</dl>
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">hive_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.__init__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Creates an instance of <cite>FileBlockData</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -934,7 +912,7 @@ Until a loss occurs and after a loss is recovered,
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.can_replicate">
-<code class="sig-name descname">can_replicate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.can_replicate"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">can_replicate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.can_replicate"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Informs the calling network node if file block needs replication.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -965,7 +943,7 @@ environment.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">
-<code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.set_replication_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">set_replication_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.set_replication_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Sets the epoch in which replication levels should be restored.</p>
 <p>This method tries to assign a new epoch, in the future, at which
 recovery should be performed. If the proposition is sooner than the
@@ -1000,7 +978,7 @@ delay_replication in a simulation.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.update_epochs_to_recover">
-<code class="sig-name descname">update_epochs_to_recover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.update_epochs_to_recover"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">update_epochs_to_recover</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.update_epochs_to_recover"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Update the <cite>replication_epoch</cite> after a recovery attempt was carried out.</p>
 <p>If the recovery attempt performed by some network node successfully
 managed to restore the replication levels to the original target, then,
@@ -1020,7 +998,7 @@ attempt will be done in the next epoch.</p>
 
 <dl class="py class">
 <dt id="app.domain.helpers.smart_dataclasses.FileData">
-<em class="property">class </em><code class="sig-name descname">FileData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">FileData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Holds essential simulation data concerning files being persisted.</p>
 <p>FileData is a helper class which has responsabilities such as tracking
@@ -1077,18 +1055,9 @@ simulation.</p>
 </dl>
 </dd></dl>
 
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </p></li>
-<li><p><strong>sim_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – </p></li>
-<li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </p></li>
-</ul>
-</dd>
-</dl>
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.__init__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Creates an instance of <code class="docutils literal notranslate"><span class="pre">FileData</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1111,7 +1080,7 @@ the simulation process. See
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.fclose">
-<code class="sig-name descname">fclose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">msg</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fclose"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">fclose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fclose"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Closes the output stream controlled by the <code class="docutils literal notranslate"><span class="pre">FileData</span></code> instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1126,7 +1095,7 @@ the simulation process. See
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.fwrite">
-<code class="sig-name descname">fwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">msg</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fwrite"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">fwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msg</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.fwrite"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Appends a message to the output stream of <code class="docutils literal notranslate"><span class="pre">FileData</span></code>.</p>
 <p>The method automatically adds a new line character to <code class="docutils literal notranslate"><span class="pre">msg</span></code>.</p>
 <dl class="field-list simple">
@@ -1141,7 +1110,7 @@ the simulation process. See
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileData.jwrite">
-<code class="sig-name descname">jwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">origin</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.jwrite"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">jwrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">origin</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileData.jwrite"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Appends a json string to the output stream of <code class="docutils literal notranslate"><span class="pre">FileData</span></code>.</p>
 <p>The logged data are all attributes belonging to <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.FileData.logger" title="app.domain.helpers.smart_dataclasses.FileData.logger"><code class="xref py py-attr docutils literal notranslate"><span class="pre">logger</span></code></a>.</p>
 <dl class="field-list simple">
@@ -1168,7 +1137,7 @@ the simulation process. See
 
 <dl class="py class">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData">
-<em class="property">class </em><code class="sig-name descname">LoggingData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">LoggingData</code><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Logger object that stores simulation events and other data.</p>
 <div class="admonition note">
@@ -1455,7 +1424,7 @@ overlay network of a <a class="reference internal" href="app.domain.html#module-
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.__init__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Instanciates a <code class="docutils literal notranslate"><span class="pre">LoggingData</span></code> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -1466,7 +1435,7 @@ overlay network of a <a class="reference internal" href="app.domain.html#module-
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData._recursive_len">
-<code class="sig-name descname">_recursive_len</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData._recursive_len"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">_recursive_len</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">item</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData._recursive_len"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Recusively sums the length of all lists in <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1484,7 +1453,7 @@ as not yet been counted.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_bandwidth_units">
-<code class="sig-name descname">log_bandwidth_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_bandwidth_units"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_bandwidth_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_bandwidth_units"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the amount of moved file blocks moved at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1501,7 +1470,7 @@ as not yet been counted.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_corrupted_file_blocks">
-<code class="sig-name descname">log_corrupted_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_corrupted_file_blocks"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_corrupted_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_corrupted_file_blocks"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the amount of corrupted file block blocks at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1518,7 +1487,7 @@ as not yet been counted.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_existing_file_blocks">
-<code class="sig-name descname">log_existing_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_existing_file_blocks"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_existing_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_existing_file_blocks"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the amount of existing file blocks in the simulation environment at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1535,7 +1504,7 @@ as not yet been counted.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_fail">
-<code class="sig-name descname">log_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">epoch</span></em>, <em class="sig-param"><span class="n">message</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_fail"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_fail</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em>, <em class="sig-param"><span class="n">message</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_fail"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the epoch at which a simulation terminated due to a failure.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1558,7 +1527,7 @@ or the simultaneous disconnection of all network nodes in the cluster.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_lost_file_blocks">
-<code class="sig-name descname">log_lost_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_file_blocks"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_lost_file_blocks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_file_blocks"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the amount of permanently lost file block blocks at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1575,7 +1544,7 @@ or the simultaneous disconnection of all network nodes in the cluster.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_lost_messages">
-<code class="sig-name descname">log_lost_messages</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_messages"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_lost_messages</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_lost_messages"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the amount of failed message transmissions at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1592,7 +1561,7 @@ or the simultaneous disconnection of all network nodes in the cluster.</p>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_maintenance">
-<code class="sig-name descname">log_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">size_bm</span></em>, <em class="sig-param"><span class="n">size_am</span></em>, <em class="sig-param"><span class="n">status_bm</span></em>, <em class="sig-param"><span class="n">status_am</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_maintenance"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_maintenance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size_bm</span></em>, <em class="sig-param"><span class="n">size_am</span></em>, <em class="sig-param"><span class="n">status_bm</span></em>, <em class="sig-param"><span class="n">status_am</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_maintenance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs cluster membership status and size at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1614,7 +1583,7 @@ maintenance.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">
-<code class="sig-name descname">log_matrices_degrees</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">nodes_degrees</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_matrices_degrees"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_matrices_degrees</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nodes_degrees</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_matrices_degrees"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the degree of all nodes in a Markov Matrix overlay, at the
 time of its creation, before any faults on the overlay occurs.</p>
 <dl class="field-list simple">
@@ -1627,7 +1596,7 @@ and <code class="docutils literal notranslate"><span class="pre">out-degree</spa
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_off_nodes">
-<code class="sig-name descname">log_off_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_off_nodes"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_off_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_off_nodes"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the amount of disconnected network_nodes at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1644,7 +1613,7 @@ and <code class="docutils literal notranslate"><span class="pre">out-degree</spa
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_replication_delay">
-<code class="sig-name descname">log_replication_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">delay</span></em>, <em class="sig-param"><span class="n">calls</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_replication_delay"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_replication_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">delay</span></em>, <em class="sig-param"><span class="n">calls</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_replication_delay"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the expected delay_replication at epoch at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1662,7 +1631,7 @@ and <code class="docutils literal notranslate"><span class="pre">out-degree</spa
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_suspicous_node_detection_delay">
-<code class="sig-name descname">log_suspicous_node_detection_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">node_id</span></em>, <em class="sig-param"><span class="n">delay</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_suspicous_node_detection_delay"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">log_suspicous_node_detection_delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_id</span></em>, <em class="sig-param"><span class="n">delay</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_suspicous_node_detection_delay"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Logs the expected delay_replication at epoch at an epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1681,7 +1650,7 @@ to be offline by the perfect failure detector.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.register_convergence">
-<code class="sig-name descname">register_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.register_convergence"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">register_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.register_convergence"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Increments <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.cswc" title="app.domain.helpers.smart_dataclasses.LoggingData.cswc"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cswc</span></code></a> by one and tries to update the <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a></p>
 <p>Checks if the counter for consecutive epoch convergence is bigger
 than <a class="reference internal" href="app.html#app.environment_settings.MIN_CONVERGENCE_THRESHOLD" title="app.environment_settings.MIN_CONVERGENCE_THRESHOLD"><code class="xref py py-const docutils literal notranslate"><span class="pre">MIN_CONVERGENCE_THRESHOLD</span></code></a>
@@ -1699,7 +1668,7 @@ and if it is, it appends the <code class="docutils literal notranslate"><span cl
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset">
-<code class="sig-name descname">save_sets_and_reset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.save_sets_and_reset"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">save_sets_and_reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.save_sets_and_reset"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Resets all convergence variables</p>
 <p>Tries to update <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.largest_convergence_window" title="app.domain.helpers.smart_dataclasses.LoggingData.largest_convergence_window"><code class="xref py py-attr docutils literal notranslate"><span class="pre">largest_convergence_window</span></code></a> and
 <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_sets"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_sets</span></code></a> when <a class="reference internal" href="#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convergence_set</span></code></a>
