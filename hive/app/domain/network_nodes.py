@@ -312,13 +312,17 @@ class HiveNode(Node):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     Attributes:
+        clusters:
+            A collection of :py:class:`cluster groups
+            <app.domain.cluster_groups.HiveCluster>` the ``HiveNode`` is a
+            member of.
         routing_table (Dict[str, :py:class:`~pd:pandas.DataFrame`]):
             Contains the information required to appropriately route file
             block blocks to other HiveNode instances.
     """
     def __init__(self, uid: str, uptime: float) -> None:
         super().__init__(uid, uptime)
-        self.hives: Dict[str, th.ClusterType] = {}
+        self.clusters: Dict[str, th.ClusterType] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
 
     # region Simulation steps
