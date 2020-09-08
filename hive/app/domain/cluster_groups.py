@@ -469,18 +469,26 @@ class HiveCluster(Cluster):
                 the ``Cluster``.
 
                 u
-                    Distributed uniformly across network.
+                    Each :py:class:`file block replica
+                    <app.domain.helpers.smart_dataclasses.FileBlockData>` in
+                    ``replicas`` is distributed following a
+                    uniform probability vector among :py:attr:`members` of
+                    the cluster group.
                 a
-                    Give all file block replicas to N different members,
-                    where N is equal to
+                    Each :py:class:`file block replica
+                    <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                    in ``replicas`` is given up to ``N`` different
+                    :py:attr:`members` where ``N`` is equal to
                     :py:const:`~app.environment_settings.REPLICATION_LEVEL`.
                 i
-                    Distribute all file block replicas following such
-                    that the simulation starts with all file replicas and
-                    their replicas distributed with a bias towards the
-                    ideal steady state distribution. This mode is only
-                    applicatable to clusters of type or with ancestor type
-                    :py:class:`~app.domain.cluster_groups.HiveCluster`.
+                    Each :py:class:`file block replica
+                    <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                    in ``replicas`` with bias towards the
+                    ideal steady state distribution. This implementation of
+                    differs from
+                    :py:meth:`app.domain.cluster_groups.Cluster.spread_files`,
+                    because it is not necessarely based on
+                    :py:class:`node <app.domain.network_nodes.Node>` uptime.
         """
         self.file.logger.initial_spread = strat
 
