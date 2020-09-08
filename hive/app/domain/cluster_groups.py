@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import math
 import uuid
+
 from typing import Tuple, Optional, List, Dict, Any
 
 from tabulate import tabulate
@@ -1199,5 +1200,43 @@ class NewscastCluster(Cluster):
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         pass
 
-    def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
-        pass
+    def spread_files(self, replicas: th.ReplicasDict, strat: str = "o") -> None:
+        """Distributes a collection of :py:class:`file block replicas
+        <app.domain.helpers.smart_dataclasses.FileBlockData>` among the
+        :py:attr:`members` of the cluster group.
+
+        Overrides:
+            :py:meth:`app.dommain.cluster.Cluster.spread_files`
+
+        Args:
+            replicas (:py:class:`~app.type_hints.ReplicasDict`):
+                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+                replicas, without replication.
+            strat:
+                Defines how ``replicas`` will be initially distributed in
+                the ``Cluster``. Unless overridden in children of this class the
+                received value of ``strat`` will be ignored and will always
+                be set to the default value ``o``.
+
+                o
+                    This strategy assumes erasure-coding is being used and
+                    that each :py:class:`network node
+                    <app.domain.network_nodes.Node>` will have no more than
+                    one encoded block, i.e., replication level is always
+                    equal to one. Note however, that if there are more encoded
+                    blocks than there are :py:class:`network nodes
+                    <app.domain.network_nodes.Node>`, some of these ``nodes``
+                    might end up possessing an excessive amount of blocks.
+        """
+        replicas = list(replicas.values())
+        members = list(self.members.values())
+        members_len = len(members)
+
+        if len(replicas) <= members_len:
+            for member, replica in zip(members, replicas):
+                member.receive_part(replica)
+        else:
+            while replicas:
+                for member, replica in zip(members, replicas):
+                    member.receive_part(replica)
+                del replicas[:members_len]
