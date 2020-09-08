@@ -1091,10 +1091,6 @@ class HDFSCluster(Cluster):
             node.id: 5 for node in members.values()
         }
 
-    # region Simulation setup
-
-    # endregion
-
     # region Simulation steps
     def nodes_execute(self) -> List[th.NodeType]:
         """Queries all :py:attr:`~Cluster.members` to execute the epoch.
