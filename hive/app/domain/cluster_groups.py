@@ -1228,6 +1228,8 @@ class NewscastCluster(Cluster):
                     <app.domain.network_nodes.Node>`, some of these ``nodes``
                     might end up possessing an excessive amount of blocks.
         """
+        self.file.logger.initial_spread = "o"
+
         replicas = list(replicas.values())
         members = list(self.members.values())
         members_len = len(members)
