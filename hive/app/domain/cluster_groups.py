@@ -205,9 +205,9 @@ class Cluster:
         self._recovery_epoch_calls = 0
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
-        """Distributes a collection of
-        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
-        objects among the :py:attr:`members` of the ``Cluster``.
+        """Distributes a collection of :py:class:`file block replicas
+        <app.domain.helpers.smart_dataclasses.FileBlockData>` among the
+        :py:attr:`members` of the ``Cluster``.
 
         Args:
             replicas (:py:class:`~app.type_hints.ReplicasDict`):
@@ -215,9 +215,26 @@ class Cluster:
                 replicas, without replication.
             strat:
                 Defines how ``replicas`` will be initially distributed in
-                the ``Cluster``.
+                the ``Cluster``. Unless overridden in child classes the
+                received value of ``strat`` will be ignored and will always
+                be set to ``"i"``.
         """
-        raise NotImplementedError("")
+        self.file.logger.initial_spread = "i"
+
+        choices: List[th.NodeType]
+        selected_nodes: List[th.NodeType]
+
+        choices = [*self.members.values()]
+        uptime_sum = sum(c.uptime for c in choices)
+        chances = [c.uptime / uptime_sum for c in choices]
+
+        for replica in replicas.values():
+            choice_view = choices.copy()
+            selected_nodes = np.random.choice(
+                a=choice_view, p=chances, size=REPLICATION_LEVEL, replace=False)
+            for node in selected_nodes:
+                replica.references += 1
+                node.receive_part(replica)
     # endregion
 
     # region Simulation steps
@@ -1056,40 +1073,7 @@ class HDFSCluster(Cluster):
         }
 
     # region Simulation setup
-    def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
-        """Distributes a collection of
-        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
-        objects among the :py:attr:`~Cluster.members` of the ``HDFSCluster``.
 
-        Overrides:
-            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.
-
-        Args:
-            replicas (:py:class:`~app.type_hints.ReplicasDict`):
-                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
-                replicas, without replication.
-            strat:
-                Defines how ``replicas`` will be initially distributed in
-                the ``Cluster``. Regardless of the received value, the body
-                of this method will always set ``strat`` to default ``"i"``.
-        """
-        self.file.logger.initial_spread = "i"
-
-        choices: List[th.NodeType]
-        selected_nodes: List[th.NodeType]
-
-        choices = [*self.members.values()]
-        uptime_sum = sum(c.uptime for c in choices)
-        chances = [c.uptime / uptime_sum for c in choices]
-
-        for replica in replicas.values():
-            choices_view = choices.copy()
-            selected_nodes = np.random.choice(
-                a=choices_view, p=chances,
-                size=REPLICATION_LEVEL, replace=False)
-            for node in selected_nodes:
-                replica.references += 1
-                node.receive_part(replica)
     # endregion
 
     # region Simulation steps
@@ -1188,3 +1172,17 @@ class HDFSCluster(Cluster):
             if nid not in self.data_node_heartbeats:
                 self.data_node_heartbeats[nid] = 5
     # endregion
+
+
+class NewscastCluster(Cluster):
+    def nodes_execute(self) -> List[th.NodeType]:
+        pass
+
+    def evaluate(self) -> None:
+        pass
+
+    def maintain(self, off_nodes: List[th.NodeType]) -> None:
+        pass
+
+    def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
+        pass
