@@ -6,7 +6,8 @@ file metadata servers or a bank of currently online and offline
 from __future__ import annotations
 
 import json
-from typing import List, Union, Dict, Any, Optional
+
+from typing import Union, Dict, Any, Optional
 
 import domain.helpers.enums as e
 import type_hints as th
