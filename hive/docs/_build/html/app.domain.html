@@ -1760,6 +1760,61 @@ node named in <code class="docutils literal notranslate"><span class="pre">black
 
 </dd></dl>
 
+<dl class="py class">
+<dt id="app.domain.master_servers.NewscastMaster">
+<em class="property">class </em><code class="sig-name descname">NewscastMaster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#NewscastMaster"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a></p>
+<dl class="py method">
+<dt id="app.domain.master_servers.NewscastMaster._process_simfile">
+<code class="sig-name descname">_process_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#NewscastMaster._process_simfile"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Opens and processes the simulation filed referenced in <cite>path</cite>.</p>
+<dl>
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.master_servers.Master._process_simfile" title="app.domain.master_servers.Master._process_simfile"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.master_servers.Master._process_simfile()</span></code></a>.</p>
+<p>Newscast is a gossip-based P2P network. We assume erasure-coding
+would be used in this scenario and thus, for simplicity,
+we divide the specified file’s size into multiple <code class="docutils literal notranslate"><span class="pre">1/N</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">N</span></code> is the number of <code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code> in the system.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class, <code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastCluster</span></code>
+and <code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastNode</span></code> were
+created to test our simulators performance, concerning the amount
+of supported simultaneous network nodes in a simulation. We do
+not actually care if the created file blocks are lost as the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code>
+job in the simulation is to carry out the
+protocol defined in <a class="reference external" href="http://peersim.sourceforge.net/doc/index.html">PeerSim’s AverageFunction</a>. <a class="reference external" href="http://peersim.sourceforge.net/">PeerSim</a> uses configuration <code class="docutils literal notranslate"><span class="pre">Example</span> <span class="pre">2</span></code>
+provided in release 1.0.5, as a means of testing the simulator
+performance, according to this <a class="reference external" href="https://www.gsd.inesc-id.pt/~lveiga/papers/msc-supervised-thesis-abstracts/jneto-FINAL.pdf">Ms.C. dissertation by J. Neto</a>.
+This configuration uses Newscast protocol with AverageFunction
+and periodic monitoring of the system state. We implement our
+version of <a class="reference external" href="https://dl.acm.org/doi/abs/10.1007/978-3-642-03869-3_50">Adaptaive Peer Sampling with Newscast</a> by
+N. Tölgyesi and M. Jelasity, to avoid the effort of translating
+PeerSim’s code.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The path to the simulation file. Including extension and
+parent folders.</p></li>
+<li><p><strong>cluster_class</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the class used to instantiate cluster group
+instances through reflection.
+See <a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.cluster_groups</span></code></a>.</p></li>
+<li><p><strong>node_class</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the class used to instantiate network node
+instances through reflection.
+See <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.network_nodes</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py data">
 <dt id="app.domain.master_servers._PersistentingDict">
 <code class="sig-name descname">_PersistentingDict</code><em class="property">: Dict<span class="p">[</span><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a><span class="p">, </span>Dict<span class="p">[</span><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a><span class="p">, </span>Union<span class="p">[</span>List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a><span class="p">]</span><span class="p">, </span><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a><span class="p">]</span><span class="p">]</span><span class="p">]</span></em></dt>

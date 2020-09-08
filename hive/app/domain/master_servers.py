@@ -439,10 +439,14 @@ class NewscastMaster(Master):
             <http://peersim.sourceforge.net/doc/index.html>`_. `PeerSim
             <http://peersim.sourceforge.net/>`_ uses configuration ``Example 2``
             provided in release 1.0.5, as a means of testing the simulator
-            performance, according to this <Ms.C. dissertation by J. Neto
+            performance, according to this `Ms.C. dissertation by J. Neto
             <https://www.gsd.inesc-id.pt/~lveiga/papers/msc-supervised-thesis-abstracts/jneto-FINAL.pdf>`_.
             This configuration uses Newscast protocol with AverageFunction
-            and periodic monitoring of the system state.
+            and periodic monitoring of the system state. We implement our
+            version of `Adaptaive Peer Sampling with Newscast
+            <https://dl.acm.org/doi/abs/10.1007/978-3-642-03869-3_50>`_ by
+            N. Tölgyesi and M. Jelasity, to avoid the effort of translating
+            PeerSim's code.
 
         Args:
             path:
