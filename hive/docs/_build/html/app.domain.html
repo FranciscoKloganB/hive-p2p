@@ -602,16 +602,29 @@ was lost.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.spread_files">
 <code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Distributes a collection of
-<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
-objects among the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
+<dd><p>Distributes a collection of <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replicas</span></code></a> among the
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> of the cluster group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>replicas</strong> (<a class="reference internal" href="app.html#app.type_hints.ReplicasDict" title="app.type_hints.ReplicasDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReplicasDict</span></code></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
 replicas, without replication.</p></li>
-<li><p><strong>strat</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Defines how <code class="docutils literal notranslate"><span class="pre">replicas</span></code> will be initially distributed in
-the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p></li>
+<li><p><strong>strat</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – <p>Defines how <code class="docutils literal notranslate"><span class="pre">replicas</span></code> will be initially distributed in
+the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>. Unless overridden in children of this class the
+received value of <code class="docutils literal notranslate"><span class="pre">strat</span></code> will be ignored and will always
+be set to the default value <code class="docutils literal notranslate"><span class="pre">i</span></code>.</p>
+<dl class="simple">
+<dt>i</dt><dd><p>This strategy creates a probability vector
+containing the normalization of <a class="reference internal" href="#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span>
+<span class="pre">uptimes'</span></code></a> and uses
+that vector to randomly select which
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">node</span></code></a> will
+receive each replica. There is a bias to give more
+replicas to the most resillent <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">nodes</span></code></a> which results from
+using the created probability vector.</p>
+</dd>
+</dl>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -755,32 +768,6 @@ See <a class="reference internal" href="#app.domain.network_nodes.HDFSNode.get_s
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="app.domain.cluster_groups.HDFSCluster.spread_files">
-<code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Distributes a collection of
-<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
-objects among the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> of the <code class="docutils literal notranslate"><span class="pre">HDFSCluster</span></code>.</p>
-<dl class="simple">
-<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.spread_files" title="app.domain.cluster_groups.Cluster.spread_files"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.spread_files()</span></code></a>.</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>replicas</strong> (<a class="reference internal" href="app.html#app.type_hints.ReplicasDict" title="app.type_hints.ReplicasDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReplicasDict</span></code></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
-replicas, without replication.</p></li>
-<li><p><strong>strat</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Defines how <code class="docutils literal notranslate"><span class="pre">replicas</span></code> will be initially distributed in
-the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>. Regardless of the received value, the body
-of this method will always set <code class="docutils literal notranslate"><span class="pre">strat</span></code> to default <code class="docutils literal notranslate"><span class="pre">&quot;i&quot;</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1402,6 +1389,97 @@ See <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt.ge
 
 </dd></dl>
 
+<dl class="py class">
+<dt id="app.domain.cluster_groups.NewscastCluster">
+<em class="property">class </em><code class="sig-name descname">NewscastCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a></p>
+<dl class="py method">
+<dt id="app.domain.cluster_groups.NewscastCluster.evaluate">
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Evaluates and logs the health, possibly other parameters, of the
+<code class="docutils literal notranslate"><span class="pre">Cluster</span></code> at every epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.NewscastCluster.maintain">
+<code class="sig-name descname">maintain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">off_nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.maintain"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Evicts disconnected <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> from the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> and
+attempts to recruit new ones.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>off_nodes</strong> (List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]) – The subset of <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> who disconnected
+during the current epoch.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.NewscastCluster.nodes_execute">
+<code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Queries all <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> to execute the epoch.</p>
+<p>This method logs the amount of lost replicas throughout
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code> according to the <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> who went
+offline and the
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
+replicas they posssed and is responsible for
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.set_replication_epoch" title="app.domain.cluster_groups.Cluster.set_replication_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setting</span> <span class="pre">a</span> <span class="pre">replication</span> <span class="pre">epoch</span></code></a>.
+Similarly it logs the number of members who disconnected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> that disconnected during the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code>. See
+<a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.NewscastCluster.spread_files">
+<code class="sig-name descname">spread_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">replicas</span></em>, <em class="sig-param"><span class="n">strat</span><span class="o">=</span><span class="default_value">'i'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.spread_files"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Distributes a collection of <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replicas</span></code></a> among the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> of the cluster group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>replicas</strong> (<a class="reference internal" href="app.html#app.type_hints.ReplicasDict" title="app.type_hints.ReplicasDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReplicasDict</span></code></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
+replicas, without replication.</p></li>
+<li><p><strong>strat</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – <p>Defines how <code class="docutils literal notranslate"><span class="pre">replicas</span></code> will be initially distributed in
+the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>. Unless overridden in children of this class the
+received value of <code class="docutils literal notranslate"><span class="pre">strat</span></code> will be ignored and will always
+be set to the default value <code class="docutils literal notranslate"><span class="pre">i</span></code>.</p>
+<dl class="simple">
+<dt>i</dt><dd><p>This strategy creates a probability vector
+containing the normalization of <a class="reference internal" href="#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span>
+<span class="pre">uptimes'</span></code></a> and uses
+that vector to randomly select which
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">node</span></code></a> will
+receive each replica. There is a bias to give more
+replicas to the most resillent <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">nodes</span></code></a> which results from
+using the created probability vector.</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-app.domain.master_servers">
 <span id="app-domain-master-servers"></span><h2>app.domain.master_servers</h2>
@@ -1778,7 +1856,7 @@ where <code class="docutils literal notranslate"><span class="pre">N</span></cod
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This class, <code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastCluster</span></code>
+<p>This class, <a class="reference internal" href="#app.domain.cluster_groups.NewscastCluster" title="app.domain.cluster_groups.NewscastCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastCluster</span></code></a>
 and <code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastNode</span></code> were
 created to test our simulators performance, concerning the amount
 of supported simultaneous network nodes in a simulation. We do

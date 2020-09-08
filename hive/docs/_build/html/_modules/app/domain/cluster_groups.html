@@ -315,9 +315,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="Cluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
-<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">        objects among the :py:attr:`members` of the ``Cluster``.</span>
+        <span class="sd">&quot;&quot;&quot;Distributes a collection of :py:class:`file block replicas</span>
+<span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` among the</span>
+<span class="sd">        :py:attr:`members` of the cluster group.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
@@ -325,9 +325,37 @@
 <span class="sd">                replicas, without replication.</span>
 <span class="sd">            strat:</span>
 <span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
-<span class="sd">                the ``Cluster``.</span>
+<span class="sd">                the ``Cluster``. Unless overridden in children of this class the</span>
+<span class="sd">                received value of ``strat`` will be ignored and will always</span>
+<span class="sd">                be set to the default value ``i``.</span>
+
+<span class="sd">                i</span>
+<span class="sd">                    This strategy creates a probability vector</span>
+<span class="sd">                    containing the normalization of :py:attr:`network nodes</span>
+<span class="sd">                    uptimes&#39; &lt;app.domain.network_nodes.Node.uptime&gt;` and uses</span>
+<span class="sd">                    that vector to randomly select which</span>
+<span class="sd">                    :py:class:`node &lt;app.domain.network_nodes.Node&gt;` will</span>
+<span class="sd">                    receive each replica. There is a bias to give more</span>
+<span class="sd">                    replicas to the most resillent :py:class:`nodes</span>
+<span class="sd">                    &lt;app.domain.network_nodes.Node&gt;` which results from</span>
+<span class="sd">                    using the created probability vector.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span>
+
+        <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
+        <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
+
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">)</span>
+        <span class="n">chances</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">choice_view</span> <span class="o">=</span> <span class="n">choices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="n">a</span><span class="o">=</span><span class="n">choice_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">chances</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
+                <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -1166,40 +1194,7 @@
         <span class="p">}</span></div>
 
     <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="HDFSCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
-<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">        objects among the :py:attr:`~Cluster.members` of the ``HDFSCluster``.</span>
 
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
-<span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">                replicas, without replication.</span>
-<span class="sd">            strat:</span>
-<span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
-<span class="sd">                the ``Cluster``. Regardless of the received value, the body</span>
-<span class="sd">                of this method will always set ``strat`` to default ``&quot;i&quot;``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span>
-
-        <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
-        <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
-
-        <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
-        <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">)</span>
-        <span class="n">chances</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">choices_view</span> <span class="o">=</span> <span class="n">choices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                <span class="n">a</span><span class="o">=</span><span class="n">choices_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">chances</span><span class="p">,</span>
-                <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
-                <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -1298,6 +1293,20 @@
             <span class="k">if</span> <span class="n">nid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span></div></div>
     <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="NewscastCluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster">[docs]</a><span class="k">class</span> <span class="nc">NewscastCluster</span><span class="p">(</span><span class="n">Cluster</span><span class="p">):</span>
+<div class="viewcode-block" id="NewscastCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div></div>
 </pre></div>
 
             </div>

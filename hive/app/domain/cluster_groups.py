@@ -207,7 +207,7 @@ class Cluster:
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
         """Distributes a collection of :py:class:`file block replicas
         <app.domain.helpers.smart_dataclasses.FileBlockData>` among the
-        :py:attr:`members` of the ``Cluster``.
+        :py:attr:`members` of the cluster group.
 
         Args:
             replicas (:py:class:`~app.type_hints.ReplicasDict`):
@@ -217,16 +217,16 @@ class Cluster:
                 Defines how ``replicas`` will be initially distributed in
                 the ``Cluster``. Unless overridden in children of this class the
                 received value of ``strat`` will be ignored and will always
-                be set to the default value``"i"``.
+                be set to the default value ``i``.
 
                 i
                     This strategy creates a probability vector
-                    containing the normalization of :py:attr:`network nodes'
-                    uptimes <app.domain.network_nodes.Node.uptime`> and uses
+                    containing the normalization of :py:attr:`network nodes
+                    uptimes' <app.domain.network_nodes.Node.uptime>` and uses
                     that vector to randomly select which
-                    :py:class:`~app.domain.network_nodes.Node` will receive
-                    each replica. There is a bias to give more replicas to
-                    the most resillent :py:class:`nodes
+                    :py:class:`node <app.domain.network_nodes.Node>` will
+                    receive each replica. There is a bias to give more
+                    replicas to the most resillent :py:class:`nodes
                     <app.domain.network_nodes.Node>` which results from
                     using the created probability vector.
         """
