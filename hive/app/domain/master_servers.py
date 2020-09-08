@@ -371,7 +371,7 @@ class HDFSMaster(Master):
 
             The other difference is that the spread strategy is ignored.
             We are not interested in knowing if the way the files are
-            initially spread affects the time it takes for hives to
+            initially spread affects the time it takes for clusters to
             achieve a steady-state distribution since in HDFS
             :py:class:`file block replicas
             <app.domain.helpers.smart_dataclasses.FileBlockData>` are
