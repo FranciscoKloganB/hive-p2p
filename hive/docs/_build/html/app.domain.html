@@ -1167,18 +1167,23 @@ replicas, without replication.</p></li>
 <li><p><strong>strat</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – <p>Defines how <code class="docutils literal notranslate"><span class="pre">replicas</span></code> will be initially distributed in
 the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
 <dl class="simple">
-<dt>u</dt><dd><p>Distributed uniformly across network.</p>
+<dt>u</dt><dd><p>Each <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replica</span></code></a> in
+<code class="docutils literal notranslate"><span class="pre">replicas</span></code> is distributed following a
+uniform probability vector among <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> of
+the cluster group.</p>
 </dd>
-<dt>a</dt><dd><p>Give all file block replicas to N different members,
-where N is equal to
+<dt>a</dt><dd><p>Each <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replica</span></code></a>
+in <code class="docutils literal notranslate"><span class="pre">replicas</span></code> is given up to <code class="docutils literal notranslate"><span class="pre">N</span></code> different
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> where <code class="docutils literal notranslate"><span class="pre">N</span></code> is equal to
 <a class="reference internal" href="app.html#app.environment_settings.REPLICATION_LEVEL" title="app.environment_settings.REPLICATION_LEVEL"><code class="xref py py-const docutils literal notranslate"><span class="pre">REPLICATION_LEVEL</span></code></a>.</p>
 </dd>
-<dt>i</dt><dd><p>Distribute all file block replicas following such
-that the simulation starts with all file replicas and
-their replicas distributed with a bias towards the
-ideal steady state distribution. This mode is only
-applicatable to clusters of type or with ancestor type
-<a class="reference internal" href="#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiveCluster</span></code></a>.</p>
+<dt>i</dt><dd><p>Each <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">file</span> <span class="pre">block</span> <span class="pre">replica</span></code></a>
+in <code class="docutils literal notranslate"><span class="pre">replicas</span></code> with bias towards the
+ideal steady state distribution. This implementation of
+differs from
+<a class="reference internal" href="#app.domain.cluster_groups.Cluster.spread_files" title="app.domain.cluster_groups.Cluster.spread_files"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.spread_files()</span></code></a>,
+because it is not necessarely based on
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">node</span></code></a> uptime.</p>
 </dd>
 </dl>
 </p></li>

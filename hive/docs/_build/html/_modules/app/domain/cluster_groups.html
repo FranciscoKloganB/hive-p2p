@@ -579,18 +579,26 @@
 <span class="sd">                the ``Cluster``.</span>
 
 <span class="sd">                u</span>
-<span class="sd">                    Distributed uniformly across network.</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` in</span>
+<span class="sd">                    ``replicas`` is distributed following a</span>
+<span class="sd">                    uniform probability vector among :py:attr:`members` of</span>
+<span class="sd">                    the cluster group.</span>
 <span class="sd">                a</span>
-<span class="sd">                    Give all file block replicas to N different members,</span>
-<span class="sd">                    where N is equal to</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                    in ``replicas`` is given up to ``N`` different</span>
+<span class="sd">                    :py:attr:`members` where ``N`` is equal to</span>
 <span class="sd">                    :py:const:`~app.environment_settings.REPLICATION_LEVEL`.</span>
 <span class="sd">                i</span>
-<span class="sd">                    Distribute all file block replicas following such</span>
-<span class="sd">                    that the simulation starts with all file replicas and</span>
-<span class="sd">                    their replicas distributed with a bias towards the</span>
-<span class="sd">                    ideal steady state distribution. This mode is only</span>
-<span class="sd">                    applicatable to clusters of type or with ancestor type</span>
-<span class="sd">                    :py:class:`~app.domain.cluster_groups.HiveCluster`.</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                    in ``replicas`` with bias towards the</span>
+<span class="sd">                    ideal steady state distribution. This implementation of</span>
+<span class="sd">                    differs from</span>
+<span class="sd">                    :py:meth:`app.domain.cluster_groups.Cluster.spread_files`,</span>
+<span class="sd">                    because it is not necessarely based on</span>
+<span class="sd">                    :py:class:`node &lt;app.domain.network_nodes.Node&gt;` uptime.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="n">strat</span>
 
