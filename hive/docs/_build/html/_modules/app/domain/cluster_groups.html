@@ -129,8 +129,6 @@
 
 <span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">truncate_float_value</span>
-
 
 <div class="viewcode-block" id="Cluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster">[docs]</a><span class="k">class</span> <span class="nc">Cluster</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Represents a group of network nodes ensuring the durability of a file.</span>
@@ -144,7 +142,7 @@
 <span class="sd">            A two-element list containing the probability of</span>
 <span class="sd">            :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
 <span class="sd">            being corrupted and not being corrupted, respectively. See</span>
-<span class="sd">            :py:meth:`~app.domain.cluster_groups.Cluster._assign_disk_error_chance`</span>
+<span class="sd">            :py:func:`~app.environment_settings.get_disk_error_chances`</span>
 <span class="sd">            for corruption chance configuration.</span>
 <span class="sd">        master (:py:class:`~app.domain.master_servers.Master`):</span>
 <span class="sd">            A reference to a server that coordinates or monitors the ``Cluster``.</span>
@@ -213,7 +211,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assign_disk_error_chance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_disk_error_chances</span><span class="p">(</span>
+            <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="n">members</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span><span class="p">(</span>
@@ -232,7 +231,7 @@
                    <span class="n">sender</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">receiver</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">,</span>
-                   <span class="n">fresh_replica</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
+                   <span class="n">is_fresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sends a :py:class:`file block replica</span>
 <span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` to some other</span>
 <span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;` in</span>
@@ -247,10 +246,10 @@
 <span class="sd">                The destination</span>
 <span class="sd">                :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`</span>
 <span class="sd">                identifier.</span>
-<span class="sd">            replica:</span>
+<span class="sd">            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):</span>
 <span class="sd">                The :py:class:`file block replica &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
 <span class="sd">                to be sent specified destination: ``receiver``.</span>
-<span class="sd">            fresh_replica:</span>
+<span class="sd">            is_fresh:</span>
 <span class="sd">                Prevents recently created replicas from being</span>
 <span class="sd">                corrupted, since they are not likely to be corrupted in disk.</span>
 <span class="sd">                This argument facilitates simulation.</span>
@@ -269,7 +268,7 @@
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">TIME_OUT</span>
 
         <span class="n">is_corrupted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">fresh_replica</span> <span class="ow">and</span> <span class="n">is_corrupted</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_fresh</span> <span class="ow">and</span> <span class="n">is_corrupted</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_corrupted_file_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">BAD_REQUEST</span>
 
@@ -303,33 +302,6 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="Cluster._assign_disk_error_chance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._assign_disk_error_chance">[docs]</a>    <span class="k">def</span> <span class="nf">_assign_disk_error_chance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Defines the probability of a file block being corrupted while stored</span>
-<span class="sd">        at the disk of a</span>
-<span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Recommended value should be based on the paper named</span>
-<span class="sd">            `An Analysis of Data Corruption in the Storage Stack</span>
-<span class="sd">            &lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;`_. Thus</span>
-<span class="sd">            the current implementation follows this formula:</span>
-
-<span class="sd">                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`~app.environment_settings.MONTH_EPOCHS`) * ``P(Xt ≥ L)``)</span>
-
-<span class="sd">            The notation ``P(Xt ≥ L)`` denotes the probability of a disk</span>
-<span class="sd">            developing at least L checksum mismatches within T months since</span>
-<span class="sd">            the disk’s first use in the field. As described in linked paper.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A two element list with respectively, the probability of losing</span>
-<span class="sd">            and the probability of not losing a file block due to disk</span>
-<span class="sd">            errors, at an epoch basis.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ploss_month</span> <span class="o">=</span> <span class="mf">0.0086</span>
-        <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="p">(</span><span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span> <span class="o">*</span> <span class="n">ploss_month</span><span class="p">)</span> <span class="o">/</span> <span class="n">MONTH_EPOCHS</span>
-        <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">ploss_epoch</span><span class="p">]</span></div>
-
 <div class="viewcode-block" id="Cluster._setup_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._setup_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">_setup_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Initializes some attributes of the ``Cluster`` during</span>
 <span class="sd">        its initialization.</span>
@@ -343,9 +315,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="Cluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
-<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">        objects among the :py:attr:`members` of the ``Cluster``.</span>
+        <span class="sd">&quot;&quot;&quot;Distributes a collection of :py:class:`file block replicas</span>
+<span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` among the</span>
+<span class="sd">        :py:attr:`members` of the cluster group.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
@@ -353,9 +325,37 @@
 <span class="sd">                replicas, without replication.</span>
 <span class="sd">            strat:</span>
 <span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
-<span class="sd">                the ``Cluster``.</span>
+<span class="sd">                the ``Cluster``. Unless overridden in children of this class the</span>
+<span class="sd">                received value of ``strat`` will be ignored and will always</span>
+<span class="sd">                be set to the default value ``i``.</span>
+
+<span class="sd">                i</span>
+<span class="sd">                    This strategy creates a probability vector</span>
+<span class="sd">                    containing the normalization of :py:attr:`network nodes</span>
+<span class="sd">                    uptimes&#39; &lt;app.domain.network_nodes.Node.uptime&gt;` and uses</span>
+<span class="sd">                    that vector to randomly select which</span>
+<span class="sd">                    :py:class:`node &lt;app.domain.network_nodes.Node&gt;` will</span>
+<span class="sd">                    receive each replica. There is a bias to give more</span>
+<span class="sd">                    replicas to the most resillent :py:class:`nodes</span>
+<span class="sd">                    &lt;app.domain.network_nodes.Node&gt;` which results from</span>
+<span class="sd">                    using the created probability vector.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span>
+
+        <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
+        <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
+
+        <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">)</span>
+        <span class="n">chances</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">choice_view</span> <span class="o">=</span> <span class="n">choices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="n">a</span><span class="o">=</span><span class="n">choice_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">chances</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
+                <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -579,18 +579,26 @@
 <span class="sd">                the ``Cluster``.</span>
 
 <span class="sd">                u</span>
-<span class="sd">                    Distributed uniformly across network.</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` in</span>
+<span class="sd">                    ``replicas`` is distributed following a</span>
+<span class="sd">                    uniform probability vector among :py:attr:`members` of</span>
+<span class="sd">                    the cluster group.</span>
 <span class="sd">                a</span>
-<span class="sd">                    Give all file block replicas to N different members,</span>
-<span class="sd">                    where N is equal to</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                    in ``replicas`` is given up to ``N`` different</span>
+<span class="sd">                    :py:attr:`members` where ``N`` is equal to</span>
 <span class="sd">                    :py:const:`~app.environment_settings.REPLICATION_LEVEL`.</span>
 <span class="sd">                i</span>
-<span class="sd">                    Distribute all file block replicas following such</span>
-<span class="sd">                    that the simulation starts with all file replicas and</span>
-<span class="sd">                    their replicas distributed with a bias towards the</span>
-<span class="sd">                    ideal steady state distribution. This mode is only</span>
-<span class="sd">                    applicatable to clusters of type or with ancestor type</span>
-<span class="sd">                    :py:class:`~app.domain.cluster_groups.HiveCluster`.</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                    in ``replicas`` with bias towards the</span>
+<span class="sd">                    ideal steady state distribution. This implementation of</span>
+<span class="sd">                    differs from</span>
+<span class="sd">                    :py:meth:`app.domain.cluster_groups.Cluster.spread_files`,</span>
+<span class="sd">                    because it is not necessarely based on</span>
+<span class="sd">                    :py:class:`node &lt;app.domain.network_nodes.Node&gt;` uptime.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="n">strat</span>
 
@@ -874,33 +882,32 @@
             <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/=</span> <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fastest_matrix</span></div>
 
-<div class="viewcode-block" id="HiveCluster._validate_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._validate_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                    <span class="n">transition_matrix</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-                                    <span class="n">target_distribution</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Asserts if ``transition_matrix`` is a Markov Matrix.</span>
+<div class="viewcode-block" id="HiveCluster._validate_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._validate_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_transition_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Asserts if ``m`` is a Markov Matrix.</span>
 
-<span class="sd">        Verification is done by raising the ``transition_matrix`` to the power</span>
+<span class="sd">        Verification is done by raising the ``m`` to the power</span>
 <span class="sd">        of ``4096`` (just a large number) and checking if all columns of the</span>
 <span class="sd">        powered matrix are element-wise equal to the</span>
 <span class="sd">        entries of ``target_distribution``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            transition_matrix (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">            m (:py:class:`~pd:pandas.DataFrame`):</span>
 <span class="sd">                The matrix to be verified.</span>
-<span class="sd">            target_distribution (:py:class:`~pd:pandas.DataFrame`):</span>
-<span class="sd">                The steady state the ``transition_matrix`` is expected to have.</span>
+<span class="sd">            `v_` (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">                The steady state the ``m`` is expected to have.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ``True`` if the matrix converges to the ``target_distribution``,</span>
-<span class="sd">            otherwise ``False``. I.e., if ``transition_matrix`` is a</span>
+<span class="sd">            otherwise ``False``. I.e., if ``m`` is a</span>
 <span class="sd">            markov matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t_pow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="mi">4096</span><span class="p">)</span>
+        <span class="n">t_pow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="mi">4096</span><span class="p">)</span>
         <span class="n">column_count</span> <span class="o">=</span> <span class="n">t_pow</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">column_count</span><span class="p">):</span>
             <span class="n">test_target</span> <span class="o">=</span> <span class="n">t_pow</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>  <span class="c1"># gets array column j</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
-                    <span class="n">test_target</span><span class="p">,</span> <span class="n">target_distribution</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-02</span><span class="p">):</span>
+                    <span class="n">test_target</span><span class="p">,</span> <span class="n">v_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-02</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span></div>
     <span class="c1"># endregion</span>
@@ -1195,40 +1202,7 @@
         <span class="p">}</span></div>
 
     <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="HDFSCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
-<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">        objects among the :py:attr:`~Cluster.members` of the ``HDFSCluster``.</span>
 
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
-<span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">                replicas, without replication.</span>
-<span class="sd">            strat:</span>
-<span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
-<span class="sd">                the ``Cluster``. Regardless of the received value, the body</span>
-<span class="sd">                of this method will always set ``strat`` to default ``&quot;i&quot;``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span>
-
-        <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
-        <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
-
-        <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
-        <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">)</span>
-        <span class="n">chances</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">choices_view</span> <span class="o">=</span> <span class="n">choices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                <span class="n">a</span><span class="o">=</span><span class="n">choices_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">chances</span><span class="p">,</span>
-                <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
-                <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -1327,6 +1301,20 @@
             <span class="k">if</span> <span class="n">nid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span></div></div>
     <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="NewscastCluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster">[docs]</a><span class="k">class</span> <span class="nc">NewscastCluster</span><span class="p">(</span><span class="n">Cluster</span><span class="p">):</span>
+<div class="viewcode-block" id="NewscastCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div></div>
 </pre></div>
 
             </div>

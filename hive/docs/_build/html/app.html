@@ -166,6 +166,39 @@ sure of what they do and the consequence of their changes. These include
 variables such as <a class="reference internal" href="#app.environment_settings.SHARED_ROOT" title="app.environment_settings.SHARED_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">SHARED_ROOT</span></code></a> and
 <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT"><code class="xref py py-const docutils literal notranslate"><span class="pre">SIMULATION_ROOT</span></code></a>.</p>
 </div>
+<dl class="py function">
+<dt id="app.environment_settings.get_disk_error_chances">
+<code class="sig-name descname">get_disk_error_chances</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simulation_epochs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/environment_settings.html#get_disk_error_chances"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Defines the probability of a file block being corrupted while stored
+at the disk of a <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Recommended value should be based on the paper named
+<a class="reference external" href="http://www.cs.toronto.edu/bianca/papers/fast08.pdf">An Analysis of Data Corruption in the Storage Stack</a>. Thus
+the current implementation follows this formula:</p>
+<blockquote>
+<div><p>(<a class="reference internal" href="app.domain.html#app.domain.master_servers.Master.MAX_EPOCHS" title="app.domain.master_servers.Master.MAX_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MAX_EPOCHS</span></code></a> / <a class="reference internal" href="#app.environment_settings.MONTH_EPOCHS" title="app.environment_settings.MONTH_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MONTH_EPOCHS</span></code></a>) * <code class="docutils literal notranslate"><span class="pre">P(Xt</span> <span class="pre">≥</span> <span class="pre">L)</span></code>)</p>
+</div></blockquote>
+<p>The notation <code class="docutils literal notranslate"><span class="pre">P(Xt</span> <span class="pre">≥</span> <span class="pre">L)</span></code> denotes the probability of a disk
+developing at least L checksum mismatches within T months since
+the disk’s first use in the field. As described in linked paper.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>simulation_epochs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of epochs the simuulation is expected to run
+assuming no failures occur.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A two element list with respectively, the probability of losing
+and the probability of not losing a file block due to disk
+errors, at an epoch basis.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py data">
 <dt id="app.environment_settings.ABS_TOLERANCE">
 <code class="sig-name descname">ABS_TOLERANCE</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></em><em class="property"> = 0.05</em></dt>
@@ -229,7 +262,7 @@ be regenerated after their are lost.</p>
 <code class="sig-name descname">MONTH_EPOCHS</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 21600</em></dt>
 <dd><p>Defines how many epochs (discrete time steps) a month is represented with.
 With the default value of 21600 each epoch would represent two minutes. See
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">__assign_disk_error_chance__()</span></code>.</p>
+<a class="reference internal" href="#app.environment_settings.get_disk_error_chances" title="app.environment_settings.get_disk_error_chances"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_disk_error_chances()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">

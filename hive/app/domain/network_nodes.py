@@ -397,7 +397,7 @@ class HiveNode(Node):
                 if lost_replicas == 0:
                     break
                 code = cluster.route_part(
-                    self.id, destination, replica, fresh_replica=True)
+                    self.id, destination, replica, is_fresh=True)
                 if code == e.HttpCodes.OK:
                     lost_replicas -= 1
                     replica.references += 1
@@ -408,8 +408,9 @@ class HiveNode(Node):
     # endregion
 
     # region Routing table management
+    # noinspection PyIncorrectDocstring
     def set_file_routing(
-            self, fid: str, transition_vector: Union[pd.Series, pd.DataFrame]
+            self, fid: str, v_: Union[pd.Series, pd.DataFrame]
     ) -> None:
         """Maps a file name identifier with a transition column vector used
         for file block replica routing.
@@ -419,7 +420,7 @@ class HiveNode(Node):
                 The :py:attr:`file name identifier
                 <app.domain.helpers.smart_dataclasses.FileData.name>`
                 of the file whose routing is being configured.
-            transition_vector (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):
+            `v_` (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):
                 A column vector with probabilities that dictate the odds of
                 sending file block blocks belonging to the file with
                 specified id to other Cluster members also working on the
@@ -427,14 +428,14 @@ class HiveNode(Node):
 
         Raises:
             ValueError:
-                If ``transition_vector`` is not a :py:class:`~pd:pandas.DataFrame` and cannot
-                be casted to it.
+                If ``transition_vector`` is not a
+                :py:class:`~pd:pandas.DataFrame` and cannot be casted to it.
 
     """
-        if isinstance(transition_vector, pd.Series):
-            self.routing_table[fid] = transition_vector.to_frame()
-        elif isinstance(transition_vector, pd.DataFrame):
-            self.routing_table[fid] = transition_vector
+        if isinstance(v_, pd.Series):
+            self.routing_table[fid] = v_.to_frame()
+        elif isinstance(v_, pd.DataFrame):
+            self.routing_table[fid] = v_
         else:
             raise ValueError("set_file_routing method expects a pandas.Series ",
                              "or pandas.DataFrame as transition vector type.")
@@ -525,8 +526,6 @@ class HiveNodeExt(HiveNode):
 
 class HDFSNode(Node):
     """Represents a data node in the Hadoop Distribute File System."""
-    def __init__(self, uid: str, uptime: float) -> None:
-        super().__init__(uid, uptime)
 
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
@@ -600,7 +599,7 @@ class HDFSNode(Node):
                 if lost_replicas == 0:
                     break
                 code = cluster.route_part(
-                    self.id, destination, replica, fresh_replica=True)
+                    self.id, destination, replica, is_fresh=True)
                 if code == e.HttpCodes.OK:
                     lost_replicas -= 1
                     replica.references += 1

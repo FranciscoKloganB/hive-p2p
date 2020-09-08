@@ -147,7 +147,7 @@ def _in_yes_no(message: str) -> bool:
     Returns:
         ``True`` if user presses yes, otherwise ``False``.
     """
-    char = input(f"{message}; y/n: ").lower()
+    char = input(f"{message} [y/n]: ").lower()
     while True:
         if char == 'y':
             return True
@@ -240,15 +240,16 @@ def _init_persisting_dict() -> Dict[str, Any]:
         options_message = ("\nSelect how files blocks are spread across "
                            "clusters at the start of the simulation: {\n"
                            "   u: uniform distribution among network nodes,\n"
-                           "   i: near steady-state distribution,\n"
-                           "   a: all files concentrated on N blocks\n}\n")
+                           "   i: ideal distribution, e.g., near a steady-state vector, \n"
+                           "   a: all replicas given to N different nodes,\n"
+                           "}: ")
         options_list = ["u", "U", "i", "I", "a", "A"]
         option_choice = _input_character_option(options_message, options_list)
 
         persisting[file_name] = {}
         persisting[file_name]["spread"] = option_choice.lower()
         persisting[file_name]["cluster_size"] = _input_bounded_integer(
-            "Number of nodes that should be sharing the next file: \n")
+            "\nNumber of nodes that should be sharing the next file: ")
 
         add_file = _in_yes_no(
             "\nSimulate persistence of another file in simulation?")

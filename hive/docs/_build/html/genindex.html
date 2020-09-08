@@ -145,15 +145,9 @@
 </li>
         <li><a href="app.domain.html#app.domain.cluster_groups.HDFSCluster.__init__">(HDFSCluster method)</a>
 </li>
-        <li><a href="app.domain.html#app.domain.master_servers.HDFSMaster.__init__">(HDFSMaster method)</a>
-</li>
-        <li><a href="app.domain.html#app.domain.network_nodes.HDFSNode.__init__">(HDFSNode method)</a>
-</li>
         <li><a href="app.domain.html#app.domain.cluster_groups.HiveCluster.__init__">(HiveCluster method)</a>
 </li>
         <li><a href="app.domain.html#app.domain.cluster_groups.HiveClusterExt.__init__">(HiveClusterExt method)</a>
-</li>
-        <li><a href="app.domain.html#app.domain.master_servers.HiveMaster.__init__">(HiveMaster method)</a>
 </li>
         <li><a href="app.domain.html#app.domain.network_nodes.HiveNode.__init__">(HiveNode method)</a>
 </li>
@@ -180,8 +174,6 @@
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices._adjency_matrix_sdp_optimization">_adjency_matrix_sdp_optimization() (in module app.domain.helpers.matrices)</a>
 </li>
-      <li><a href="app.domain.html#app.domain.cluster_groups.Cluster._assign_disk_error_chance">_assign_disk_error_chance() (Cluster method)</a>
-</li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices._construct_random_walk_matrix">_construct_random_walk_matrix() (in module app.domain.helpers.matrices)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices._construct_rejection_matrix">_construct_rejection_matrix() (in module app.domain.helpers.matrices)</a>
@@ -194,12 +186,12 @@
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices._get_diagonal_entry_probability_v2">_get_diagonal_entry_probability_v2() (in module app.domain.helpers.matrices)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster._get_new_members">_get_new_members() (Cluster method)</a>
 </li>
       <li><a href="app.html#app.simfile_generator._in_yes_no">_in_yes_no() (in module app.simfile_generator)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.html#app.simfile_generator._init_nodes_uptime">_init_nodes_uptime() (in module app.simfile_generator)</a>
 </li>
       <li><a href="app.html#app.simfile_generator._init_persisting_dict">_init_persisting_dict() (in module app.simfile_generator)</a>
@@ -238,6 +230,8 @@
 
       <ul>
         <li><a href="app.domain.html#app.domain.master_servers.Master._process_simfile">(Master method)</a>
+</li>
+        <li><a href="app.domain.html#app.domain.master_servers.NewscastMaster._process_simfile">(NewscastMaster method)</a>
 </li>
       </ul></li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster._recovery_epoch_calls">_recovery_epoch_calls (Cluster attribute)</a>
@@ -537,11 +531,13 @@
 </li>
         <li><a href="app.domain.html#app.domain.cluster_groups.HiveCluster.evaluate">(HiveCluster method)</a>
 </li>
-      </ul></li>
-      <li><a href="app.utils.html#app.utils.randoms.excluding_randrange">excluding_randrange() (in module app.utils.randoms)</a>
+        <li><a href="app.domain.html#app.domain.cluster_groups.NewscastCluster.evaluate">(NewscastCluster method)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="app.utils.html#app.utils.randoms.excluding_randrange">excluding_randrange() (in module app.utils.randoms)</a>
+</li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.execute_epoch">execute_epoch() (Cluster method)</a>
 
       <ul>
@@ -589,6 +585,8 @@
       <li><a href="app.domain.html#app.domain.master_servers.HiveMaster.get_cloud_reference">get_cloud_reference() (HiveMaster method)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.get_cluster_status">get_cluster_status() (Cluster method)</a>
+</li>
+      <li><a href="app.html#app.environment_settings.get_disk_error_chances">get_disk_error_chances() (in module app.environment_settings)</a>
 </li>
       <li><a href="app.domain.html#app.domain.network_nodes.Node.get_file_parts">get_file_parts() (Node method)</a>
 </li>
@@ -735,6 +733,8 @@
 </li>
         <li><a href="app.domain.html#app.domain.cluster_groups.HiveClusterExt.maintain">(HiveClusterExt method)</a>
 </li>
+        <li><a href="app.domain.html#app.domain.cluster_groups.NewscastCluster.maintain">(NewscastCluster method)</a>
+</li>
       </ul></li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices.make_connected">make_connected() (in module app.domain.helpers.matrices)</a>
 </li>
@@ -855,8 +855,12 @@
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.HiveCluster.new_transition_matrix">new_transition_matrix() (HiveCluster method)</a>
 </li>
+      <li><a href="app.domain.html#app.domain.cluster_groups.NewscastCluster">NewscastCluster (class in app.domain.cluster_groups)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="app.domain.html#app.domain.master_servers.NewscastMaster">NewscastMaster (class in app.domain.master_servers)</a>
+</li>
       <li><a href="app.domain.html#app.domain.network_nodes.Node">Node (class in app.domain.network_nodes)</a>
 </li>
       <li><a href="app.html#app.type_hints.NodeDict">NodeDict (in module app.type_hints)</a>
@@ -871,6 +875,8 @@
         <li><a href="app.domain.html#app.domain.cluster_groups.HiveCluster.nodes_execute">(HiveCluster method)</a>
 </li>
         <li><a href="app.domain.html#app.domain.cluster_groups.HiveClusterExt.nodes_execute">(HiveClusterExt method)</a>
+</li>
+        <li><a href="app.domain.html#app.domain.cluster_groups.NewscastCluster.nodes_execute">(NewscastCluster method)</a>
 </li>
       </ul></li>
       <li><a href="app.html#app.type_hints.NodeType">NodeType (in module app.type_hints)</a>
@@ -990,9 +996,9 @@
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.spread_files">spread_files() (Cluster method)</a>
 
       <ul>
-        <li><a href="app.domain.html#app.domain.cluster_groups.HDFSCluster.spread_files">(HDFSCluster method)</a>
-</li>
         <li><a href="app.domain.html#app.domain.cluster_groups.HiveCluster.spread_files">(HiveCluster method)</a>
+</li>
+        <li><a href="app.domain.html#app.domain.cluster_groups.NewscastCluster.spread_files">(NewscastCluster method)</a>
 </li>
       </ul></li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.enums.Status">Status (class in app.domain.helpers.enums)</a>

@@ -322,14 +322,6 @@ class Master:
 
 
 class HiveMaster(Master):
-    def __init__(self,
-                 simfile_name: str,
-                 sid: int,
-                 epochs: int,
-                 cluster_class: str,
-                 node_class: str) -> None:
-        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
-
     # region Master API
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
@@ -350,14 +342,6 @@ class HiveMaster(Master):
 
 
 class HDFSMaster(Master):
-    def __init__(self,
-                 simfile_name: str,
-                 sid: int,
-                 epochs: int,
-                 cluster_class: str,
-                 node_class: str) -> None:
-        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
-
     # region Simulation setup
     def _process_simfile(
             self, path: str, cluster_class: str, node_class: str) -> None:
@@ -425,4 +409,74 @@ class HDFSMaster(Master):
             for cluster in self.cluster_groups.values():
                 file_blocks = fblocks[cluster.file.name]
                 cluster.spread_files(file_blocks)
+    # endregion
+
+
+class NewscastMaster(Master):
+    # region Simulation setup
+    def _process_simfile(
+            self, path: str, cluster_class: str, node_class: str) -> None:
+        """Opens and processes the simulation filed referenced in `path`.
+
+        Overrides:
+            :py:meth:`app.domain.master_servers.Master._process_simfile`.
+
+            Newscast is a gossip-based P2P network. We assume erasure-coding
+            would be used in this scenario and thus, for simplicity,
+            we divide the specified file's size into multiple ``1/N``,
+            where ``N`` is the number of :py:class:`network nodes
+            <app.domain.network_nodes.NewscastNode>` in the system.
+
+        Note:
+            This class, :py:class:`~app.domain.cluster_groups.NewscastCluster`
+            and :py:class:`~app.domain.network_nodes.NewscastNode` were
+            created to test our simulators performance, concerning the amount
+            of supported simultaneous network nodes in a simulation. We do
+            not actually care if the created file blocks are lost as the
+            :py:class:`network nodes <app.domain.network_nodes.NewscastNode>`
+            job in the simulation is to carry out the
+            protocol defined in `PeerSim's AverageFunction
+            <http://peersim.sourceforge.net/doc/index.html>`_. `PeerSim
+            <http://peersim.sourceforge.net/>`_ uses configuration ``Example 2``
+            provided in release 1.0.5, as a means of testing the simulator
+            performance, according to this `Ms.C. dissertation by J. Neto
+            <https://www.gsd.inesc-id.pt/~lveiga/papers/msc-supervised-thesis-abstracts/jneto-FINAL.pdf>`_.
+            This configuration uses Newscast protocol with AverageFunction
+            and periodic monitoring of the system state. We implement our
+            version of `Adaptaive Peer Sampling with Newscast
+            <https://dl.acm.org/doi/abs/10.1007/978-3-642-03869-3_50>`_ by
+            N. Tölgyesi and M. Jelasity, to avoid the effort of translating
+            PeerSim's code.
+
+        Args:
+            path:
+                The path to the simulation file. Including extension and
+                parent folders.
+            cluster_class:
+                The name of the class used to instantiate cluster group
+                instances through reflection.
+                See :py:mod:`app.domain.cluster_groups`.
+            node_class:
+                The name of the class used to instantiate network node
+                instances through reflection.
+                See :py:mod:`app.domain.network_nodes`.
+        """
+        with open(path) as input_file:
+            simfile_json: Any = json.load(input_file)
+
+            self._create_network_nodes(simfile_json, node_class)
+
+            d: _PersistentingDict = simfile_json['persisting']
+            for fname in d:
+                spread_strategy = d[fname]['spread']
+                cluster_size = d[fname]['cluster_size']
+
+                cluster = self._new_cluster_group(
+                    cluster_class, cluster_size, fname)
+
+                file_path = os.path.join(SHARED_ROOT, fname)
+                block_size = os.path.getsize(file_path) / cluster_size
+                file_blocks = self._split_files(fname, cluster, block_size)
+
+                cluster.spread_files(file_blocks, spread_strategy)
     # endregion
