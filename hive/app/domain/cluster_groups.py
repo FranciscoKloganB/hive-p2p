@@ -215,9 +215,20 @@ class Cluster:
                 replicas, without replication.
             strat:
                 Defines how ``replicas`` will be initially distributed in
-                the ``Cluster``. Unless overridden in child classes the
+                the ``Cluster``. Unless overridden in children of this class the
                 received value of ``strat`` will be ignored and will always
-                be set to ``"i"``.
+                be set to the default value``"i"``.
+
+                i
+                    This strategy creates a probability vector
+                    containing the normalization of :py:attr:`network nodes'
+                    uptimes <app.domain.network_nodes.Node.uptime`> and uses
+                    that vector to randomly select which
+                    :py:class:`~app.domain.network_nodes.Node` will receive
+                    each replica. There is a bias to give more replicas to
+                    the most resillent :py:class:`nodes
+                    <app.domain.network_nodes.Node>` which results from
+                    using the created probability vector.
         """
         self.file.logger.initial_spread = "i"
 
