@@ -1031,7 +1031,7 @@ class HiveClusterExt(HiveCluster):
         for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
-            elif node.status == e.Status.SUSPECT:
+            elif node.is_suspect():
                 node_replicas = node.get_file_parts(self.file.name)
                 if node.id not in self.suspicious_nodes:
                     self.suspicious_nodes[node.id] = 1
@@ -1137,7 +1137,7 @@ class HDFSCluster(Cluster):
         for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
-            elif node.status == e.Status.SUSPECT:
+            elif node.is_suspect():
                 # Register lost replicas the moment the node disconnects.
                 if node.id not in self.suspicious_nodes:
                     self.suspicious_nodes.add(node.id)
