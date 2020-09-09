@@ -287,8 +287,8 @@ class Cluster:
                 to it's managing :py:attr:`master` entity.
 
         Returns:
-            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it was
-            responsible for, otherwise ``True``.
+            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it
+            was responsible for, otherwise ``True``.
         """
         self._setup_epoch(epoch)
 
@@ -1211,14 +1211,39 @@ class HDFSCluster(Cluster):
 
 
 class NewscastCluster(Cluster):
+    """Represents a P2P network of nodes performing mean degree aggregation,
+    while simultaneously using Newscast for ``view shuffling``.
+
+    Attributes:
+        average_network_degree (float):
+            The :py:attr:`current_epoch` average network degree.
+    """
+
+    def __init__(self,
+                 master: th.MasterType,
+                 file_name: str,
+                 members: th.NodeDict,
+                 sim_id: int = 0,
+                 origin: str = "") -> None:
+        super().__init__(master, file_name, members, sim_id, origin)
+        self.average_network_degree: float = 0.0
+
+    def execute_epoch(self, epoch: int) -> None:
+        self.nodes_execute()
+        self.evaluate()
+        if epoch == ms.Master.MAX_EPOCHS:
+            self.running = False
+
     def nodes_execute(self) -> List[th.NodeType]:
         """Queries all network node members execute the epoch.
 
-        This method shuffles the order in which the :py:class:`network nodes
-        <app.domain.network_nodes.NewscastNode>` are visited every epoch.
-
         Overrides:
             :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.
+
+            Note:
+                :py:meth:`NewscasterCluster.nodes_execute
+                <app.domain.cluster_groups.NewscastNode.nodes_execute>`
+                always returns an empty list.
 
         Returns:
             List[:py:class:`~app.type_hints.NodeType`]:
@@ -1230,9 +1255,10 @@ class NewscastCluster(Cluster):
         random.shuffle(members)
         for node in members:
             node.execute_epoch(self, self.file.name)
+        return []
 
     def evaluate(self) -> None:
-        off_nodes = self.nodes_execute()
+        pass
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         pass
@@ -1243,7 +1269,7 @@ class NewscastCluster(Cluster):
         :py:attr:`members` of the cluster group.
 
         Overrides:
-            :py:meth:`app.dommain.cluster.Cluster.spread_files`
+            :py:meth:`app.dommain.cluster_groups.Cluster.spread_files`
 
         Args:
             replicas (:py:class:`~app.type_hints.ReplicasDict`):
