@@ -422,7 +422,7 @@ class NewscastMaster(Master):
                  node_class: str) -> None:
         super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
         for cluster in self.cluster_groups.values():
-            cluster.wire_k_out(NewscastMaster.CACHE_SIZE)
+            cluster.wire_k_out()
 
     # region Simulation setup
     def _process_simfile(

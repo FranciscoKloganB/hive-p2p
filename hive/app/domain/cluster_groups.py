@@ -1236,6 +1236,10 @@ class NewscastCluster(Cluster):
     def log_aggregation(self, value: float):
         self.average_network_degree += value
         self.log_aggregation_calls += 1
+
+    def wire_k_out(self):
+        # TODO
+        raise NotImplementedError("")
     # endregion
 
     # region Simulation steps
