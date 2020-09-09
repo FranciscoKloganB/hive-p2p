@@ -164,7 +164,7 @@ class Cluster:
             return e.HttpCodes.BAD_REQUEST
 
         destination_node: th.NodeType = self.members[receiver]
-        if destination_node.status == e.Status.ONLINE:
+        if destination_node.is_up():
             return destination_node.receive_part(replica)
         else:
             return e.HttpCodes.NOT_FOUND
@@ -590,7 +590,7 @@ class HiveCluster(Cluster):
         pcount: int = 0
         members = self.members.values()
         for node in members:
-            if node.status == e.Status.ONLINE:
+            if node.is_up():
                 node_parts_count = node.get_file_parts_count(self.file.name)
                 self.cv_.at[node.id, 0] = node_parts_count
                 pcount += node_parts_count
@@ -1023,7 +1023,7 @@ class HiveClusterExt(HiveCluster):
         for node in members:
             node.update_and_get_status()
         for node in members:
-            if node.status == e.Status.ONLINE:
+            if node.is_up():
                 node.execute_epoch(self, self.file.name)
             elif node.status == e.Status.SUSPECT:
                 node_replicas = node.get_file_parts(self.file.name)
@@ -1132,7 +1132,7 @@ class HDFSCluster(Cluster):
         for node in members:
             node.update_and_get_status()
         for node in members:
-            if node.status == e.Status.ONLINE:
+            if node.is_up():
                 node.execute_epoch(self, self.file.name)
             elif node.status == e.Status.SUSPECT:
                 # Register lost replicas the moment the node disconnects.
@@ -1177,7 +1177,7 @@ class HDFSCluster(Cluster):
         pcount: int = 0
         members = self.members.values()
         for node in members:
-            if node.status == e.Status.ONLINE:
+            if node.is_up():
                 node_replicas = node.get_file_parts_count(self.file.name)
                 pcount += node_replicas
         self._log_evaluation(pcount)
