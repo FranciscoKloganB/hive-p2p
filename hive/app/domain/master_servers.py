@@ -223,7 +223,7 @@ class Master:
 
     # region Master API
     def find_online_nodes(
-            self, blacklist: th.NodeDict, n: int) -> th.NodeDict:
+            self, blacklist: th.NodeDict, n: int = 1) -> th.NodeDict:
         """Finds ``n`` :py:class:`network nodes
         <app.domain.network_nodes.Node>` who are currently registered at the
         ``Master`` and whose status is online.
@@ -249,7 +249,7 @@ class Master:
 
         if n < 1:
             return selected
-        
+
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
             if len(selected) >= n:
