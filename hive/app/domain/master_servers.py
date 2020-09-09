@@ -414,6 +414,16 @@ class HDFSMaster(Master):
 
 
 class NewscastMaster(Master):
+    def __init__(self,
+                 simfile_name: str,
+                 sid: int,
+                 epochs: int,
+                 cluster_class: str,
+                 node_class: str) -> None:
+        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
+        for cluster in self.cluster_groups.values():
+            cluster.wire_k_out(NewscastMaster.CACHE_SIZE)
+
     # region Simulation setup
     def _process_simfile(
             self, path: str, cluster_class: str, node_class: str) -> None:
