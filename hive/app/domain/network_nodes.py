@@ -689,16 +689,22 @@ class NewscastNode(Node):
                 <app.domain.helpers.smart_dataclasses.FileData.name>`
                 of the file being simulated.
         """
+
+        # increase all descriptors' age
         for k in self.view:
             self.view[k] += 1
 
+        # select a random node from view, the current node is isolated a
+        # query a central server to find a gateway to the overaly.
         node = self.get_node() or cluster.get_random_member_node()
 
         if node is None:
             return
 
+        # use newscast behavior to shuffle views and aggregate peer degrees
         self.shuffle(node)
         self.aggregate(node)
+        
         cluster.log_aggregation(self.aggregation_value)
     # endregion
 
