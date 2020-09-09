@@ -663,6 +663,25 @@ class NewscastNode(Node):
 
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
+        """Instructs the ``NewscastNode`` instance to execute the epoch.
+
+        During the execution of the epoch, the ``NewscastNode``
+        instance randomly selects another ``NewscastNode`` who belongs to his
+        :py:attr:`view`, together they shuffle their views.
+
+        Overrides:
+            :py:meth:`app.domain.network_nodes.Node.execute_epoch`.
+
+        Args:
+            cluster (:py:class:`~app.type_hints.ClusterType`):
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.Cluster` that invoked
+                the ``Node`` method.
+            fid:
+                The :py:attr:`file name identifier
+                <app.domain.helpers.smart_dataclasses.FileData.name>`
+                of the file being simulated.
+        """
         node = self.get_random_node()
         view_buffer = dict(self.view).update({self, 0})
         node.update_view(view_buffer, self)
