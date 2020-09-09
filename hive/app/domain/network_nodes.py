@@ -280,7 +280,7 @@ class Node:
         """
         return len(self.files.get(fid, {}))
 
-    def update_and_get_status(self) -> int:
+    def update_status(self) -> int:
         """Used to obtain the status of the ``Node``.
 
         This method equates a ping. When invoked, the ``Node`` decides if it
@@ -508,7 +508,7 @@ class HiveNodeExt(HiveNode):
     """
 
     # region Get methods
-    def update_and_get_status(self) -> int:
+    def update_status(self) -> int:
         """Used to obtain the status of the ``HiveNodeExt``.
 
         This method equates a ping. When invoked, the ``HiveNodeExt``
@@ -516,7 +516,7 @@ class HiveNodeExt(HiveNode):
         depending on his remaining :py:attr:`~Node.uptime`.
 
         Overrides:
-            :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.
+            :py:meth:`app.domain.network_nodes.Node.update_status`.
 
             When not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
@@ -618,7 +618,7 @@ class HDFSNode(Node):
     # endregion
 
     # region Get Methods
-    def update_and_get_status(self) -> int:
+    def update_status(self) -> int:
         """Used to obtain the status of the ``HDFSNode``.
 
         This method equates a ping. When invoked, the ``HDFSNode``
@@ -626,7 +626,7 @@ class HDFSNode(Node):
         depending on his remaining :py:attr:`~Node.uptime`.
 
         Overrides:
-            :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.
+            :py:meth:`app.domain.network_nodes.Node.update_status`.
 
             When not ONLINE the node sets itself as Suspect and will only become
             offline when the monitor marks him as so (e.g.: due to complaints).
@@ -689,7 +689,7 @@ class NewscastNode(Node):
                 <app.domain.helpers.smart_dataclasses.FileData.name>`
                 of the file being simulated.
         """
-        self.update_and_get_status()
+        self.update_status()
 
         # increase all descriptors' age
         for k in self.view:
