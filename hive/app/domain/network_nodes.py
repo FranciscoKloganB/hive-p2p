@@ -21,6 +21,7 @@ from environment_settings import TRUE_FALSE
 
 _NetworkView: Dict[Union[str, th.NodeType], int]
 
+
 class Node:
     """This class contains basic network node functionality that should
     always be useful.
