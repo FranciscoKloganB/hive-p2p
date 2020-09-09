@@ -223,7 +223,8 @@ class Master:
 
     # region Master API
     def find_online_nodes(
-            self, n: int = 1, blacklist: th.NodeDict = {}) -> th.NodeDict:
+            self, n: int = 1, blacklist: Optional[th.NodeDict] = None
+    ) -> th.NodeDict:
         """Finds ``n`` :py:class:`network nodes
         <app.domain.network_nodes.Node>` who are currently registered at the
         ``Master`` and whose status is online.
@@ -245,6 +246,8 @@ class Master:
                 which is at most as big as ``n``, which does not include any
                 node named in ``blacklist``.
         """
+        if blacklist is None:
+            blacklist = {}
         selected: th.NodeDict = {}
 
         if n < 1:
