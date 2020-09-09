@@ -7,7 +7,7 @@ from __future__ import annotations
 import math
 import sys
 import traceback
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Tuple, Any
 
 import domain.helpers.smart_dataclasses as sd
 import domain.helpers.enums as e
@@ -19,6 +19,7 @@ import numpy as np
 from utils import crypto
 from environment_settings import TRUE_FALSE
 
+_NetworkView: Dict[Union[str, th.NodeType], int]
 
 class Node:
     """This class contains basic network node functionality that should
@@ -635,4 +636,107 @@ class HDFSNode(Node):
                 print(f"    [x] {self.id} now offline (suspect status).")
                 self.status = e.Status.SUSPECT
         return self.status
+    # endregion
+
+
+class NewscastNode(Node):
+    """Represents a Peer running Newscast protocol, using shuffling
+    techniques to exchange acquaintances with other network peers and
+    performing peer degree aggregation using AverageFunction.
+
+    Attributes:
+        view:
+            A partial view of the P2P network. ``Neighors`` is a collection of
+            :py:class:`peers <app.domain.network_nodes.NewscastNode>`,
+            the ``NewscastNode`` may contact other than himself. Keys of the
+            dictionary are peer identifiers, and values are neighbors' age in
+            ``neighbors``.
+        max_view_size:
+            The maximum size the ``view`` list of the ``NewscastNode`` can
+            have at any given time.
+    """
+    def __init__(self, uid: str, uptime: float) -> None:
+        super().__init__(uid, uptime)
+        self.view: _NetworkView = {}
+        self.max_view_size: int = 0
+
+    # region Simulation steps
+    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
+        node = self.get_random_node()
+        my_temporary_view = self._merge(dict(self.view), {self, 0})
+        receivers_view = node.views_exchange(my_temporary_view)
+    # endregion
+
+    # region File block management
+    def replicate_part(
+            self, cluster: th.ClusterType, replica: sd.FileBlockData
+    ) -> None:
+        """``NewscastNode`` do not make an effort to replicate lost
+        :py:class:`file block replicas
+        <app.domain.helpers.smart_dataclasses.FileBlockData>`, they only
+        aggregate the average peer degree of their network. This method does
+        nothing."""
+        pass
+    # endregion
+
+    # region Adaptive peer-sampling with Newscast, avg. peer-degree aggregation
+    def get_random_node(self):
+        return np.random.choice(list(self.view))
+
+    def _merge(self, a: _NetworkView, b: _NetworkView) -> _NetworkView:
+        """Merges two network views. If a node descriptor exists in both
+        views, the most recent descriptor is kept.
+
+        Args:
+            a:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+            b:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+
+        Returns:
+            The set union of both views with only the most up to date
+            descriptors.
+        """
+        for nkey in b:
+            a[nkey] = min(a[nkey]), b[nkey] if nkey in a else b[nkey]
+        return a
+
+    def views_exchange(self, senders_view: _NetworkView) -> _NetworkView:
+        """Updates the network node's view by performing a set union of the
+        sender's and receiver's views.
+
+        The final view consists of most up to date descriptors from both
+        lists up to a maximum of :py:attr:`max_view_size` descriptors.
+
+        Args:
+            senders_view:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+
+        Returns:
+            The receiver's view along with the receiver's descriptor, before
+            the receiver's view is merged and filtered with the
+            ``senders_view``.
+        """
+        my_response_view = self._merge(dict(self.view), {self, 0})
+        my_temporary_view = self._merge(self.view, senders_view)
+        self.view = self._select_view(my_temporary_view)
+        return my_response_view
+
+    def _select_view(self, view: _NetworkView) -> _NetworkView:
+        """Reduces the size of the view to a predefined maximum size.
+
+        Args:
+            A dictionary where keys are :py:class:`network nodes <Node>`
+            and values are their respective age in the view.
+
+        Returns:
+            The ``view`` with at most :py:attr:`max_view_size` descriptors.
+        """
+        view: List[Tuple[Any]] = sorted(view.items(), key=lambda x: x[1])
+        view = view[:self.max_view_size]
+        return dict(view)
+
     # endregion
