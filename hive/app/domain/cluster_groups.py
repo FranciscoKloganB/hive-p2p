@@ -1270,7 +1270,8 @@ class NewscastCluster(Cluster):
         return []
 
     def evaluate(self) -> None:
-        pass
+        degree = self.average_network_degree / self.log_aggregation_calls
+        print(f"Avg. Network Degree: {degree}, epoch: {self.current_epoch}")
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         pass
