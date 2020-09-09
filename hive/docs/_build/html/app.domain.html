@@ -560,7 +560,7 @@ Similarly it logs the number of members who disconnected.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>List of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> that disconnected during the
 <a class="reference internal" href="#app.domain.cluster_groups.Cluster.current_epoch" title="app.domain.cluster_groups.Cluster.current_epoch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code></a>. See
-<a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.</p>
+<a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.update_and_get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.update_and_get_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
@@ -779,7 +779,7 @@ of the <code class="docutils literal notranslate"><span class="pre">Cluster</spa
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A collection of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who disconnected
 during the current epoch. See
-<a class="reference internal" href="#app.domain.network_nodes.HDFSNode.get_status" title="app.domain.network_nodes.HDFSNode.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HDFSNode.get_status()</span></code></a>.</p>
+<a class="reference internal" href="#app.domain.network_nodes.HDFSNode.get_status" title="app.domain.network_nodes.HDFSNode.update_and_get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HDFSNode.update_and_get_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
@@ -1116,7 +1116,7 @@ the pondered strategies.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A collection of members who disconnected during the current
 epoch. See
-<a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.</p>
+<a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.update_and_get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.update_and_get_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
@@ -1399,7 +1399,7 @@ group until they are detected by their peers as being offline.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A collection of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who disconnected
 during the current epoch.
-See <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt.get_status" title="app.domain.network_nodes.HiveNodeExt.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNodeExt.get_status()</span></code></a>.</p>
+See <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt.get_status" title="app.domain.network_nodes.HiveNodeExt.update_and_get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HiveNodeExt.update_and_get_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
@@ -1566,7 +1566,7 @@ always returns None.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A collection of members who disconnected during the current
 epoch. See
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.NewscastNode.get_status()</span></code>.</p>
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.NewscastNode.update_and_get_status()</span></code>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
@@ -2096,13 +2096,13 @@ of the file being simulated.</p></li>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.HDFSNode.get_status">
-<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.get_status"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">update_and_get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.get_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Used to obtain the status of the <code class="docutils literal notranslate"><span class="pre">HDFSNode</span></code>.</p>
 <p>This method equates a ping. When invoked, the <code class="docutils literal notranslate"><span class="pre">HDFSNode</span></code>
 decides if it should remain online or change some other state
 depending on his remaining <a class="reference internal" href="#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime"><code class="xref py py-attr docutils literal notranslate"><span class="pre">uptime</span></code></a>.</p>
 <dl>
-<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.</p>
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.update_and_get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.update_and_get_status()</span></code></a>.</p>
 <p>When not ONLINE the node sets itself as Suspect and will only become
 offline when the monitor marks him as so (e.g.: due to complaints).</p>
 </dd>
@@ -2341,13 +2341,13 @@ concerning their connectivity <a class="reference internal" href="#app.domain.ne
 behaviours.</p>
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNodeExt.get_status">
-<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNodeExt.get_status"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">update_and_get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNodeExt.get_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Used to obtain the status of the <code class="docutils literal notranslate"><span class="pre">HiveNodeExt</span></code>.</p>
 <p>This method equates a ping. When invoked, the <code class="docutils literal notranslate"><span class="pre">HiveNodeExt</span></code>
 decides if it should remain online or change some other state
 depending on his remaining <a class="reference internal" href="#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime"><code class="xref py py-attr docutils literal notranslate"><span class="pre">uptime</span></code></a>.</p>
 <dl>
-<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.</p>
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.update_and_get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.update_and_get_status()</span></code></a>.</p>
 <p>When not ONLINE the node sets itself as Suspect and will only become
 offline when the monitor marks him as so (e.g.: due to complaints).</p>
 </dd>
@@ -2825,7 +2825,7 @@ to be counted.</p>
 
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.get_status">
-<code class="sig-name descname">get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.get_status"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">update_and_get_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.get_status"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Used to obtain the status of the <code class="docutils literal notranslate"><span class="pre">Node</span></code>.</p>
 <p>This method equates a ping. When invoked, the <code class="docutils literal notranslate"><span class="pre">Node</span></code> decides if it
 should remain online or change some other state depending on his

@@ -390,7 +390,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{}))</span></div>
 
-<div class="viewcode-block" id="Node.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="Node.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_and_get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``Node``.</span>
 
 <span class="sd">        This method equates a ping. When invoked, the ``Node`` decides if it</span>
@@ -618,7 +618,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># region Get methods</span>
-<div class="viewcode-block" id="HiveNodeExt.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNodeExt.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="HiveNodeExt.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNodeExt.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_and_get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HiveNodeExt``.</span>
 
 <span class="sd">        This method equates a ping. When invoked, the ``HiveNodeExt``</span>
@@ -626,7 +626,7 @@
 <span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.</span>
 
 <span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
 <span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
@@ -728,7 +728,7 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Get Methods</span>
-<div class="viewcode-block" id="HDFSNode.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="HDFSNode.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_and_get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HDFSNode``.</span>
 
 <span class="sd">        This method equates a ping. When invoked, the ``HDFSNode``</span>
@@ -736,7 +736,7 @@
 <span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.</span>
 
 <span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
 <span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
