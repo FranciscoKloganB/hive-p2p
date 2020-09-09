@@ -771,7 +771,7 @@ class NewscastNode(Node):
         # query a central server to find a gateway to the overaly.
         node = self.get_node() or cluster.get_node()
 
-        if node is None:
+        if node is None or not node.is_up():
             return
 
         # use newscast behavior to shuffle views and aggregate peer degrees
