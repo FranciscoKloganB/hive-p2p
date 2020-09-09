@@ -94,11 +94,10 @@ class Node:
 
     # region Simulation steps
     def update_status(self) -> int:
-        """Used to obtain the status of the ``Node``.
+        """Used to update the time to live of the node instance.
 
-        This method equates a ping. When invoked, the ``Node`` decides if it
-        should remain online or change some other state depending on his
-        remaining :py:attr:`uptime`.
+        When invoked, the network node decides if it should remain online or
+        change some other state.
 
         Returns:
             :py:class:`~app.domain.helpers.enums.Status`:
@@ -514,17 +513,13 @@ class HiveNodeExt(HiveNode):
 
     # region Simulation steps
     def update_status(self) -> int:
-        """Used to obtain the status of the ``HiveNodeExt``.
+        """Used to update the time to live of the node instance.
 
-        This method equates a ping. When invoked, the ``HiveNodeExt``
-        decides if it should remain online or change some other state
-        depending on his remaining :py:attr:`~Node.uptime`.
+        When invoked, the network node decides if it should remain online or
+        change some other state.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.update_status`.
-
-            When not ONLINE the node sets itself as Suspect and will only become
-            offline when the monitor marks him as so (e.g.: due to complaints).
 
         Returns:
             :py:class:`~app.domain.helpers.enums.Status`:
@@ -544,21 +539,17 @@ class HDFSNode(Node):
 
     # region Simulation steps
     def update_status(self) -> int:
-        """Used to obtain the status of the ``HDFSNode``.
+        """Used to update the time to live of the node instance.
 
-        This method equates a ping. When invoked, the ``HDFSNode``
-        decides if it should remain online or change some other state
-        depending on his remaining :py:attr:`~Node.uptime`.
+        When invoked, the network node decides if it should remain online or
+        change some other state.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.update_status`.
 
-            When not ONLINE the node sets itself as Suspect and will only become
-            offline when the monitor marks him as so (e.g.: due to complaints).
-
         Returns:
             :py:class:`~app.domain.helpers.enums.Status`:
-                The the status of the ``HDFSNode``.
+                The the status of the ``Node``.
         """
         if self.is_up():
             self.uptime -= 1
@@ -742,10 +733,23 @@ class NewscastNode(Node):
 
     # region Simulation steps
     def update_status(self) -> int:
+        """Used to update the time to live of the node instance.
+
+        When invoked, the network node decides if it should remain online or
+        change some other state.
+
+        Overrides:
+            :py:meth:`app.domain.network_nodes.Node.update_status`.
+
+        Returns:
+            :py:class:`~app.domain.helpers.enums.Status`:
+                The the status of the ``Node``.
+        """
         if self.is_up():
             self.uptime -= 1
             if self.uptime <= 0:
                 print(f"    [x] {self.id} now offline (suspect status).")
+                self.view = {}
                 self.status = e.Status.SUSPECT
         elif random.uniform(0, 1) < 0.16:
             # Peer comes online with 16% chance per epoch after going offline.
