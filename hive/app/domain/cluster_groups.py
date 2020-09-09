@@ -206,7 +206,7 @@ class Cluster:
         i = np.random.randint(0, len(members))
         candidate_node = members.pop(i)
 
-        while candidate_node.status != e.Status.ONLINE:
+        while not candidate_node.is_up():
             if len(members) == 0:
                 return None
             i = np.random.randint(0, len(members))
