@@ -1356,7 +1356,7 @@
         <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="NewscastCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
+<div class="viewcode-block" id="NewscastCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]]:</span>
         <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
 
 <span class="sd">        Overrides:</span>
@@ -1365,7 +1365,7 @@
 <span class="sd">            Note:</span>
 <span class="sd">                :py:meth:`NewscasterCluster.nodes_execute</span>
 <span class="sd">                &lt;app.domain.cluster_groups.NewscastNode.nodes_execute&gt;`</span>
-<span class="sd">                always returns an empty list.</span>
+<span class="sd">                always returns None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
@@ -1377,10 +1377,13 @@
         <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
             <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[]</span></div>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="NewscastCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">pass</span></div>
+        <span class="sd">&quot;&quot;&quot;Prints the epoch&#39;s aggregated peer degree, to the command-line</span>
+<span class="sd">        interface.&quot;&quot;&quot;</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">average_network_degree</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_aggregation_calls</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Avg. Network Degree: </span><span class="si">{</span><span class="n">degree</span><span class="si">}</span><span class="s2">, epoch: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NewscastCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">pass</span></div>

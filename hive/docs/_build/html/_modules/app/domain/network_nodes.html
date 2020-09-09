@@ -803,14 +803,16 @@
 <span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
 <span class="sd">                of the file being simulated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
         <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span> <span class="ow">or</span> <span class="n">cluster</span><span class="o">.</span><span class="n">get_random_member_node</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
         <span class="n">cluster</span><span class="o">.</span><span class="n">log_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aggregation_value</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 

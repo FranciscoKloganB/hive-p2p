@@ -1246,7 +1246,7 @@ class NewscastCluster(Cluster):
         if epoch == ms.Master.MAX_EPOCHS:
             self.running = False
 
-    def nodes_execute(self) -> List[th.NodeType]:
+    def nodes_execute(self) -> Optional[List[th.NodeType]]:
         """Queries all network node members execute the epoch.
 
         Overrides:
@@ -1255,7 +1255,7 @@ class NewscastCluster(Cluster):
             Note:
                 :py:meth:`NewscasterCluster.nodes_execute
                 <app.domain.cluster_groups.NewscastNode.nodes_execute>`
-                always returns an empty list.
+                always returns None.
 
         Returns:
             List[:py:class:`~app.type_hints.NodeType`]:
@@ -1267,9 +1267,12 @@ class NewscastCluster(Cluster):
         random.shuffle(members)
         for node in members:
             node.execute_epoch(self, self.file.name)
-        return []
+        return None
 
     def evaluate(self) -> None:
+        """Prints the epoch's aggregated peer degree, to the command-line
+        interface.
+        """
         degree = self.average_network_degree / self.log_aggregation_calls
         print(f"Avg. Network Degree: {degree}, epoch: {self.current_epoch}")
 

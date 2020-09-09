@@ -1486,8 +1486,8 @@ epoch.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.NewscastCluster.evaluate">
 <code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Evaluates and logs the health, possibly other parameters, of the
-<code class="docutils literal notranslate"><span class="pre">Cluster</span></code> at every epoch.</p>
+<dd><p>Prints the epoch’s aggregated peer degree, to the command-line
+interface.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
@@ -1557,7 +1557,7 @@ during the current epoch.</p>
 <dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.nodes_execute" title="app.domain.cluster_groups.Cluster.nodes_execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.nodes_execute()</span></code></a>.</p>
 <dl class="simple">
 <dt>Note:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">NewscasterCluster.nodes_execute</span></code>
-always returns an empty list.</p>
+always returns None.</p>
 </dd>
 </dl>
 </dd>
