@@ -693,6 +693,9 @@ class NewscastNode(Node):
                 <app.domain.helpers.smart_dataclasses.FileData.name>`
                 of the file being simulated.
         """
+        for k in self.view:
+            self.view[k] += 1
+
         node = self.get_node() or cluster.get_random_member_node()
 
         if node is None:
@@ -700,9 +703,6 @@ class NewscastNode(Node):
 
         self.aggregate(node)
         self.shuffle(node)
-
-        for k in self.view:
-            self.view[k] += 1
 
         cluster.log_aggregation(self.aggregation_value)
     # endregion
