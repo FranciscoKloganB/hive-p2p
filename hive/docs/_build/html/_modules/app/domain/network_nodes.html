@@ -117,7 +117,7 @@
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">domain.helpers.smart_dataclasses</span> <span class="k">as</span> <span class="nn">sd</span>
 <span class="kn">import</span> <span class="nn">domain.helpers.enums</span> <span class="k">as</span> <span class="nn">e</span>
@@ -128,6 +128,8 @@
 
 <span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">crypto</span>
 <span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="n">TRUE_FALSE</span>
+
+<span class="n">_NetworkView</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Node</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
@@ -422,13 +424,17 @@
     <span class="sd">&quot;&quot;&quot;Represents a network node that executes a Swarm Guidance algorithm.</span>
 
 <span class="sd">    Attributes:</span>
+<span class="sd">        clusters:</span>
+<span class="sd">            A collection of :py:class:`cluster groups</span>
+<span class="sd">            &lt;app.domain.cluster_groups.HiveCluster&gt;` the ``HiveNode`` is a</span>
+<span class="sd">            member of.</span>
 <span class="sd">        routing_table (Dict[str, :py:class:`~pd:pandas.DataFrame`]):</span>
 <span class="sd">            Contains the information required to appropriately route file</span>
 <span class="sd">            block blocks to other HiveNode instances.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="HiveNode.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">uptime</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hives</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
 
     <span class="c1"># region Simulation steps</span>
@@ -741,6 +747,175 @@
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div></div>
+    <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="NewscastNode"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode">[docs]</a><span class="k">class</span> <span class="nc">NewscastNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a Peer running Newscast protocol, using shuffling</span>
+<span class="sd">    techniques to exchange acquaintances with other network peers and</span>
+<span class="sd">    performing peer degree aggregation using AverageFunction.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        view:</span>
+<span class="sd">            A partial view of the P2P network. ``View`` is a collection of</span>
+<span class="sd">            :py:class:`network nodes &lt;app.domain.network_nodes.NewscastNode&gt;`,</span>
+<span class="sd">            the ``NewscastNode`` instance may contact other than himself. Keys</span>
+<span class="sd">            are :py:class:`NewscastNode` instances, and values are their age</span>
+<span class="sd">            in the dictionary. A key-value pair is commonly referenced as a</span>
+<span class="sd">            ``descriptor``.</span>
+<span class="sd">        max_view_size:</span>
+<span class="sd">            The maximum size the ``view`` list of the ``NewscastNode`` can</span>
+<span class="sd">            have at any given time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="NewscastNode.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">uptime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span> <span class="n">_NetworkView</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_view_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="NewscastNode.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instructs the ``NewscastNode`` instance to execute the epoch.</span>
+
+<span class="sd">        During the execution of the epoch, the ``NewscastNode``</span>
+<span class="sd">        instance randomly selects another ``NewscastNode`` who belongs to his</span>
+<span class="sd">        :py:attr:`view` and aggregates their degree using the Average</span>
+<span class="sd">        Function. Sometimes, during the epoch, the ``NewscastNode`` instance</span>
+<span class="sd">        will also perform shuffling with the selected target.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.execute_epoch`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that invoked</span>
+<span class="sd">                the ``Node`` method.</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
+<span class="sd">                of the file being simulated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_random_node</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">get_random_member_node</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="bp">self</span><span class="p">,</span> <span class="mi">0</span><span class="p">})</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">update_view</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region File block management</span>
+<div class="viewcode-block" id="NewscastNode.replicate_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.replicate_part">[docs]</a>    <span class="k">def</span> <span class="nf">replicate_part</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Adaptive peer-sampling with Newscast, avg. peer-degree aggregation</span>
+<div class="viewcode-block" id="NewscastNode.get_random_node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.get_random_node">[docs]</a>    <span class="k">def</span> <span class="nf">get_random_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NewscastNode</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Gets a random node from the current network view.</span>
+
+<span class="sd">        Each candidate :py:class:`NewscastNode` to be returned is first pinged,</span>
+<span class="sd">        if no answer is obtained, another node is selected as a candidate and</span>
+<span class="sd">        the previous candidate is removed from the :py:attr:`network view</span>
+<span class="sd">        &lt;view&gt;`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The selected ``NewscastNode``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">neighbors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">))</span>
+        <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">neighbors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">candidate_node</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">))</span>
+            <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">neighbors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">candidate_node</span></div>
+
+<div class="viewcode-block" id="NewscastNode._merge"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode._merge">[docs]</a>    <span class="k">def</span> <span class="nf">_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NetworkView</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Merges two network views. If a node descriptor exists in both</span>
+<span class="sd">        views, the most recent descriptor is kept.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            a:</span>
+<span class="sd">                A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">                and values are their respective age in the view.</span>
+<span class="sd">            b:</span>
+<span class="sd">                A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">                and values are their respective age in the view.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The set union of both views with only the most up to date</span>
+<span class="sd">            descriptors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">nkey</span> <span class="ow">in</span> <span class="n">b</span><span class="p">:</span>
+            <span class="n">a</span><span class="p">[</span><span class="n">nkey</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">nkey</span><span class="p">]),</span> <span class="n">b</span><span class="p">[</span><span class="n">nkey</span><span class="p">]</span> <span class="k">if</span> <span class="n">nkey</span> <span class="ow">in</span> <span class="n">a</span> <span class="k">else</span> <span class="n">b</span><span class="p">[</span><span class="n">nkey</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">a</span></div>
+
+<div class="viewcode-block" id="NewscastNode.update_view"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.update_view">[docs]</a>    <span class="k">def</span> <span class="nf">update_view</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">senders_view</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">,</span> <span class="n">sender</span><span class="p">:</span> <span class="n">NewscastNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Updates the network node&#39;s view by performing a set union of the</span>
+<span class="sd">        sender&#39;s and receiver&#39;s views.</span>
+
+<span class="sd">        The final view consists of most up to date descriptors from both</span>
+<span class="sd">        lists up to a maximum of :py:attr:`max_view_size` descriptors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            senders_view:</span>
+<span class="sd">                A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">                and values are their respective age in the view.</span>
+<span class="sd">            sender:</span>
+<span class="sd">                The ``NewscastNode`` who sent ``senders_view``, who will</span>
+<span class="sd">                also receive this ``NewscastNode`` ``view_buffer``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="bp">self</span><span class="p">,</span> <span class="mi">0</span><span class="p">})</span>
+        <span class="n">sender</span><span class="o">.</span><span class="n">update_view_response</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">,</span> <span class="n">senders_view</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_view</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewscastNode.update_view_response"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.update_view_response">[docs]</a>    <span class="k">def</span> <span class="nf">update_view_response</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">senders_view</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">,</span> <span class="n">sender</span><span class="p">:</span> <span class="n">NewscastNode</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Updates the network node&#39;s view by performing a set union of the</span>
+<span class="sd">        sender&#39;s and receiver&#39;s views.</span>
+
+<span class="sd">        The final view consists of most up to date descriptors from both</span>
+<span class="sd">        lists up to a maximum of :py:attr:`max_view_size` descriptors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            senders_view:</span>
+<span class="sd">                A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">                and values are their respective age in the view.</span>
+<span class="sd">            sender:</span>
+<span class="sd">                The ``NewscastNode`` who sent ``senders_view``,</span>
+<span class="sd">                who was originally contacted by this ``NewscastNode``</span>
+<span class="sd">                instance and received it&#39;s ``view_buffer``</span>
+<span class="sd">                of :py:attr:`view`. This parameter is optional, since it is</span>
+<span class="sd">                not used in the method&#39;s body with current implementation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">,</span> <span class="n">senders_view</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_view</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewscastNode._select_view"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode._select_view">[docs]</a>    <span class="k">def</span> <span class="nf">_select_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">view_buffer</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NetworkView</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reduces the size of the view to a predefined maximum size.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">            and values are their respective age in the view.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">view_buffer</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="n">view_buffer</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">max_view_size</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 </pre></div>
 

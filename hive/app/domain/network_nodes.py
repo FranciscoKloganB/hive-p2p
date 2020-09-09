@@ -19,7 +19,7 @@ import numpy as np
 from utils import crypto
 from environment_settings import TRUE_FALSE
 
-_NetworkView: Dict[Union[str, th.NodeType], int]
+_NetworkView: Dict[Union[str, Node], int]
 
 
 class Node:
@@ -647,11 +647,12 @@ class NewscastNode(Node):
 
     Attributes:
         view:
-            A partial view of the P2P network. ``Neighors`` is a collection of
-            :py:class:`peers <app.domain.network_nodes.NewscastNode>`,
-            the ``NewscastNode`` may contact other than himself. Keys of the
-            dictionary are peer identifiers, and values are neighbors' age in
-            ``neighbors``.
+            A partial view of the P2P network. ``View`` is a collection of
+            :py:class:`network nodes <app.domain.network_nodes.NewscastNode>`,
+            the ``NewscastNode`` instance may contact other than himself. Keys
+            are :py:class:`NewscastNode` instances, and values are their age
+            in the dictionary. A key-value pair is commonly referenced as a
+            ``descriptor``.
         max_view_size:
             The maximum size the ``view`` list of the ``NewscastNode`` can
             have at any given time.
@@ -667,7 +668,9 @@ class NewscastNode(Node):
 
         During the execution of the epoch, the ``NewscastNode``
         instance randomly selects another ``NewscastNode`` who belongs to his
-        :py:attr:`view`, together they shuffle their views.
+        :py:attr:`view` and aggregates their degree using the Average
+        Function. Sometimes, during the epoch, the ``NewscastNode`` instance
+        will also perform shuffling with the selected target.
 
         Overrides:
             :py:meth:`app.domain.network_nodes.Node.execute_epoch`.
@@ -695,11 +698,6 @@ class NewscastNode(Node):
     def replicate_part(
             self, cluster: th.ClusterType, replica: sd.FileBlockData
     ) -> None:
-        """``NewscastNode`` do not make an effort to replicate lost
-        :py:class:`file block replicas
-        <app.domain.helpers.smart_dataclasses.FileBlockData>`, they only
-        aggregate the average peer degree of their network. This method does
-        nothing."""
         pass
     # endregion
 
