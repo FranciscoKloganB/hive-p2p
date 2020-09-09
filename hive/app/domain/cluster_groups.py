@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import random
 import uuid
 
 from typing import Tuple, Optional, List, Dict, Any
@@ -1121,8 +1122,8 @@ class HDFSCluster(Cluster):
         Returns:
             List[:py:class:`~app.type_hints.NodeType`]:
                 A collection of :py:attr:`~Cluster.members` who disconnected
-                during the current epoch.
-                See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.
+                during the current epoch. See
+                :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.
         """
         off_nodes = []
         lost_replicas_count: int = 0
@@ -1211,10 +1212,27 @@ class HDFSCluster(Cluster):
 
 class NewscastCluster(Cluster):
     def nodes_execute(self) -> List[th.NodeType]:
-        pass
+        """Queries all network node members execute the epoch.
+
+        This method shuffles the order in which the :py:class:`network nodes
+        <app.domain.network_nodes.NewscastNode>` are visited every epoch.
+
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.
+
+        Returns:
+            List[:py:class:`~app.type_hints.NodeType`]:
+                 A collection of members who disconnected during the current
+                 epoch. See
+                 :py:meth:`app.domain.network_nodes.NewscastNode.get_status`.
+        """
+        members = list(self.members.values())
+        random.shuffle(members)
+        for node in members:
+            node.execute_epoch(self, self.file.name)
 
     def evaluate(self) -> None:
-        pass
+        off_nodes = self.nodes_execute()
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         pass

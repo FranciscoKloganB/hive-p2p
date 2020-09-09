@@ -778,8 +778,8 @@ of the <code class="docutils literal notranslate"><span class="pre">Cluster</spa
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A collection of <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> who disconnected
-during the current epoch.
-See <a class="reference internal" href="#app.domain.network_nodes.HDFSNode.get_status" title="app.domain.network_nodes.HDFSNode.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HDFSNode.get_status()</span></code></a>.</p>
+during the current epoch. See
+<a class="reference internal" href="#app.domain.network_nodes.HDFSNode.get_status" title="app.domain.network_nodes.HDFSNode.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.HDFSNode.get_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
@@ -1444,19 +1444,17 @@ during the current epoch.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.NewscastCluster.nodes_execute">
 <code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Queries all <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> to execute the epoch.</p>
-<p>This method logs the amount of lost replicas throughout
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code> according to the <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> who went
-offline and the
-<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a>
-replicas they posssed and is responsible for
-<a class="reference internal" href="#app.domain.cluster_groups.Cluster.set_replication_epoch" title="app.domain.cluster_groups.Cluster.set_replication_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setting</span> <span class="pre">a</span> <span class="pre">replication</span> <span class="pre">epoch</span></code></a>.
-Similarly it logs the number of members who disconnected.</p>
+<dd><p>Queries all network node members execute the epoch.</p>
+<p>This method shuffles the order in which the <a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> are visited every epoch.</p>
+<dl class="simple">
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.nodes_execute" title="app.domain.cluster_groups.Cluster.nodes_execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.nodes_execute()</span></code></a>.</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>List of <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> that disconnected during the
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code>. See
-<a class="reference internal" href="#app.domain.network_nodes.Node.get_status" title="app.domain.network_nodes.Node.get_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.get_status()</span></code></a>.</p>
+<dd class="field-odd"><p>A collection of members who disconnected during the current
+epoch. See
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.NewscastNode.get_status()</span></code>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
@@ -2255,6 +2253,13 @@ in the dictionary. A key-value pair is commonly referenced as a
 have at any given time.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt id="app.domain.network_nodes.NewscastNode.aggregation_value">
+<code class="sig-name descname">aggregation_value</code></dt>
+<dd><p>Stores the aggregation value. The type of <code class="docutils literal notranslate"><span class="pre">aggregation_value</span></code>
+is defined by the body of the <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.aggregate" title="app.domain.network_nodes.NewscastNode.aggregate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">aggregate()</span></code></a> method.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt id="app.domain.network_nodes.NewscastNode.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uid</span></em>, <em class="sig-param"><span class="n">uptime</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.__init__"><span class="viewcode-link">[source]</span></a></dt>
@@ -2318,6 +2323,45 @@ descriptors.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="app.domain.network_nodes.NewscastNode.add_neighbor">
+<code class="sig-name descname">add_neighbor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.add_neighbor"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adds a new network node to the node instance’s view.</p>
+<p>If the view is full, the eldest entry is removed. Otherwise,
+the new <a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastNode</span></code></a> is added to the instance’s view with
+age zero, unless the entry is already there, in which case the view
+remains as it was.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if <code class="docutils literal notranslate"><span class="pre">node</span></code> was successfuly added, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><p><strong>node</strong> (<a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><em>app.domain.network_nodes.NewscastNode</em></a>) – </p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.network_nodes.NewscastNode.aggregate">
+<code class="sig-name descname">aggregate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.aggregate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>The network node instance contacts another node from his view, then,
+both nodes assign the mean of their degrees to
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.aggregation_value" title="app.domain.network_nodes.NewscastNode.aggregation_value"><code class="xref py py-attr docutils literal notranslate"><span class="pre">aggregation_value</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>node</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><em>app.domain.network_nodes.NewscastNode</em></a><em>]</em>) – When <code class="docutils literal notranslate"><span class="pre">node</span></code> is None a random <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code> is selected
+from <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">view</span></code></a>. When specified to be contacted is the
+one referenced in the parameter.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.network_nodes.NewscastNode.execute_epoch">
 <code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster</span></em>, <em class="sig-param"><span class="n">fid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Instructs the <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code> instance to execute the epoch.</p>
@@ -2347,12 +2391,32 @@ of the file being simulated.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.network_nodes.NewscastNode.get_random_node">
-<code class="sig-name descname">get_random_node</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.get_random_node"><span class="viewcode-link">[source]</span></a></dt>
+<dt id="app.domain.network_nodes.NewscastNode.get_degree">
+<code class="sig-name descname">get_degree</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.get_degree"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Counts the number of descriptors in the node’s view.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The degree of the <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code> instance.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.network_nodes.NewscastNode.get_node">
+<code class="sig-name descname">get_node</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.get_node"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Gets a random node from the current network view.</p>
 <p>Each candidate <a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastNode</span></code></a> to be returned is first pinged,
-if no answer is obtained, another node is selected as a candidate and
-the previous candidate is removed from the <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">network</span> <span class="pre">view</span></code></a>.</p>
+if no answer is obtained, another node is selected as a candidate by
+iterating a list representation of <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">view</span></code></a> and the previous
+candidate is removed from the <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">view</span></code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Newscast should always return a random node, thus iteration
+should not be used, but this search is more efficient and readable.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The selected <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code>.</p>
@@ -2397,20 +2461,16 @@ to be delivered.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.network_nodes.NewscastNode.update_view">
-<code class="sig-name descname">update_view</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">senders_view</span></em>, <em class="sig-param"><span class="n">sender</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.update_view"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Updates the network node’s view by performing a set union of the
-sender’s and receiver’s views.</p>
+<dt id="app.domain.network_nodes.NewscastNode.shuffle">
+<code class="sig-name descname">shuffle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.shuffle"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Starts a shuffle process that merges and crops two nodes’ views at
+the current node and at the destination node.</p>
 <p>The final view consists of most up to date descriptors from both
-lists up to a maximum of <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.max_view_size" title="app.domain.network_nodes.NewscastNode.max_view_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code></a> descriptors.</p>
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">views</span></code></a> up to a maximum of <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.max_view_size" title="app.domain.network_nodes.NewscastNode.max_view_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code></a>
+descriptors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>senders_view</strong> (<em>_NetworkView</em>) – A dictionary where keys are <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>
-and values are their respective age in the view.</p></li>
-<li><p><strong>sender</strong> (<a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><em>NewscastNode</em></a>) – The <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code> who sent <code class="docutils literal notranslate"><span class="pre">senders_view</span></code>, who will
-also receive this <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code> <code class="docutils literal notranslate"><span class="pre">view_buffer</span></code>.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>node</strong> (<a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><em>app.domain.network_nodes.NewscastNode</em></a>) – The node to be contacted for shuffling.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
@@ -2419,26 +2479,24 @@ also receive this <code class="docutils literal notranslate"><span class="pre">N
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.network_nodes.NewscastNode.update_view_response">
-<code class="sig-name descname">update_view_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">senders_view</span></em>, <em class="sig-param"><span class="n">sender</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.update_view_response"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Updates the network node’s view by performing a set union of the
-sender’s and receiver’s views.</p>
+<dt id="app.domain.network_nodes.NewscastNode.shuffle_request">
+<code class="sig-name descname">shuffle_request</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">senders_view</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.shuffle_request"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Merges and crops two nodes’ views at the current node.</p>
 <p>The final view consists of most up to date descriptors from both
-lists up to a maximum of <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.max_view_size" title="app.domain.network_nodes.NewscastNode.max_view_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code></a> descriptors.</p>
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">views</span></code></a> up to a maximum of <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.max_view_size" title="app.domain.network_nodes.NewscastNode.max_view_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code></a>
+descriptors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>senders_view</strong> (<em>_NetworkView</em>) – A dictionary where keys are <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>
-and values are their respective age in the view.</p></li>
-<li><p><strong>sender</strong> (<a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><em>NewscastNode</em></a>) – The <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code> who sent <code class="docutils literal notranslate"><span class="pre">senders_view</span></code>,
-who was originally contacted by this <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code>
-instance and received it’s <code class="docutils literal notranslate"><span class="pre">view_buffer</span></code>
-of <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">view</span></code></a>. This parameter is optional, since it is
-not used in the method’s body with current implementation.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>senders_view</strong> (<em>_NetworkView</em>) – A dictionary where keys are <a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>
+and values are their respective age in the view.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">view</span></code></a> and a fresh <code class="docutils literal notranslate"><span class="pre">descriptor</span></code>
+from the <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code> instance, before it is
+merged with the requestor’s view.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>_NetworkView</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2649,6 +2707,17 @@ remaining <a class="reference internal" href="#app.domain.network_nodes.Node.upt
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.Status" title="app.domain.helpers.enums.Status"><code class="xref py py-class docutils literal notranslate"><span class="pre">Status</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.network_nodes.Node.is_up">
+<code class="sig-name descname">is_up</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.is_up"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the node is online, else <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>

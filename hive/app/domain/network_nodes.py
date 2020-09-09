@@ -7,7 +7,7 @@ from __future__ import annotations
 import math
 import sys
 import traceback
-from typing import Union, Dict, List, Optional
+from typing import Union, Dict, List, Optional, Any
 
 import domain.helpers.smart_dataclasses as sd
 import domain.helpers.enums as e
@@ -296,6 +296,10 @@ class Node:
             if self.uptime <= 0:
                 self.status = e.Status.OFFLINE
         return self.status
+
+    def is_up(self) -> bool:
+        """Returns ``True`` if the node is online, else ``False``."""
+        return self.status == e.Status.ONLINE
     # endregion
 
     # region Python dunder methods' overrides
@@ -656,11 +660,15 @@ class NewscastNode(Node):
         max_view_size:
             The maximum size the ``view`` list of the ``NewscastNode`` can
             have at any given time.
+        aggregation_value:
+            Stores the aggregation value. The type of ``aggregation_value``
+            is defined by the body of the :py:meth:`aggregate` method.
     """
     def __init__(self, uid: str, uptime: float) -> None:
         super().__init__(uid, uptime)
         self.view: _NetworkView = {}
         self.max_view_size: int = 0
+        self.aggregation_value: Any = 0
 
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
@@ -685,13 +693,13 @@ class NewscastNode(Node):
                 <app.domain.helpers.smart_dataclasses.FileData.name>`
                 of the file being simulated.
         """
-        node = self.get_random_node()
+        node = self.get_node() or cluster.get_random_member_node()
+
         if node is None:
-            node = cluster.get_random_member_node()
-            if node is None:
-                return
-        view_buffer = dict(self.view).update({self, 0})
-        node.update_view(view_buffer, self)
+            return
+
+        self.aggregate(node)
+        self.shuffle(node)
     # endregion
 
     # region File block management
@@ -701,7 +709,103 @@ class NewscastNode(Node):
         pass
     # endregion
 
-    # region Adaptive peer-sampling with Newscast
+    # region Newscast peer shuffling
+    def shuffle(self, node: NewscastNode) -> None:
+        """Starts a shuffle process that merges and crops two nodes' views at
+        the current node and at the destination node.
+
+        The final view consists of most up to date descriptors from both
+        :py:attr:`views <view>` up to a maximum of :py:attr:`max_view_size`
+        descriptors.
+
+        Args:
+            node:
+                The node to be contacted for shuffling.
+        """
+        my_view = dict(self.view)
+        my_view[self] = 0
+        his_view = node.shuffle_request(my_view)
+        buffer = self._merge(self.view, his_view)
+        self.view = self._select_view(buffer)
+
+    def shuffle_request(self, senders_view: _NetworkView) -> _NetworkView:
+        """Merges and crops two nodes' views at the current node.
+
+        The final view consists of most up to date descriptors from both
+        :py:attr:`views <view>` up to a maximum of :py:attr:`max_view_size`
+        descriptors.
+
+        Args:
+            senders_view:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+
+        Returns:
+            A :py:attr:`view` and a fresh ``descriptor``
+            from the ``NewscastNode`` instance, before it is
+            merged with the requestor's view.
+        """
+        my_view = dict(self.view)
+        my_view[self] = 0
+        buffer = self._merge(self.view, senders_view)
+        self.view = self._select_view(buffer)
+        return my_view
+
+    def _merge(self, a: _NetworkView, b: _NetworkView) -> _NetworkView:
+        """Merges two network views. If a node descriptor exists in both
+        views, the most recent descriptor is kept.
+
+        Args:
+            a:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+            b:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+
+        Returns:
+            The set union of both views with only the most up to date
+            descriptors.
+        """
+        for nkey in b:
+            a[nkey] = min(a[nkey]), b[nkey] if nkey in a else b[nkey]
+        return a
+
+    def _select_view(self, view_buffer: _NetworkView) -> _NetworkView:
+        """Reduces the size of the view to a predefined maximum size.
+
+        Args:
+            A dictionary where keys are :py:class:`network nodes <Node>`
+            and values are their respective age in the view.
+
+        Returns:
+            The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.
+        """
+        view_buffer = sorted(view_buffer.items(), key=lambda x: x[1])
+        view_buffer = view_buffer[:self.max_view_size]
+        return dict(view_buffer)
+    # endregion
+
+    # region Aggregation
+    def aggregate(self, node: NewscastNode = None) -> None:
+        """The network node instance contacts another node from his view, then,
+        both nodes assign the mean of their degrees to
+        :py:attr:`aggregation_value`.
+
+        Args:
+            node:
+                When ``node`` is None a random ``NewscastNode`` is selected
+                from :py:attr:`view`. When specified to be contacted is the
+                one referenced in the parameter.
+        """
+        candidate_node = node or self.get_node()
+        if candidate_node is not None:
+            mean = (self.get_degree() + candidate_node.get_degree()) / 2
+            candidate_node.aggregation_value = mean
+            self.aggregation_value = mean
+    # endregion
+
+    # region Helpers
     def add_neighbor(self, node: NewscastNode) -> bool:
         """Adds a new network node to the node instance's view.
 
@@ -739,127 +843,35 @@ class NewscastNode(Node):
         """
         return len(self.view)
 
-    def get_random_node(self) -> Optional[NewscastNode]:
+    def get_node(self) -> Optional[NewscastNode]:
         """Gets a random node from the current network view.
 
         Each candidate :py:class:`NewscastNode` to be returned is first pinged,
-        if no answer is obtained, another node is selected as a candidate and
-        the previous candidate is removed from the :py:attr:`network view
-        <view>`.
+        if no answer is obtained, another node is selected as a candidate by
+        iterating a list representation of :py:attr:`view` and the previous
+        candidate is removed from the :py:attr:`view`.
+
+        Note:
+            Newscast should always return a random node, thus iteration
+            should not be used, but this search is more efficient and readable.
 
         Returns:
             The selected ``NewscastNode``.
         """
-        if len(self.view) == 0:
+        if self.get_degree() == 0:
             return None
 
         neighbors = list(self.view)
+
         i = np.random.randint(0, len(neighbors))
-        candidate_node = neighbors.pop(i)
+        candidate_node = neighbors[i]
+        if candidate_node.is_up():
+            return candidate_node
 
-        while candidate_node.status != e.Status.ONLINE:
+        for candidate_node in neighbors:
+            if candidate_node.is_up():
+                return candidate_node
             self.view.pop(candidate_node, None)
-            if len(neighbors) == 0:
-                return None
-            i = np.random.randint(0, len(neighbors))
-            candidate_node = neighbors.pop(i)
 
-        return candidate_node
-
-    def update_view(
-            self, senders_view: _NetworkView, sender: NewscastNode) -> None:
-        """Updates the network node's view by performing a set union of the
-        sender's and receiver's views.
-
-        The final view consists of most up to date descriptors from both
-        lists up to a maximum of :py:attr:`max_view_size` descriptors.
-
-        Args:
-            senders_view:
-                A dictionary where keys are :py:class:`network nodes <Node>`
-                and values are their respective age in the view.
-            sender:
-                The ``NewscastNode`` who sent ``senders_view``, who will
-                also receive this ``NewscastNode`` ``view_buffer``.
-        """
-        view_buffer = dict(self.view).update({self, 0})
-        sender.update_view_response(view_buffer, self)
-        view_buffer = self._merge(self.view, senders_view)
-        self.view = self._select_view(view_buffer)
-
-    def update_view_response(
-            self, senders_view: _NetworkView, sender: NewscastNode = None
-    ) -> None:
-        """Updates the network node's view by performing a set union of the
-        sender's and receiver's views.
-
-        The final view consists of most up to date descriptors from both
-        lists up to a maximum of :py:attr:`max_view_size` descriptors.
-
-        Args:
-            senders_view:
-                A dictionary where keys are :py:class:`network nodes <Node>`
-                and values are their respective age in the view.
-            sender:
-                The ``NewscastNode`` who sent ``senders_view``,
-                who was originally contacted by this ``NewscastNode``
-                instance and received it's ``view_buffer``
-                of :py:attr:`view`. This parameter is optional, since it is
-                not used in the method's body with current implementation.
-        """
-        view_buffer = self._merge(self.view, senders_view)
-        self.view = self._select_view(view_buffer)
-
-    def _merge(self, a: _NetworkView, b: _NetworkView) -> _NetworkView:
-        """Merges two network views. If a node descriptor exists in both
-        views, the most recent descriptor is kept.
-
-        Args:
-            a:
-                A dictionary where keys are :py:class:`network nodes <Node>`
-                and values are their respective age in the view.
-            b:
-                A dictionary where keys are :py:class:`network nodes <Node>`
-                and values are their respective age in the view.
-
-        Returns:
-            The set union of both views with only the most up to date
-            descriptors.
-        """
-        for nkey in b:
-            a[nkey] = min(a[nkey]), b[nkey] if nkey in a else b[nkey]
-        return a
-
-    def _select_view(self, view_buffer: _NetworkView) -> _NetworkView:
-        """Reduces the size of the view to a predefined maximum size.
-
-        Args:
-            A dictionary where keys are :py:class:`network nodes <Node>`
-            and values are their respective age in the view.
-
-        Returns:
-            The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.
-        """
-        view_buffer = sorted(view_buffer.items(), key=lambda x: x[1])
-        view_buffer = view_buffer[:self.max_view_size]
-        return dict(view_buffer)
-    # endregion
-
-    # region Average network degree aggregation
-    def aggregate_average_network_degree(self) -> None:
-        """The network node instance contacts another node from his view, then,
-        both nodes assign the mean of their degrees to
-        :py:attr:`aggregation_value`."""
-        my_degree = self.get_degree()
-        if my_degree > 0:
-            neighbors = list(self.view)
-
-            i = np.random.randint(0, len(neighbors))
-            candidate_node = neighbors[i]
-            if candidate_node.status != e.Status.ONLINE:
-                return
-
-            mean = (my_degree + candidate_node.get_degree()) / 2
-            candidate_node.aggregation_value = mean
-            self.aggregation_value = mean
+        return None
     # endregion
