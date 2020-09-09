@@ -4,8 +4,9 @@ responsible for the storage of :py:class:`file blocks
 reliable servers or P2P nodes."""
 from __future__ import annotations
 
-import math
 import sys
+import math
+import random
 import traceback
 from typing import Union, Dict, List, Optional, Any
 
@@ -77,13 +78,12 @@ class Node:
             uptime:
                 The availability of the ``Node`` instance.
         """
-        if uptime == 1.0:
-            uptime = float('inf')
-        else:
-            uptime = math.floor(uptime * ms.Master.MAX_EPOCHS)
-
         self.id: str = uid
-        self.uptime: float = uptime
+        if uptime == 1.0:
+            ttl = float('inf')
+        else:
+            ttl = math.floor(uptime * ms.Master.MAX_EPOCHS)
+        self.uptime: float = ttl
         self.status: int = e.Status.ONLINE
         self.suspicious_replies = {
             e.HttpCodes.NOT_FOUND,
@@ -741,6 +741,19 @@ class NewscastNode(Node):
     # endregion
 
     # region Simulation steps
+    def update_status(self) -> int:
+        if self.is_up():
+            self.uptime -= 1
+            if self.uptime <= 0:
+                print(f"    [x] {self.id} now offline (suspect status).")
+                self.status = e.Status.SUSPECT
+        elif random.uniform(0, 1) < 0.16:
+            # Peer comes online with 16% chance per epoch after going offline.
+            ttl = math.floor(random.uniform(0.04, 0.32) * ms.Master.MAX_EPOCHS)
+            self.uptime = ttl
+            self.status = e.Status.ONLINE
+        return self.status
+
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
         """Instructs the ``NewscastNode`` instance to execute the epoch.
 
