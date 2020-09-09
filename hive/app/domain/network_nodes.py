@@ -701,9 +701,8 @@ class NewscastNode(Node):
         if node is None:
             return
 
-        self.aggregate(node)
         self.shuffle(node)
-
+        self.aggregate(node)
         cluster.log_aggregation(self.aggregation_value)
     # endregion
 
