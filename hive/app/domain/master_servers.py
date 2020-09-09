@@ -246,12 +246,12 @@ class Master:
                 which is at most as big as ``n``, which does not include any
                 node named in ``blacklist``.
         """
-        if blacklist is None:
-            blacklist = {}
-        selected: th.NodeDict = {}
 
+        selected: th.NodeDict = {}
         if n < 1:
             return selected
+        if blacklist is None:
+            blacklist = {}
 
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
