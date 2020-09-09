@@ -1238,7 +1238,7 @@ class NewscastCluster(Cluster):
         self.log_aggregation_calls += 1
 
     def wire_k_out(self):
-        # TODO
+        # TODO create NEWSCAST_CACHE_SIZE random connetions at each node
         raise NotImplementedError("")
     # endregion
 
