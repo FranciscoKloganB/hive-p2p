@@ -200,10 +200,16 @@ class Cluster:
                 A random network node from :py:attr:`members`.
         """
         members = list(self.members.values())
-        node = np.random.choice(members)
-        while node.status != e.Status.ONLINE:
-            node = np.random.choice(members)
-        return node
+        i = np.random.randint(0, len(members))
+        candidate_node = members.pop(i)
+
+        while candidate_node.status != e.Status.ONLINE:
+            if len(members) == 0:
+                return None
+            i = np.random.randint(0, len(members))
+            candidate_node = members.pop(i)
+
+        return candidate_node
     # endregion
 
     # region Simulation setup
@@ -250,7 +256,7 @@ class Cluster:
         choices: List[th.NodeType]
         selected_nodes: List[th.NodeType]
 
-        choices = [*self.members.values()]
+        choices = list(self.members.values())
         uptime_sum = sum(c.uptime for c in choices)
         chances = [c.uptime / uptime_sum for c in choices]
 
@@ -510,7 +516,7 @@ class HiveCluster(Cluster):
         choices: List[th.NodeType]
         selected_nodes: List[th.NodeType]
         if strat == "a":
-            choices = [*self.members.values()]
+            choices = list(self.members.values())
             selected_nodes = np.random.choice(
                 a=choices, size=REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
@@ -520,7 +526,7 @@ class HiveCluster(Cluster):
 
         elif strat == "u":
             for replica in replicas.values():
-                choices = [*self.members.values()]
+                choices = list(self.members.values())
                 selected_nodes = np.random.choice(
                     a=choices, size=REPLICATION_LEVEL, replace=False)
                 for node in selected_nodes:
@@ -528,7 +534,7 @@ class HiveCluster(Cluster):
                     node.receive_part(replica)
 
         elif strat == 'i':
-            choices = [*self.members.values()]
+            choices = list(self.members.values())
             desired_distribution = [self.v_.loc[c.id, 0] for c in choices]
             for replica in replicas.values():
                 choices_view = choices.copy()
