@@ -681,8 +681,8 @@ class NewscastNode(Node):
             return True
 
         if view_size == NEWSCAST_CACHE_SIZE:
-            k = list(self.view)
-            v = list(self.view.values())
+            k = tuple(self.view)
+            v = tuple(self.view.values())
             oldest_node = k[v.index(max(v))]
             self.view.pop(oldest_node)
             self.view[node] = 0
@@ -716,7 +716,7 @@ class NewscastNode(Node):
         if self.get_degree() == 0:
             return None
 
-        neighbors = list(self.view)
+        neighbors = tuple(self.view)
 
         i = np.random.randint(0, len(neighbors))
         candidate_node = neighbors[i]

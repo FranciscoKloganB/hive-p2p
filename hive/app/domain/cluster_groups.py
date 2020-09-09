@@ -39,7 +39,7 @@ class Cluster:
             A reference to a server that coordinates or monitors the ``Cluster``.
         members (:py:class:`~app.type_hints.NodeDict`):
             A collection of network nodes that belong to the ``Cluster``.
-        _members_view:
+        _members_view (Tuple[:py:class:`~app.type_hints.NodeType`]):
             A list representation of the nodes in :py:attr:`members`.
         file (:py:class:`~app.domain.helpers.smart_dataclasses.FileData`):
             A reference to
@@ -108,7 +108,7 @@ class Cluster:
             ms.Master.MAX_EPOCHS)
         self.master = master
         self.members: th.NodeDict = members
-        self._members_view: List[th.NodeType] = []
+        self._members_view: Tuple[th.NodeType] = tuple(self.members.values())
         self.file: sd.FileData = sd.FileData(
             file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
@@ -222,7 +222,6 @@ class Cluster:
         self.current_epoch = epoch
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
-        self._members_view = list(self.members.values())
         for member in self._members_view:
             member.update_status()
 
@@ -254,10 +253,10 @@ class Cluster:
         """
         self.file.logger.initial_spread = "i"
 
-        choices: List[th.NodeType]
+        choices: Tuple[th.NodeType]
         selected_nodes: List[th.NodeType]
 
-        choices = list(self.members.values())
+        choices = tuple(self.members.values())
         uptime_sum = sum(c.uptime for c in choices)
         chances = [c.uptime / uptime_sum for c in choices]
 
@@ -357,7 +356,7 @@ class Cluster:
             new_members = self._get_new_members()
             if new_members:
                 self.members.update(new_members)
-                self._members_view = list(self.members.values())
+                self._members_view = tuple(self.members.values())
 
         sam = len(self.members)
         status_am = self.get_cluster_status()
@@ -519,7 +518,7 @@ class HiveCluster(Cluster):
         choices: List[th.NodeType]
         selected_nodes: List[th.NodeType]
         if strat == "a":
-            choices = list(self.members.values())
+            choices = tuple(self.members.values())
             selected_nodes = np.random.choice(
                 a=choices, size=REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
@@ -529,7 +528,7 @@ class HiveCluster(Cluster):
 
         elif strat == "u":
             for replica in replicas.values():
-                choices = list(self.members.values())
+                choices = tuple(self.members.values())
                 selected_nodes = np.random.choice(
                     a=choices, size=REPLICATION_LEVEL, replace=False)
                 for node in selected_nodes:
@@ -537,7 +536,7 @@ class HiveCluster(Cluster):
                     node.receive_part(replica)
 
         elif strat == 'i':
-            choices = list(self.members.values())
+            choices = tuple(self.members.values())
             desired_distribution = [self.v_.loc[c.id, 0] for c in choices]
             for replica in replicas.values():
                 choices_view = choices.copy()

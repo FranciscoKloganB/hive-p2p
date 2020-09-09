@@ -285,7 +285,7 @@ class Master:
         """
         cluster_members: th.NodeDict = {}
         nodes = np.random.choice(
-            a=list(self.network_nodes), size=size, replace=False)
+            a=tuple(self.network_nodes), size=size, replace=False)
 
         for node_id in nodes:
             cluster_members[node_id] = self.network_nodes[node_id]
