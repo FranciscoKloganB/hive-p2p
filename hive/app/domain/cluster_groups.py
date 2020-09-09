@@ -190,6 +190,20 @@ class Cluster:
                 that led to the complaint.
         """
         pass
+
+    def get_random_member_node(self) -> th.NodeType:
+        """Retrives a random node from the members of the cluster group,
+        whose status is likely to be online.
+
+        Returns:
+            :py:class:`~app.type_hints.NodeType`:
+                A random network node from :py:attr:`members`.
+        """
+        members = list(self.members.values())
+        node = np.random.choice(members)
+        while node.status != e.Status.ONLINE:
+            node = np.random.choice(members)
+        return node
     # endregion
 
     # region Simulation setup
@@ -1242,3 +1256,4 @@ class NewscastCluster(Cluster):
                 for member, replica in zip(members, replicas):
                     member.receive_part(replica)
                 del replicas[:members_len]
+
