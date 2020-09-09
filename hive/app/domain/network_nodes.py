@@ -7,7 +7,7 @@ from __future__ import annotations
 import math
 import sys
 import traceback
-from typing import Union, Dict, List, Tuple, Any
+from typing import Union, Dict, List, Optional
 
 import domain.helpers.smart_dataclasses as sd
 import domain.helpers.enums as e
@@ -683,6 +683,10 @@ class NewscastNode(Node):
                 of the file being simulated.
         """
         node = self.get_random_node()
+        if node is None:
+            node = cluster.get_random_member_node()
+            if node is None:
+                return
         view_buffer = dict(self.view).update({self, 0})
         node.update_view(view_buffer, self)
     # endregion
@@ -700,13 +704,32 @@ class NewscastNode(Node):
     # endregion
 
     # region Adaptive peer-sampling with Newscast, avg. peer-degree aggregation
-    def get_random_node(self) -> NewscastNode:
+    def get_random_node(self) -> Optional[NewscastNode]:
         """Gets a random node from the current network view.
+
+        Each candidate :py:class:`NewscastNode` to be returned is first pinged,
+        if no answer is obtained, another node is selected as a candidate and
+        the previous candidate is removed from the :py:attr:`network view
+        <view>`.
 
         Returns:
             The selected ``NewscastNode``.
         """
-        return np.random.choice(list(self.view))
+        if len(self.view) == 0:
+            return None
+
+        neighbors = list(self.view)
+        i = np.random.randint(0, len(neighbors))
+        candidate_node = neighbors.pop(i)
+
+        while candidate_node.status != e.Status.ONLINE:
+            self.view.pop(candidate_node, None)
+            if len(neighbors) == 0:
+                return None
+            i = np.random.randint(0, len(neighbors))
+            candidate_node = neighbors.pop(i)
+
+        return candidate_node
 
     def _merge(self, a: _NetworkView, b: _NetworkView) -> _NetworkView:
         """Merges two network views. If a node descriptor exists in both
