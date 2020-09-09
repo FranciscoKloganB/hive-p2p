@@ -540,9 +540,8 @@ during the current epoch.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster.membership_maintenance">
 <code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Attempts to recruits new
-<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> as members
-of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
+<dd><p>Attempts to recruits new network nodes to be members of the cluster.</p>
+<p>The method updates both <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> and <a class="reference internal" href="#app.domain.cluster_groups.Cluster._members_view" title="app.domain.cluster_groups.Cluster._members_view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">_members_view</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A dictionary that is empty if membership did not change.</p>
@@ -762,9 +761,8 @@ during the current epoch.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HDFSCluster.membership_maintenance">
 <code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HDFSCluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Attempts to recruits new
-<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> as members
-of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code>.</p>
+<dd><p>Attempts to recruits new network nodes to be members of the cluster.</p>
+<p>The method updates both <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">_members_view</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A dictionary that is empty if membership did not change.</p>
@@ -1034,9 +1032,8 @@ during the current epoch.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.HiveCluster.membership_maintenance">
 <code class="sig-name descname">membership_maintenance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#HiveCluster.membership_maintenance"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Attempts to recruits new
-<a class="reference internal" href="#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> as members
-of the <code class="docutils literal notranslate"><span class="pre">HiveCluster</span></code>.</p>
+<dd><p>Attempts to recruits new network nodes to be members of the cluster.</p>
+<p>The method updates both <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">_members_view</span></code>.</p>
 <dl>
 <dt>Extends:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.membership_maintenance" title="app.domain.cluster_groups.Cluster.membership_maintenance"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.membership_maintenance()</span></code></a>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">HiveCluster.membership_maintenance</span></code> adds and removes cloud

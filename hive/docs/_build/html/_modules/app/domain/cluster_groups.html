@@ -451,9 +451,9 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Attempts to recruits new</span>
-<span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.Node&gt;` as members</span>
-<span class="sd">        of the ``Cluster``.</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to recruits new network nodes to be members of the cluster.</span>
+
+<span class="sd">        The method updates both :py:attr:`members` and :py:attr:`_members_view`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
@@ -465,7 +465,9 @@
         <span class="n">new_members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">sbm</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">:</span>
             <span class="n">new_members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_members</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_members</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">new_members</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_members</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
         <span class="n">sam</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="n">status_am</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cluster_status</span><span class="p">()</span>
@@ -716,9 +718,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="HiveCluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Attempts to recruits new</span>
-<span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.HiveNode&gt;` as members</span>
-<span class="sd">        of the ``HiveCluster``.</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to recruits new network nodes to be members of the cluster.</span>
+
+<span class="sd">        The method updates both :py:attr:`members` and :py:attr:`_members_view`.</span>
 
 <span class="sd">        Extends:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.membership_maintenance`.</span>

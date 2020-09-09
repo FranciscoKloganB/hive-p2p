@@ -341,9 +341,9 @@ class Cluster:
         raise NotImplementedError("")
 
     def membership_maintenance(self) -> th.NodeDict:
-        """Attempts to recruits new
-        :py:class:`network nodes <app.domain.network_nodes.Node>` as members
-        of the ``Cluster``.
+        """Attempts to recruits new network nodes to be members of the cluster.
+
+        The method updates both :py:attr:`members` and :py:attr:`_members_view`.
 
         Returns:
             :py:class:`~app.type_hints.NodeDict`:
@@ -608,9 +608,9 @@ class HiveCluster(Cluster):
         self.membership_maintenance()
 
     def membership_maintenance(self) -> th.NodeDict:
-        """Attempts to recruits new
-        :py:class:`network nodes <app.domain.network_nodes.HiveNode>` as members
-        of the ``HiveCluster``.
+        """Attempts to recruits new network nodes to be members of the cluster.
+
+        The method updates both :py:attr:`members` and :py:attr:`_members_view`.
 
         Extends:
             :py:meth:`app.domain.cluster_groups.Cluster.membership_maintenance`.
