@@ -1326,8 +1326,9 @@ class NewscastCluster(Cluster):
         """
         self.file.logger.initial_spread = "o"
 
+        # Can not use tuple in replicas because tuples are immutable.
         replicas = list(replicas.values())
-        members = list(self.members.values())
+        members = tuple(self.members.values())
         members_len = len(members)
 
         if len(replicas) <= members_len:
