@@ -333,21 +333,22 @@
 
     <span class="c1"># region Master API</span>
 <div class="viewcode-block" id="Master.find_online_nodes"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.find_online_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">find_online_nodes</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Finds ``n`` :py:class:`network nodes</span>
 <span class="sd">        &lt;app.domain.network_nodes.Node&gt;` who are currently registered at the</span>
 <span class="sd">        ``Master`` and whose status is online.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            n:</span>
+<span class="sd">                How many :py:class:`network node</span>
+<span class="sd">                &lt;app.domain.network_nodes.Node&gt;` references the requesting</span>
+<span class="sd">                entity wants to find.</span>
 <span class="sd">            blacklist (:py:class:`~app.type_hints.NodeDict`):</span>
 <span class="sd">                A collection of :py:attr:`nodes identifiers</span>
 <span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` and their object</span>
 <span class="sd">                instances, which specify nodes the requesting entity has</span>
 <span class="sd">                no interest in.</span>
-<span class="sd">            n:</span>
-<span class="sd">                How many :py:class:`network node</span>
-<span class="sd">                &lt;app.domain.network_nodes.Node&gt;` references the requesting</span>
-<span class="sd">                entity wants to find.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
@@ -355,18 +356,18 @@
 <span class="sd">                which is at most as big as ``n``, which does not include any</span>
 <span class="sd">                node named in ``blacklist``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">selected</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">selected</span>
+        <span class="k">if</span> <span class="n">blacklist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">blacklist</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">network_nodes_view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network_nodes_view</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">selected</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
-                <span class="c1"># TODO: future-iterations review this code.</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
                 <span class="n">selected</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
         <span class="k">return</span> <span class="n">selected</span></div>
     <span class="c1"># endregion</span>
@@ -532,7 +533,7 @@
                  <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">cluster</span><span class="o">.</span><span class="n">wire_k_out</span><span class="p">(</span><span class="n">NewscastMaster</span><span class="o">.</span><span class="n">CACHE_SIZE</span><span class="p">)</span></div>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">wire_k_out</span><span class="p">()</span></div>
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="NewscastMaster._process_simfile"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.NewscastMaster._process_simfile">[docs]</a>    <span class="k">def</span> <span class="nf">_process_simfile</span><span class="p">(</span>

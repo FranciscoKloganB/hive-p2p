@@ -203,6 +203,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
 
     <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="Node.update_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.update_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``Node``.</span>
+
+<span class="sd">        This method equates a ping. When invoked, the ``Node`` decides if it</span>
+<span class="sd">        should remain online or change some other state depending on his</span>
+<span class="sd">        remaining :py:attr:`uptime`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
+<span class="sd">                The the status of the ``Node``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">OFFLINE</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div>
+
 <div class="viewcode-block" id="Node.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Instructs the ``Node`` instance to execute the epoch.</span>
 
@@ -352,7 +369,7 @@
                                   <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">replica</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> due to corruption.&quot;</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
-    <span class="c1"># region Get methods</span>
+    <span class="c1"># region Node API</span>
 <div class="viewcode-block" id="Node.get_file_parts"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_file_parts">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Gets collection of file parts that correspond to the named file.</span>
 
@@ -390,29 +407,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{}))</span></div>
 
-<div class="viewcode-block" id="Node.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_and_get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``Node``.</span>
-
-<span class="sd">        This method equates a ping. When invoked, the ``Node`` decides if it</span>
-<span class="sd">        should remain online or change some other state depending on his</span>
-<span class="sd">        remaining :py:attr:`uptime`.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
-<span class="sd">                The the status of the ``Node``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">OFFLINE</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div>
-
 <div class="viewcode-block" id="Node.is_up"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.is_up">[docs]</a>    <span class="k">def</span> <span class="nf">is_up</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns ``True`` if the node is online, else ``False``.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span></div>
+
+<div class="viewcode-block" id="Node.is_suspect"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.is_suspect">[docs]</a>    <span class="k">def</span> <span class="nf">is_suspect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns ``True`` if the node is behaving suspiciously,</span>
+<span class="sd">        else ``False``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span></div>
     <span class="c1"># endregion</span>
 
-    <span class="c1"># region Python dunder methods&#39; overrides</span>
+    <span class="c1"># region Dunder methods&#39; overrides</span>
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
 
@@ -617,8 +622,8 @@
 <span class="sd">    behaviours.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># region Get methods</span>
-<div class="viewcode-block" id="HiveNodeExt.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNodeExt.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_and_get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="HiveNodeExt.update_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNodeExt.update_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HiveNodeExt``.</span>
 
 <span class="sd">        This method equates a ping. When invoked, the ``HiveNodeExt``</span>
@@ -626,7 +631,7 @@
 <span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
 
 <span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
 <span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
@@ -635,7 +640,7 @@
 <span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
 <span class="sd">                The the status of the ``Node``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
@@ -648,6 +653,30 @@
     <span class="sd">&quot;&quot;&quot;Represents a data node in the Hadoop Distribute File System.&quot;&quot;&quot;</span>
 
     <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="HDFSNode.update_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.update_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HDFSNode``.</span>
+
+<span class="sd">        This method equates a ping. When invoked, the ``HDFSNode``</span>
+<span class="sd">        decides if it should remain online or change some other state</span>
+<span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
+
+<span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
+<span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
+<span class="sd">                The the status of the ``HDFSNode``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div>
+
 <div class="viewcode-block" id="HDFSNode.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Instructs the ``HDFSNode`` instance to execute the epoch.</span>
 
@@ -724,33 +753,7 @@
                     <span class="n">lost_replicas</span> <span class="o">-=</span> <span class="mi">1</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="c1"># replication level may have not been completely restored</span>
-            <span class="n">replica</span><span class="o">.</span><span class="n">update_epochs_to_recover</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span></div>
-    <span class="c1"># endregion</span>
-
-    <span class="c1"># region Get Methods</span>
-<div class="viewcode-block" id="HDFSNode.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_and_get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HDFSNode``.</span>
-
-<span class="sd">        This method equates a ping. When invoked, the ``HDFSNode``</span>
-<span class="sd">        decides if it should remain online or change some other state</span>
-<span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
-
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.</span>
-
-<span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
-<span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
-<span class="sd">                The the status of the ``HDFSNode``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div></div>
+            <span class="n">replica</span><span class="o">.</span><span class="n">update_epochs_to_recover</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 
 
@@ -776,6 +779,77 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span> <span class="n">_NetworkView</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">aggregation_value</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="mi">0</span></div>
 
+    <span class="c1"># region Node API</span>
+<div class="viewcode-block" id="NewscastNode.add_neighbor"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.add_neighbor">[docs]</a>    <span class="k">def</span> <span class="nf">add_neighbor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">NewscastNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Adds a new network node to the node instance&#39;s view.</span>
+
+<span class="sd">        If the view is full, the eldest entry is removed. Otherwise,</span>
+<span class="sd">        the new :py:class:`NewscastNode` is added to the instance&#39;s view with</span>
+<span class="sd">        age zero, unless the entry is already there, in which case the view</span>
+<span class="sd">        remains as it was.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``True`` if ``node`` was successfuly added, ``False`` otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">view_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">view_size</span> <span class="o">&lt;</span> <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">view_size</span> <span class="o">==</span> <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">oldest_node</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">v</span><span class="p">))]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">oldest_node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="NewscastNode.get_degree"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.get_degree">[docs]</a>    <span class="k">def</span> <span class="nf">get_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Counts the number of descriptors in the node&#39;s view.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The degree of the ``NewscastNode`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewscastNode.get_node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.get_node">[docs]</a>    <span class="k">def</span> <span class="nf">get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NewscastNode</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Gets a random node from the current network view.</span>
+
+<span class="sd">        Each candidate :py:class:`NewscastNode` to be returned is first pinged,</span>
+<span class="sd">        if no answer is obtained, another node is selected as a candidate by</span>
+<span class="sd">        iterating a list representation of :py:attr:`view` and the previous</span>
+<span class="sd">        candidate is removed from the :py:attr:`view`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Newscast should always return a random node, thus iteration</span>
+<span class="sd">            should not be used, but this search is more efficient and readable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The selected ``NewscastNode``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_degree</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">neighbors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">))</span>
+        <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">neighbors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">candidate_node</span>
+
+        <span class="k">for</span> <span class="n">candidate_node</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">candidate_node</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">candidate_node</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="c1"># endregion</span>
+
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="NewscastNode.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Instructs the ``NewscastNode`` instance to execute the epoch.</span>
@@ -799,14 +873,13 @@
 <span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
 <span class="sd">                of the file being simulated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># increase all descriptors&#39; age</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c1"># select a random node from view, the current node is isolated a</span>
         <span class="c1"># query a central server to find a gateway to the overaly.</span>
-        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span> <span class="ow">or</span> <span class="n">cluster</span><span class="o">.</span><span class="n">get_random_member_node</span><span class="p">()</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span> <span class="ow">or</span> <span class="n">cluster</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
@@ -825,7 +898,27 @@
         <span class="k">pass</span></div>
     <span class="c1"># endregion</span>
 
-    <span class="c1"># region Newscast peer shuffling</span>
+    <span class="c1"># region Newscast peer shuffling and aggregation</span>
+<div class="viewcode-block" id="NewscastNode.aggregate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.aggregate">[docs]</a>    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">NewscastNode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The network node instance contacts another node from his view, then,</span>
+<span class="sd">        both nodes assign the mean of their degrees to</span>
+<span class="sd">        :py:attr:`aggregation_value`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node:</span>
+<span class="sd">                When ``node`` is None a random ``NewscastNode`` is selected</span>
+<span class="sd">                from :py:attr:`view`. When specified to be contacted is the</span>
+<span class="sd">                one referenced in the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">node</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">candidate_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">mean</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_degree</span><span class="p">()</span> <span class="o">+</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">get_degree</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">candidate_node</span><span class="o">.</span><span class="n">aggregation_value</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregation_value</span> <span class="o">=</span> <span class="n">mean</span></div>
+
 <div class="viewcode-block" id="NewscastNode.shuffle"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.shuffle">[docs]</a>    <span class="k">def</span> <span class="nf">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">NewscastNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Starts a shuffle process that merges and crops two nodes&#39; views at</span>
 <span class="sd">        the current node and at the destination node.</span>
@@ -899,100 +992,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">view_buffer</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">view_buffer</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">view_buffer</span> <span class="o">=</span> <span class="n">view_buffer</span><span class="p">[:</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">]</span>
-        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">)</span></div>
-    <span class="c1"># endregion</span>
-
-    <span class="c1"># region Aggregation</span>
-<div class="viewcode-block" id="NewscastNode.aggregate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.aggregate">[docs]</a>    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">NewscastNode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;The network node instance contacts another node from his view, then,</span>
-<span class="sd">        both nodes assign the mean of their degrees to</span>
-<span class="sd">        :py:attr:`aggregation_value`.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            node:</span>
-<span class="sd">                When ``node`` is None a random ``NewscastNode`` is selected</span>
-<span class="sd">                from :py:attr:`view`. When specified to be contacted is the</span>
-<span class="sd">                one referenced in the parameter.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">node</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">candidate_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="n">mean</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_degree</span><span class="p">()</span> <span class="o">+</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">get_degree</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span>
-        <span class="n">candidate_node</span><span class="o">.</span><span class="n">aggregation_value</span> <span class="o">=</span> <span class="n">mean</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">aggregation_value</span> <span class="o">=</span> <span class="n">mean</span></div>
-    <span class="c1"># endregion</span>
-
-    <span class="c1"># region Helpers</span>
-<div class="viewcode-block" id="NewscastNode.add_neighbor"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.add_neighbor">[docs]</a>    <span class="k">def</span> <span class="nf">add_neighbor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">NewscastNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Adds a new network node to the node instance&#39;s view.</span>
-
-<span class="sd">        If the view is full, the eldest entry is removed. Otherwise,</span>
-<span class="sd">        the new :py:class:`NewscastNode` is added to the instance&#39;s view with</span>
-<span class="sd">        age zero, unless the entry is already there, in which case the view</span>
-<span class="sd">        remains as it was.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            ``True`` if ``node`` was successfuly added, ``False`` otherwise.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">False</span>
-
-        <span class="n">view_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">view_size</span> <span class="o">&lt;</span> <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">return</span> <span class="kc">True</span>
-
-        <span class="k">if</span> <span class="n">view_size</span> <span class="o">==</span> <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
-            <span class="n">k</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
-            <span class="n">v</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-            <span class="n">oldest_node</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">v</span><span class="p">))]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">oldest_node</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">return</span> <span class="kc">True</span>
-
-        <span class="k">return</span> <span class="kc">False</span></div>
-
-<div class="viewcode-block" id="NewscastNode.get_degree"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.get_degree">[docs]</a>    <span class="k">def</span> <span class="nf">get_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Counts the number of descriptors in the node&#39;s view.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The degree of the ``NewscastNode`` instance.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="NewscastNode.get_node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.get_node">[docs]</a>    <span class="k">def</span> <span class="nf">get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NewscastNode</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Gets a random node from the current network view.</span>
-
-<span class="sd">        Each candidate :py:class:`NewscastNode` to be returned is first pinged,</span>
-<span class="sd">        if no answer is obtained, another node is selected as a candidate by</span>
-<span class="sd">        iterating a list representation of :py:attr:`view` and the previous</span>
-<span class="sd">        candidate is removed from the :py:attr:`view`.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Newscast should always return a random node, thus iteration</span>
-<span class="sd">            should not be used, but this search is more efficient and readable.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The selected ``NewscastNode``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_degree</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="n">neighbors</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
-
-        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">))</span>
-        <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">neighbors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
-            <span class="k">return</span> <span class="n">candidate_node</span>
-
-        <span class="k">for</span> <span class="n">candidate_node</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
-                <span class="k">return</span> <span class="n">candidate_node</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">candidate_node</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="kc">None</span></div></div>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 </pre></div>
 

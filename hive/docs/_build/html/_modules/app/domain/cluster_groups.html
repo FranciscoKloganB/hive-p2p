@@ -147,8 +147,10 @@
 <span class="sd">            for corruption chance configuration.</span>
 <span class="sd">        master (:py:class:`~app.domain.master_servers.Master`):</span>
 <span class="sd">            A reference to a server that coordinates or monitors the ``Cluster``.</span>
-<span class="sd">        members (List[:py:class:`~app.domain.network_nodes.Node`]):</span>
+<span class="sd">        members (:py:class:`~app.type_hints.NodeDict`):</span>
 <span class="sd">            A collection of network nodes that belong to the ``Cluster``.</span>
+<span class="sd">        _members_view:</span>
+<span class="sd">            A list representation of the nodes in :py:attr:`members`.</span>
 <span class="sd">        file (:py:class:`~app.domain.helpers.smart_dataclasses.FileData`):</span>
 <span class="sd">            A reference to</span>
 <span class="sd">            :py:class:`~app.domain.helpers.smart_dataclasses.FileData`</span>
@@ -216,6 +218,7 @@
             <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="n">members</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span><span class="p">(</span>
             <span class="n">file_name</span><span class="p">,</span> <span class="n">sim_id</span><span class="o">=</span><span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">REPLICATION_LEVEL</span>
@@ -274,7 +277,7 @@
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">BAD_REQUEST</span>
 
         <span class="n">destination_node</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">receiver</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">destination_node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">destination_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">destination_node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">NOT_FOUND</span></div>
@@ -301,7 +304,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Cluster.get_random_member_node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.get_random_member_node">[docs]</a>    <span class="k">def</span> <span class="nf">get_random_member_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">:</span>
+<div class="viewcode-block" id="Cluster.get_node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.get_node">[docs]</a>    <span class="k">def</span> <span class="nf">get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Retrives a random node from the members of the cluster group,</span>
 <span class="sd">        whose status is likely to be online.</span>
 
@@ -309,11 +312,11 @@
 <span class="sd">            :py:class:`~app.type_hints.NodeType`:</span>
 <span class="sd">                A random network node from :py:attr:`members`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">members</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span>
         <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">))</span>
         <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">members</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
-        <span class="k">while</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">))</span>
@@ -327,13 +330,19 @@
         <span class="sd">&quot;&quot;&quot;Initializes some attributes cluster attributes at the start of an</span>
 <span class="sd">        epoch.</span>
 
+<span class="sd">        This method also forces all of the ``Clusters`` members to update</span>
+<span class="sd">        their connectivity status before any node is instructed to execute.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            epoch:</span>
 <span class="sd">                The simulation&#39;s current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">epoch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="n">member</span><span class="o">.</span><span class="n">update_status</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Cluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Distributes a collection of :py:class:`file block replicas</span>
@@ -428,7 +437,7 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                List of :py:attr:`members` that disconnected during the</span>
 <span class="sd">                :py:attr:`current_epoch`. See</span>
-<span class="sd">                :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.</span>
+<span class="sd">                :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
@@ -520,8 +529,8 @@
 <span class="sd">                and values are</span>
 <span class="sd">                :py:class:`node instances &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_online_nodes</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">))</span></div>
+        <span class="n">amount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_online_nodes</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.get_cluster_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.get_cluster_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_cluster_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Determines the ``Cluster``&#39;s status based on the length of the</span>
@@ -667,12 +676,13 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                 A collection of members who disconnected during the current</span>
 <span class="sd">                 epoch. See</span>
-<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">update_and_get_status</span><span class="p">()</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -698,9 +708,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
 
         <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node_parts_count</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_parts_count</span>
                 <span class="n">pcount</span> <span class="o">+=</span> <span class="n">node_parts_count</span>
@@ -1124,18 +1133,15 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">                during the current epoch.</span>
-<span class="sd">                See :py:meth:`app.domain.network_nodes.HiveNodeExt.update_and_get_status`.</span>
+<span class="sd">                See :py:meth:`app.domain.network_nodes.HiveNodeExt.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">update_and_get_status</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">is_suspect</span><span class="p">():</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
@@ -1233,18 +1239,15 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">                during the current epoch. See</span>
-<span class="sd">                :py:meth:`app.domain.network_nodes.HDFSNode.update_and_get_status`.</span>
+<span class="sd">                :py:meth:`app.domain.network_nodes.HDFSNode.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lost_replicas_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">update_and_get_status</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">is_suspect</span><span class="p">():</span>
                 <span class="c1"># Register lost replicas the moment the node disconnects.</span>
                 <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
@@ -1285,9 +1288,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
 
         <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="n">pcount</span> <span class="o">+=</span> <span class="n">node_replicas</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
@@ -1346,6 +1349,10 @@
 <div class="viewcode-block" id="NewscastCluster.log_aggregation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.log_aggregation">[docs]</a>    <span class="k">def</span> <span class="nf">log_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">average_network_degree</span> <span class="o">+=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_aggregation_calls</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.wire_k_out"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.wire_k_out">[docs]</a>    <span class="k">def</span> <span class="nf">wire_k_out</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO create NEWSCAST_CACHE_SIZE random connetions at each node</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -1371,11 +1378,11 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                 A collection of members who disconnected during the current</span>
 <span class="sd">                 epoch. See</span>
-<span class="sd">                 :py:meth:`app.domain.network_nodes.NewscastNode.update_and_get_status`.</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.NewscastNode.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">members</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
             <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -1395,16 +1402,16 @@
         <span class="sd">&quot;&quot;&quot;Initializes some attributes cluster attributes at the start of an</span>
 <span class="sd">        epoch.</span>
 
-<span class="sd">        Overrides:</span>
+<span class="sd">        Extends:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster._setup_epoch`</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            epoch:</span>
 <span class="sd">                The simulation&#39;s current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">epoch</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">average_network_degree</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log_aggregation_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_setup_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">average_network_degree</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_aggregation_calls</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="NewscastCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Distributes a collection of :py:class:`file block replicas</span>
