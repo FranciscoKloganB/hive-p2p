@@ -220,6 +220,9 @@ class Cluster:
         """Initializes some attributes cluster attributes at the start of an
         epoch.
 
+        This method also forces all of the ``Clusters`` members to update
+        their connectivity status before any node is instructed to execute.
+
         Args:
             epoch:
                 The simulation's current epoch.
