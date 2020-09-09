@@ -37,8 +37,10 @@ class Cluster:
             for corruption chance configuration.
         master (:py:class:`~app.domain.master_servers.Master`):
             A reference to a server that coordinates or monitors the ``Cluster``.
-        members (List[:py:class:`~app.domain.network_nodes.Node`]):
+        members (:py:class:`~app.type_hints.NodeDict`):
             A collection of network nodes that belong to the ``Cluster``.
+        _members_view:
+            A list representation of the nodes in :py:attr:`members`.
         file (:py:class:`~app.domain.helpers.smart_dataclasses.FileData`):
             A reference to
             :py:class:`~app.domain.helpers.smart_dataclasses.FileData`
@@ -106,6 +108,7 @@ class Cluster:
             ms.Master.MAX_EPOCHS)
         self.master = master
         self.members: th.NodeDict = members
+        self._members_view: List[th.NodeType] = []
         self.file: sd.FileData = sd.FileData(
             file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
@@ -1137,7 +1140,7 @@ class HDFSCluster(Cluster):
         members = self.members.values()
         for node in members:
             node.update_status()
-
+            
         for node in members:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
