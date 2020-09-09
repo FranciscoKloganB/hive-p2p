@@ -228,6 +228,8 @@ class Cluster:
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
         self._members_view = list(self.members.values())
+        for member in self._members_view:
+            member.update_status()
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
         """Distributes a collection of :py:class:`file block replicas
@@ -565,9 +567,6 @@ class HiveCluster(Cluster):
         """
         lost_parts_count: int = 0
         off_nodes: List[th.NodeType] = []
-
-        for node in self._members_view:
-            node.update_status()
 
         for node in self._members_view:
             if node.is_up():
@@ -1027,9 +1026,6 @@ class HiveClusterExt(HiveCluster):
         off_nodes = []
 
         for node in self._members_view:
-            node.update_status()
-
-        for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
             elif node.status == e.Status.SUSPECT:
@@ -1134,9 +1130,6 @@ class HDFSCluster(Cluster):
         """
         off_nodes = []
         lost_replicas_count: int = 0
-
-        for node in self._members_view:
-            node.update_status()
 
         for node in self._members_view:
             if node.is_up():
@@ -1275,8 +1268,6 @@ class NewscastCluster(Cluster):
                  :py:meth:`app.domain.network_nodes.NewscastNode.update_status`.
         """
         random.shuffle(self._members_view)
-        for node in self._members_view:
-            node.update_status()
 
         for node in self._members_view:
             node.execute_epoch(self, self.file.name)
