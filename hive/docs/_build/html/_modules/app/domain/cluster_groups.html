@@ -1381,7 +1381,8 @@
 
 <div class="viewcode-block" id="NewscastCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Prints the epoch&#39;s aggregated peer degree, to the command-line</span>
-<span class="sd">        interface.&quot;&quot;&quot;</span>
+<span class="sd">        interface.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">average_network_degree</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_aggregation_calls</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Avg. Network Degree: </span><span class="si">{</span><span class="n">degree</span><span class="si">}</span><span class="s2">, epoch: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 

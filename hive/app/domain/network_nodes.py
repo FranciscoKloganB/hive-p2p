@@ -704,7 +704,7 @@ class NewscastNode(Node):
         # use newscast behavior to shuffle views and aggregate peer degrees
         self.shuffle(node)
         self.aggregate(node)
-        
+
         cluster.log_aggregation(self.aggregation_value)
     # endregion
 
@@ -805,10 +805,13 @@ class NewscastNode(Node):
                 one referenced in the parameter.
         """
         candidate_node = node or self.get_node()
-        if candidate_node is not None:
-            mean = (self.get_degree() + candidate_node.get_degree()) / 2
-            candidate_node.aggregation_value = mean
-            self.aggregation_value = mean
+
+        if candidate_node is None:
+            return
+
+        mean = (self.get_degree() + candidate_node.get_degree()) / 2
+        candidate_node.aggregation_value = mean
+        self.aggregation_value = mean
     # endregion
 
     # region Helpers

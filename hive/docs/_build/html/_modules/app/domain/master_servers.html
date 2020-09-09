@@ -524,6 +524,16 @@
 
 
 <div class="viewcode-block" id="NewscastMaster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.NewscastMaster">[docs]</a><span class="k">class</span> <span class="nc">NewscastMaster</span><span class="p">(</span><span class="n">Master</span><span class="p">):</span>
+<div class="viewcode-block" id="NewscastMaster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.NewscastMaster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">wire_k_out</span><span class="p">(</span><span class="n">NewscastMaster</span><span class="o">.</span><span class="n">CACHE_SIZE</span><span class="p">)</span></div>
+
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="NewscastMaster._process_simfile"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.NewscastMaster._process_simfile">[docs]</a>    <span class="k">def</span> <span class="nf">_process_simfile</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

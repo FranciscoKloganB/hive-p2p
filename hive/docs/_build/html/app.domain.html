@@ -1975,6 +1975,30 @@ node named in <code class="docutils literal notranslate"><span class="pre">black
 <em class="property">class </em><code class="sig-name descname">NewscastMaster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#NewscastMaster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a></p>
 <dl class="py method">
+<dt id="app.domain.master_servers.NewscastMaster.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#NewscastMaster.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an Master object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>simfile_name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A path to the simulation file to be run by the simulator.</p></li>
+<li><p><strong>sid</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>epochs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of discrete time steps the simulation lasts.</p></li>
+<li><p><strong>cluster_class</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the class used to instantiate cluster group
+instances through reflection. See <a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">groups</span> <span class="pre">module</span></code></a>.</p></li>
+<li><p><strong>node_class</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the class used to instantiate network node
+instances through reflection. See <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span> <span class="pre">module</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="app.domain.master_servers.NewscastMaster._process_simfile">
 <code class="sig-name descname">_process_simfile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#NewscastMaster._process_simfile"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Opens and processes the simulation filed referenced in <cite>path</cite>.</p>
@@ -2359,13 +2383,6 @@ in the dictionary. A key-value pair is commonly referenced as a
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="app.domain.network_nodes.NewscastNode.max_view_size">
-<code class="sig-name descname">max_view_size</code></dt>
-<dd><p>The maximum size the <code class="docutils literal notranslate"><span class="pre">view</span></code> list of the <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code> can
-have at any given time.</p>
-</dd></dl>
-
-<dl class="py attribute">
 <dt id="app.domain.network_nodes.NewscastNode.aggregation_value">
 <code class="sig-name descname">aggregation_value</code></dt>
 <dd><p>Stores the aggregation value. The type of <code class="docutils literal notranslate"><span class="pre">aggregation_value</span></code>
@@ -2423,7 +2440,7 @@ descriptors.</p>
 :param and values are their respective age in the view.:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The <code class="docutils literal notranslate"><span class="pre">view_buffer</span></code> with at most <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.max_view_size" title="app.domain.network_nodes.NewscastNode.max_view_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code></a> descriptors.</p>
+<dd class="field-odd"><p>The <code class="docutils literal notranslate"><span class="pre">view_buffer</span></code> with at most <code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code> descriptors.</p>
 </dd>
 <dt class="field-even">Parameters</dt>
 <dd class="field-even"><p><strong>view_buffer</strong> (<em>_NetworkView</em>) – </p>
@@ -2578,7 +2595,7 @@ to be delivered.</p></li>
 <dd><p>Starts a shuffle process that merges and crops two nodes’ views at
 the current node and at the destination node.</p>
 <p>The final view consists of most up to date descriptors from both
-<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">views</span></code></a> up to a maximum of <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.max_view_size" title="app.domain.network_nodes.NewscastNode.max_view_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code></a>
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">views</span></code></a> up to a maximum of <code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code>
 descriptors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2595,7 +2612,7 @@ descriptors.</p>
 <code class="sig-name descname">shuffle_request</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">senders_view</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.shuffle_request"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Merges and crops two nodes’ views at the current node.</p>
 <p>The final view consists of most up to date descriptors from both
-<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">views</span></code></a> up to a maximum of <a class="reference internal" href="#app.domain.network_nodes.NewscastNode.max_view_size" title="app.domain.network_nodes.NewscastNode.max_view_size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code></a>
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">views</span></code></a> up to a maximum of <code class="xref py py-attr docutils literal notranslate"><span class="pre">max_view_size</span></code>
 descriptors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
