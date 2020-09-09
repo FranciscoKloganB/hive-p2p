@@ -194,7 +194,7 @@ class Cluster:
         """
         pass
 
-    def get_random_member_node(self) -> th.NodeType:
+    def get_node(self) -> th.NodeType:
         """Retrives a random node from the members of the cluster group,
         whose status is likely to be online.
 

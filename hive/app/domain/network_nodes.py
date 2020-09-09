@@ -769,7 +769,7 @@ class NewscastNode(Node):
 
         # select a random node from view, the current node is isolated a
         # query a central server to find a gateway to the overaly.
-        node = self.get_node() or cluster.get_random_member_node()
+        node = self.get_node() or cluster.get_node()
 
         if node is None:
             return
