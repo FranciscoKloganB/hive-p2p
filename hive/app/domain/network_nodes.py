@@ -701,7 +701,44 @@ class NewscastNode(Node):
         pass
     # endregion
 
-    # region Adaptive peer-sampling with Newscast, avg. peer-degree aggregation
+    # region Adaptive peer-sampling with Newscast
+    def add_neighbor(self, node: NewscastNode) -> bool:
+        """Adds a new network node to the node instance's view.
+
+        If the view is full, the eldest entry is removed. Otherwise,
+        the new :py:class:`NewscastNode` is added to the instance's view with
+        age zero, unless the entry is already there, in which case the view
+        remains as it was.
+
+        Returns:
+            ``True`` if ``node`` was successfuly added, ``False`` otherwise.
+        """
+        if node in self.view:
+            return False
+
+        view_size = len(self.view)
+        if view_size < self.max_view_size:
+            self.view[node] = 0
+            return True
+
+        if view_size == self.max_view_size:
+            k = list(self.view)
+            v = list(self.view.values())
+            oldest_node = k[v.index(max(v))]
+            self.view.pop(oldest_node)
+            self.view[node] = 0
+            return True
+
+        return False
+
+    def get_degree(self) -> int:
+        """Counts the number of descriptors in the node's view.
+
+        Returns:
+            The degree of the ``NewscastNode`` instance.
+        """
+        return len(self.view)
+
     def get_random_node(self) -> Optional[NewscastNode]:
         """Gets a random node from the current network view.
 
@@ -728,26 +765,6 @@ class NewscastNode(Node):
             candidate_node = neighbors.pop(i)
 
         return candidate_node
-
-    def _merge(self, a: _NetworkView, b: _NetworkView) -> _NetworkView:
-        """Merges two network views. If a node descriptor exists in both
-        views, the most recent descriptor is kept.
-
-        Args:
-            a:
-                A dictionary where keys are :py:class:`network nodes <Node>`
-                and values are their respective age in the view.
-            b:
-                A dictionary where keys are :py:class:`network nodes <Node>`
-                and values are their respective age in the view.
-
-        Returns:
-            The set union of both views with only the most up to date
-            descriptors.
-        """
-        for nkey in b:
-            a[nkey] = min(a[nkey]), b[nkey] if nkey in a else b[nkey]
-        return a
 
     def update_view(
             self, senders_view: _NetworkView, sender: NewscastNode) -> None:
@@ -793,6 +810,26 @@ class NewscastNode(Node):
         view_buffer = self._merge(self.view, senders_view)
         self.view = self._select_view(view_buffer)
 
+    def _merge(self, a: _NetworkView, b: _NetworkView) -> _NetworkView:
+        """Merges two network views. If a node descriptor exists in both
+        views, the most recent descriptor is kept.
+
+        Args:
+            a:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+            b:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+
+        Returns:
+            The set union of both views with only the most up to date
+            descriptors.
+        """
+        for nkey in b:
+            a[nkey] = min(a[nkey]), b[nkey] if nkey in a else b[nkey]
+        return a
+
     def _select_view(self, view_buffer: _NetworkView) -> _NetworkView:
         """Reduces the size of the view to a predefined maximum size.
 
@@ -806,4 +843,23 @@ class NewscastNode(Node):
         view_buffer = sorted(view_buffer.items(), key=lambda x: x[1])
         view_buffer = view_buffer[:self.max_view_size]
         return dict(view_buffer)
+    # endregion
+
+    # region Average network degree aggregation
+    def aggregate_average_network_degree(self) -> None:
+        """The network node instance contacts another node from his view, then,
+        both nodes assign the mean of their degrees to
+        :py:attr:`aggregation_value`."""
+        my_degree = self.get_degree()
+        if my_degree > 0:
+            neighbors = list(self.view)
+
+            i = np.random.randint(0, len(neighbors))
+            candidate_node = neighbors[i]
+            if candidate_node.status != e.Status.ONLINE:
+                return
+
+            mean = (my_degree + candidate_node.get_degree()) / 2
+            candidate_node.aggregation_value = mean
+            self.aggregation_value = mean
     # endregion
