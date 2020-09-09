@@ -1299,14 +1299,14 @@ class NewscastCluster(Cluster):
         """Initializes some attributes cluster attributes at the start of an
         epoch.
 
-        Overrides:
+        Extends:
             :py:meth:`app.domain.cluster_groups.Cluster._setup_epoch`
 
         Args:
             epoch:
                 The simulation's current epoch.
         """
-        self.current_epoch = epoch
+        super()._setup_epoch(epoch)
         self.average_network_degree: float = 0.0
         self.log_aggregation_calls: int = 0
 
