@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 
 from utils import crypto
-from environment_settings import TRUE_FALSE
+from environment_settings import TRUE_FALSE, NEWSCAST_CACHE_SIZE
 
 _NetworkView: Dict[Union[str, Node], int]
 
@@ -657,9 +657,6 @@ class NewscastNode(Node):
             are :py:class:`NewscastNode` instances, and values are their age
             in the dictionary. A key-value pair is commonly referenced as a
             ``descriptor``.
-        max_view_size:
-            The maximum size the ``view`` list of the ``NewscastNode`` can
-            have at any given time.
         aggregation_value:
             Stores the aggregation value. The type of ``aggregation_value``
             is defined by the body of the :py:meth:`aggregate` method.
@@ -667,7 +664,6 @@ class NewscastNode(Node):
     def __init__(self, uid: str, uptime: float) -> None:
         super().__init__(uid, uptime)
         self.view: _NetworkView = {}
-        self.max_view_size: int = 0
         self.aggregation_value: Any = 0
 
     # region Simulation steps
@@ -786,7 +782,7 @@ class NewscastNode(Node):
             The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.
         """
         view_buffer = sorted(view_buffer.items(), key=lambda x: x[1])
-        view_buffer = view_buffer[:self.max_view_size]
+        view_buffer = view_buffer[:NEWSCAST_CACHE_SIZE]
         return dict(view_buffer)
     # endregion
 
@@ -825,11 +821,11 @@ class NewscastNode(Node):
             return False
 
         view_size = len(self.view)
-        if view_size < self.max_view_size:
+        if view_size < NEWSCAST_CACHE_SIZE:
             self.view[node] = 0
             return True
 
-        if view_size == self.max_view_size:
+        if view_size == NEWSCAST_CACHE_SIZE:
             k = list(self.view)
             v = list(self.view.values())
             oldest_node = k[v.index(max(v))]
