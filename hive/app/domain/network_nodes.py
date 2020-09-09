@@ -664,8 +664,8 @@ class NewscastNode(Node):
     # region Simulation steps
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
         node = self.get_random_node()
-        my_temporary_view = self._merge(dict(self.view), {self, 0})
-        receivers_view = node.views_exchange(my_temporary_view)
+        view_buffer = dict(self.view).update({self, 0})
+        node.update_view(view_buffer, self)
     # endregion
 
     # region File block management
@@ -681,7 +681,12 @@ class NewscastNode(Node):
     # endregion
 
     # region Adaptive peer-sampling with Newscast, avg. peer-degree aggregation
-    def get_random_node(self):
+    def get_random_node(self) -> NewscastNode:
+        """Gets a random node from the current network view.
+
+        Returns:
+            The selected ``NewscastNode``.
+        """
         return np.random.choice(list(self.view))
 
     def _merge(self, a: _NetworkView, b: _NetworkView) -> _NetworkView:
@@ -704,7 +709,8 @@ class NewscastNode(Node):
             a[nkey] = min(a[nkey]), b[nkey] if nkey in a else b[nkey]
         return a
 
-    def views_exchange(self, senders_view: _NetworkView) -> _NetworkView:
+    def update_view(
+            self, senders_view: _NetworkView, sender: NewscastNode) -> None:
         """Updates the network node's view by performing a set union of the
         sender's and receiver's views.
 
@@ -715,18 +721,39 @@ class NewscastNode(Node):
             senders_view:
                 A dictionary where keys are :py:class:`network nodes <Node>`
                 and values are their respective age in the view.
-
-        Returns:
-            The receiver's view along with the receiver's descriptor, before
-            the receiver's view is merged and filtered with the
-            ``senders_view``.
+            sender:
+                The ``NewscastNode`` who sent ``senders_view``, who will
+                also receive this ``NewscastNode`` ``view_buffer``.
         """
-        my_response_view = self._merge(dict(self.view), {self, 0})
-        my_temporary_view = self._merge(self.view, senders_view)
-        self.view = self._select_view(my_temporary_view)
-        return my_response_view
+        view_buffer = dict(self.view).update({self, 0})
+        sender.update_view_response(view_buffer, self)
+        view_buffer = self._merge(self.view, senders_view)
+        self.view = self._select_view(view_buffer)
 
-    def _select_view(self, view: _NetworkView) -> _NetworkView:
+    def update_view_response(
+            self, senders_view: _NetworkView, sender: NewscastNode = None
+    ) -> None:
+        """Updates the network node's view by performing a set union of the
+        sender's and receiver's views.
+
+        The final view consists of most up to date descriptors from both
+        lists up to a maximum of :py:attr:`max_view_size` descriptors.
+
+        Args:
+            senders_view:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+            sender:
+                The ``NewscastNode`` who sent ``senders_view``,
+                who was originally contacted by this ``NewscastNode``
+                instance and received it's ``view_buffer``
+                of :py:attr:`view`. This parameter is optional, since it is
+                not used in the method's body with current implementation.
+        """
+        view_buffer = self._merge(self.view, senders_view)
+        self.view = self._select_view(view_buffer)
+
+    def _select_view(self, view_buffer: _NetworkView) -> _NetworkView:
         """Reduces the size of the view to a predefined maximum size.
 
         Args:
@@ -734,10 +761,9 @@ class NewscastNode(Node):
             and values are their respective age in the view.
 
         Returns:
-            The ``view`` with at most :py:attr:`max_view_size` descriptors.
+            The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.
         """
-        view: List[Tuple[Any]] = sorted(view.items(), key=lambda x: x[1])
-        view = view[:self.max_view_size]
-        return dict(view)
-
+        view_buffer = sorted(view_buffer.items(), key=lambda x: x[1])
+        view_buffer = view_buffer[:self.max_view_size]
+        return dict(view_buffer)
     # endregion
