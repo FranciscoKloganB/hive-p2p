@@ -324,8 +324,8 @@
 
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="Cluster._setup_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._setup_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">_setup_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Initializes some attributes of the ``Cluster`` during</span>
-<span class="sd">        its initialization.</span>
+        <span class="sd">&quot;&quot;&quot;Initializes some attributes cluster attributes at the start of an</span>
+<span class="sd">        epoch.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            epoch:</span>
@@ -397,8 +397,8 @@
 <span class="sd">                to it&#39;s managing :py:attr:`master` entity.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it was</span>
-<span class="sd">            responsible for, otherwise ``True``.</span>
+<span class="sd">            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it</span>
+<span class="sd">            was responsible for, otherwise ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
 
@@ -1321,14 +1321,51 @@
 
 
 <div class="viewcode-block" id="NewscastCluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster">[docs]</a><span class="k">class</span> <span class="nc">NewscastCluster</span><span class="p">(</span><span class="n">Cluster</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a P2P network of nodes performing mean degree aggregation,</span>
+<span class="sd">    while simultaneously using Newscast for ``view shuffling``.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        average_network_degree (float):</span>
+<span class="sd">            The :py:attr:`current_epoch` average network degree.</span>
+<span class="sd">        log_aggregation_calls (int):</span>
+<span class="sd">            How many calls to :py:meth:`log_aggregation` were made in the</span>
+<span class="sd">            :py:attr:`current_epoch`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NewscastCluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
+                 <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
+                 <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">average_network_degree</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_aggregation_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+    <span class="c1"># region Cluster API</span>
+<div class="viewcode-block" id="NewscastCluster.log_aggregation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.log_aggregation">[docs]</a>    <span class="k">def</span> <span class="nf">log_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">average_network_degree</span> <span class="o">+=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_aggregation_calls</span> <span class="o">+=</span> <span class="mi">1</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="NewscastCluster.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodes_execute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span></div>
+
 <div class="viewcode-block" id="NewscastCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
 
-<span class="sd">        This method shuffles the order in which the :py:class:`network nodes</span>
-<span class="sd">        &lt;app.domain.network_nodes.NewscastNode&gt;` are visited every epoch.</span>
-
 <span class="sd">        Overrides:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.</span>
+
+<span class="sd">            Note:</span>
+<span class="sd">                :py:meth:`NewscasterCluster.nodes_execute</span>
+<span class="sd">                &lt;app.domain.cluster_groups.NewscastNode.nodes_execute&gt;`</span>
+<span class="sd">                always returns an empty list.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
@@ -1339,13 +1376,31 @@
         <span class="n">members</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+            <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
 
 <div class="viewcode-block" id="NewscastCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">off_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes_execute</span><span class="p">()</span></div>
+        <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="NewscastCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">pass</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Simulation setup</span>
+<div class="viewcode-block" id="NewscastCluster._setup_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster._setup_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">_setup_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initializes some attributes cluster attributes at the start of an</span>
+<span class="sd">        epoch.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster._setup_epoch`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                The simulation&#39;s current epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">average_network_degree</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_aggregation_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="NewscastCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Distributes a collection of :py:class:`file block replicas</span>
@@ -1389,7 +1444,7 @@
                 <span class="k">for</span> <span class="n">member</span><span class="p">,</span> <span class="n">replica</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">members</span><span class="p">,</span> <span class="n">replicas</span><span class="p">):</span>
                     <span class="n">member</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
                 <span class="k">del</span> <span class="n">replicas</span><span class="p">[:</span><span class="n">members_len</span><span class="p">]</span></div></div>
-
+    <span class="c1"># endregion</span>
 </pre></div>
 
             </div>

@@ -809,7 +809,9 @@
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="n">cluster</span><span class="o">.</span><span class="n">log_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aggregation_value</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region File block management</span>

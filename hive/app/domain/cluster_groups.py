@@ -214,8 +214,8 @@ class Cluster:
 
     # region Simulation setup
     def _setup_epoch(self, epoch: int) -> None:
-        """Initializes some attributes of the ``Cluster`` during
-        its initialization.
+        """Initializes some attributes cluster attributes at the start of an
+        epoch.
 
         Args:
             epoch:
@@ -1217,6 +1217,9 @@ class NewscastCluster(Cluster):
     Attributes:
         average_network_degree (float):
             The :py:attr:`current_epoch` average network degree.
+        log_aggregation_calls (int):
+            How many calls to :py:meth:`log_aggregation` were made in the
+            :py:attr:`current_epoch`.
     """
 
     def __init__(self,
@@ -1227,8 +1230,17 @@ class NewscastCluster(Cluster):
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
         self.average_network_degree: float = 0.0
+        self.log_aggregation_calls: int = 0
 
+    # region Cluster API
+    def log_aggregation(self, value: float):
+        self.average_network_degree += value
+        self.log_aggregation_calls += 1
+    # endregion
+
+    # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
+        self._setup_epoch(epoch)
         self.nodes_execute()
         self.evaluate()
         if epoch == ms.Master.MAX_EPOCHS:
@@ -1262,6 +1274,23 @@ class NewscastCluster(Cluster):
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         pass
+    # endregion
+
+    # region Simulation setup
+    def _setup_epoch(self, epoch: int) -> None:
+        """Initializes some attributes cluster attributes at the start of an
+        epoch.
+
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.Cluster._setup_epoch`
+
+        Args:
+            epoch:
+                The simulation's current epoch.
+        """
+        self.current_epoch = epoch
+        self.average_network_degree: float = 0.0
+        self.log_aggregation_calls: int = 0
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "o") -> None:
         """Distributes a collection of :py:class:`file block replicas
@@ -1305,4 +1334,4 @@ class NewscastCluster(Cluster):
                 for member, replica in zip(members, replicas):
                     member.receive_part(replica)
                 del replicas[:members_len]
-
+    # endregion

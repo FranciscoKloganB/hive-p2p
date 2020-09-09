@@ -700,6 +700,11 @@ class NewscastNode(Node):
 
         self.aggregate(node)
         self.shuffle(node)
+
+        for k in self.view:
+            self.view[k] += 1
+
+        cluster.log_aggregation(self.aggregation_value)
     # endregion
 
     # region File block management

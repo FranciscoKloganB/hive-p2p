@@ -407,8 +407,8 @@ stream.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.Cluster._setup_epoch">
 <code class="sig-name descname">_setup_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#Cluster._setup_epoch"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Initializes some attributes of the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> during
-its initialization.</p>
+<dd><p>Initializes some attributes cluster attributes at the start of an
+epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The simulation’s current epoch.</p>
@@ -474,8 +474,8 @@ collected results.</p>
 to it’s managing <a class="reference internal" href="#app.domain.cluster_groups.Cluster.master" title="app.domain.cluster_groups.Cluster.master"><code class="xref py py-attr docutils literal notranslate"><span class="pre">master</span></code></a> entity.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">False</span></code> if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.file" title="app.domain.cluster_groups.Cluster.file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code></a> it was
-responsible for, otherwise <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">False</span></code> if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <a class="reference internal" href="#app.domain.cluster_groups.Cluster.file" title="app.domain.cluster_groups.Cluster.file"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code></a> it
+was responsible for, otherwise <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
@@ -1351,8 +1351,8 @@ collected results.</p>
 to it’s managing <code class="xref py py-attr docutils literal notranslate"><span class="pre">master</span></code> entity.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">False</span></code> if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code> it was
-responsible for, otherwise <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">False</span></code> if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code> it
+was responsible for, otherwise <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
@@ -1413,6 +1413,76 @@ See <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt.ge
 <dt id="app.domain.cluster_groups.NewscastCluster">
 <em class="property">class </em><code class="sig-name descname">NewscastCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a></p>
+<p>Represents a P2P network of nodes performing mean degree aggregation,
+while simultaneously using Newscast for <code class="docutils literal notranslate"><span class="pre">view</span> <span class="pre">shuffling</span></code>.</p>
+<dl class="py attribute">
+<dt id="app.domain.cluster_groups.NewscastCluster.average_network_degree">
+<code class="sig-name descname">average_network_degree</code></dt>
+<dd><p>The <code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code> average network degree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="app.domain.cluster_groups.NewscastCluster.log_aggregation_calls">
+<code class="sig-name descname">log_aggregation_calls</code></dt>
+<dd><p>How many calls to <a class="reference internal" href="#app.domain.cluster_groups.NewscastCluster.log_aggregation" title="app.domain.cluster_groups.NewscastCluster.log_aggregation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">log_aggregation()</span></code></a> were made in the
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.NewscastCluster.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Instantiates an <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>master</strong> (<a class="reference internal" href="app.html#app.type_hints.MasterType" title="app.type_hints.MasterType"><code class="xref py py-class docutils literal notranslate"><span class="pre">MasterType</span></code></a>) – A reference to an <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a>
+object that manages the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> being initialized.</p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the file the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> is responsible for
+persisting.</p></li>
+<li><p><strong>members</strong> (<a class="reference internal" href="app.html#app.type_hints.NodeDict" title="app.type_hints.NodeDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeDict</span></code></a>) – A dictionary where keys are <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> and values are their
+<a class="reference internal" href="#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">instance</span> <span class="pre">objects</span></code></a>.</p></li>
+<li><p><strong>sim_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Identifier that generates unique output file names,
+thus guaranteeing that different simulation instances do not
+overwrite previous out files.</p></li>
+<li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the simulation file name that started
+the simulation process.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.NewscastCluster._setup_epoch">
+<code class="sig-name descname">_setup_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster._setup_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Initializes some attributes cluster attributes at the start of an
+epoch.</p>
+<dl class="simple">
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster._setup_epoch" title="app.domain.cluster_groups.Cluster._setup_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster._setup_epoch()</span></code></a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The simulation’s current epoch.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="app.domain.cluster_groups.NewscastCluster.evaluate">
 <code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.evaluate"><span class="viewcode-link">[source]</span></a></dt>
@@ -1421,6 +1491,44 @@ See <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt.ge
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.NewscastCluster.execute_epoch">
+<code class="sig-name descname">execute_epoch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.execute_epoch"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Orders all <code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code> to execute their epoch.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> terminates early, before it reaches
+<a class="reference internal" href="#app.domain.master_servers.Master.MAX_EPOCHS" title="app.domain.master_servers.Master.MAX_EPOCHS"><code class="xref py py-const docutils literal notranslate"><span class="pre">MAX_EPOCHS</span></code></a>,
+nothing should be logged in
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData" title="app.domain.helpers.smart_dataclasses.LoggingData"><code class="xref py py-class docutils literal notranslate"><span class="pre">LoggingData</span></code></a>
+at the specified <code class="docutils literal notranslate"><span class="pre">epoch</span></code> to avoid skewing previously
+collected results.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The epoch the <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> should currently be in, according
+to it’s managing <code class="xref py py-attr docutils literal notranslate"><span class="pre">master</span></code> entity.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">False</span></code> if <code class="docutils literal notranslate"><span class="pre">Cluster</span></code> failed to persist the <code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span></code> it
+was responsible for, otherwise <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.NewscastCluster.log_aggregation">
+<code class="sig-name descname">log_aggregation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.log_aggregation"><span class="viewcode-link">[source]</span></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -1445,9 +1553,13 @@ during the current epoch.</p>
 <dt id="app.domain.cluster_groups.NewscastCluster.nodes_execute">
 <code class="sig-name descname">nodes_execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.nodes_execute"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Queries all network node members execute the epoch.</p>
-<p>This method shuffles the order in which the <a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a> are visited every epoch.</p>
-<dl class="simple">
+<dl>
 <dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.Cluster.nodes_execute" title="app.domain.cluster_groups.Cluster.nodes_execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster.nodes_execute()</span></code></a>.</p>
+<dl class="simple">
+<dt>Note:</dt><dd><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">NewscasterCluster.nodes_execute</span></code>
+always returns an empty list.</p>
+</dd>
+</dl>
 </dd>
 </dl>
 <dl class="field-list simple">
