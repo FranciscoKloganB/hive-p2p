@@ -1307,8 +1307,8 @@ class NewscastCluster(Cluster):
                 The simulation's current epoch.
         """
         super()._setup_epoch(epoch)
-        self.average_network_degree: float = 0.0
-        self.log_aggregation_calls: int = 0
+        self.average_network_degree = 0.0
+        self.log_aggregation_calls = 0
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "o") -> None:
         """Distributes a collection of :py:class:`file block replicas
