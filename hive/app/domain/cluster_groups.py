@@ -227,6 +227,7 @@ class Cluster:
         self.current_epoch = epoch
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
+        self._members_view = list(self.members.values())
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
         """Distributes a collection of :py:class:`file block replicas
@@ -565,11 +566,10 @@ class HiveCluster(Cluster):
         lost_parts_count: int = 0
         off_nodes: List[th.NodeType] = []
 
-        members = self.members.values()
-        for node in members:
+        for node in self._members_view:
             node.update_status()
 
-        for node in members:
+        for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
             else:
@@ -1027,11 +1027,10 @@ class HiveClusterExt(HiveCluster):
         lost_parts_count: int = 0
         off_nodes = []
 
-        members = self.members.values()
-        for node in members:
+        for node in self._members_view:
             node.update_status()
 
-        for node in members:
+        for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
             elif node.status == e.Status.SUSPECT:
@@ -1137,11 +1136,10 @@ class HDFSCluster(Cluster):
         off_nodes = []
         lost_replicas_count: int = 0
 
-        members = self.members.values()
-        for node in members:
+        for node in self._members_view:
             node.update_status()
-            
-        for node in members:
+
+        for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
             elif node.status == e.Status.SUSPECT:
@@ -1277,9 +1275,11 @@ class NewscastCluster(Cluster):
                  epoch. See
                  :py:meth:`app.domain.network_nodes.NewscastNode.update_status`.
         """
-        members = list(self.members.values())
-        random.shuffle(members)
-        for node in members:
+        random.shuffle(self._members_view)
+        for node in self._members_view:
+            node.update_status()
+
+        for node in self._members_view:
             node.execute_epoch(self, self.file.name)
         return None
 
