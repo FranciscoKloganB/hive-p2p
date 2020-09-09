@@ -561,8 +561,13 @@ class HiveCluster(Cluster):
         """
         lost_parts_count: int = 0
         off_nodes: List[th.NodeType] = []
-        for node in self.members.values():
-            if node.update_status() == e.Status.ONLINE:
+
+        members = self.members.values()
+        for node in members:
+            node.update_status()
+
+        for node in members:
+            if node.is_up():
                 node.execute_epoch(self, self.file.name)
             else:
                 node_replicas = node.get_file_parts(self.file.name)
