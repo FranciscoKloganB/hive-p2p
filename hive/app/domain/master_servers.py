@@ -246,6 +246,10 @@ class Master:
                 node named in ``blacklist``.
         """
         selected: th.NodeDict = {}
+
+        if n < 1:
+            return selected
+        
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
             if len(selected) >= n:
