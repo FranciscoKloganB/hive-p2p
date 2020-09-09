@@ -246,17 +246,11 @@ class Master:
                 node named in ``blacklist``.
         """
         selected: th.NodeDict = {}
-        if n <= 0:
-            return selected
-
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
-            if len(selected) == n:
+            if len(selected) >= n:
                 return selected
-            elif node.status != e.Status.ONLINE:
-                # TODO: future-iterations review this code.
-                self.network_nodes.pop(node.id, None)
-            elif node.id not in blacklist:
+            if node.id not in blacklist:
                 selected[node.id] = node
         return selected
     # endregion
