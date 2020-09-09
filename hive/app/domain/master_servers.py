@@ -223,21 +223,21 @@ class Master:
 
     # region Master API
     def find_online_nodes(
-            self, blacklist: th.NodeDict = {}, n: int = 1) -> th.NodeDict:
+            self, n: int = 1, blacklist: th.NodeDict = {}) -> th.NodeDict:
         """Finds ``n`` :py:class:`network nodes
         <app.domain.network_nodes.Node>` who are currently registered at the
         ``Master`` and whose status is online.
 
         Args:
+            n:
+                How many :py:class:`network node
+                <app.domain.network_nodes.Node>` references the requesting
+                entity wants to find.
             blacklist (:py:class:`~app.type_hints.NodeDict`):
                 A collection of :py:attr:`nodes identifiers
                 <app.domain.network_nodes.Node.id>` and their object
                 instances, which specify nodes the requesting entity has
                 no interest in.
-            n:
-                How many :py:class:`network node
-                <app.domain.network_nodes.Node>` references the requesting
-                entity wants to find.
 
         Returns:
             :py:class:`~app.type_hints.NodeDict`:

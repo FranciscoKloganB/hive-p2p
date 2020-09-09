@@ -419,8 +419,8 @@ class Cluster:
                 and values are
                 :py:class:`node instances <app.domain.network_nodes.Node>`.
         """
-        return self.master.find_online_nodes(
-            self.members, self.original_size - len(self.members))
+        amount = self.original_size - len(self.members)
+        return self.master.find_online_nodes(amount, self.members)
 
     def get_cluster_status(self) -> str:
         """Determines the ``Cluster``'s status based on the length of the
