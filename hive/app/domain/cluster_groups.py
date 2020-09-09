@@ -202,7 +202,7 @@ class Cluster:
             :py:class:`~app.type_hints.NodeType`:
                 A random network node from :py:attr:`members`.
         """
-        members = list(self.members.values())
+        members = self._members_view
         i = np.random.randint(0, len(members))
         candidate_node = members.pop(i)
 
@@ -596,8 +596,7 @@ class HiveCluster(Cluster):
             self._set_fail("Cluster has no remaining members.")
 
         pcount: int = 0
-        members = self.members.values()
-        for node in members:
+        for node in self._members_view:
             if node.is_up():
                 node_parts_count = node.get_file_parts_count(self.file.name)
                 self.cv_.at[node.id, 0] = node_parts_count
@@ -1183,7 +1182,7 @@ class HDFSCluster(Cluster):
             self._set_fail("Cluster has no remaining members.")
 
         pcount: int = 0
-        members = self.members.values()
+        members = self._members_view
         for node in members:
             if node.is_up():
                 node_replicas = node.get_file_parts_count(self.file.name)
