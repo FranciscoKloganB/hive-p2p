@@ -355,7 +355,9 @@ class Cluster:
         new_members: th.NodeDict = {}
         if sbm < self.original_size:
             new_members = self._get_new_members()
-            self.members.update(new_members)
+            if new_members:
+                self.members.update(new_members)
+                self._members_view = list(self.members.values())
 
         sam = len(self.members)
         status_am = self.get_cluster_status()
