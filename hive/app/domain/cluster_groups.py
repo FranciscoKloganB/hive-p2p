@@ -202,16 +202,8 @@ class Cluster:
             :py:class:`~app.type_hints.NodeType`:
                 A random network node from :py:attr:`members`.
         """
-        members = self._members_view
-        i = np.random.randint(0, len(members))
-        candidate_node = members.pop(i)
-
-        while not candidate_node.is_up():
-            if len(members) == 0:
-                return None
-            i = np.random.randint(0, len(members))
-            candidate_node = members.pop(i)
-
+        i = np.random.randint(0, len(self._members_view))
+        candidate_node = self._members_view[i]
         return candidate_node
     # endregion
 
