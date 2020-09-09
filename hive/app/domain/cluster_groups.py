@@ -318,7 +318,7 @@ class Cluster:
             List[:py:class:`~app.type_hints.NodeType`]:
                 List of :py:attr:`members` that disconnected during the
                 :py:attr:`current_epoch`. See
-                :py:meth:`app.domain.network_nodes.Node.get_status`.
+                :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.
         """
         raise NotImplementedError("")
 
@@ -557,12 +557,12 @@ class HiveCluster(Cluster):
             List[:py:class:`~app.type_hints.NodeType`]:
                  A collection of members who disconnected during the current
                  epoch. See
-                 :py:meth:`app.domain.network_nodes.Node.get_status`.
+                 :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.
         """
         lost_parts_count: int = 0
         off_nodes: List[th.NodeType] = []
         for node in self.members.values():
-            if node.get_status() == e.Status.ONLINE:
+            if node.update_and_get_status() == e.Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
             else:
                 node_replicas = node.get_file_parts(self.file.name)
@@ -1014,14 +1014,14 @@ class HiveClusterExt(HiveCluster):
             List[:py:class:`~app.type_hints.NodeType`]:
                 A collection of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
-                See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.
+                See :py:meth:`app.domain.network_nodes.HiveNodeExt.update_and_get_status`.
         """
         lost_parts_count: int = 0
         off_nodes = []
 
         members = self.members.values()
         for node in members:
-            node.get_status()
+            node.update_and_get_status()
         for node in members:
             if node.status == e.Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
@@ -1123,14 +1123,14 @@ class HDFSCluster(Cluster):
             List[:py:class:`~app.type_hints.NodeType`]:
                 A collection of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch. See
-                :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.
+                :py:meth:`app.domain.network_nodes.HDFSNode.update_and_get_status`.
         """
         off_nodes = []
         lost_replicas_count: int = 0
 
         members = self.members.values()
         for node in members:
-            node.get_status()
+            node.update_and_get_status()
         for node in members:
             if node.status == e.Status.ONLINE:
                 node.execute_epoch(self, self.file.name)
@@ -1265,7 +1265,7 @@ class NewscastCluster(Cluster):
             List[:py:class:`~app.type_hints.NodeType`]:
                  A collection of members who disconnected during the current
                  epoch. See
-                 :py:meth:`app.domain.network_nodes.NewscastNode.get_status`.
+                 :py:meth:`app.domain.network_nodes.NewscastNode.update_and_get_status`.
         """
         members = list(self.members.values())
         random.shuffle(members)

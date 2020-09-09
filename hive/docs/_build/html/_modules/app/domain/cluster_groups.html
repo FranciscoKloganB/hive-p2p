@@ -428,7 +428,7 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                List of :py:attr:`members` that disconnected during the</span>
 <span class="sd">                :py:attr:`current_epoch`. See</span>
-<span class="sd">                :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+<span class="sd">                :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
@@ -667,12 +667,12 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                 A collection of members who disconnected during the current</span>
 <span class="sd">                 epoch. See</span>
-<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.update_and_get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">update_and_get_status</span><span class="p">()</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -1124,14 +1124,14 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">                during the current epoch.</span>
-<span class="sd">                See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.</span>
+<span class="sd">                See :py:meth:`app.domain.network_nodes.HiveNodeExt.update_and_get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">update_and_get_status</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -1233,14 +1233,14 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">                during the current epoch. See</span>
-<span class="sd">                :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.</span>
+<span class="sd">                :py:meth:`app.domain.network_nodes.HDFSNode.update_and_get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lost_replicas_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">update_and_get_status</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -1371,7 +1371,7 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                 A collection of members who disconnected during the current</span>
 <span class="sd">                 epoch. See</span>
-<span class="sd">                 :py:meth:`app.domain.network_nodes.NewscastNode.get_status`.</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.NewscastNode.update_and_get_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">members</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
         <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
