@@ -291,7 +291,7 @@ class Node:
             :py:class:`~app.domain.helpers.enums.Status`:
                 The the status of the ``Node``.
         """
-        if self.status == e.Status.ONLINE:
+        if self.is_up():
             self.uptime -= 1
             if self.uptime <= 0:
                 self.status = e.Status.OFFLINE
@@ -525,7 +525,7 @@ class HiveNodeExt(HiveNode):
             :py:class:`~app.domain.helpers.enums.Status`:
                 The the status of the ``Node``.
         """
-        if self.status == e.Status.ONLINE:
+        if self.is_up():
             self.uptime -= 1
             if self.uptime <= 0:
                 print(f"    [x] {self.id} now offline (suspect status).")
@@ -635,7 +635,7 @@ class HDFSNode(Node):
             :py:class:`~app.domain.helpers.enums.Status`:
                 The the status of the ``HDFSNode``.
         """
-        if self.status == e.Status.ONLINE:
+        if self.is_up():
             self.uptime -= 1
             if self.uptime <= 0:
                 print(f"    [x] {self.id} now offline (suspect status).")
