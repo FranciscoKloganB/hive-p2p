@@ -689,8 +689,6 @@ class NewscastNode(Node):
                 <app.domain.helpers.smart_dataclasses.FileData.name>`
                 of the file being simulated.
         """
-        self.update_status()
-
         # increase all descriptors' age
         for k in self.view:
             self.view[k] += 1
