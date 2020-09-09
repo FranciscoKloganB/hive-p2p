@@ -1574,7 +1574,7 @@ always returns None.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A collection of members who disconnected during the current
 epoch. See
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.NewscastNode.update_status()</span></code>.</p>
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.update_status" title="app.domain.network_nodes.NewscastNode.update_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.NewscastNode.update_status()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
@@ -2144,19 +2144,16 @@ to be delivered.</p></li>
 <dl class="py method">
 <dt id="app.domain.network_nodes.HDFSNode.update_status">
 <code class="sig-name descname">update_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HDFSNode.update_status"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Used to obtain the status of the <code class="docutils literal notranslate"><span class="pre">HDFSNode</span></code>.</p>
-<p>This method equates a ping. When invoked, the <code class="docutils literal notranslate"><span class="pre">HDFSNode</span></code>
-decides if it should remain online or change some other state
-depending on his remaining <a class="reference internal" href="#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime"><code class="xref py py-attr docutils literal notranslate"><span class="pre">uptime</span></code></a>.</p>
-<dl>
+<dd><p>Used to update the time to live of the node instance.</p>
+<p>When invoked, the network node decides if it should remain online or
+change some other state.</p>
+<dl class="simple">
 <dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.update_status" title="app.domain.network_nodes.Node.update_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.update_status()</span></code></a>.</p>
-<p>When not ONLINE the node sets itself as Suspect and will only become
-offline when the monitor marks him as so (e.g.: due to complaints).</p>
 </dd>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The the status of the <code class="docutils literal notranslate"><span class="pre">HDFSNode</span></code>.</p>
+<dd class="field-odd"><p>The the status of the <code class="docutils literal notranslate"><span class="pre">Node</span></code>.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.Status" title="app.domain.helpers.enums.Status"><code class="xref py py-class docutils literal notranslate"><span class="pre">Status</span></code></a></p>
@@ -2355,14 +2352,11 @@ behaviours.</p>
 <dl class="py method">
 <dt id="app.domain.network_nodes.HiveNodeExt.update_status">
 <code class="sig-name descname">update_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#HiveNodeExt.update_status"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Used to obtain the status of the <code class="docutils literal notranslate"><span class="pre">HiveNodeExt</span></code>.</p>
-<p>This method equates a ping. When invoked, the <code class="docutils literal notranslate"><span class="pre">HiveNodeExt</span></code>
-decides if it should remain online or change some other state
-depending on his remaining <a class="reference internal" href="#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime"><code class="xref py py-attr docutils literal notranslate"><span class="pre">uptime</span></code></a>.</p>
-<dl>
+<dd><p>Used to update the time to live of the node instance.</p>
+<p>When invoked, the network node decides if it should remain online or
+change some other state.</p>
+<dl class="simple">
 <dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.update_status" title="app.domain.network_nodes.Node.update_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.update_status()</span></code></a>.</p>
-<p>When not ONLINE the node sets itself as Suspect and will only become
-offline when the monitor marks him as so (e.g.: due to complaints).</p>
 </dd>
 </dl>
 <dl class="field-list simple">
@@ -2639,6 +2633,26 @@ merged with the requestor’s view.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>_NetworkView</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.network_nodes.NewscastNode.update_status">
+<code class="sig-name descname">update_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.update_status"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Used to update the time to live of the node instance.</p>
+<p>When invoked, the network node decides if it should remain online or
+change some other state.</p>
+<dl class="simple">
+<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.network_nodes.Node.update_status" title="app.domain.network_nodes.Node.update_status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.network_nodes.Node.update_status()</span></code></a>.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The the status of the <code class="docutils literal notranslate"><span class="pre">Node</span></code>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.enums.Status" title="app.domain.helpers.enums.Status"><code class="xref py py-class docutils literal notranslate"><span class="pre">Status</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2948,10 +2962,9 @@ that will receive the file block <cite>replica</cite>.</p></li>
 <dl class="py method">
 <dt id="app.domain.network_nodes.Node.update_status">
 <code class="sig-name descname">update_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#Node.update_status"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Used to obtain the status of the <code class="docutils literal notranslate"><span class="pre">Node</span></code>.</p>
-<p>This method equates a ping. When invoked, the <code class="docutils literal notranslate"><span class="pre">Node</span></code> decides if it
-should remain online or change some other state depending on his
-remaining <a class="reference internal" href="#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime"><code class="xref py py-attr docutils literal notranslate"><span class="pre">uptime</span></code></a>.</p>
+<dd><p>Used to update the time to live of the node instance.</p>
+<p>When invoked, the network node decides if it should remain online or
+change some other state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>The the status of the <code class="docutils literal notranslate"><span class="pre">Node</span></code>.</p>
