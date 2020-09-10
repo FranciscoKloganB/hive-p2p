@@ -1298,7 +1298,15 @@ class NewscastCluster(Cluster):
         """Prints the epoch's aggregated peer degree, to the command-line
         interface.
         """
-        print(str(self.__dict__))
+        print({
+            "min": self.min,
+            "max": self.max,
+            "sum": self.sum,
+            "sqrsum": self.sqrsum,
+            "n": self.n,
+            "count_min": self.count_min,
+            "count_max": self.count_max
+        })
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         pass
