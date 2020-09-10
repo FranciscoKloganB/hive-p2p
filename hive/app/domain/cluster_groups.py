@@ -900,7 +900,7 @@ class HiveCluster(Cluster):
         df['cv_'] = self.cv_[0].values
         df['v_'] = target[0].values
         df['(cv_ - v_)'] = (self.cv_.subtract(target))[0].values
-        df['tolerance'] = [(atol + np.abs(rtol) * x) for x in [*target[0]]]
+        df['tolerance'] = [(atol + np.abs(rtol) * x) for x in list(target[0])]
         zipped = zip(df['(cv_ - v_)'].to_list(), df['tolerance'].to_list())
         df['is_close'] = [x < y for x, y in zipped]
         return tabulate(df, headers='keys', tablefmt='psql')

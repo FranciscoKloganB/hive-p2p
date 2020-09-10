@@ -406,7 +406,9 @@ class HiveNode(Node):
         # Number of times the block needs to be replicated.
         lost_replicas: int = replica.can_replicate(cluster.current_epoch)
         if lost_replicas > 0:
-            sorted_members = [*cluster.v_.sort_values(0, ascending=False).index]
+            sorted_members = list(
+                cluster.v_.sort_values(0, ascending=False).index
+            )
             for destination in sorted_members:
                 if lost_replicas == 0:
                     break
@@ -489,8 +491,8 @@ class HiveNode(Node):
             The name or address of the selected destination.
         """
         routing_vector: pd.DataFrame = self.routing_table[fid]
-        hive_members: List[str] = [*routing_vector.index]
-        member_chances: List[float] = [*routing_vector.iloc[:, 0]]
+        hive_members = list(routing_vector.index)
+        member_chances = list(routing_vector.iloc[:, 0])
         try:
             return np.random.choice(a=hive_members, p=member_chances).item()
         except ValueError as vE:
@@ -623,7 +625,7 @@ class HDFSNode(Node):
         # Number of times the block needs to be replicated.
         lost_replicas: int = replica.can_replicate(cluster.current_epoch)
         if lost_replicas > 0:
-            choices = [*cluster.members.values()]
+            choices = list(cluster.members.values())
             choices.sort(key=lambda node: node.uptime, reverse=True)
             for destination in choices:
                 if lost_replicas == 0:
