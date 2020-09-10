@@ -751,7 +751,7 @@ class NewscastNode(Node):
         if self.is_up():
             self.uptime -= 1
             if self.uptime <= 0:
-                print(f"    [x] {self.id} now offline (suspect status).")
+                # print(f" [x] {self.id} now has offline or suspicious status.")
                 self.view = {}
                 self.status = e.Status.SUSPECT
         elif random.uniform(0, 1) < 0.16:
@@ -759,6 +759,7 @@ class NewscastNode(Node):
             ttl = math.floor(random.uniform(0.04, 0.32) * ms.Master.MAX_EPOCHS)
             self.uptime = ttl
             self.status = e.Status.ONLINE
+            # print(f" [o] {self.id} is now back online.")
         return self.status
 
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
