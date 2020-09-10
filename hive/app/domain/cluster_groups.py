@@ -1199,7 +1199,7 @@ class HDFSCluster(Cluster):
 
     def membership_maintenance(self) -> th.NodeDict:
         new_members = super().membership_maintenance()
-        for nid in new_members.keys():
+        for nid in new_members:
             if nid not in self.data_node_heartbeats:
                 self.data_node_heartbeats[nid] = 5
     # endregion
