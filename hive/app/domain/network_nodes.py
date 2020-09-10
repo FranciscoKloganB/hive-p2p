@@ -666,15 +666,16 @@ class NewscastNode(Node):
     def add_neighbor(self, node: NewscastNode) -> bool:
         """Adds a new network node to the node instance's view.
 
-        If the view is full, the eldest entry is removed. Otherwise,
-        the new :py:class:`NewscastNode` is added to the instance's view with
-        age zero, unless the entry is already there, in which case the view
-        remains as it was.
+        If the view is full, the eldest node is replaced with the new node.
+        Otherwise, the new :py:class:`NewscastNode` is added to the
+        instance's view with age zero, unless the entry is already in
+        :py:attr:`view` or the ``node`` is the current ``NewscastNode``
+        instance.
 
         Returns:
             ``True`` if ``node`` was successfuly added, ``False`` otherwise.
         """
-        if node in self.view:
+        if node.id == self.id or node in self.view:
             return False
 
         view_size = len(self.view)
