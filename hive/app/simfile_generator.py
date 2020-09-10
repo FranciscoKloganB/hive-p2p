@@ -242,10 +242,10 @@ def _init_persisting_dict() -> Dict[str, Any]:
                            "clusters at the start of the simulation: {\n"
                            "   u: uniform distribution among network nodes,\n"
                            "   i: ideal distribution, e.g., near a steady-state vector, \n"
-                           "   a: all replicas given to N different nodes,"
+                           "   a: all replicas given to N different nodes,\n"
                            "   o: each network node receives one random replica\n"
                            "}: ")
-        options_list = ["u", "U", "i", "I", "a", "A"]
+        options_list = ["u", "U", "i", "I", "a", "A", "o", "O"]
         option_choice = _input_character_option(options_message, options_list)
 
         persisting[file_name] = {}
