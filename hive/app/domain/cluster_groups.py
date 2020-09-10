@@ -1208,13 +1208,6 @@ class HDFSCluster(Cluster):
 class NewscastCluster(Cluster):
     """Represents a P2P network of nodes performing mean degree aggregation,
     while simultaneously using Newscast for ``view shuffling``.
-
-    Attributes:
-        average_network_degree (float):
-            The :py:attr:`current_epoch` average network degree.
-        log_aggregation_calls (int):
-            How many calls to :py:meth:`log_aggregation` were made in the
-            :py:attr:`current_epoch`.
     """
 
     def __init__(self,
@@ -1224,13 +1217,24 @@ class NewscastCluster(Cluster):
                  sim_id: int = 0,
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
-        self.average_network_degree: float = 0.0
-        self.log_aggregation_calls: int = 0
 
     # region Cluster API
     def log_aggregation(self, value: float):
-        self.average_network_degree += value
-        self.log_aggregation_calls += 1
+        if value < self.min:
+            self.min = value
+            self.count_min = 1
+        elif value == self.min:
+            self.count_min += 1
+
+        if value > self.max:
+            self.max = value
+            self.count_max = 1
+        elif value == self.max:
+            self.count_max += 1
+
+        self.n += 1
+        self.sum += value
+        self.sqrsum += value * value
 
     def wire_k_out(self):
         """Creates a random directed P2P topology.
@@ -1294,8 +1298,7 @@ class NewscastCluster(Cluster):
         """Prints the epoch's aggregated peer degree, to the command-line
         interface.
         """
-        degree = self.average_network_degree / self.log_aggregation_calls
-        print(f"Avg. Network Degree: {degree}, epoch: {self.current_epoch}")
+        print(self.__dict__)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         pass
@@ -1314,8 +1317,13 @@ class NewscastCluster(Cluster):
                 The simulation's current epoch.
         """
         super()._setup_epoch(epoch)
-        self.average_network_degree = 0.0
-        self.log_aggregation_calls = 0
+        self.min: float = float('inf')
+        self.max: float = 0.0
+        self.sum: float = 0.0
+        self.sqrsum: float = 0.0
+        self.n: int = 0
+        self.count_min: int = 0.0
+        self.count_max: int = 0.0
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "o") -> None:
         """Distributes a collection of :py:class:`file block replicas
