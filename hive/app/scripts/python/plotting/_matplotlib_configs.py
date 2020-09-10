@@ -15,6 +15,11 @@ fp_title = FontProperties(
     size='large'
 )
 
+fp_subtitle = FontProperties(
+    family='sans-serif',
+    size='small'
+)
+
 fp_axis_labels = FontProperties(
     family='sans-serif',
     style='italic',
