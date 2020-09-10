@@ -204,12 +204,11 @@ def _init_nodes_uptime() -> Dict[str, float]:
     mean = _input_bounded_float("Distribution mean [0.0, 100.0]: ")
     std = _input_bounded_float("Standard deviation [0.0, 100.0]: ")
 
-    samples = ng.generate_samples(surveys=1, mean=mean, std=std).tolist()
+    samples = ng.generate_samples(
+        surveys=1, sample_count=number_of_nodes, mean=mean, std=std).tolist()
 
     nodes_uptime = {}
     for label in itertools.islice(yield_label(), number_of_nodes):
-        if len(samples) == 0:
-            break
         uptime = numpy.abs(samples.pop()[0]) / 100.0
         uptime = numpy.clip(uptime, min_uptime, max_uptime)
         nodes_uptime[label] = truncate_float_value(uptime.item(), 6)
