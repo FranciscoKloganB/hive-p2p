@@ -1301,8 +1301,7 @@ class NewscastCluster(Cluster):
         print({
             "min": self.min,
             "max": self.max,
-            "sum": self.sum,
-            "sqrsum": self.sqrsum,
+            "sum": self.sum / self.n,
             "n": self.n,
             "count_min": self.count_min,
             "count_max": self.count_max
