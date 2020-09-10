@@ -208,7 +208,8 @@ def _init_nodes_uptime() -> Dict[str, float]:
 
     nodes_uptime = {}
     for label in itertools.islice(yield_label(), number_of_nodes):
-        # gets and removes last element in samples to assign it to label
+        if len(samples) == 0:
+            break
         uptime = numpy.abs(samples.pop()[0]) / 100.0
         uptime = numpy.clip(uptime, min_uptime, max_uptime)
         nodes_uptime[label] = truncate_float_value(uptime.item(), 6)
