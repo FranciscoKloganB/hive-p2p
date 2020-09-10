@@ -8,7 +8,7 @@ import sys
 import math
 import random
 import traceback
-from typing import Union, Dict, List, Optional, Any
+from typing import Union, Dict, Optional, Any
 
 import domain.helpers.smart_dataclasses as sd
 import domain.helpers.enums as e
