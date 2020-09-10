@@ -40,7 +40,7 @@ class Cluster:
             A reference to a server that coordinates or monitors the ``Cluster``.
         members (:py:class:`~app.type_hints.NodeDict`):
             A collection of network nodes that belong to the ``Cluster``.
-        _members_view (Tuple[:py:class:`~app.type_hints.NodeType`]):
+        _members_view (List[:py:class:`~app.type_hints.NodeType`]):
             A list representation of the nodes in :py:attr:`members`.
         file (:py:class:`~app.domain.helpers.smart_dataclasses.FileData`):
             A reference to
@@ -109,7 +109,7 @@ class Cluster:
             ms.Master.MAX_EPOCHS)
         self.master = master
         self.members: th.NodeDict = members
-        self._members_view: Tuple[th.NodeType] = tuple(self.members.values())
+        self._members_view: List[th.NodeType] = list(self.members.values())
         self.file: sd.FileData = sd.FileData(
             file_name, sim_id=sim_id, origin=origin)
         self.critical_size: int = REPLICATION_LEVEL
@@ -357,7 +357,7 @@ class Cluster:
             new_members = self._get_new_members()
             if new_members:
                 self.members.update(new_members)
-                self._members_view = tuple(self.members.values())
+                self._members_view = list(self.members.values())
 
         sam = len(self.members)
         status_am = self.get_cluster_status()
