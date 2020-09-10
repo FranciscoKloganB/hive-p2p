@@ -6,10 +6,9 @@ file metadata servers or a bank of currently online and offline
 from __future__ import annotations
 
 import json
-
+import math
 from typing import Union, Dict, Any, Optional
 
-import domain.helpers.enums as e
 import type_hints as th
 import numpy as np
 
@@ -488,7 +487,8 @@ class NewscastMaster(Master):
 
                 file_path = os.path.join(SHARED_ROOT, fname)
                 block_size = os.path.getsize(file_path) / cluster_size
-                file_blocks = self._split_files(fname, cluster, block_size)
+                block_size = math.ceil(block_size)
+                file_blocks = self._split_files(fname, cluster, int(block_size))
 
                 cluster.spread_files(file_blocks, spread_strategy)
     # endregion
