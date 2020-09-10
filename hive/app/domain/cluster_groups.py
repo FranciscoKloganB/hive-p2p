@@ -1233,8 +1233,30 @@ class NewscastCluster(Cluster):
         self.log_aggregation_calls += 1
 
     def wire_k_out(self):
-        # TODO create NEWSCAST_CACHE_SIZE random connetions at each node
-        raise NotImplementedError("")
+        """Creates a random directed P2P topology.
+
+        The initial cache size of each :py:class:`network node
+        <app.domain.network_nodes.NewscastNode>`, is at most as big as
+        :py:const:`~app.environment_settings.NEWSCAST_CACHE_SIZE`.
+
+        Note:
+            The topology does not have self loops, because
+            :py:meth:`~app.domain.network_nodes.NewscastNode.add_neighbor`
+            does not accept node self addition to
+            :py:attr:`~app.domain.network_nodes.NewscastNode.view`. In rare
+            occasions, the selected node out-going edges might all be
+            invalid, this should be a non-issue, as the nodes will eventually
+            join the overaly throughout the simulation.
+        """
+        network_size = len(self._members_view)
+        for i in range(network_size):
+            s = np.random.randint(0, network_size, size=NEWSCAST_CACHE_SIZE)
+            s = list(dict.fromkeys(s))
+            member = self._members_view[i]
+            for j in s:
+                another_member = self._members_view[j]
+                member.add_neighbor(another_member)
+
     # endregion
 
     # region Simulation steps
