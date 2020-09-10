@@ -265,4 +265,6 @@ if __name__ == "__main__":
                  "  --file -f (str)\n"
                  "  --master_server -m (str)\n"
                  "  --cluster_group -c (str)\n"
-                 "  --network_node -n (str)\n")
+                 "  --network_node -n (str)\n"
+                 "Another cause of error might be a simulation file with "
+                 "inconsistent values.")
