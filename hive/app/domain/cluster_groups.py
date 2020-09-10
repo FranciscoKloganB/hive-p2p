@@ -18,6 +18,7 @@ import domain.helpers.enums as e
 import domain.helpers.matrices as mm
 import domain.helpers.smart_dataclasses as sd
 
+
 from environment_settings import *
 
 
@@ -256,12 +257,12 @@ class Cluster:
         choices: Tuple[th.NodeType]
         selected_nodes: List[th.NodeType]
 
-        choices = tuple(self.members.values())
+        choices = self._members_view
         uptime_sum = sum(c.uptime for c in choices)
         chances = [c.uptime / uptime_sum for c in choices]
 
         for replica in replicas.values():
-            choice_view = choices.copy()
+            choice_view = tuple(choices)
             selected_nodes = np.random.choice(
                 a=choice_view, p=chances, size=REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
@@ -518,9 +519,8 @@ class HiveCluster(Cluster):
         choices: List[th.NodeType]
         selected_nodes: List[th.NodeType]
         if strat == "a":
-            choices = tuple(self.members.values())
             selected_nodes = np.random.choice(
-                a=choices, size=REPLICATION_LEVEL, replace=False)
+                a=self._members_view, size=REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
                 for replica in replicas.values():
                     replica.references += 1
@@ -528,18 +528,17 @@ class HiveCluster(Cluster):
 
         elif strat == "u":
             for replica in replicas.values():
-                choices = tuple(self.members.values())
                 selected_nodes = np.random.choice(
-                    a=choices, size=REPLICATION_LEVEL, replace=False)
+                    a=self._members_view, size=REPLICATION_LEVEL, replace=False)
                 for node in selected_nodes:
                     replica.references += 1
                     node.receive_part(replica)
 
         elif strat == 'i':
-            choices = tuple(self.members.values())
+            choices = self._members_view
             desired_distribution = [self.v_.loc[c.id, 0] for c in choices]
             for replica in replicas.values():
-                choices_view = choices.copy()
+                choices_view = tuple(choices)
                 selected_nodes = np.random.choice(
                     a=choices_view, p=desired_distribution,
                     size=REPLICATION_LEVEL, replace=False)
