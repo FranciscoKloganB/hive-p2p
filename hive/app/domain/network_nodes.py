@@ -886,8 +886,8 @@ class NewscastNode(Node):
             The set union of both views with only the most up to date
             descriptors.
         """
-        for nkey in b:
-            a[nkey] = min(a[nkey]), b[nkey] if nkey in a else b[nkey]
+        for k in b:
+            a[k] = min(a[k], b[k]) if k in a else b[k]
         return a
 
     def _select_view(self, view_buffer: _NetworkView) -> _NetworkView:
