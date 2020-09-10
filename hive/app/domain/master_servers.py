@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import math
+import datetime
 from typing import Union, Dict, Any, Optional
 
 import type_hints as th
@@ -206,6 +207,7 @@ class Master:
     # region Simulation steps
     def execute_simulation(self) -> None:
         """Starts the simulation processes."""
+        start_time = datetime.datetime.now()
         while self.epoch < Master.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
             print("epoch: {}".format(self.epoch))
             terminated_clusters: List[str] = []
@@ -218,6 +220,9 @@ class Master:
                 print(f"Cluster: {cid} terminated at epoch {self.epoch}")
                 self.cluster_groups.pop(cid)
             self.epoch += 1
+        finish_time = datetime.datetime.now()
+        delta_time = int((finish_time - start_time).total_seconds())
+        print(f"Master ({self.origin}_{self.sim_id}) exec time: {delta_time}")
     # endregion
 
     # region Master API
