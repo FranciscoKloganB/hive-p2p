@@ -24,7 +24,7 @@ from typing import List, Dict, Any
 import numpy
 
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT
-from scripts.python import normal_distribution_generator as ng
+from scripts.python import normal_distr_sampler as ng
 
 
 # region Input Consumption and Verification
