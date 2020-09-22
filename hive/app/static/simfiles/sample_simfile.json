@@ -1,0 +1,22 @@
+{
+    "nodes_uptime": {
+        "a": 0.149307,
+        "b": 0.109904,
+        "c": 0.207256,
+        "d": 0.184957,
+        "e": 0.076774,
+        "f": 0.32,
+        "g": 0.04,
+        "h": 0.072077
+    },
+    "persisting": {
+        "FBZ_0134.NEF": {
+            "spread": "a",
+            "cluster_size": 5
+        },
+        "powerglove.exe": {
+            "spread": "u",
+            "cluster_size": 3
+        }
+    }
+}
