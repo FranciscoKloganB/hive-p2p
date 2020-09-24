@@ -64,7 +64,7 @@ def process_file(key, outfile_json, instances_means, terminations_dict):
         return temp_list
 
 
-def get_epochs_means(cs_avg_list, terminations_dict):
+def cum_sum_mean(cs_avg_list, terminations_dict):
     # Epoch 1 is index 0, epoch 720 is epoch 719.
     breakpoints = sorted(
         [epoch - 1 for epoch in terminations_dict], reverse=True)
@@ -138,23 +138,20 @@ if __name__ == "__main__":
     for t in targets:
         # w.r.t. to named json field...
         # Stores flat simulations' mean values, e.g., 30 iterations' mean.
-        instances_means = []
+        instances_means: List[float] = []
         # Stores a simulation's cumulative mean on an epoch basis.
-        instances_cs_mean = [0.0] * epochs
+        instances_cs_mean: List[float] = [0.0] * epochs
         # Stores how many instances terminate at a given epoch.
-        terminations_dict = {}
+        terminations_dict: Dict[str, int] = {}
 
         for file in outfiles_view:
             f = os.path.join(directory, file)
-            _ = process_file(t, f, instances_means, terminations_dict)
-            instances_cs_mean = [
-                sum(n) for n in zip_longest(instances_cs_mean, _, fillvalue=0)
-            ]
+            result = process_file(t, f, instances_means, terminations_dict)
+            zipped = zip_longest(instances_cs_mean, result, fillvalue=0)
+            instances_cs_mean = [sum(n) for n in zipped]
 
         # Calculate the instances' global flat mean
         instances_mean = np.mean(instances_means)
-        # Calculate the instances' global cumulative mean on a epoch by epoch basis.
-        # Since we have a sum of means, at each epoch, we divide each element by
-        # the number of visited instances, on an interval by interval basis.
-        instances_cs_mean = get_epochs_means(instances_cs_mean, terminations_dict)
+        # Calculate the instances' global cumulative mean on a epoch basis.
+        instances_cs_mean = cum_sum_mean(instances_cs_mean, terminations_dict)
         plot_values(instances_mean, instances_cs_mean, terminations_dict)
