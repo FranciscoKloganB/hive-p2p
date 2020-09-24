@@ -11,11 +11,22 @@ import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
 
-def plot_values(global_mean, global_cs_mean, terminations_dict):
+def plot_values(tkey, global_mean, global_cs_mean, terminations_dict):
     plt.figure()
+    termination_epochs = [int(key) for key in terminations_dict]
 
-    plt.xlabel("Epoch")
-    plt.ylabel("Avg. Moved Parts")
+    title = f"Aggregated {nkey} simulations' results on networks of size {skey}"
+    plt.title(title,
+              pad=cfg.title_pad,
+              fontproperties=cfg.fp_title)
+    plt.xlabel("epoch",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    plt.ylabel(f"avg. number of {tkey.replace('_', ' ')}",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+
+    plt.xlim(0, max(termination_epochs))
 
     # Trace global mean
     plt.axhline(y=global_mean, label="global mean", color='c', linestyle='-')
@@ -23,7 +34,6 @@ def plot_values(global_mean, global_cs_mean, terminations_dict):
     plt.plot(global_cs_mean, label="global cumulative mean")
 
     # Trace terminations
-    # termination_keys = list(terminations_dict)
     # plt.axvline(x=terminations.pop(), label="at least one simulation instance ended", color='y', linestyle='--')
     # for epoch in terminations:
     #     plt.axvline(x=epoch, color='y', linestyle='--')
@@ -89,17 +99,20 @@ def cum_sum_mean(cs_avg_list, terminations_dict):
 
 if __name__ == "__main__":
     # region args processing
-    epochs = 0
     patterns = []
     targets = []
-    short_opts = "e:p:t:"
-    long_opts = ["epochs=", "patterns=", "targets="]
+    epochs = 0
+
+    skey = 0
+    nkey = ""
+
+    short_opts = "p:t:e:s:n:"
+    long_opts = ["patterns=", "targets=", "epochs=", "size=", "name="]
+
     try:
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
         for options, args in options:
-            if options in ("-e", "--epochs"):
-                epochs = int(str(args).strip())
             if options in ("-p", "--patterns"):
                 patterns = str(args).strip()
                 if not patterns:
@@ -110,18 +123,25 @@ if __name__ == "__main__":
                 if not targets:
                     sys.exit(f"Blank string is not a valid list of targets.")
                 targets = targets.split(",")
+            if options in ("-e", "--epochs"):
+                epochs = int(str(args).strip())
+            if options in ("-s", "--size"):
+                skey = int(str(args).strip())
+            if options in ("-n", "--name"):
+                nkey = str(args).strip()
 
-        if epochs <= 0:
-            sys.exit(f"Must specify epochs to allocate the plot's data arrays.")
+        if not (epochs > 0 and skey > 0):
+            sys.exit(f"Must specify epochs (-e) and network size (-s).")
 
         if len(targets) == 0:
-            sys.exit(f"Must specify at least one json key to analyze.")
+            sys.exit(f"Must specify at least one json key (-t) to analyze.")
 
     except getopt.GetoptError:
         sys.exit("Usage: python outfile_plotter.py -f outfile.json")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --epochs -e (int)\n"
+                 "  --size -s (int)\n"
                  "  --patterns -p (comma seperated list of str)\n"
                  "  --targets -t (comma seperated list of str)\n")
 
@@ -152,4 +172,4 @@ if __name__ == "__main__":
         global_mean = np.mean(instances_means)
         global_cs_mean = cum_sum_mean(instances_cs_mean, terminations_dict)
 
-        plot_values(global_mean, global_cs_mean, terminations_dict)
+        plot_values(t, global_mean, global_cs_mean, terminations_dict)
