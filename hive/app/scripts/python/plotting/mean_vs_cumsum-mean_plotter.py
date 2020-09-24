@@ -134,6 +134,9 @@ if __name__ == "__main__":
         if not (epochs > 0 and skey > 0):
             sys.exit(f"Must specify epochs (-e) and network size (-s).")
 
+        if nkey == "":
+            sys.exit(f"System name (-n) must be specified for plot title completion.")
+
         if len(targets) == 0:
             sys.exit(f"Must specify at least one json key (-t) to analyze.")
 
@@ -141,10 +144,11 @@ if __name__ == "__main__":
         sys.exit("Usage: python outfile_plotter.py -f outfile.json")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
+                 "  --patterns -p (comma seperated list of str)\n"
+                 "  --targets -t (comma seperated list of str)\n"
                  "  --epochs -e (int)\n"
                  "  --size -s (int)\n"
-                 "  --patterns -p (comma seperated list of str)\n"
-                 "  --targets -t (comma seperated list of str)\n")
+                 "  --name -n (name)\n")
 
     directory = os.path.abspath(
         os.path.join(os.getcwd(), '..', '..', '..', 'static', 'outfiles'))
