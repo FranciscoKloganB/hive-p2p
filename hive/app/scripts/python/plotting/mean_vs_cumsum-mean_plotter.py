@@ -66,7 +66,7 @@ def process_file(key, outfile_json, instances_means, terminations_dict):
             # Calculate the until current epoch
             # Since i starts at 0, we divide by i + 1
             temp_list.append(sum(data[:i]) / (i + 1))
-        # Now return temp_list so it can be zipped by caller
+
         return temp_list
 
 
