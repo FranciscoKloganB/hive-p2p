@@ -120,6 +120,7 @@ class FileData:
         sd.transmissions_failed = sd.transmissions_failed[:epoch]
 
         extras: Dict[str, Any] = {
+            "cluster_type": cluster.__class__.__name__,
             "simfile_name": origin,
             "hive_id": cluster.id,
             "file_name": self.name,
