@@ -107,17 +107,22 @@ class Cluster:
         self.current_epoch: int = 0
         self.corruption_chances: List[float] = get_disk_error_chances(
             ms.Master.MAX_EPOCHS)
+
         self.master = master
         self.members: th.NodeDict = members
         self._members_view: List[th.NodeType] = list(self.members.values())
-        self.file: sd.FileData = sd.FileData(
-            file_name, sim_id=sim_id, origin=origin)
-        self.critical_size: int = REPLICATION_LEVEL
+
+        _ = f"{self.__class__.__name__}{origin}".replace("Cluster", "-")
+        self.file: sd.FileData = sd.FileData(file_name, sim_id, _)
+        
         expected_fails = math.ceil(len(self.members) * 0.34)
+        self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + expected_fails
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
+
         self.running: bool = True
+
         self._recovery_epoch_sum: int = 0
         self._recovery_epoch_calls: int = 0
 
