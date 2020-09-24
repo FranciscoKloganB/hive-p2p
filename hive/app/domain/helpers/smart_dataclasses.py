@@ -53,7 +53,11 @@ class FileData:
                 The name of the simulation file name that started
                 the simulation process. See
                 :py:class:`~app.domain.master_servers.Master` and
-                :py:mod:`~app.hive_simulation`.
+                :py:mod:`~app.hive_simulation`. In addition to the previous,
+                the origin should somehow include the cluster class name
+                being run, to differentiate simulations' output files being
+                executed by different distributed storage system
+                implementations.
         """
         self.name: str = name
         self.existing_replicas = 0
