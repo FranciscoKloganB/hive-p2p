@@ -108,6 +108,7 @@ class FileData:
         sd.blocks_lost = sd.blocks_lost[:epoch]
 
         sd.cluster_status_bm = sd.cluster_status_bm[:epoch]
+        sd.cluster_status_am = sd.cluster_status_am[:epoch]
         sd.cluster_size_bm = sd.cluster_size_bm[:epoch]
         sd.cluster_size_am = sd.cluster_size_am[:epoch]
 
