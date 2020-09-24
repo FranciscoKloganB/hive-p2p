@@ -224,7 +224,7 @@ for corruption chance configuration.</p>
 <dd><p>A list representation of the nodes in <a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Tuple[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
+<dd class="field-odd"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -813,7 +813,7 @@ guidance algorithm.</p>
 realizations for ideal persistence of the file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -824,7 +824,7 @@ realizations for ideal persistence of the file.</p>
 <dd><p>Tracks the file current density distribution, updated at each epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -879,7 +879,7 @@ simulation’s current epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>target</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> object to be formatted
+<li><p><strong>target</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> object to be formatted
 as PSQL table.</p></li>
 <li><p><strong>atol</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – The allowed absolute tolerance.</p></li>
 <li><p><strong>rtol</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – The allowed relative tolerance.</p></li>
@@ -902,8 +902,8 @@ entries of <code class="docutils literal notranslate"><span class="pre">target_d
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>m</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The matrix to be verified.</p></li>
-<li><p><strong>v_</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The steady state the <code class="docutils literal notranslate"><span class="pre">m</span></code> is expected to have.</p></li>
+<li><p><strong>m</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The matrix to be verified.</p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – The steady state the <code class="docutils literal notranslate"><span class="pre">m</span></code> is expected to have.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -946,7 +946,7 @@ for more details.</p>
 <a class="reference internal" href="#app.domain.network_nodes.HiveNode" title="app.domain.network_nodes.HiveNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>m</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – A matrix to be broadcasted to the network nodes
+<dd class="field-odd"><p><strong>m</strong> (<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>) – A matrix to be broadcasted to the network nodes
 belonging who are currently members of the Cluster instance.</p>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1109,7 +1109,7 @@ same <a class="reference internal" href="#app.domain.network_nodes.HiveNode" tit
 the pondered strategies.</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1425,29 +1425,6 @@ See <a class="reference internal" href="#app.domain.network_nodes.HiveNodeExt.up
 <dd><p>Bases: <a class="reference internal" href="#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.cluster_groups.Cluster</span></code></a></p>
 <p>Represents a P2P network of nodes performing mean degree aggregation,
 while simultaneously using Newscast for <code class="docutils literal notranslate"><span class="pre">view</span> <span class="pre">shuffling</span></code>.</p>
-<dl class="py attribute">
-<dt id="app.domain.cluster_groups.NewscastCluster.average_network_degree">
-<code class="sig-name descname">average_network_degree</code></dt>
-<dd><p>The <code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code> average network degree.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="app.domain.cluster_groups.NewscastCluster.log_aggregation_calls">
-<code class="sig-name descname">log_aggregation_calls</code></dt>
-<dd><p>How many calls to <a class="reference internal" href="#app.domain.cluster_groups.NewscastCluster.log_aggregation" title="app.domain.cluster_groups.NewscastCluster.log_aggregation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">log_aggregation()</span></code></a> were made in the
-<code class="xref py py-attr docutils literal notranslate"><span class="pre">current_epoch</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt id="app.domain.cluster_groups.NewscastCluster.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">master</span></em>, <em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">members</span></em>, <em class="sig-param"><span class="n">sim_id</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.__init__"><span class="viewcode-link">[source]</span></a></dt>
@@ -1623,7 +1600,20 @@ might end up possessing an excessive amount of blocks.</p>
 <dl class="py method">
 <dt id="app.domain.cluster_groups.NewscastCluster.wire_k_out">
 <code class="sig-name descname">wire_k_out</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#NewscastCluster.wire_k_out"><span class="viewcode-link">[source]</span></a></dt>
-<dd></dd></dl>
+<dd><p>Creates a random directed P2P topology.</p>
+<p>The initial cache size of each <a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">network</span> <span class="pre">node</span></code></a>, is at most as big as
+<a class="reference internal" href="app.html#app.environment_settings.NEWSCAST_CACHE_SIZE" title="app.environment_settings.NEWSCAST_CACHE_SIZE"><code class="xref py py-const docutils literal notranslate"><span class="pre">NEWSCAST_CACHE_SIZE</span></code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The topology does not have self loops, because
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.add_neighbor" title="app.domain.network_nodes.NewscastNode.add_neighbor"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_neighbor()</span></code></a>
+does not accept node self addition to
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">view</span></code></a>. In rare
+occasions, the selected node out-going edges might all be
+invalid, this should be a non-issue, as the nodes will eventually
+join the overaly throughout the simulation.</p>
+</div>
+</dd></dl>
 
 </dd></dl>
 
@@ -2184,7 +2174,7 @@ member of.</p>
 block blocks to other HiveNode instances.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Dict[str, <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>]</p>
+<dd class="field-odd"><p>Dict[str, <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2323,7 +2313,7 @@ for file block replica routing.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fid</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.name" title="app.domain.helpers.smart_dataclasses.FileData.name"><code class="xref py py-attr docutils literal notranslate"><span class="pre">file</span> <span class="pre">name</span> <span class="pre">identifier</span></code></a>
 of the file whose routing is being configured.</p></li>
-<li><p><strong>v_</strong> (Union[<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>]) – A column vector with probabilities that dictate the odds of
+<li><p><strong>v_</strong> (Union[<a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html#pandas.Series" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Series</span></code></a>, <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>]) – A column vector with probabilities that dictate the odds of
 sending file block blocks belonging to the file with
 specified id to other Cluster members also working on the
 persistence of the file block blocks.</p></li>
@@ -2331,7 +2321,7 @@ persistence of the file block blocks.</p></li>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">transition_vector</span></code> is not a
-    <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and cannot be casted to it.</p>
+    <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and cannot be casted to it.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
@@ -2464,10 +2454,11 @@ descriptors.</p>
 <dt id="app.domain.network_nodes.NewscastNode.add_neighbor">
 <code class="sig-name descname">add_neighbor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/network_nodes.html#NewscastNode.add_neighbor"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Adds a new network node to the node instance’s view.</p>
-<p>If the view is full, the eldest entry is removed. Otherwise,
-the new <a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastNode</span></code></a> is added to the instance’s view with
-age zero, unless the entry is already there, in which case the view
-remains as it was.</p>
+<p>If the view is full, the eldest node is replaced with the new node.
+Otherwise, the new <a class="reference internal" href="#app.domain.network_nodes.NewscastNode" title="app.domain.network_nodes.NewscastNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">NewscastNode</span></code></a> is added to the
+instance’s view with age zero, unless the entry is already in
+<a class="reference internal" href="#app.domain.network_nodes.NewscastNode.view" title="app.domain.network_nodes.NewscastNode.view"><code class="xref py py-attr docutils literal notranslate"><span class="pre">view</span></code></a> or the <code class="docutils literal notranslate"><span class="pre">node</span></code> is the current <code class="docutils literal notranslate"><span class="pre">NewscastNode</span></code>
+instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if <code class="docutils literal notranslate"><span class="pre">node</span></code> was successfuly added, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
