@@ -111,9 +111,8 @@ if __name__ == "__main__":
                  "  --epochs -e (int)\n"
                  "  --patterns -p (comma seperated list of str)\n")
 
-    directory = os.path.join(
-        os.path.abspath(
-            os.path.join(os.getcwd(), '..', '..', 'static', 'outfiles')))
+    directory = os.path.abspath(
+        os.path.join(os.getcwd(), '..', '..', '..', 'static', 'outfiles'))
 
     outfiles_view = os.listdir(directory)
     for pattern in patterns:
