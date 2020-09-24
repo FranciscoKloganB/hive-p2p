@@ -11,20 +11,16 @@ import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
 
-def plot_values(instances_mean, instances_cs_mean, terminations_dict):
+def plot_values(global_mean, global_cs_mean, terminations_dict):
     plt.figure()
 
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Moved Parts")
 
-    plt.xlim(0, epochs)
-    # plt.ylim(0, 1100)
-
     # Trace global mean
-    plt.axhline(y=instances_mean, label="global mean", color='c', linestyle='-')
-
-    # Trace cumulative means
-    plt.plot(instances_cs_mean, label="global cumulative means")
+    plt.axhline(y=global_mean, label="global mean", color='c', linestyle='-')
+    # Trace cumulative mean values
+    plt.plot(global_cs_mean, label="global cumulative mean")
 
     # Trace terminations
     # termination_keys = list(terminations_dict)
@@ -92,6 +88,7 @@ def cum_sum_mean(cs_avg_list, terminations_dict):
 
 
 if __name__ == "__main__":
+    # region args processing
     epochs = 0
     patterns = []
     targets = []
@@ -130,6 +127,7 @@ if __name__ == "__main__":
 
     directory = os.path.abspath(
         os.path.join(os.getcwd(), '..', '..', '..', 'static', 'outfiles'))
+    # endregion
 
     outfiles_view = os.listdir(directory)
     for pattern in patterns:
@@ -150,8 +148,8 @@ if __name__ == "__main__":
             zipped = zip_longest(instances_cs_mean, result, fillvalue=0)
             instances_cs_mean = [sum(n) for n in zipped]
 
-        # Calculate the instances' global flat mean
-        instances_mean = np.mean(instances_means)
-        # Calculate the instances' global cumulative mean on a epoch basis.
-        instances_cs_mean = cum_sum_mean(instances_cs_mean, terminations_dict)
-        plot_values(instances_mean, instances_cs_mean, terminations_dict)
+        # Calculate the instances' global flat and cumulative means
+        global_mean = np.mean(instances_means)
+        global_cs_mean = cum_sum_mean(instances_cs_mean, terminations_dict)
+
+        plot_values(global_mean, global_cs_mean, terminations_dict)
