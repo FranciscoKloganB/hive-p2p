@@ -179,6 +179,13 @@
 <span class="n">REPLICATION_LEVEL</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="sd">&quot;&quot;&quot;The amount of blocks each file block has.&quot;&quot;&quot;</span>
 
+
+<div class="viewcode-block" id="set_replication_level"><a class="viewcode-back" href="../../app.html#app.environment_settings.set_replication_level">[docs]</a><span class="k">def</span> <span class="nf">set_replication_level</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Changes REPLICATION_LEVEL constant value at run time.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">REPLICATION_LEVEL</span>
+    <span class="n">REPLICATION_LEVEL</span> <span class="o">=</span> <span class="n">n</span></div>
+
+
 <span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="sd">&quot;&quot;&quot;The number of consecutive epoch time steps that a </span>
 <span class="sd">:py:class:`~app.domain.cluster_groups.HiveCluster` must converge before epochs </span>
