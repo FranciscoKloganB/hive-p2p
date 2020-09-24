@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
 
-def plot_values(tkey, global_mean, global_cs_mean, terminations_dict):
+def plot_values(tkey, global_mean, global_cs_mean, terminations):
+    termination_epochs = [int(key) for key in terminations]
+
     plt.figure()
-    termination_epochs = [int(key) for key in terminations_dict]
 
     title = f"Aggregated {nkey} simulations' results on networks of size {skey}"
     plt.title(title,
@@ -44,17 +45,17 @@ def plot_values(tkey, global_mean, global_cs_mean, terminations_dict):
     plt.show()
 
 
-def process_file(key, outfile_json, instances_means, terminations_dict):
+def process_file(key, outfile_json):
     with open(outfile_json) as instance:
         j = json.load(instance)
         # Update terminated_at_count so that cumsum mean isn't skewed by 'fill'.
         # Important when different instances of the same simulation terminate
         # at different epoch times.
         terminated = j["terminated"]
-        if terminated in terminations_dict:
-            terminations_dict[terminated] += 1
+        if terminated in terminations:
+            terminations[terminated] += 1
         else:
-            terminations_dict[terminated] = 1
+            terminations[terminated] = 1
         # Get the simulation instance relevant data from [0, terminated).
         # Terminated should be smaller or equal than __main__.epochs variable.
         data = j[key][:terminated]
@@ -70,10 +71,10 @@ def process_file(key, outfile_json, instances_means, terminations_dict):
         return temp_list
 
 
-def cum_sum_mean(cs_avg_list, terminations_dict):
+def cum_sum_mean(cs_avg_list, terminations):
     # Epoch 1 is index 0, epoch 720 is epoch 719.
     breakpoints = sorted(
-        [epoch - 1 for epoch in terminations_dict], reverse=True)
+        [epoch - 1 for epoch in terminations], reverse=True)
 
     last_breakpoint = breakpoints[0]
     next_breakpoint = breakpoints.pop()
@@ -87,7 +88,7 @@ def cum_sum_mean(cs_avg_list, terminations_dict):
             cs_avg_list[at] /= divisor
             # Subtract simulation instances who died at epoch <next_stop>
             # before calculating the mean.
-            divisor -= terminations_dict[next_breakpoint + 1]
+            divisor -= terminations[next_breakpoint + 1]
             # Pop call does not cause error, if next stop is last stop,
             # the while block will not execute.
             next_breakpoint = breakpoints.pop()
@@ -151,7 +152,7 @@ if __name__ == "__main__":
 
     outfiles_view = os.listdir(directory)
     for pattern in patterns:
-        outfiles_view = filter(lambda file: pattern in file, outfiles_view)
+        outfiles_view = list(filter(lambda f: pattern in f, outfiles_view))
 
     for t in targets:
         # w.r.t. to named json field...
@@ -160,16 +161,16 @@ if __name__ == "__main__":
         # Stores a simulation's cumulative mean on an epoch basis.
         instances_cs_mean: List[float] = [0.0] * epochs
         # Stores how many instances terminate at a given epoch.
-        terminations_dict: Dict[str, int] = {}
+        terminations: Dict[str, int] = {}
 
         for file in outfiles_view:
             f = os.path.join(directory, file)
-            result = process_file(t, f, instances_means, terminations_dict)
+            result = process_file(t, f)
             zipped = zip_longest(instances_cs_mean, result, fillvalue=0)
             instances_cs_mean = [sum(n) for n in zipped]
 
         # Calculate the instances' global flat and cumulative means
         global_mean = np.mean(instances_means)
-        global_cs_mean = cum_sum_mean(instances_cs_mean, terminations_dict)
+        global_cs_mean = cum_sum_mean(instances_cs_mean, terminations)
 
-        plot_values(t, global_mean, global_cs_mean, terminations_dict)
+        plot_values(t, global_mean, global_cs_mean, terminations)
