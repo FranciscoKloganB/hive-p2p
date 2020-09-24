@@ -114,7 +114,7 @@ class Cluster:
 
         _ = f"{self.__class__.__name__}{origin}".replace("Cluster", "-")
         self.file: sd.FileData = sd.FileData(file_name, sim_id, _)
-        
+
         expected_fails = math.ceil(len(self.members) * 0.34)
         self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + expected_fails
