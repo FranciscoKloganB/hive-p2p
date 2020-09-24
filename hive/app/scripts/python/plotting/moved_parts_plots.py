@@ -11,22 +11,23 @@ import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
 
-def plot_values(terminations):
+def plot_values(instances_mean, instances_cs_mean, terminations_dict):
     plt.figure()
 
     plt.xlabel("Epoch")
     plt.ylabel("Avg. Moved Parts")
 
     plt.xlim(0, epochs)
-    plt.ylim(0, 1100)
+    # plt.ylim(0, 1100)
 
     # Trace global mean
     plt.axhline(y=instances_mean, label="global mean", color='c', linestyle='-')
 
     # Trace cumulative means
-    plt.plot(cs_avg_list, label="global cumulative means")
+    plt.plot(instances_cs_mean, label="global cumulative means")
 
     # Trace terminations
+    # termination_keys = list(terminations_dict)
     # plt.axvline(x=terminations.pop(), label="at least one simulation instance ended", color='y', linestyle='--')
     # for epoch in terminations:
     #     plt.axvline(x=epoch, color='y', linestyle='--')
@@ -37,22 +38,22 @@ def plot_values(terminations):
     plt.show()
 
 
-def process_file(outfile_json):
+def process_file(key, outfile_json, instances_means, terminations_dict):
     with open(outfile_json) as instance:
         j = json.load(instance)
         # Update terminated_at_count so that cumsum mean isn't skewed by 'fill'.
         # Important when different instances of the same simulation terminate
         # at different epoch times.
         terminated = j["terminated"]
-        if terminated in terminated_at_count:
-            terminated_at_count[terminated] += 1
+        if terminated in terminations_dict:
+            terminations_dict[terminated] += 1
         else:
-            terminated_at_count[terminated] = 1
+            terminations_dict[terminated] = 1
         # Get the simulation instance relevant data from [0, terminated).
         # Terminated should be smaller or equal than __main__.epochs variable.
-        data = j["blocks_moved"][:terminated]
+        data = j[key][:terminated]
         # Calculate and store the flat mean of the instance.
-        sim_averages.append(np.mean(data))
+        instances_means.append(np.mean(data))
         # Calculate and store the mean at each epoch i of the instance.
         temp_list = []
         for i in range(terminated):
@@ -63,32 +64,39 @@ def process_file(outfile_json):
         return temp_list
 
 
-def get_epochs_means(avg_moved_parts_epoch, terminated_at_acount):
-    breakpoints = sorted([epoch - 1 for epoch in terminated_at_acount], reverse=True)  # epoch 1 is index 0, epoch 720 is epoch 719
+def get_epochs_means(cs_avg_list, terminations_dict):
+    # Epoch 1 is index 0, epoch 720 is epoch 719.
+    breakpoints = sorted(
+        [epoch - 1 for epoch in terminations_dict], reverse=True)
+
     last_breakpoint = breakpoints[0]
     next_breakpoint = breakpoints.pop()
     at = 0
     divisor = 30
     while at <= last_breakpoint:  # from 0 up to maximum of 719, inclusive
         if at == last_breakpoint:
-            avg_moved_parts_epoch[at] /= divisor
-            return avg_moved_parts_epoch
+            cs_avg_list[at] /= divisor
+            return cs_avg_list
         elif at == next_breakpoint:
-            avg_moved_parts_epoch[at] /= divisor
-            divisor -= terminated_at_acount[next_breakpoint + 1]  # Subtract simulation instances who died at epoch <next_stop>, before doing the mean calculus
-            next_breakpoint = breakpoints.pop()  # pop doesn't cause error because, if next stop is last stop, then while block does not execute
+            cs_avg_list[at] /= divisor
+            # Subtract simulation instances who died at epoch <next_stop>
+            # before calculating the mean.
+            divisor -= terminations_dict[next_breakpoint + 1]
+            # Pop call does not cause error, if next stop is last stop,
+            # the while block will not execute.
+            next_breakpoint = breakpoints.pop()
             at += 1
         else:
-            avg_moved_parts_epoch[at] /= divisor
+            cs_avg_list[at] /= divisor
             at += 1
 
 
 if __name__ == "__main__":
     epochs = 0
     patterns = []
-
-    short_opts = "e:p:"
-    long_opts = ["epochs=", "patterns="]
+    targets = []
+    short_opts = "e:p:t:"
+    long_opts = ["epochs=", "patterns=", "targets="]
     try:
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
@@ -100,16 +108,25 @@ if __name__ == "__main__":
                 if not patterns:
                     sys.exit(f"Blank pattern is not a valid pattern.")
                 patterns = patterns.split(",")
+            if options in ("-t", "--targets"):
+                targets = str(args).strip()
+                if not targets:
+                    sys.exit(f"Blank string is not a valid list of targets.")
+                targets = targets.split(",")
 
         if epochs <= 0:
             sys.exit(f"Must specify epochs to allocate the plot's data arrays.")
+
+        if len(targets) == 0:
+            sys.exit(f"Must specify at least one json key to analyze.")
 
     except getopt.GetoptError:
         sys.exit("Usage: python outfile_plotter.py -f outfile.json")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --epochs -e (int)\n"
-                 "  --patterns -p (comma seperated list of str)\n")
+                 "  --patterns -p (comma seperated list of str)\n"
+                 "  --targets -t (comma seperated list of str)\n")
 
     directory = os.path.abspath(
         os.path.join(os.getcwd(), '..', '..', '..', 'static', 'outfiles'))
@@ -118,23 +135,26 @@ if __name__ == "__main__":
     for pattern in patterns:
         outfiles_view = filter(lambda file: pattern in file, outfiles_view)
 
-    # w.r.t. to named json field...
-    # Stores flat simulations' mean values, e.g., 30 iterations' mean.
-    sim_averages: List[float] = []
-    # Stores a simulation's cumulative mean on an epoch basis.
-    cs_avg_list: List[float] = [0.0] * epochs
-    # Stores how many instances terminate at a given epoch.
-    terminated_at_count: Dict[int, int] = {}
+    for t in targets:
+        # w.r.t. to named json field...
+        # Stores flat simulations' mean values, e.g., 30 iterations' mean.
+        instances_means = []
+        # Stores a simulation's cumulative mean on an epoch basis.
+        instances_cs_mean = [0.0] * epochs
+        # Stores how many instances terminate at a given epoch.
+        terminations_dict = {}
 
-    for file in outfiles_view:
-        filepath = os.path.join(directory, file)
-        _ = process_file(filepath)
-        cs_avg_list = [sum(n) for n in zip_longest(cs_avg_list, _, fillvalue=0)]
+        for file in outfiles_view:
+            f = os.path.join(directory, file)
+            _ = process_file(t, f, instances_means, terminations_dict)
+            instances_cs_mean = [
+                sum(n) for n in zip_longest(instances_cs_mean, _, fillvalue=0)
+            ]
 
-    # Calculate the instances' global flat mean
-    instances_mean = np.mean(sim_averages)
-    # Calculate the instances' global cumulative mean on a epoch by epoch basis.
-    # Since we have a sum of means, at each epoch, we divide each element by
-    # the number of visited instances, on an interval by interval basis.
-    cs_avg_list = get_epochs_means(cs_avg_list, terminated_at_count)
-    plot_values(list(terminated_at_count))
+        # Calculate the instances' global flat mean
+        instances_mean = np.mean(instances_means)
+        # Calculate the instances' global cumulative mean on a epoch by epoch basis.
+        # Since we have a sum of means, at each epoch, we divide each element by
+        # the number of visited instances, on an interval by interval basis.
+        instances_cs_mean = get_epochs_means(instances_cs_mean, terminations_dict)
+        plot_values(instances_mean, instances_cs_mean, terminations_dict)
