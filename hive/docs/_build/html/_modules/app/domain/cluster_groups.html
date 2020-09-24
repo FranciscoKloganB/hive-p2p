@@ -110,11 +110,12 @@
   <h1>Source code for app.domain.cluster_groups</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;This module contains domain specific classes that represent groups of</span>
 <span class="sd">:py:mod:`storage nodes &lt;app.domain.network_nodes&gt;`.&quot;&quot;&quot;</span>
-
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
+
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">from</span> <span class="nn">tabulate</span> <span class="kn">import</span> <span class="n">tabulate</span>
@@ -127,9 +128,8 @@
 <span class="kn">import</span> <span class="nn">domain.helpers.matrices</span> <span class="k">as</span> <span class="nn">mm</span>
 <span class="kn">import</span> <span class="nn">domain.helpers.smart_dataclasses</span> <span class="k">as</span> <span class="nn">sd</span>
 
-<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">truncate_float_value</span>
+<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="o">*</span>
 
 
 <div class="viewcode-block" id="Cluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster">[docs]</a><span class="k">class</span> <span class="nc">Cluster</span><span class="p">:</span>
@@ -144,12 +144,14 @@
 <span class="sd">            A two-element list containing the probability of</span>
 <span class="sd">            :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
 <span class="sd">            being corrupted and not being corrupted, respectively. See</span>
-<span class="sd">            :py:meth:`~app.domain.cluster_groups.Cluster._assign_disk_error_chance`</span>
+<span class="sd">            :py:func:`~app.environment_settings.get_disk_error_chances`</span>
 <span class="sd">            for corruption chance configuration.</span>
 <span class="sd">        master (:py:class:`~app.domain.master_servers.Master`):</span>
 <span class="sd">            A reference to a server that coordinates or monitors the ``Cluster``.</span>
-<span class="sd">        members (List[:py:class:`~app.domain.network_nodes.Node`]):</span>
+<span class="sd">        members (:py:class:`~app.type_hints.NodeDict`):</span>
 <span class="sd">            A collection of network nodes that belong to the ``Cluster``.</span>
+<span class="sd">        _members_view (List[:py:class:`~app.type_hints.NodeType`]):</span>
+<span class="sd">            A list representation of the nodes in :py:attr:`members`.</span>
 <span class="sd">        file (:py:class:`~app.domain.helpers.smart_dataclasses.FileData`):</span>
 <span class="sd">            A reference to</span>
 <span class="sd">            :py:class:`~app.domain.helpers.smart_dataclasses.FileData`</span>
@@ -213,17 +215,24 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assign_disk_error_chance</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_disk_error_chances</span><span class="p">(</span>
+            <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="n">members</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span><span class="p">(</span>
-            <span class="n">file_name</span><span class="p">,</span> <span class="n">sim_id</span><span class="o">=</span><span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">REPLICATION_LEVEL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+        <span class="n">_</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}{</span><span class="n">origin</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;Cluster&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span>
+
         <span class="n">expected_fails</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.34</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">REPLICATION_LEVEL</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sufficient_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span> <span class="o">+</span> <span class="n">expected_fails</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sufficient_size</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
 
@@ -232,7 +241,7 @@
                    <span class="n">sender</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">receiver</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">,</span>
-                   <span class="n">fresh_replica</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
+                   <span class="n">is_fresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sends a :py:class:`file block replica</span>
 <span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` to some other</span>
 <span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;` in</span>
@@ -247,10 +256,10 @@
 <span class="sd">                The destination</span>
 <span class="sd">                :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`</span>
 <span class="sd">                identifier.</span>
-<span class="sd">            replica:</span>
+<span class="sd">            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):</span>
 <span class="sd">                The :py:class:`file block replica &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
 <span class="sd">                to be sent specified destination: ``receiver``.</span>
-<span class="sd">            fresh_replica:</span>
+<span class="sd">            is_fresh:</span>
 <span class="sd">                Prevents recently created replicas from being</span>
 <span class="sd">                corrupted, since they are not likely to be corrupted in disk.</span>
 <span class="sd">                This argument facilitates simulation.</span>
@@ -269,12 +278,12 @@
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">TIME_OUT</span>
 
         <span class="n">is_corrupted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">fresh_replica</span> <span class="ow">and</span> <span class="n">is_corrupted</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_fresh</span> <span class="ow">and</span> <span class="n">is_corrupted</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_corrupted_file_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">BAD_REQUEST</span>
 
         <span class="n">destination_node</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">receiver</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">destination_node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">destination_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">destination_node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">NOT_FOUND</span></div>
@@ -300,39 +309,27 @@
 <span class="sd">                that led to the complaint.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Cluster.get_node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.get_node">[docs]</a>    <span class="k">def</span> <span class="nf">get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Retrives a random node from the members of the cluster group,</span>
+<span class="sd">        whose status is likely to be online.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.type_hints.NodeType`:</span>
+<span class="sd">                A random network node from :py:attr:`members`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">))</span>
+        <span class="n">candidate_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">candidate_node</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="Cluster._assign_disk_error_chance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._assign_disk_error_chance">[docs]</a>    <span class="k">def</span> <span class="nf">_assign_disk_error_chance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Defines the probability of a file block being corrupted while stored</span>
-<span class="sd">        at the disk of a</span>
-<span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;`.</span>
-
-<span class="sd">        Note:</span>
-<span class="sd">            Recommended value should be based on the paper named</span>
-<span class="sd">            `An Analysis of Data Corruption in the Storage Stack</span>
-<span class="sd">            &lt;http://www.cs.toronto.edu/bianca/papers/fast08.pdf&gt;`_. Thus</span>
-<span class="sd">            the current implementation follows this formula:</span>
-
-<span class="sd">                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`~app.environment_settings.MONTH_EPOCHS`) * ``P(Xt ≥ L)``)</span>
-
-<span class="sd">            The notation ``P(Xt ≥ L)`` denotes the probability of a disk</span>
-<span class="sd">            developing at least L checksum mismatches within T months since</span>
-<span class="sd">            the disk’s first use in the field. As described in linked paper.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A two element list with respectively, the probability of losing</span>
-<span class="sd">            and the probability of not losing a file block due to disk</span>
-<span class="sd">            errors, at an epoch basis.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ploss_month</span> <span class="o">=</span> <span class="mf">0.0086</span>
-        <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="p">(</span><span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span> <span class="o">*</span> <span class="n">ploss_month</span><span class="p">)</span> <span class="o">/</span> <span class="n">MONTH_EPOCHS</span>
-        <span class="n">ploss_epoch</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">ploss_epoch</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">ploss_epoch</span><span class="p">]</span></div>
-
 <div class="viewcode-block" id="Cluster._setup_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._setup_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">_setup_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Initializes some attributes of the ``Cluster`` during</span>
-<span class="sd">        its initialization.</span>
+        <span class="sd">&quot;&quot;&quot;Initializes some attributes cluster attributes at the start of an</span>
+<span class="sd">        epoch.</span>
+
+<span class="sd">        This method also forces all of the ``Clusters`` members to update</span>
+<span class="sd">        their connectivity status before any node is instructed to execute.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            epoch:</span>
@@ -340,12 +337,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">epoch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="n">member</span><span class="o">.</span><span class="n">update_status</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Cluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
-<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">        objects among the :py:attr:`members` of the ``Cluster``.</span>
+        <span class="sd">&quot;&quot;&quot;Distributes a collection of :py:class:`file block replicas</span>
+<span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` among the</span>
+<span class="sd">        :py:attr:`members` of the cluster group.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
@@ -353,9 +352,37 @@
 <span class="sd">                replicas, without replication.</span>
 <span class="sd">            strat:</span>
 <span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
-<span class="sd">                the ``Cluster``.</span>
+<span class="sd">                the ``Cluster``. Unless overridden in children of this class the</span>
+<span class="sd">                received value of ``strat`` will be ignored and will always</span>
+<span class="sd">                be set to the default value ``i``.</span>
+
+<span class="sd">                i</span>
+<span class="sd">                    This strategy creates a probability vector</span>
+<span class="sd">                    containing the normalization of :py:attr:`network nodes</span>
+<span class="sd">                    uptimes&#39; &lt;app.domain.network_nodes.Node.uptime&gt;` and uses</span>
+<span class="sd">                    that vector to randomly select which</span>
+<span class="sd">                    :py:class:`node &lt;app.domain.network_nodes.Node&gt;` will</span>
+<span class="sd">                    receive each replica. There is a bias to give more</span>
+<span class="sd">                    replicas to the most resillent :py:class:`nodes</span>
+<span class="sd">                    &lt;app.domain.network_nodes.Node&gt;` which results from</span>
+<span class="sd">                    using the created probability vector.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span>
+
+        <span class="n">choices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
+        <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
+
+        <span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span>
+        <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">)</span>
+        <span class="n">chances</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">choice_view</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span>
+            <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                <span class="n">a</span><span class="o">=</span><span class="n">choice_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">chances</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
+                <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -376,8 +403,8 @@
 <span class="sd">                to it&#39;s managing :py:attr:`master` entity.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it was</span>
-<span class="sd">            responsible for, otherwise ``True``.</span>
+<span class="sd">            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it</span>
+<span class="sd">            was responsible for, otherwise ``True``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
 
@@ -407,7 +434,7 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                List of :py:attr:`members` that disconnected during the</span>
 <span class="sd">                :py:attr:`current_epoch`. See</span>
-<span class="sd">                :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+<span class="sd">                :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
@@ -429,9 +456,9 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Attempts to recruits new</span>
-<span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.Node&gt;` as members</span>
-<span class="sd">        of the ``Cluster``.</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to recruits new network nodes to be members of the cluster.</span>
+
+<span class="sd">        The method updates both :py:attr:`members` and :py:attr:`_members_view`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
@@ -443,7 +470,9 @@
         <span class="n">new_members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">sbm</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">:</span>
             <span class="n">new_members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_members</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_members</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">new_members</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_members</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
         <span class="n">sam</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="n">status_am</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cluster_status</span><span class="p">()</span>
@@ -499,8 +528,8 @@
 <span class="sd">                and values are</span>
 <span class="sd">                :py:class:`node instances &lt;app.domain.network_nodes.Node&gt;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_online_nodes</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">))</span></div>
+        <span class="n">amount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">master</span><span class="o">.</span><span class="n">find_online_nodes</span><span class="p">(</span><span class="n">amount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.get_cluster_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.get_cluster_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_cluster_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Determines the ``Cluster``&#39;s status based on the length of the</span>
@@ -579,27 +608,34 @@
 <span class="sd">                the ``Cluster``.</span>
 
 <span class="sd">                u</span>
-<span class="sd">                    Distributed uniformly across network.</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` in</span>
+<span class="sd">                    ``replicas`` is distributed following a</span>
+<span class="sd">                    uniform probability vector among :py:attr:`members` of</span>
+<span class="sd">                    the cluster group.</span>
 <span class="sd">                a</span>
-<span class="sd">                    Give all file block replicas to N different members,</span>
-<span class="sd">                    where N is equal to</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                    in ``replicas`` is given up to ``N`` different</span>
+<span class="sd">                    :py:attr:`members` where ``N`` is equal to</span>
 <span class="sd">                    :py:const:`~app.environment_settings.REPLICATION_LEVEL`.</span>
 <span class="sd">                i</span>
-<span class="sd">                    Distribute all file block replicas following such</span>
-<span class="sd">                    that the simulation starts with all file replicas and</span>
-<span class="sd">                    their replicas distributed with a bias towards the</span>
-<span class="sd">                    ideal steady state distribution. This mode is only</span>
-<span class="sd">                    applicatable to clusters of type or with ancestor type</span>
-<span class="sd">                    :py:class:`~app.domain.cluster_groups.HiveCluster`.</span>
+<span class="sd">                    Each :py:class:`file block replica</span>
+<span class="sd">                    &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;`</span>
+<span class="sd">                    in ``replicas`` with bias towards the</span>
+<span class="sd">                    ideal steady state distribution. This implementation of</span>
+<span class="sd">                    differs from</span>
+<span class="sd">                    :py:meth:`app.domain.cluster_groups.Cluster.spread_files`,</span>
+<span class="sd">                    because it is not necessarely based on</span>
+<span class="sd">                    :py:class:`node &lt;app.domain.network_nodes.Node&gt;` uptime.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="n">strat</span>
 
         <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
         <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">strat</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
-            <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
             <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                <span class="n">a</span><span class="o">=</span><span class="n">choices</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -607,18 +643,17 @@
 
         <span class="k">elif</span> <span class="n">strat</span> <span class="o">==</span> <span class="s2">&quot;u&quot;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
                 <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                    <span class="n">a</span><span class="o">=</span><span class="n">choices</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">strat</span> <span class="o">==</span> <span class="s1">&#39;i&#39;</span><span class="p">:</span>
-            <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span>
             <span class="n">desired_distribution</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="n">choices_view</span> <span class="o">=</span> <span class="n">choices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">choices_view</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span>
                 <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
                     <span class="n">a</span><span class="o">=</span><span class="n">choices_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">desired_distribution</span><span class="p">,</span>
                     <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -638,12 +673,13 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                 A collection of members who disconnected during the current</span>
 <span class="sd">                 epoch. See</span>
-<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
@@ -669,9 +705,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
 
         <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node_parts_count</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_parts_count</span>
                 <span class="n">pcount</span> <span class="o">+=</span> <span class="n">node_parts_count</span>
@@ -686,9 +721,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="HiveCluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Attempts to recruits new</span>
-<span class="sd">        :py:class:`network nodes &lt;app.domain.network_nodes.HiveNode&gt;` as members</span>
-<span class="sd">        of the ``HiveCluster``.</span>
+        <span class="sd">&quot;&quot;&quot;Attempts to recruits new network nodes to be members of the cluster.</span>
+
+<span class="sd">        The method updates both :py:attr:`members` and :py:attr:`_members_view`.</span>
 
 <span class="sd">        Extends:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.membership_maintenance`.</span>
@@ -874,33 +909,32 @@
             <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/=</span> <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fastest_matrix</span></div>
 
-<div class="viewcode-block" id="HiveCluster._validate_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._validate_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                                    <span class="n">transition_matrix</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-                                    <span class="n">target_distribution</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Asserts if ``transition_matrix`` is a Markov Matrix.</span>
+<div class="viewcode-block" id="HiveCluster._validate_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._validate_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">_validate_transition_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Asserts if ``m`` is a Markov Matrix.</span>
 
-<span class="sd">        Verification is done by raising the ``transition_matrix`` to the power</span>
+<span class="sd">        Verification is done by raising the ``m`` to the power</span>
 <span class="sd">        of ``4096`` (just a large number) and checking if all columns of the</span>
 <span class="sd">        powered matrix are element-wise equal to the</span>
 <span class="sd">        entries of ``target_distribution``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            transition_matrix (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">            m (:py:class:`~pd:pandas.DataFrame`):</span>
 <span class="sd">                The matrix to be verified.</span>
-<span class="sd">            target_distribution (:py:class:`~pd:pandas.DataFrame`):</span>
-<span class="sd">                The steady state the ``transition_matrix`` is expected to have.</span>
+<span class="sd">            `v_` (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">                The steady state the ``m`` is expected to have.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ``True`` if the matrix converges to the ``target_distribution``,</span>
-<span class="sd">            otherwise ``False``. I.e., if ``transition_matrix`` is a</span>
+<span class="sd">            otherwise ``False``. I.e., if ``m`` is a</span>
 <span class="sd">            markov matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t_pow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">transition_matrix</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="mi">4096</span><span class="p">)</span>
+        <span class="n">t_pow</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="mi">4096</span><span class="p">)</span>
         <span class="n">column_count</span> <span class="o">=</span> <span class="n">t_pow</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">column_count</span><span class="p">):</span>
             <span class="n">test_target</span> <span class="o">=</span> <span class="n">t_pow</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>  <span class="c1"># gets array column j</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
-                    <span class="n">test_target</span><span class="p">,</span> <span class="n">target_distribution</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-02</span><span class="p">):</span>
+                    <span class="n">test_target</span><span class="p">,</span> <span class="n">v_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-02</span><span class="p">):</span>
                 <span class="k">return</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="kc">True</span></div>
     <span class="c1"># endregion</span>
@@ -981,7 +1015,7 @@
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;cv_&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;v_&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;(cv_ - v_)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">target</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;tolerance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">atol</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rtol</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="o">*</span><span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">]]]</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;tolerance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="n">atol</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">rtol</span><span class="p">)</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">target</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
         <span class="n">zipped</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;(cv_ - v_)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;tolerance&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;is_close&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">zipped</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">tabulate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="s1">&#39;keys&#39;</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s1">&#39;psql&#39;</span><span class="p">)</span></div></div>
@@ -1096,18 +1130,15 @@
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">                during the current epoch.</span>
-<span class="sd">                See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.</span>
+<span class="sd">                See :py:meth:`app.domain.network_nodes.HiveNodeExt.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lost_parts_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">is_suspect</span><span class="p">():</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
@@ -1194,43 +1225,6 @@
             <span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="mi">5</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
         <span class="p">}</span></div>
 
-    <span class="c1"># region Simulation setup</span>
-<div class="viewcode-block" id="HDFSCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Distributes a collection of</span>
-<span class="sd">        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">        objects among the :py:attr:`~Cluster.members` of the ``HDFSCluster``.</span>
-
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
-<span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
-<span class="sd">                replicas, without replication.</span>
-<span class="sd">            strat:</span>
-<span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
-<span class="sd">                the ``Cluster``. Regardless of the received value, the body</span>
-<span class="sd">                of this method will always set ``strat`` to default ``&quot;i&quot;``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span>
-
-        <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
-        <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
-
-        <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
-        <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">)</span>
-        <span class="n">chances</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">choices_view</span> <span class="o">=</span> <span class="n">choices</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                <span class="n">a</span><span class="o">=</span><span class="n">choices_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">chances</span><span class="p">,</span>
-                <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
-                <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span></div>
-    <span class="c1"># endregion</span>
-
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="HDFSCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Queries all :py:attr:`~Cluster.members` to execute the epoch.</span>
@@ -1241,19 +1235,16 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
 <span class="sd">                A collection of :py:attr:`~Cluster.members` who disconnected</span>
-<span class="sd">                during the current epoch.</span>
-<span class="sd">                See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.</span>
+<span class="sd">                during the current epoch. See</span>
+<span class="sd">                :py:meth:`app.domain.network_nodes.HDFSNode.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">lost_replicas_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">is_suspect</span><span class="p">():</span>
                 <span class="c1"># Register lost replicas the moment the node disconnects.</span>
                 <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
@@ -1294,9 +1285,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
 
         <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
                 <span class="n">pcount</span> <span class="o">+=</span> <span class="n">node_replicas</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
@@ -1323,9 +1314,182 @@
 
 <div class="viewcode-block" id="HDFSCluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
         <span class="n">new_members</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">nid</span> <span class="ow">in</span> <span class="n">new_members</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">nid</span> <span class="ow">in</span> <span class="n">new_members</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">nid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span></div></div>
+    <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="NewscastCluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster">[docs]</a><span class="k">class</span> <span class="nc">NewscastCluster</span><span class="p">(</span><span class="n">Cluster</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a P2P network of nodes performing mean degree aggregation,</span>
+<span class="sd">    while simultaneously using Newscast for ``view shuffling``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NewscastCluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
+                 <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
+                 <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span></div>
+
+    <span class="c1"># region Cluster API</span>
+<div class="viewcode-block" id="NewscastCluster.log_aggregation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.log_aggregation">[docs]</a>    <span class="k">def</span> <span class="nf">log_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">count_min</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">count_min</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">count_max</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">value</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">count_max</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">+=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sqrsum</span> <span class="o">+=</span> <span class="n">value</span> <span class="o">*</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.wire_k_out"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.wire_k_out">[docs]</a>    <span class="k">def</span> <span class="nf">wire_k_out</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a random directed P2P topology.</span>
+
+<span class="sd">        The initial cache size of each :py:class:`network node</span>
+<span class="sd">        &lt;app.domain.network_nodes.NewscastNode&gt;`, is at most as big as</span>
+<span class="sd">        :py:const:`~app.environment_settings.NEWSCAST_CACHE_SIZE`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            The topology does not have self loops, because</span>
+<span class="sd">            :py:meth:`~app.domain.network_nodes.NewscastNode.add_neighbor`</span>
+<span class="sd">            does not accept node self addition to</span>
+<span class="sd">            :py:attr:`~app.domain.network_nodes.NewscastNode.view`. In rare</span>
+<span class="sd">            occasions, the selected node out-going edges might all be</span>
+<span class="sd">            invalid, this should be a non-issue, as the nodes will eventually</span>
+<span class="sd">            join the overaly throughout the simulation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">network_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">network_size</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">network_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+            <span class="n">member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">another_member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="n">member</span><span class="o">.</span><span class="n">add_neighbor</span><span class="p">(</span><span class="n">another_member</span><span class="p">)</span></div>
+
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="NewscastCluster.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodes_execute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.</span>
+
+<span class="sd">            Note:</span>
+<span class="sd">                :py:meth:`NewscasterCluster.nodes_execute</span>
+<span class="sd">                &lt;app.domain.cluster_groups.NewscastNode.nodes_execute&gt;`</span>
+<span class="sd">                always returns None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                 A collection of members who disconnected during the current</span>
+<span class="sd">                 epoch. See</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.NewscastNode.update_status`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.evaluate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Prints the epoch&#39;s aggregated peer degree, to the command-line</span>
+<span class="sd">        interface.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">({</span>
+            <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+            <span class="s2">&quot;sum&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+            <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+            <span class="s2">&quot;count_min&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">count_min</span><span class="p">,</span>
+            <span class="s2">&quot;count_max&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">count_max</span>
+        <span class="p">})</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Simulation setup</span>
+<div class="viewcode-block" id="NewscastCluster._setup_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster._setup_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">_setup_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Initializes some attributes cluster attributes at the start of an</span>
+<span class="sd">        epoch.</span>
+
+<span class="sd">        Extends:</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster._setup_epoch`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            epoch:</span>
+<span class="sd">                The simulation&#39;s current epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_setup_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sqrsum</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+<div class="viewcode-block" id="NewscastCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Distributes a collection of :py:class:`file block replicas</span>
+<span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` among the</span>
+<span class="sd">        :py:attr:`members` of the cluster group.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.dommain.cluster_groups.Cluster.spread_files`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            replicas (:py:class:`~app.type_hints.ReplicasDict`):</span>
+<span class="sd">                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`</span>
+<span class="sd">                replicas, without replication.</span>
+<span class="sd">            strat:</span>
+<span class="sd">                Defines how ``replicas`` will be initially distributed in</span>
+<span class="sd">                the ``Cluster``. Unless overridden in children of this class the</span>
+<span class="sd">                received value of ``strat`` will be ignored and will always</span>
+<span class="sd">                be set to the default value ``o``.</span>
+
+<span class="sd">                o</span>
+<span class="sd">                    This strategy assumes erasure-coding is being used and</span>
+<span class="sd">                    that each :py:class:`network node</span>
+<span class="sd">                    &lt;app.domain.network_nodes.Node&gt;` will have no more than</span>
+<span class="sd">                    one encoded block, i.e., replication level is always</span>
+<span class="sd">                    equal to one. Note however, that if there are more encoded</span>
+<span class="sd">                    blocks than there are :py:class:`network nodes</span>
+<span class="sd">                    &lt;app.domain.network_nodes.Node&gt;`, some of these ``nodes``</span>
+<span class="sd">                    might end up possessing an excessive amount of blocks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span>
+
+        <span class="c1"># Can not use tuple in replicas because tuples are immutable.</span>
+        <span class="n">replicas</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">members_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">replicas</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">members_len</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">member</span><span class="p">,</span> <span class="n">replica</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">members</span><span class="p">,</span> <span class="n">replicas</span><span class="p">):</span>
+                <span class="n">member</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">replicas</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">member</span><span class="p">,</span> <span class="n">replica</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">members</span><span class="p">,</span> <span class="n">replicas</span><span class="p">):</span>
+                    <span class="n">member</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">replicas</span><span class="p">[:</span><span class="n">members_len</span><span class="p">]</span></div></div>
     <span class="c1"># endregion</span>
 </pre></div>
 

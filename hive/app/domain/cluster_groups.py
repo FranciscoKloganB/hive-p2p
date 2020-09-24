@@ -1,10 +1,11 @@
 """This module contains domain specific classes that represent groups of
 :py:mod:`storage nodes <app.domain.network_nodes>`."""
-
 from __future__ import annotations
 
 import math
+import random
 import uuid
+
 from typing import Tuple, Optional, List, Dict, Any
 
 from tabulate import tabulate
@@ -17,9 +18,8 @@ import domain.helpers.enums as e
 import domain.helpers.matrices as mm
 import domain.helpers.smart_dataclasses as sd
 
-from environment_settings import *
 
-from utils.convertions import truncate_float_value
+from environment_settings import *
 
 
 class Cluster:
@@ -34,12 +34,14 @@ class Cluster:
             A two-element list containing the probability of
             :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
             being corrupted and not being corrupted, respectively. See
-            :py:meth:`~app.domain.cluster_groups.Cluster._assign_disk_error_chance`
+            :py:func:`~app.environment_settings.get_disk_error_chances`
             for corruption chance configuration.
         master (:py:class:`~app.domain.master_servers.Master`):
             A reference to a server that coordinates or monitors the ``Cluster``.
-        members (List[:py:class:`~app.domain.network_nodes.Node`]):
+        members (:py:class:`~app.type_hints.NodeDict`):
             A collection of network nodes that belong to the ``Cluster``.
+        _members_view (List[:py:class:`~app.type_hints.NodeType`]):
+            A list representation of the nodes in :py:attr:`members`.
         file (:py:class:`~app.domain.helpers.smart_dataclasses.FileData`):
             A reference to
             :py:class:`~app.domain.helpers.smart_dataclasses.FileData`
@@ -103,17 +105,24 @@ class Cluster:
         """
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-        self.corruption_chances: List[float] = self._assign_disk_error_chance()
+        self.corruption_chances: List[float] = get_disk_error_chances(
+            ms.Master.MAX_EPOCHS)
+
         self.master = master
         self.members: th.NodeDict = members
-        self.file: sd.FileData = sd.FileData(
-            file_name, sim_id=sim_id, origin=origin)
-        self.critical_size: int = REPLICATION_LEVEL
+        self._members_view: List[th.NodeType] = list(self.members.values())
+
+        _ = f"{self.__class__.__name__}{origin}".replace("Cluster", "-")
+        self.file: sd.FileData = sd.FileData(file_name, sim_id, _)
+
         expected_fails = math.ceil(len(self.members) * 0.34)
+        self.critical_size: int = REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + expected_fails
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
+
         self.running: bool = True
+
         self._recovery_epoch_sum: int = 0
         self._recovery_epoch_calls: int = 0
 
@@ -122,7 +131,7 @@ class Cluster:
                    sender: str,
                    receiver: str,
                    replica: sd.FileBlockData,
-                   fresh_replica: bool = False) -> th.HttpResponse:
+                   is_fresh: bool = False) -> th.HttpResponse:
         """Sends a :py:class:`file block replica
         <app.domain.helpers.smart_dataclasses.FileBlockData>` to some other
         :py:class:`network node <app.domain.network_nodes.Node>` in
@@ -137,10 +146,10 @@ class Cluster:
                 The destination
                 :py:class:`network node <app.domain.network_nodes.Node>`
                 identifier.
-            replica:
+            replica (:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`):
                 The :py:class:`file block replica <app.domain.helpers.smart_dataclasses.FileBlockData>`
                 to be sent specified destination: ``receiver``.
-            fresh_replica:
+            is_fresh:
                 Prevents recently created replicas from being
                 corrupted, since they are not likely to be corrupted in disk.
                 This argument facilitates simulation.
@@ -159,12 +168,12 @@ class Cluster:
             return e.HttpCodes.TIME_OUT
 
         is_corrupted = np.random.choice(a=TRUE_FALSE, p=self.corruption_chances)
-        if not fresh_replica and is_corrupted:
+        if not is_fresh and is_corrupted:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return e.HttpCodes.BAD_REQUEST
 
         destination_node: th.NodeType = self.members[receiver]
-        if destination_node.status == e.Status.ONLINE:
+        if destination_node.is_up():
             return destination_node.receive_part(replica)
         else:
             return e.HttpCodes.NOT_FOUND
@@ -190,39 +199,27 @@ class Cluster:
                 that led to the complaint.
         """
         pass
+
+    def get_node(self) -> th.NodeType:
+        """Retrives a random node from the members of the cluster group,
+        whose status is likely to be online.
+
+        Returns:
+            :py:class:`~app.type_hints.NodeType`:
+                A random network node from :py:attr:`members`.
+        """
+        i = np.random.randint(0, len(self._members_view))
+        candidate_node = self._members_view[i]
+        return candidate_node
     # endregion
 
     # region Simulation setup
-    def _assign_disk_error_chance(self) -> List[float]:
-        """Defines the probability of a file block being corrupted while stored
-        at the disk of a
-        :py:class:`network node <app.domain.network_nodes.Node>`.
-
-        Note:
-            Recommended value should be based on the paper named
-            `An Analysis of Data Corruption in the Storage Stack
-            <http://www.cs.toronto.edu/bianca/papers/fast08.pdf>`_. Thus
-            the current implementation follows this formula:
-
-                (:py:const:`~app.domain.master_servers.Master.MAX_EPOCHS` / :py:const:`~app.environment_settings.MONTH_EPOCHS`) * ``P(Xt ≥ L)``)
-
-            The notation ``P(Xt ≥ L)`` denotes the probability of a disk
-            developing at least L checksum mismatches within T months since
-            the disk’s first use in the field. As described in linked paper.
-
-        Returns:
-            A two element list with respectively, the probability of losing
-            and the probability of not losing a file block due to disk
-            errors, at an epoch basis.
-        """
-        ploss_month = 0.0086
-        ploss_epoch = (ms.Master.MAX_EPOCHS * ploss_month) / MONTH_EPOCHS
-        ploss_epoch = truncate_float_value(ploss_epoch, 6)
-        return [ploss_epoch, 1.0 - ploss_epoch]
-
     def _setup_epoch(self, epoch: int) -> None:
-        """Initializes some attributes of the ``Cluster`` during
-        its initialization.
+        """Initializes some attributes cluster attributes at the start of an
+        epoch.
+
+        This method also forces all of the ``Clusters`` members to update
+        their connectivity status before any node is instructed to execute.
 
         Args:
             epoch:
@@ -231,11 +228,13 @@ class Cluster:
         self.current_epoch = epoch
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
+        for member in self._members_view:
+            member.update_status()
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
-        """Distributes a collection of
-        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
-        objects among the :py:attr:`members` of the ``Cluster``.
+        """Distributes a collection of :py:class:`file block replicas
+        <app.domain.helpers.smart_dataclasses.FileBlockData>` among the
+        :py:attr:`members` of the cluster group.
 
         Args:
             replicas (:py:class:`~app.type_hints.ReplicasDict`):
@@ -243,9 +242,37 @@ class Cluster:
                 replicas, without replication.
             strat:
                 Defines how ``replicas`` will be initially distributed in
-                the ``Cluster``.
+                the ``Cluster``. Unless overridden in children of this class the
+                received value of ``strat`` will be ignored and will always
+                be set to the default value ``i``.
+
+                i
+                    This strategy creates a probability vector
+                    containing the normalization of :py:attr:`network nodes
+                    uptimes' <app.domain.network_nodes.Node.uptime>` and uses
+                    that vector to randomly select which
+                    :py:class:`node <app.domain.network_nodes.Node>` will
+                    receive each replica. There is a bias to give more
+                    replicas to the most resillent :py:class:`nodes
+                    <app.domain.network_nodes.Node>` which results from
+                    using the created probability vector.
         """
-        raise NotImplementedError("")
+        self.file.logger.initial_spread = "i"
+
+        choices: Tuple[th.NodeType]
+        selected_nodes: List[th.NodeType]
+
+        choices = self._members_view
+        uptime_sum = sum(c.uptime for c in choices)
+        chances = [c.uptime / uptime_sum for c in choices]
+
+        for replica in replicas.values():
+            choice_view = tuple(choices)
+            selected_nodes = np.random.choice(
+                a=choice_view, p=chances, size=REPLICATION_LEVEL, replace=False)
+            for node in selected_nodes:
+                replica.references += 1
+                node.receive_part(replica)
     # endregion
 
     # region Simulation steps
@@ -266,8 +293,8 @@ class Cluster:
                 to it's managing :py:attr:`master` entity.
 
         Returns:
-            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it was
-            responsible for, otherwise ``True``.
+            ``False`` if ``Cluster`` failed to persist the :py:attr:`file` it
+            was responsible for, otherwise ``True``.
         """
         self._setup_epoch(epoch)
 
@@ -297,7 +324,7 @@ class Cluster:
             List[:py:class:`~app.type_hints.NodeType`]:
                 List of :py:attr:`members` that disconnected during the
                 :py:attr:`current_epoch`. See
-                :py:meth:`app.domain.network_nodes.Node.get_status`.
+                :py:meth:`app.domain.network_nodes.Node.update_status`.
         """
         raise NotImplementedError("")
 
@@ -319,9 +346,9 @@ class Cluster:
         raise NotImplementedError("")
 
     def membership_maintenance(self) -> th.NodeDict:
-        """Attempts to recruits new
-        :py:class:`network nodes <app.domain.network_nodes.Node>` as members
-        of the ``Cluster``.
+        """Attempts to recruits new network nodes to be members of the cluster.
+
+        The method updates both :py:attr:`members` and :py:attr:`_members_view`.
 
         Returns:
             :py:class:`~app.type_hints.NodeDict`:
@@ -333,7 +360,9 @@ class Cluster:
         new_members: th.NodeDict = {}
         if sbm < self.original_size:
             new_members = self._get_new_members()
-            self.members.update(new_members)
+            if new_members:
+                self.members.update(new_members)
+                self._members_view = list(self.members.values())
 
         sam = len(self.members)
         status_am = self.get_cluster_status()
@@ -389,8 +418,8 @@ class Cluster:
                 and values are
                 :py:class:`node instances <app.domain.network_nodes.Node>`.
         """
-        return self.master.find_online_nodes(
-            self.members, self.original_size - len(self.members))
+        amount = self.original_size - len(self.members)
+        return self.master.find_online_nodes(amount, self.members)
 
     def get_cluster_status(self) -> str:
         """Determines the ``Cluster``'s status based on the length of the
@@ -469,27 +498,34 @@ class HiveCluster(Cluster):
                 the ``Cluster``.
 
                 u
-                    Distributed uniformly across network.
+                    Each :py:class:`file block replica
+                    <app.domain.helpers.smart_dataclasses.FileBlockData>` in
+                    ``replicas`` is distributed following a
+                    uniform probability vector among :py:attr:`members` of
+                    the cluster group.
                 a
-                    Give all file block replicas to N different members,
-                    where N is equal to
+                    Each :py:class:`file block replica
+                    <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                    in ``replicas`` is given up to ``N`` different
+                    :py:attr:`members` where ``N`` is equal to
                     :py:const:`~app.environment_settings.REPLICATION_LEVEL`.
                 i
-                    Distribute all file block replicas following such
-                    that the simulation starts with all file replicas and
-                    their replicas distributed with a bias towards the
-                    ideal steady state distribution. This mode is only
-                    applicatable to clusters of type or with ancestor type
-                    :py:class:`~app.domain.cluster_groups.HiveCluster`.
+                    Each :py:class:`file block replica
+                    <app.domain.helpers.smart_dataclasses.FileBlockData>`
+                    in ``replicas`` with bias towards the
+                    ideal steady state distribution. This implementation of
+                    differs from
+                    :py:meth:`app.domain.cluster_groups.Cluster.spread_files`,
+                    because it is not necessarely based on
+                    :py:class:`node <app.domain.network_nodes.Node>` uptime.
         """
         self.file.logger.initial_spread = strat
 
         choices: List[th.NodeType]
         selected_nodes: List[th.NodeType]
         if strat == "a":
-            choices = [*self.members.values()]
             selected_nodes = np.random.choice(
-                a=choices, size=REPLICATION_LEVEL, replace=False)
+                a=self._members_view, size=REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
                 for replica in replicas.values():
                     replica.references += 1
@@ -497,18 +533,17 @@ class HiveCluster(Cluster):
 
         elif strat == "u":
             for replica in replicas.values():
-                choices = [*self.members.values()]
                 selected_nodes = np.random.choice(
-                    a=choices, size=REPLICATION_LEVEL, replace=False)
+                    a=self._members_view, size=REPLICATION_LEVEL, replace=False)
                 for node in selected_nodes:
                     replica.references += 1
                     node.receive_part(replica)
 
         elif strat == 'i':
-            choices = [*self.members.values()]
+            choices = self._members_view
             desired_distribution = [self.v_.loc[c.id, 0] for c in choices]
             for replica in replicas.values():
-                choices_view = choices.copy()
+                choices_view = tuple(choices)
                 selected_nodes = np.random.choice(
                     a=choices_view, p=desired_distribution,
                     size=REPLICATION_LEVEL, replace=False)
@@ -528,12 +563,13 @@ class HiveCluster(Cluster):
             List[:py:class:`~app.type_hints.NodeType`]:
                  A collection of members who disconnected during the current
                  epoch. See
-                 :py:meth:`app.domain.network_nodes.Node.get_status`.
+                 :py:meth:`app.domain.network_nodes.Node.update_status`.
         """
         lost_parts_count: int = 0
         off_nodes: List[th.NodeType] = []
-        for node in self.members.values():
-            if node.get_status() == e.Status.ONLINE:
+
+        for node in self._members_view:
+            if node.is_up():
                 node.execute_epoch(self, self.file.name)
             else:
                 node_replicas = node.get_file_parts(self.file.name)
@@ -559,9 +595,8 @@ class HiveCluster(Cluster):
             self._set_fail("Cluster has no remaining members.")
 
         pcount: int = 0
-        members = self.members.values()
-        for node in members:
-            if node.status == e.Status.ONLINE:
+        for node in self._members_view:
+            if node.is_up():
                 node_parts_count = node.get_file_parts_count(self.file.name)
                 self.cv_.at[node.id, 0] = node_parts_count
                 pcount += node_parts_count
@@ -576,9 +611,9 @@ class HiveCluster(Cluster):
         self.membership_maintenance()
 
     def membership_maintenance(self) -> th.NodeDict:
-        """Attempts to recruits new
-        :py:class:`network nodes <app.domain.network_nodes.HiveNode>` as members
-        of the ``HiveCluster``.
+        """Attempts to recruits new network nodes to be members of the cluster.
+
+        The method updates both :py:attr:`members` and :py:attr:`_members_view`.
 
         Extends:
             :py:meth:`app.domain.cluster_groups.Cluster.membership_maintenance`.
@@ -764,33 +799,32 @@ class HiveCluster(Cluster):
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
 
-    def _validate_transition_matrix(self,
-                                    transition_matrix: pd.DataFrame,
-                                    target_distribution: pd.DataFrame) -> bool:
-        """Asserts if ``transition_matrix`` is a Markov Matrix.
+    def _validate_transition_matrix(
+            self, m: pd.DataFrame, v_: pd.DataFrame) -> bool:
+        """Asserts if ``m`` is a Markov Matrix.
 
-        Verification is done by raising the ``transition_matrix`` to the power
+        Verification is done by raising the ``m`` to the power
         of ``4096`` (just a large number) and checking if all columns of the
         powered matrix are element-wise equal to the
         entries of ``target_distribution``.
 
         Args:
-            transition_matrix (:py:class:`~pd:pandas.DataFrame`):
+            m (:py:class:`~pd:pandas.DataFrame`):
                 The matrix to be verified.
-            target_distribution (:py:class:`~pd:pandas.DataFrame`):
-                The steady state the ``transition_matrix`` is expected to have.
+            `v_` (:py:class:`~pd:pandas.DataFrame`):
+                The steady state the ``m`` is expected to have.
 
         Returns:
             ``True`` if the matrix converges to the ``target_distribution``,
-            otherwise ``False``. I.e., if ``transition_matrix`` is a
+            otherwise ``False``. I.e., if ``m`` is a
             markov matrix.
         """
-        t_pow = np.linalg.matrix_power(transition_matrix.to_numpy(), 4096)
+        t_pow = np.linalg.matrix_power(m.to_numpy(), 4096)
         column_count = t_pow.shape[1]
         for j in range(column_count):
             test_target = t_pow[:, j]  # gets array column j
             if not np.allclose(
-                    test_target, target_distribution[0].values, atol=1e-02):
+                    test_target, v_[0].values, atol=1e-02):
                 return False
         return True
     # endregion
@@ -871,7 +905,7 @@ class HiveCluster(Cluster):
         df['cv_'] = self.cv_[0].values
         df['v_'] = target[0].values
         df['(cv_ - v_)'] = (self.cv_.subtract(target))[0].values
-        df['tolerance'] = [(atol + np.abs(rtol) * x) for x in [*target[0]]]
+        df['tolerance'] = [(atol + np.abs(rtol) * x) for x in list(target[0])]
         zipped = zip(df['(cv_ - v_)'].to_list(), df['tolerance'].to_list())
         df['is_close'] = [x < y for x, y in zipped]
         return tabulate(df, headers='keys', tablefmt='psql')
@@ -986,18 +1020,15 @@ class HiveClusterExt(HiveCluster):
             List[:py:class:`~app.type_hints.NodeType`]:
                 A collection of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
-                See :py:meth:`app.domain.network_nodes.HiveNodeExt.get_status`.
+                See :py:meth:`app.domain.network_nodes.HiveNodeExt.update_status`.
         """
         lost_parts_count: int = 0
         off_nodes = []
 
-        members = self.members.values()
-        for node in members:
-            node.get_status()
-        for node in members:
-            if node.status == e.Status.ONLINE:
+        for node in self._members_view:
+            if node.is_up():
                 node.execute_epoch(self, self.file.name)
-            elif node.status == e.Status.SUSPECT:
+            elif node.is_suspect():
                 node_replicas = node.get_file_parts(self.file.name)
                 if node.id not in self.suspicious_nodes:
                     self.suspicious_nodes[node.id] = 1
@@ -1084,43 +1115,6 @@ class HDFSCluster(Cluster):
             node.id: 5 for node in members.values()
         }
 
-    # region Simulation setup
-    def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
-        """Distributes a collection of
-        :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
-        objects among the :py:attr:`~Cluster.members` of the ``HDFSCluster``.
-
-        Overrides:
-            :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.
-
-        Args:
-            replicas (:py:class:`~app.type_hints.ReplicasDict`):
-                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
-                replicas, without replication.
-            strat:
-                Defines how ``replicas`` will be initially distributed in
-                the ``Cluster``. Regardless of the received value, the body
-                of this method will always set ``strat`` to default ``"i"``.
-        """
-        self.file.logger.initial_spread = "i"
-
-        choices: List[th.NodeType]
-        selected_nodes: List[th.NodeType]
-
-        choices = [*self.members.values()]
-        uptime_sum = sum(c.uptime for c in choices)
-        chances = [c.uptime / uptime_sum for c in choices]
-
-        for replica in replicas.values():
-            choices_view = choices.copy()
-            selected_nodes = np.random.choice(
-                a=choices_view, p=chances,
-                size=REPLICATION_LEVEL, replace=False)
-            for node in selected_nodes:
-                replica.references += 1
-                node.receive_part(replica)
-    # endregion
-
     # region Simulation steps
     def nodes_execute(self) -> List[th.NodeType]:
         """Queries all :py:attr:`~Cluster.members` to execute the epoch.
@@ -1131,19 +1125,16 @@ class HDFSCluster(Cluster):
         Returns:
             List[:py:class:`~app.type_hints.NodeType`]:
                 A collection of :py:attr:`~Cluster.members` who disconnected
-                during the current epoch.
-                See :py:meth:`app.domain.network_nodes.HDFSNode.get_status`.
+                during the current epoch. See
+                :py:meth:`app.domain.network_nodes.HDFSNode.update_status`.
         """
         off_nodes = []
         lost_replicas_count: int = 0
 
-        members = self.members.values()
-        for node in members:
-            node.get_status()
-        for node in members:
-            if node.status == e.Status.ONLINE:
+        for node in self._members_view:
+            if node.is_up():
                 node.execute_epoch(self, self.file.name)
-            elif node.status == e.Status.SUSPECT:
+            elif node.is_suspect():
                 # Register lost replicas the moment the node disconnects.
                 if node.id not in self.suspicious_nodes:
                     self.suspicious_nodes.add(node.id)
@@ -1184,9 +1175,9 @@ class HDFSCluster(Cluster):
             self._set_fail("Cluster has no remaining members.")
 
         pcount: int = 0
-        members = self.members.values()
+        members = self._members_view
         for node in members:
-            if node.status == e.Status.ONLINE:
+            if node.is_up():
                 node_replicas = node.get_file_parts_count(self.file.name)
                 pcount += node_replicas
         self._log_evaluation(pcount)
@@ -1213,7 +1204,180 @@ class HDFSCluster(Cluster):
 
     def membership_maintenance(self) -> th.NodeDict:
         new_members = super().membership_maintenance()
-        for nid in new_members.keys():
+        for nid in new_members:
             if nid not in self.data_node_heartbeats:
                 self.data_node_heartbeats[nid] = 5
+    # endregion
+
+
+class NewscastCluster(Cluster):
+    """Represents a P2P network of nodes performing mean degree aggregation,
+    while simultaneously using Newscast for ``view shuffling``.
+    """
+
+    def __init__(self,
+                 master: th.MasterType,
+                 file_name: str,
+                 members: th.NodeDict,
+                 sim_id: int = 0,
+                 origin: str = "") -> None:
+        super().__init__(master, file_name, members, sim_id, origin)
+
+    # region Cluster API
+    def log_aggregation(self, value: float):
+        if value < self.min:
+            self.min = value
+            self.count_min = 1
+        elif value == self.min:
+            self.count_min += 1
+
+        if value > self.max:
+            self.max = value
+            self.count_max = 1
+        elif value == self.max:
+            self.count_max += 1
+
+        self.n += 1
+        self.sum += value
+        self.sqrsum += value * value
+
+    def wire_k_out(self):
+        """Creates a random directed P2P topology.
+
+        The initial cache size of each :py:class:`network node
+        <app.domain.network_nodes.NewscastNode>`, is at most as big as
+        :py:const:`~app.environment_settings.NEWSCAST_CACHE_SIZE`.
+
+        Note:
+            The topology does not have self loops, because
+            :py:meth:`~app.domain.network_nodes.NewscastNode.add_neighbor`
+            does not accept node self addition to
+            :py:attr:`~app.domain.network_nodes.NewscastNode.view`. In rare
+            occasions, the selected node out-going edges might all be
+            invalid, this should be a non-issue, as the nodes will eventually
+            join the overaly throughout the simulation.
+        """
+        network_size = len(self._members_view)
+        for i in range(network_size):
+            s = np.random.randint(0, network_size, size=NEWSCAST_CACHE_SIZE)
+            s = list(dict.fromkeys(s))
+            member = self._members_view[i]
+            for j in s:
+                another_member = self._members_view[j]
+                member.add_neighbor(another_member)
+
+    # endregion
+
+    # region Simulation steps
+    def execute_epoch(self, epoch: int) -> None:
+        self._setup_epoch(epoch)
+        self.nodes_execute()
+        self.evaluate()
+        if epoch == ms.Master.MAX_EPOCHS:
+            self.running = False
+
+    def nodes_execute(self) -> Optional[List[th.NodeType]]:
+        """Queries all network node members execute the epoch.
+
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.
+
+            Note:
+                :py:meth:`NewscasterCluster.nodes_execute
+                <app.domain.cluster_groups.NewscastNode.nodes_execute>`
+                always returns None.
+
+        Returns:
+            List[:py:class:`~app.type_hints.NodeType`]:
+                 A collection of members who disconnected during the current
+                 epoch. See
+                 :py:meth:`app.domain.network_nodes.NewscastNode.update_status`.
+        """
+        random.shuffle(self._members_view)
+
+        for node in self._members_view:
+            node.execute_epoch(self, self.file.name)
+        return None
+
+    def evaluate(self) -> None:
+        """Prints the epoch's aggregated peer degree, to the command-line
+        interface.
+        """
+        print({
+            "min": self.min,
+            "max": self.max,
+            "sum": self.sum / self.n,
+            "n": self.n,
+            "count_min": self.count_min,
+            "count_max": self.count_max
+        })
+
+    def maintain(self, off_nodes: List[th.NodeType]) -> None:
+        pass
+    # endregion
+
+    # region Simulation setup
+    def _setup_epoch(self, epoch: int) -> None:
+        """Initializes some attributes cluster attributes at the start of an
+        epoch.
+
+        Extends:
+            :py:meth:`app.domain.cluster_groups.Cluster._setup_epoch`
+
+        Args:
+            epoch:
+                The simulation's current epoch.
+        """
+        super()._setup_epoch(epoch)
+        self.min: float = float('inf')
+        self.max: float = 0.0
+        self.sum: float = 0.0
+        self.sqrsum: float = 0.0
+        self.n: int = 0
+        self.count_min: int = 0.0
+        self.count_max: int = 0.0
+
+    def spread_files(self, replicas: th.ReplicasDict, strat: str = "o") -> None:
+        """Distributes a collection of :py:class:`file block replicas
+        <app.domain.helpers.smart_dataclasses.FileBlockData>` among the
+        :py:attr:`members` of the cluster group.
+
+        Overrides:
+            :py:meth:`app.dommain.cluster_groups.Cluster.spread_files`
+
+        Args:
+            replicas (:py:class:`~app.type_hints.ReplicasDict`):
+                The :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
+                replicas, without replication.
+            strat:
+                Defines how ``replicas`` will be initially distributed in
+                the ``Cluster``. Unless overridden in children of this class the
+                received value of ``strat`` will be ignored and will always
+                be set to the default value ``o``.
+
+                o
+                    This strategy assumes erasure-coding is being used and
+                    that each :py:class:`network node
+                    <app.domain.network_nodes.Node>` will have no more than
+                    one encoded block, i.e., replication level is always
+                    equal to one. Note however, that if there are more encoded
+                    blocks than there are :py:class:`network nodes
+                    <app.domain.network_nodes.Node>`, some of these ``nodes``
+                    might end up possessing an excessive amount of blocks.
+        """
+        self.file.logger.initial_spread = "o"
+
+        # Can not use tuple in replicas because tuples are immutable.
+        replicas = list(replicas.values())
+        members = tuple(self.members.values())
+        members_len = len(members)
+
+        if len(replicas) <= members_len:
+            for member, replica in zip(members, replicas):
+                member.receive_part(replica)
+        else:
+            while replicas:
+                for member, replica in zip(members, replicas):
+                    member.receive_part(replica)
+                del replicas[:members_len]
     # endregion

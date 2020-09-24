@@ -1069,7 +1069,11 @@ overwrite previous <a class="reference internal" href="#app.domain.helpers.smart
 <li><p><strong>origin</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the simulation file name that started
 the simulation process. See
 <a class="reference internal" href="app.domain.html#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">Master</span></code></a> and
-<a class="reference internal" href="app.html#module-app.hive_simulation" title="app.hive_simulation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">hive_simulation</span></code></a>.</p></li>
+<a class="reference internal" href="app.html#module-app.hive_simulation" title="app.hive_simulation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">hive_simulation</span></code></a>. In addition to the previous,
+the origin should somehow include the cluster class name
+being run, to differentiate simulations’ output files being
+executed by different distributed storage system
+implementations.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>

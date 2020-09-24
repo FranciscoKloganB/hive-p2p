@@ -6,9 +6,10 @@ file metadata servers or a bank of currently online and offline
 from __future__ import annotations
 
 import json
-from typing import List, Union, Dict, Any, Optional
+import math
+import datetime
+from typing import Union, Dict, Any, Optional
 
-import domain.helpers.enums as e
 import type_hints as th
 import numpy as np
 
@@ -206,6 +207,7 @@ class Master:
     # region Simulation steps
     def execute_simulation(self) -> None:
         """Starts the simulation processes."""
+        start_time = datetime.datetime.now()
         while self.epoch < Master.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
             print("epoch: {}".format(self.epoch))
             terminated_clusters: List[str] = []
@@ -218,25 +220,29 @@ class Master:
                 print(f"Cluster: {cid} terminated at epoch {self.epoch}")
                 self.cluster_groups.pop(cid)
             self.epoch += 1
+        finish_time = datetime.datetime.now()
+        delta_time = int((finish_time - start_time).total_seconds())
+        print(f"Master ({self.origin}_{self.sim_id}) exec time: {delta_time}")
     # endregion
 
     # region Master API
     def find_online_nodes(
-            self, blacklist: th.NodeDict, n: int) -> th.NodeDict:
+            self, n: int = 1, blacklist: Optional[th.NodeDict] = None
+    ) -> th.NodeDict:
         """Finds ``n`` :py:class:`network nodes
         <app.domain.network_nodes.Node>` who are currently registered at the
         ``Master`` and whose status is online.
 
         Args:
+            n:
+                How many :py:class:`network node
+                <app.domain.network_nodes.Node>` references the requesting
+                entity wants to find.
             blacklist (:py:class:`~app.type_hints.NodeDict`):
                 A collection of :py:attr:`nodes identifiers
                 <app.domain.network_nodes.Node.id>` and their object
                 instances, which specify nodes the requesting entity has
                 no interest in.
-            n:
-                How many :py:class:`network node
-                <app.domain.network_nodes.Node>` references the requesting
-                entity wants to find.
 
         Returns:
             :py:class:`~app.type_hints.NodeDict`:
@@ -244,18 +250,18 @@ class Master:
                 which is at most as big as ``n``, which does not include any
                 node named in ``blacklist``.
         """
+
         selected: th.NodeDict = {}
-        if n <= 0:
+        if n < 1:
             return selected
+        if blacklist is None:
+            blacklist = {}
 
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
-            if len(selected) == n:
+            if len(selected) >= n:
                 return selected
-            elif node.status != e.Status.ONLINE:
-                # TODO: future-iterations review this code.
-                self.network_nodes.pop(node.id, None)
-            elif node.id not in blacklist:
+            if node.id not in blacklist:
                 selected[node.id] = node
         return selected
     # endregion
@@ -283,7 +289,7 @@ class Master:
         """
         cluster_members: th.NodeDict = {}
         nodes = np.random.choice(
-            a=[*self.network_nodes.keys()], size=size, replace=False)
+            a=tuple(self.network_nodes), size=size, replace=False)
 
         for node_id in nodes:
             cluster_members[node_id] = self.network_nodes[node_id]
@@ -322,14 +328,6 @@ class Master:
 
 
 class HiveMaster(Master):
-    def __init__(self,
-                 simfile_name: str,
-                 sid: int,
-                 epochs: int,
-                 cluster_class: str,
-                 node_class: str) -> None:
-        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
-
     # region Master API
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
@@ -350,14 +348,6 @@ class HiveMaster(Master):
 
 
 class HDFSMaster(Master):
-    def __init__(self,
-                 simfile_name: str,
-                 sid: int,
-                 epochs: int,
-                 cluster_class: str,
-                 node_class: str) -> None:
-        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
-
     # region Simulation setup
     def _process_simfile(
             self, path: str, cluster_class: str, node_class: str) -> None:
@@ -386,7 +376,7 @@ class HDFSMaster(Master):
 
             The other difference is that the spread strategy is ignored.
             We are not interested in knowing if the way the files are
-            initially spread affects the time it takes for hives to
+            initially spread affects the time it takes for clusters to
             achieve a steady-state distribution since in HDFS
             :py:class:`file block replicas
             <app.domain.helpers.smart_dataclasses.FileBlockData>` are
@@ -425,4 +415,85 @@ class HDFSMaster(Master):
             for cluster in self.cluster_groups.values():
                 file_blocks = fblocks[cluster.file.name]
                 cluster.spread_files(file_blocks)
+    # endregion
+
+
+class NewscastMaster(Master):
+    def __init__(self,
+                 simfile_name: str,
+                 sid: int,
+                 epochs: int,
+                 cluster_class: str,
+                 node_class: str) -> None:
+        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
+        for cluster in self.cluster_groups.values():
+            cluster.wire_k_out()
+
+    # region Simulation setup
+    def _process_simfile(
+            self, path: str, cluster_class: str, node_class: str) -> None:
+        """Opens and processes the simulation filed referenced in `path`.
+
+        Overrides:
+            :py:meth:`app.domain.master_servers.Master._process_simfile`.
+
+            Newscast is a gossip-based P2P network. We assume erasure-coding
+            would be used in this scenario and thus, for simplicity,
+            we divide the specified file's size into multiple ``1/N``,
+            where ``N`` is the number of :py:class:`network nodes
+            <app.domain.network_nodes.NewscastNode>` in the system.
+
+        Note:
+            This class, :py:class:`~app.domain.cluster_groups.NewscastCluster`
+            and :py:class:`~app.domain.network_nodes.NewscastNode` were
+            created to test our simulators performance, concerning the amount
+            of supported simultaneous network nodes in a simulation. We do
+            not actually care if the created file blocks are lost as the
+            :py:class:`network nodes <app.domain.network_nodes.NewscastNode>`
+            job in the simulation is to carry out the
+            protocol defined in `PeerSim's AverageFunction
+            <http://peersim.sourceforge.net/doc/index.html>`_. `PeerSim
+            <http://peersim.sourceforge.net/>`_ uses configuration ``Example 2``
+            provided in release 1.0.5, as a means of testing the simulator
+            performance, according to this `Ms.C. dissertation by J. Neto
+            <https://www.gsd.inesc-id.pt/~lveiga/papers/msc-supervised-thesis-abstracts/jneto-FINAL.pdf>`_.
+            This configuration uses Newscast protocol with AverageFunction
+            and periodic monitoring of the system state. We implement our
+            version of `Adaptaive Peer Sampling with Newscast
+            <https://dl.acm.org/doi/abs/10.1007/978-3-642-03869-3_50>`_ by
+            N. Tölgyesi and M. Jelasity, to avoid the effort of translating
+            PeerSim's code.
+
+        Args:
+            path:
+                The path to the simulation file. Including extension and
+                parent folders.
+            cluster_class:
+                The name of the class used to instantiate cluster group
+                instances through reflection.
+                See :py:mod:`app.domain.cluster_groups`.
+            node_class:
+                The name of the class used to instantiate network node
+                instances through reflection.
+                See :py:mod:`app.domain.network_nodes`.
+        """
+        with open(path) as input_file:
+            simfile_json: Any = json.load(input_file)
+
+            self._create_network_nodes(simfile_json, node_class)
+
+            d: _PersistentingDict = simfile_json['persisting']
+            for fname in d:
+                spread_strategy = d[fname]['spread']
+                cluster_size = d[fname]['cluster_size']
+
+                cluster = self._new_cluster_group(
+                    cluster_class, cluster_size, fname)
+
+                file_path = os.path.join(SHARED_ROOT, fname)
+                block_size = os.path.getsize(file_path) / cluster_size
+                block_size = math.ceil(block_size)
+                file_blocks = self._split_files(fname, cluster, int(block_size))
+
+                cluster.spread_files(file_blocks, spread_strategy)
     # endregion

@@ -114,10 +114,11 @@
 <span class="sd">reliable servers or P2P nodes.&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
 
 <span class="kn">import</span> <span class="nn">domain.helpers.smart_dataclasses</span> <span class="k">as</span> <span class="nn">sd</span>
 <span class="kn">import</span> <span class="nn">domain.helpers.enums</span> <span class="k">as</span> <span class="nn">e</span>
@@ -127,7 +128,9 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">crypto</span>
-<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="n">TRUE_FALSE</span>
+<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">NEWSCAST_CACHE_SIZE</span>
+
+<span class="n">_NetworkView</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Node</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node">[docs]</a><span class="k">class</span> <span class="nc">Node</span><span class="p">:</span>
@@ -185,13 +188,12 @@
 <span class="sd">            uptime:</span>
 <span class="sd">                The availability of the ``Node`` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">uptime</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
-            <span class="n">uptime</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">uptime</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">uptime</span> <span class="o">*</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">uid</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">uptime</span>
+        <span class="k">if</span> <span class="n">uptime</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="n">ttl</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ttl</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">uptime</span> <span class="o">*</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">ttl</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_replies</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">,</span>
@@ -201,6 +203,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
 
     <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="Node.update_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.update_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to update the time to live of the node instance.</span>
+
+<span class="sd">        When invoked, the network node decides if it should remain online or</span>
+<span class="sd">        change some other state.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
+<span class="sd">                The the status of the ``Node``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">OFFLINE</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div>
+
 <div class="viewcode-block" id="Node.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Instructs the ``Node`` instance to execute the epoch.</span>
 
@@ -350,7 +368,7 @@
                                   <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">replica</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> due to corruption.&quot;</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
-    <span class="c1"># region Get methods</span>
+    <span class="c1"># region Node API</span>
 <div class="viewcode-block" id="Node.get_file_parts"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_file_parts">[docs]</a>    <span class="k">def</span> <span class="nf">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Gets collection of file parts that correspond to the named file.</span>
 
@@ -388,25 +406,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{}))</span></div>
 
-<div class="viewcode-block" id="Node.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``Node``.</span>
+<div class="viewcode-block" id="Node.is_up"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.is_up">[docs]</a>    <span class="k">def</span> <span class="nf">is_up</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns ``True`` if the node is online, else ``False``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span></div>
 
-<span class="sd">        This method equates a ping. When invoked, the ``Node`` decides if it</span>
-<span class="sd">        should remain online or change some other state depending on his</span>
-<span class="sd">        remaining :py:attr:`uptime`.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
-<span class="sd">                The the status of the ``Node``.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">OFFLINE</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div>
+<div class="viewcode-block" id="Node.is_suspect"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.Node.is_suspect">[docs]</a>    <span class="k">def</span> <span class="nf">is_suspect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns ``True`` if the node is behaving suspiciously,</span>
+<span class="sd">        else ``False``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span></div>
     <span class="c1"># endregion</span>
 
-    <span class="c1"># region Python dunder methods&#39; overrides</span>
+    <span class="c1"># region Dunder methods&#39; overrides</span>
     <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
 
@@ -422,13 +432,17 @@
     <span class="sd">&quot;&quot;&quot;Represents a network node that executes a Swarm Guidance algorithm.</span>
 
 <span class="sd">    Attributes:</span>
+<span class="sd">        clusters:</span>
+<span class="sd">            A collection of :py:class:`cluster groups</span>
+<span class="sd">            &lt;app.domain.cluster_groups.HiveCluster&gt;` the ``HiveNode`` is a</span>
+<span class="sd">            member of.</span>
 <span class="sd">        routing_table (Dict[str, :py:class:`~pd:pandas.DataFrame`]):</span>
 <span class="sd">            Contains the information required to appropriately route file</span>
 <span class="sd">            block blocks to other HiveNode instances.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="HiveNode.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">uptime</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hives</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
 
     <span class="c1"># region Simulation steps</span>
@@ -502,12 +516,14 @@
         <span class="c1"># Number of times the block needs to be replicated.</span>
         <span class="n">lost_replicas</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">replica</span><span class="o">.</span><span class="n">can_replicate</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">sorted_members</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">cluster</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">sorted_members</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
+            <span class="p">)</span>
             <span class="k">for</span> <span class="n">destination</span> <span class="ow">in</span> <span class="n">sorted_members</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">break</span>
                 <span class="n">code</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">route_part</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">fresh_replica</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">is_fresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
                     <span class="n">lost_replicas</span> <span class="o">-=</span> <span class="mi">1</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -518,8 +534,9 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Routing table management</span>
+    <span class="c1"># noinspection PyIncorrectDocstring</span>
 <div class="viewcode-block" id="HiveNode.set_file_routing"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNode.set_file_routing">[docs]</a>    <span class="k">def</span> <span class="nf">set_file_routing</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">transition_vector</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Maps a file name identifier with a transition column vector used</span>
 <span class="sd">        for file block replica routing.</span>
@@ -529,7 +546,7 @@
 <span class="sd">                The :py:attr:`file name identifier</span>
 <span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
 <span class="sd">                of the file whose routing is being configured.</span>
-<span class="sd">            transition_vector (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):</span>
+<span class="sd">            `v_` (Union[:py:class:`~pd:pandas.Series`, :py:class:`~pd:pandas.DataFrame`]):</span>
 <span class="sd">                A column vector with probabilities that dictate the odds of</span>
 <span class="sd">                sending file block blocks belonging to the file with</span>
 <span class="sd">                specified id to other Cluster members also working on the</span>
@@ -537,14 +554,14 @@
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError:</span>
-<span class="sd">                If ``transition_vector`` is not a :py:class:`~pd:pandas.DataFrame` and cannot</span>
-<span class="sd">                be casted to it.</span>
+<span class="sd">                If ``transition_vector`` is not a</span>
+<span class="sd">                :py:class:`~pd:pandas.DataFrame` and cannot be casted to it.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_vector</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition_vector</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_vector</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition_vector</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;set_file_routing method expects a pandas.Series &quot;</span><span class="p">,</span>
                              <span class="s2">&quot;or pandas.DataFrame as transition vector type.&quot;</span><span class="p">)</span></div>
@@ -584,8 +601,8 @@
 <span class="sd">            The name or address of the selected destination.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">routing_vector</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">routing_table</span><span class="p">[</span><span class="n">fid</span><span class="p">]</span>
-        <span class="n">hive_members</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">routing_vector</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
-        <span class="n">member_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">routing_vector</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="n">hive_members</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">routing_vector</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">member_chances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">routing_vector</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">hive_members</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">member_chances</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">vE</span><span class="p">:</span>
@@ -606,25 +623,21 @@
 <span class="sd">    behaviours.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># region Get methods</span>
-<div class="viewcode-block" id="HiveNodeExt.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNodeExt.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HiveNodeExt``.</span>
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="HiveNodeExt.update_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HiveNodeExt.update_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to update the time to live of the node instance.</span>
 
-<span class="sd">        This method equates a ping. When invoked, the ``HiveNodeExt``</span>
-<span class="sd">        decides if it should remain online or change some other state</span>
-<span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
+<span class="sd">        When invoked, the network node decides if it should remain online or</span>
+<span class="sd">        change some other state.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
-
-<span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
-<span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
 <span class="sd">                The the status of the ``Node``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
@@ -635,10 +648,28 @@
 
 <div class="viewcode-block" id="HDFSNode"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode">[docs]</a><span class="k">class</span> <span class="nc">HDFSNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents a data node in the Hadoop Distribute File System.&quot;&quot;&quot;</span>
-<div class="viewcode-block" id="HDFSNode.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">uptime</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="HDFSNode.update_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.update_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to update the time to live of the node instance.</span>
+
+<span class="sd">        When invoked, the network node decides if it should remain online or</span>
+<span class="sd">        change some other state.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
+<span class="sd">                The the status of the ``Node``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div>
+
 <div class="viewcode-block" id="HDFSNode.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Instructs the ``HDFSNode`` instance to execute the epoch.</span>
 
@@ -704,44 +735,285 @@
         <span class="c1"># Number of times the block needs to be replicated.</span>
         <span class="n">lost_replicas</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">replica</span><span class="o">.</span><span class="n">can_replicate</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">cluster</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+            <span class="n">choices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
             <span class="n">choices</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">node</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">uptime</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">destination</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">lost_replicas</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">break</span>
                 <span class="n">code</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">route_part</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">fresh_replica</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">replica</span><span class="p">,</span> <span class="n">is_fresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
                     <span class="n">lost_replicas</span> <span class="o">-=</span> <span class="mi">1</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="c1"># replication level may have not been completely restored</span>
-            <span class="n">replica</span><span class="o">.</span><span class="n">update_epochs_to_recover</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span></div>
+            <span class="n">replica</span><span class="o">.</span><span class="n">update_epochs_to_recover</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 
-    <span class="c1"># region Get Methods</span>
-<div class="viewcode-block" id="HDFSNode.get_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.HDFSNode.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Used to obtain the status of the ``HDFSNode``.</span>
 
-<span class="sd">        This method equates a ping. When invoked, the ``HDFSNode``</span>
-<span class="sd">        decides if it should remain online or change some other state</span>
-<span class="sd">        depending on his remaining :py:attr:`~Node.uptime`.</span>
+<div class="viewcode-block" id="NewscastNode"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode">[docs]</a><span class="k">class</span> <span class="nc">NewscastNode</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a Peer running Newscast protocol, using shuffling</span>
+<span class="sd">    techniques to exchange acquaintances with other network peers and</span>
+<span class="sd">    performing peer degree aggregation using AverageFunction.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        view:</span>
+<span class="sd">            A partial view of the P2P network. ``View`` is a collection of</span>
+<span class="sd">            :py:class:`network nodes &lt;app.domain.network_nodes.NewscastNode&gt;`,</span>
+<span class="sd">            the ``NewscastNode`` instance may contact other than himself. Keys</span>
+<span class="sd">            are :py:class:`NewscastNode` instances, and values are their age</span>
+<span class="sd">            in the dictionary. A key-value pair is commonly referenced as a</span>
+<span class="sd">            ``descriptor``.</span>
+<span class="sd">        aggregation_value:</span>
+<span class="sd">            Stores the aggregation value. The type of ``aggregation_value``</span>
+<span class="sd">            is defined by the body of the :py:meth:`aggregate` method.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="NewscastNode.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uptime</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="n">uptime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span> <span class="n">_NetworkView</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregation_value</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+    <span class="c1"># region Node API</span>
+<div class="viewcode-block" id="NewscastNode.add_neighbor"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.add_neighbor">[docs]</a>    <span class="k">def</span> <span class="nf">add_neighbor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">NewscastNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Adds a new network node to the node instance&#39;s view.</span>
+
+<span class="sd">        If the view is full, the eldest node is replaced with the new node.</span>
+<span class="sd">        Otherwise, the new :py:class:`NewscastNode` is added to the</span>
+<span class="sd">        instance&#39;s view with age zero, unless the entry is already in</span>
+<span class="sd">        :py:attr:`view` or the ``node`` is the current ``NewscastNode``</span>
+<span class="sd">        instance.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ``True`` if ``node`` was successfuly added, ``False`` otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="ow">or</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">view_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">view_size</span> <span class="o">&lt;</span> <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">view_size</span> <span class="o">==</span> <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">oldest_node</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">v</span><span class="p">))]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">oldest_node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="NewscastNode.get_degree"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.get_degree">[docs]</a>    <span class="k">def</span> <span class="nf">get_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Counts the number of descriptors in the node&#39;s view.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The degree of the ``NewscastNode`` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewscastNode.get_node"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.get_node">[docs]</a>    <span class="k">def</span> <span class="nf">get_node</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">NewscastNode</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Gets a random node from the current network view.</span>
+
+<span class="sd">        Each candidate :py:class:`NewscastNode` to be returned is first pinged,</span>
+<span class="sd">        if no answer is obtained, another node is selected as a candidate by</span>
+<span class="sd">        iterating a list representation of :py:attr:`view` and the previous</span>
+<span class="sd">        candidate is removed from the :py:attr:`view`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Newscast should always return a random node, thus iteration</span>
+<span class="sd">            should not be used, but this search is more efficient and readable.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The selected ``NewscastNode``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_degree</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">neighbors</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">neighbors</span><span class="p">))</span>
+        <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">neighbors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">candidate_node</span>
+
+        <span class="k">for</span> <span class="n">candidate_node</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">candidate_node</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">candidate_node</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="NewscastNode.update_status"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.update_status">[docs]</a>    <span class="k">def</span> <span class="nf">update_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Used to update the time to live of the node instance.</span>
+
+<span class="sd">        When invoked, the network node decides if it should remain online or</span>
+<span class="sd">        change some other state.</span>
 
 <span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.network_nodes.Node.get_status`.</span>
-
-<span class="sd">            When not ONLINE the node sets itself as Suspect and will only become</span>
-<span class="sd">            offline when the monitor marks him as so (e.g.: due to complaints).</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :py:class:`~app.domain.helpers.enums.Status`:</span>
-<span class="sd">                The the status of the ``HDFSNode``.</span>
+<span class="sd">                The the status of the ``Node``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [x] </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> now offline (suspect status).&quot;</span><span class="p">)</span>
+                <span class="c1"># print(f&quot; [x] {self.id} now has offline or suspicious status.&quot;)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="p">{}</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">SUSPECT</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div></div>
+        <span class="k">elif</span> <span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.16</span><span class="p">:</span>
+            <span class="c1"># Peer comes online with 16% chance per epoch after going offline.</span>
+            <span class="n">ttl</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.32</span><span class="p">)</span> <span class="o">*</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uptime</span> <span class="o">=</span> <span class="n">ttl</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span>
+            <span class="c1"># print(f&quot; [o] {self.id} is now back online.&quot;)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span></div>
+
+<div class="viewcode-block" id="NewscastNode.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">fid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Instructs the ``NewscastNode`` instance to execute the epoch.</span>
+
+<span class="sd">        During the execution of the epoch, the ``NewscastNode``</span>
+<span class="sd">        instance randomly selects another ``NewscastNode`` who belongs to his</span>
+<span class="sd">        :py:attr:`view` and aggregates their degree using the Average</span>
+<span class="sd">        Function. Sometimes, during the epoch, the ``NewscastNode`` instance</span>
+<span class="sd">        will also perform shuffling with the selected target.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.network_nodes.Node.execute_epoch`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cluster (:py:class:`~app.type_hints.ClusterType`):</span>
+<span class="sd">                A reference to the</span>
+<span class="sd">                :py:class:`~app.domain.cluster_groups.Cluster` that invoked</span>
+<span class="sd">                the ``Node`` method.</span>
+<span class="sd">            fid:</span>
+<span class="sd">                The :py:attr:`file name identifier</span>
+<span class="sd">                &lt;app.domain.helpers.smart_dataclasses.FileData.name&gt;`</span>
+<span class="sd">                of the file being simulated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># increase all descriptors&#39; age</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># select a random node from view, the current node is isolated a</span>
+        <span class="c1"># query a central server to find a gateway to the overaly.</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span> <span class="ow">or</span> <span class="n">cluster</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="c1"># use newscast behavior to shuffle views and aggregate peer degrees</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="n">cluster</span><span class="o">.</span><span class="n">log_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aggregation_value</span><span class="p">)</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region File block management</span>
+<div class="viewcode-block" id="NewscastNode.replicate_part"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.replicate_part">[docs]</a>    <span class="k">def</span> <span class="nf">replicate_part</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">cluster</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterType</span><span class="p">,</span> <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Newscast peer shuffling and aggregation</span>
+<div class="viewcode-block" id="NewscastNode.aggregate"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.aggregate">[docs]</a>    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">NewscastNode</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The network node instance contacts another node from his view, then,</span>
+<span class="sd">        both nodes assign the mean of their degrees to</span>
+<span class="sd">        :py:attr:`aggregation_value`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node:</span>
+<span class="sd">                When ``node`` is None a random ``NewscastNode`` is selected</span>
+<span class="sd">                from :py:attr:`view`. When specified to be contacted is the</span>
+<span class="sd">                one referenced in the parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">candidate_node</span> <span class="o">=</span> <span class="n">node</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">candidate_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">mean</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_degree</span><span class="p">()</span> <span class="o">+</span> <span class="n">candidate_node</span><span class="o">.</span><span class="n">get_degree</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">candidate_node</span><span class="o">.</span><span class="n">aggregation_value</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregation_value</span> <span class="o">=</span> <span class="n">mean</span></div>
+
+<div class="viewcode-block" id="NewscastNode.shuffle"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.shuffle">[docs]</a>    <span class="k">def</span> <span class="nf">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">:</span> <span class="n">NewscastNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Starts a shuffle process that merges and crops two nodes&#39; views at</span>
+<span class="sd">        the current node and at the destination node.</span>
+
+<span class="sd">        The final view consists of most up to date descriptors from both</span>
+<span class="sd">        :py:attr:`views &lt;view&gt;` up to a maximum of :py:attr:`max_view_size`</span>
+<span class="sd">        descriptors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            node:</span>
+<span class="sd">                The node to be contacted for shuffling.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">my_view</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+        <span class="n">my_view</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">his_view</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">shuffle_request</span><span class="p">(</span><span class="n">my_view</span><span class="p">)</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">,</span> <span class="n">his_view</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_view</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewscastNode.shuffle_request"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode.shuffle_request">[docs]</a>    <span class="k">def</span> <span class="nf">shuffle_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">senders_view</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NetworkView</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Merges and crops two nodes&#39; views at the current node.</span>
+
+<span class="sd">        The final view consists of most up to date descriptors from both</span>
+<span class="sd">        :py:attr:`views &lt;view&gt;` up to a maximum of :py:attr:`max_view_size`</span>
+<span class="sd">        descriptors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            senders_view:</span>
+<span class="sd">                A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">                and values are their respective age in the view.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A :py:attr:`view` and a fresh ``descriptor``</span>
+<span class="sd">            from the ``NewscastNode`` instance, before it is</span>
+<span class="sd">            merged with the requestor&#39;s view.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">my_view</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+        <span class="n">my_view</span><span class="p">[</span><span class="bp">self</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">,</span> <span class="n">senders_view</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_view</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">my_view</span></div>
+
+<div class="viewcode-block" id="NewscastNode._merge"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode._merge">[docs]</a>    <span class="k">def</span> <span class="nf">_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NetworkView</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Merges two network views. If a node descriptor exists in both</span>
+<span class="sd">        views, the most recent descriptor is kept.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            a:</span>
+<span class="sd">                A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">                and values are their respective age in the view.</span>
+<span class="sd">            b:</span>
+<span class="sd">                A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">                and values are their respective age in the view.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The set union of both views with only the most up to date</span>
+<span class="sd">            descriptors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">b</span><span class="p">:</span>
+            <span class="n">a</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">a</span> <span class="k">else</span> <span class="n">b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">a</span></div>
+
+<div class="viewcode-block" id="NewscastNode._select_view"><a class="viewcode-back" href="../../../app.domain.html#app.domain.network_nodes.NewscastNode._select_view">[docs]</a>    <span class="k">def</span> <span class="nf">_select_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">view_buffer</span><span class="p">:</span> <span class="n">_NetworkView</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_NetworkView</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reduces the size of the view to a predefined maximum size.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            A dictionary where keys are :py:class:`network nodes &lt;Node&gt;`</span>
+<span class="sd">            and values are their respective age in the view.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">view_buffer</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="n">view_buffer</span><span class="p">[:</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 </pre></div>
 

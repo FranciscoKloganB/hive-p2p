@@ -33,9 +33,9 @@ Note:
 
 """
 
-import getopt
 import os
 import sys
+import getopt
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import Optional
 
@@ -204,6 +204,7 @@ def main(threads_count: int,
         _parallel_main(
             numpy.abs(threads_count).item(), sdir, sname, iters, epochs)
     else:
+
         _single_main(sdir, sname, iters, epochs)
 
 
@@ -264,4 +265,6 @@ if __name__ == "__main__":
                  "  --file -f (str)\n"
                  "  --master_server -m (str)\n"
                  "  --cluster_group -c (str)\n"
-                 "  --network_node -n (str)\n")
+                 "  --network_node -n (str)\n"
+                 "Another cause of error might be a simulation file with "
+                 "inconsistent values.")

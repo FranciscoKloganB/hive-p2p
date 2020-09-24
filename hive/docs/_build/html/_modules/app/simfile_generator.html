@@ -134,7 +134,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span>
 
 <span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">SIMULATION_ROOT</span>
-<span class="kn">from</span> <span class="nn">scripts.python</span> <span class="kn">import</span> <span class="n">normal_distribution_generator</span> <span class="k">as</span> <span class="n">ng</span>
+<span class="kn">from</span> <span class="nn">scripts.python</span> <span class="kn">import</span> <span class="n">normal_distr_sampler</span> <span class="k">as</span> <span class="n">ng</span>
 
 
 <span class="c1"># region Input Consumption and Verification</span>
@@ -162,7 +162,7 @@
 
 
 <div class="viewcode-block" id="_input_bounded_integer"><a class="viewcode-back" href="../../app.html#app.simfile_generator._input_bounded_integer">[docs]</a><span class="k">def</span> <span class="nf">_input_bounded_integer</span><span class="p">(</span>
-        <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16384</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Obtains a user inputed integer within the specified closed interval.</span>
 
 <span class="sd">    Args:</span>
@@ -257,7 +257,7 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        ``True`` if user presses yes, otherwise ``False``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">char</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">; y/n: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">char</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2"> [y/n]: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -303,7 +303,7 @@
 <span class="sd">        and values are their respective uptimes</span>
 <span class="sd">        :py:attr:`uptime &lt;app.domain.network_nodes.Node.uptime&gt;` values.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">number_of_nodes</span> <span class="o">=</span> <span class="n">_input_bounded_integer</span><span class="p">(</span><span class="s2">&quot;Network Size [2, 16384]: &quot;</span><span class="p">)</span>
+    <span class="n">number_of_nodes</span> <span class="o">=</span> <span class="n">_input_bounded_integer</span><span class="p">(</span><span class="s2">&quot;Network Size [2, 10000000]: &quot;</span><span class="p">)</span>
 
     <span class="n">min_uptime</span> <span class="o">=</span> <span class="n">_input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Min node uptime [0.0, 100.0]: &quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
     <span class="n">min_uptime</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">min_uptime</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
@@ -314,11 +314,11 @@
     <span class="n">mean</span> <span class="o">=</span> <span class="n">_input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Distribution mean [0.0, 100.0]: &quot;</span><span class="p">)</span>
     <span class="n">std</span> <span class="o">=</span> <span class="n">_input_bounded_float</span><span class="p">(</span><span class="s2">&quot;Standard deviation [0.0, 100.0]: &quot;</span><span class="p">)</span>
 
-    <span class="n">samples</span> <span class="o">=</span> <span class="n">ng</span><span class="o">.</span><span class="n">generate_samples</span><span class="p">(</span><span class="n">surveys</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">ng</span><span class="o">.</span><span class="n">generate_samples</span><span class="p">(</span>
+        <span class="n">surveys</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_count</span><span class="o">=</span><span class="n">number_of_nodes</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="n">std</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
     <span class="n">nodes_uptime</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">yield_label</span><span class="p">(),</span> <span class="n">number_of_nodes</span><span class="p">):</span>
-        <span class="c1"># gets and removes last element in samples to assign it to label</span>
         <span class="n">uptime</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">pop</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mf">100.0</span>
         <span class="n">uptime</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">uptime</span><span class="p">,</span> <span class="n">min_uptime</span><span class="p">,</span> <span class="n">max_uptime</span><span class="p">)</span>
         <span class="n">nodes_uptime</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">truncate_float_value</span><span class="p">(</span><span class="n">uptime</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="mi">6</span><span class="p">)</span>
@@ -350,15 +350,17 @@
         <span class="n">options_message</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Select how files blocks are spread across &quot;</span>
                            <span class="s2">&quot;clusters at the start of the simulation: {</span><span class="se">\n</span><span class="s2">&quot;</span>
                            <span class="s2">&quot;   u: uniform distribution among network nodes,</span><span class="se">\n</span><span class="s2">&quot;</span>
-                           <span class="s2">&quot;   i: near steady-state distribution,</span><span class="se">\n</span><span class="s2">&quot;</span>
-                           <span class="s2">&quot;   a: all files concentrated on N blocks</span><span class="se">\n</span><span class="s2">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">options_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">]</span>
+                           <span class="s2">&quot;   i: ideal distribution, e.g., near a steady-state vector, </span><span class="se">\n</span><span class="s2">&quot;</span>
+                           <span class="s2">&quot;   a: all replicas given to N different nodes,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                           <span class="s2">&quot;   o: each network node receives one random replica</span><span class="se">\n</span><span class="s2">&quot;</span>
+                           <span class="s2">&quot;}: &quot;</span><span class="p">)</span>
+        <span class="n">options_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;u&quot;</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;i&quot;</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="s2">&quot;O&quot;</span><span class="p">]</span>
         <span class="n">option_choice</span> <span class="o">=</span> <span class="n">_input_character_option</span><span class="p">(</span><span class="n">options_message</span><span class="p">,</span> <span class="n">options_list</span><span class="p">)</span>
 
         <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">][</span><span class="s2">&quot;spread&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">option_choice</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">persisting</span><span class="p">[</span><span class="n">file_name</span><span class="p">][</span><span class="s2">&quot;cluster_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_input_bounded_integer</span><span class="p">(</span>
-            <span class="s2">&quot;Number of nodes that should be sharing the next file: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Number of nodes that should be sharing the next file: &quot;</span><span class="p">)</span>
 
         <span class="n">add_file</span> <span class="o">=</span> <span class="n">_in_yes_no</span><span class="p">(</span>
             <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Simulate persistence of another file in simulation?&quot;</span><span class="p">)</span>

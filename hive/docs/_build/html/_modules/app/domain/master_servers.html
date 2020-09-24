@@ -116,9 +116,10 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 
-<span class="kn">import</span> <span class="nn">domain.helpers.enums</span> <span class="k">as</span> <span class="nn">e</span>
 <span class="kn">import</span> <span class="nn">type_hints</span> <span class="k">as</span> <span class="nn">th</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -316,6 +317,7 @@
     <span class="c1"># region Simulation steps</span>
 <div class="viewcode-block" id="Master.execute_simulation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.execute_simulation">[docs]</a>    <span class="k">def</span> <span class="nf">execute_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Starts the simulation processes.&quot;&quot;&quot;</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">&lt;</span> <span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS_PLUS_ONE</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;epoch: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="p">))</span>
             <span class="n">terminated_clusters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -327,26 +329,30 @@
             <span class="k">for</span> <span class="n">cid</span> <span class="ow">in</span> <span class="n">terminated_clusters</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cluster: </span><span class="si">{</span><span class="n">cid</span><span class="si">}</span><span class="s2"> terminated at epoch </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">cid</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">finish_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">delta_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">finish_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Master (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sim_id</span><span class="si">}</span><span class="s2">) exec time: </span><span class="si">{</span><span class="n">delta_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Master API</span>
 <div class="viewcode-block" id="Master.find_online_nodes"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.Master.find_online_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">find_online_nodes</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">blacklist</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Finds ``n`` :py:class:`network nodes</span>
 <span class="sd">        &lt;app.domain.network_nodes.Node&gt;` who are currently registered at the</span>
 <span class="sd">        ``Master`` and whose status is online.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            n:</span>
+<span class="sd">                How many :py:class:`network node</span>
+<span class="sd">                &lt;app.domain.network_nodes.Node&gt;` references the requesting</span>
+<span class="sd">                entity wants to find.</span>
 <span class="sd">            blacklist (:py:class:`~app.type_hints.NodeDict`):</span>
 <span class="sd">                A collection of :py:attr:`nodes identifiers</span>
 <span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` and their object</span>
 <span class="sd">                instances, which specify nodes the requesting entity has</span>
 <span class="sd">                no interest in.</span>
-<span class="sd">            n:</span>
-<span class="sd">                How many :py:class:`network node</span>
-<span class="sd">                &lt;app.domain.network_nodes.Node&gt;` references the requesting</span>
-<span class="sd">                entity wants to find.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            :py:class:`~app.type_hints.NodeDict`:</span>
@@ -354,18 +360,18 @@
 <span class="sd">                which is at most as big as ``n``, which does not include any</span>
 <span class="sd">                node named in ``blacklist``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">selected</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">selected</span>
+        <span class="k">if</span> <span class="n">blacklist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">blacklist</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">network_nodes_view</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network_nodes_view</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">selected</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="n">e</span><span class="o">.</span><span class="n">Status</span><span class="o">.</span><span class="n">ONLINE</span><span class="p">:</span>
-                <span class="c1"># TODO: future-iterations review this code.</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
                 <span class="n">selected</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
         <span class="k">return</span> <span class="n">selected</span></div>
     <span class="c1"># endregion</span>
@@ -393,7 +399,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cluster_members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-            <span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="o">.</span><span class="n">keys</span><span class="p">()],</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">a</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
             <span class="n">cluster_members</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span>
@@ -432,14 +438,6 @@
 
 
 <div class="viewcode-block" id="HiveMaster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HiveMaster">[docs]</a><span class="k">class</span> <span class="nc">HiveMaster</span><span class="p">(</span><span class="n">Master</span><span class="p">):</span>
-<div class="viewcode-block" id="HiveMaster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HiveMaster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
-
     <span class="c1"># region Master API</span>
 <div class="viewcode-block" id="HiveMaster.get_cloud_reference"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HiveMaster.get_cloud_reference">[docs]</a>    <span class="k">def</span> <span class="nf">get_cloud_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Use to obtain a reference to 3rd party cloud storage provider</span>
@@ -460,14 +458,6 @@
 
 
 <div class="viewcode-block" id="HDFSMaster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster">[docs]</a><span class="k">class</span> <span class="nc">HDFSMaster</span><span class="p">(</span><span class="n">Master</span><span class="p">):</span>
-<div class="viewcode-block" id="HDFSMaster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
-
     <span class="c1"># region Simulation setup</span>
 <div class="viewcode-block" id="HDFSMaster._process_simfile"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HDFSMaster._process_simfile">[docs]</a>    <span class="k">def</span> <span class="nf">_process_simfile</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -496,7 +486,7 @@
 
 <span class="sd">            The other difference is that the spread strategy is ignored.</span>
 <span class="sd">            We are not interested in knowing if the way the files are</span>
-<span class="sd">            initially spread affects the time it takes for hives to</span>
+<span class="sd">            initially spread affects the time it takes for clusters to</span>
 <span class="sd">            achieve a steady-state distribution since in HDFS</span>
 <span class="sd">            :py:class:`file block replicas</span>
 <span class="sd">            &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` are</span>
@@ -535,6 +525,87 @@
             <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">file_blocks</span> <span class="o">=</span> <span class="n">fblocks</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
                 <span class="n">cluster</span><span class="o">.</span><span class="n">spread_files</span><span class="p">(</span><span class="n">file_blocks</span><span class="p">)</span></div></div>
+    <span class="c1"># endregion</span>
+
+
+<div class="viewcode-block" id="NewscastMaster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.NewscastMaster">[docs]</a><span class="k">class</span> <span class="nc">NewscastMaster</span><span class="p">(</span><span class="n">Master</span><span class="p">):</span>
+<div class="viewcode-block" id="NewscastMaster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.NewscastMaster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">sid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">wire_k_out</span><span class="p">()</span></div>
+
+    <span class="c1"># region Simulation setup</span>
+<div class="viewcode-block" id="NewscastMaster._process_simfile"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.NewscastMaster._process_simfile">[docs]</a>    <span class="k">def</span> <span class="nf">_process_simfile</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_class</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Opens and processes the simulation filed referenced in `path`.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.master_servers.Master._process_simfile`.</span>
+
+<span class="sd">            Newscast is a gossip-based P2P network. We assume erasure-coding</span>
+<span class="sd">            would be used in this scenario and thus, for simplicity,</span>
+<span class="sd">            we divide the specified file&#39;s size into multiple ``1/N``,</span>
+<span class="sd">            where ``N`` is the number of :py:class:`network nodes</span>
+<span class="sd">            &lt;app.domain.network_nodes.NewscastNode&gt;` in the system.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            This class, :py:class:`~app.domain.cluster_groups.NewscastCluster`</span>
+<span class="sd">            and :py:class:`~app.domain.network_nodes.NewscastNode` were</span>
+<span class="sd">            created to test our simulators performance, concerning the amount</span>
+<span class="sd">            of supported simultaneous network nodes in a simulation. We do</span>
+<span class="sd">            not actually care if the created file blocks are lost as the</span>
+<span class="sd">            :py:class:`network nodes &lt;app.domain.network_nodes.NewscastNode&gt;`</span>
+<span class="sd">            job in the simulation is to carry out the</span>
+<span class="sd">            protocol defined in `PeerSim&#39;s AverageFunction</span>
+<span class="sd">            &lt;http://peersim.sourceforge.net/doc/index.html&gt;`_. `PeerSim</span>
+<span class="sd">            &lt;http://peersim.sourceforge.net/&gt;`_ uses configuration ``Example 2``</span>
+<span class="sd">            provided in release 1.0.5, as a means of testing the simulator</span>
+<span class="sd">            performance, according to this `Ms.C. dissertation by J. Neto</span>
+<span class="sd">            &lt;https://www.gsd.inesc-id.pt/~lveiga/papers/msc-supervised-thesis-abstracts/jneto-FINAL.pdf&gt;`_.</span>
+<span class="sd">            This configuration uses Newscast protocol with AverageFunction</span>
+<span class="sd">            and periodic monitoring of the system state. We implement our</span>
+<span class="sd">            version of `Adaptaive Peer Sampling with Newscast</span>
+<span class="sd">            &lt;https://dl.acm.org/doi/abs/10.1007/978-3-642-03869-3_50&gt;`_ by</span>
+<span class="sd">            N. Tölgyesi and M. Jelasity, to avoid the effort of translating</span>
+<span class="sd">            PeerSim&#39;s code.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path:</span>
+<span class="sd">                The path to the simulation file. Including extension and</span>
+<span class="sd">                parent folders.</span>
+<span class="sd">            cluster_class:</span>
+<span class="sd">                The name of the class used to instantiate cluster group</span>
+<span class="sd">                instances through reflection.</span>
+<span class="sd">                See :py:mod:`app.domain.cluster_groups`.</span>
+<span class="sd">            node_class:</span>
+<span class="sd">                The name of the class used to instantiate network node</span>
+<span class="sd">                instances through reflection.</span>
+<span class="sd">                See :py:mod:`app.domain.network_nodes`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">input_file</span><span class="p">:</span>
+            <span class="n">simfile_json</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_network_nodes</span><span class="p">(</span><span class="n">simfile_json</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span>
+
+            <span class="n">d</span><span class="p">:</span> <span class="n">_PersistentingDict</span> <span class="o">=</span> <span class="n">simfile_json</span><span class="p">[</span><span class="s1">&#39;persisting&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+                <span class="n">spread_strategy</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">fname</span><span class="p">][</span><span class="s1">&#39;spread&#39;</span><span class="p">]</span>
+                <span class="n">cluster_size</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">fname</span><span class="p">][</span><span class="s1">&#39;cluster_size&#39;</span><span class="p">]</span>
+
+                <span class="n">cluster</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_cluster_group</span><span class="p">(</span>
+                    <span class="n">cluster_class</span><span class="p">,</span> <span class="n">cluster_size</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+                <span class="n">block_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">cluster_size</span>
+                <span class="n">block_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">block_size</span><span class="p">)</span>
+                <span class="n">file_blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_files</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">block_size</span><span class="p">))</span>
+
+                <span class="n">cluster</span><span class="o">.</span><span class="n">spread_files</span><span class="p">(</span><span class="n">file_blocks</span><span class="p">,</span> <span class="n">spread_strategy</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 </pre></div>
 

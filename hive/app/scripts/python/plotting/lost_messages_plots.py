@@ -68,7 +68,7 @@ def process_file(filepath, avg_lost_messages, terminated_at_acount):
 
 
 def get_epochs_means(avg_lost_messages_epoch, terminated_at_acount):
-    breakpoints = sorted([epoch - 1 for epoch in terminated_at_acount.keys()], reverse=True)  # epoch 1 is index 0, epoch 720 is epoch 719
+    breakpoints = sorted([epoch - 1 for epoch in terminated_at_acount], reverse=True)  # epoch 1 is index 0, epoch 720 is epoch 719
     last_breakpoint = breakpoints[0]
     next_breakpoint = breakpoints.pop()
     at = 0
@@ -100,7 +100,7 @@ def main(directory, state):
     # Calculate the global mean at epoch i; Since we have a sum of means, at each epoch, we only need to divide each element by the number of seen instances
     avg_lost_messages_epoch = get_epochs_means(avg_lost_messages_epoch, terminated_at_acount)
 
-    plotvalues(avg_lost_messages_epoch, avg_lost_messages_mean, [*terminated_at_acount.keys()], directory, state)
+    plotvalues(avg_lost_messages_epoch, avg_lost_messages_mean, [*terminated_at_acount], directory, state)
 
 
 if __name__ == "__main__":

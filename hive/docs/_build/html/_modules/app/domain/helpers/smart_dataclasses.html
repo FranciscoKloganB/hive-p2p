@@ -163,19 +163,17 @@
 <span class="sd">                The name of the simulation file name that started</span>
 <span class="sd">                the simulation process. See</span>
 <span class="sd">                :py:class:`~app.domain.master_servers.Master` and</span>
-<span class="sd">                :py:mod:`~app.hive_simulation`.</span>
+<span class="sd">                :py:mod:`~app.hive_simulation`. In addition to the previous,</span>
+<span class="sd">                the origin should somehow include the cluster class name</span>
+<span class="sd">                being run, to differentiate simulations&#39; output files being</span>
+<span class="sd">                executed by different distributed storage system</span>
+<span class="sd">                implementations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">existing_replicas</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span> <span class="n">LoggingData</span> <span class="o">=</span> <span class="n">LoggingData</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">:</span> <span class="n">IO</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">Path</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
-                    <span class="n">Path</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
-                    <span class="n">sim_id</span><span class="p">,</span>
-                    <span class="s2">&quot;json&quot;</span><span class="p">)</span>
-            <span class="p">),</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">:</span> <span class="n">IO</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">sim_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FileData.fwrite"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.fwrite">[docs]</a>    <span class="k">def</span> <span class="nf">fwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Appends a message to the output stream of ``FileData``.</span>
@@ -230,6 +228,7 @@
         <span class="n">sd</span><span class="o">.</span><span class="n">transmissions_failed</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">transmissions_failed</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
 
         <span class="n">extras</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;cluster_type&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
             <span class="s2">&quot;simfile_name&quot;</span><span class="p">:</span> <span class="n">origin</span><span class="p">,</span>
             <span class="s2">&quot;hive_id&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
             <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>

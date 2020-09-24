@@ -53,19 +53,17 @@ class FileData:
                 The name of the simulation file name that started
                 the simulation process. See
                 :py:class:`~app.domain.master_servers.Master` and
-                :py:mod:`~app.hive_simulation`.
+                :py:mod:`~app.hive_simulation`. In addition to the previous,
+                the origin should somehow include the cluster class name
+                being run, to differentiate simulations' output files being
+                executed by different distributed storage system
+                implementations.
         """
         self.name: str = name
         self.existing_replicas = 0
         self.logger: LoggingData = LoggingData()
-        self.out_file: IO = open(
-            os.path.join(
-                OUTFILE_ROOT, "{}_{}{}.{}".format(
-                    Path(name).resolve().stem,
-                    Path(origin).resolve().stem,
-                    sim_id,
-                    "json")
-            ), "w+")
+        self.out_file: IO = open(os.path.join(
+            OUTFILE_ROOT, f"{Path(origin).resolve().stem}_{sim_id}.json"), "w+")
 
     def fwrite(self, msg: str) -> None:
         """Appends a message to the output stream of ``FileData``.
@@ -120,6 +118,7 @@ class FileData:
         sd.transmissions_failed = sd.transmissions_failed[:epoch]
 
         extras: Dict[str, Any] = {
+            "cluster_type": cluster.__class__.__name__,
             "simfile_name": origin,
             "hive_id": cluster.id,
             "file_name": self.name,
