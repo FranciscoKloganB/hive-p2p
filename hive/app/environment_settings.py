@@ -49,6 +49,10 @@ Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
 1MB = 1048576B; 20MB = 20971520B }.
 """
 
+NEWSCAST_CACHE_SIZE: int = 20
+"""The maximum amount of neighbors a :py:attr:`NewscastNode view 
+<app.domain.network_nodes.NewscastNode>` can have at any given time."""
+
 MONTH_EPOCHS: int = 21600
 """Defines how many epochs (discrete time steps) a month is represented with. 
 With the default value of 21600 each epoch would represent two minutes. See 

@@ -51,7 +51,7 @@ def __create_box_plot__(
             rate samples, for matrices with size `skey`.
     """
     func_count = len(func_samples)
-    func_labels = __shorten_labels__([*func_samples.keys()])
+    func_labels = __shorten_labels__([*func_samples])
     samples = [*func_samples.values()]
 
     outlyer_shape = {
@@ -147,7 +147,7 @@ def __create_pie_chart__(
             state faster than the remaining ones.
     """
     # Pie chart, where the slices will be ordered and plotted counter-clockwise:
-    labels = __shorten_labels__([*func_wins.keys()])
+    labels = __shorten_labels__([*func_wins])
     wins = np.asarray([*func_wins.values()])
 
     fig1, ax = plt.subplots()

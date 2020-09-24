@@ -4,10 +4,11 @@ responsible for the storage of :py:class:`file blocks
 reliable servers or P2P nodes."""
 from __future__ import annotations
 
-import math
 import sys
+import math
+import random
 import traceback
-from typing import Union, Dict, List
+from typing import Union, Dict, Optional, Any
 
 import domain.helpers.smart_dataclasses as sd
 import domain.helpers.enums as e
@@ -17,7 +18,9 @@ import pandas as pd
 import numpy as np
 
 from utils import crypto
-from environment_settings import TRUE_FALSE
+from environment_settings import TRUE_FALSE, NEWSCAST_CACHE_SIZE
+
+_NetworkView: Dict[Union[str, Node], int]
 
 
 class Node:
@@ -75,13 +78,12 @@ class Node:
             uptime:
                 The availability of the ``Node`` instance.
         """
-        if uptime == 1.0:
-            uptime = float('inf')
-        else:
-            uptime = math.floor(uptime * ms.Master.MAX_EPOCHS)
-
         self.id: str = uid
-        self.uptime: float = uptime
+        if uptime == 1.0:
+            ttl = float('inf')
+        else:
+            ttl = math.floor(uptime * ms.Master.MAX_EPOCHS)
+        self.uptime: float = ttl
         self.status: int = e.Status.ONLINE
         self.suspicious_replies = {
             e.HttpCodes.NOT_FOUND,
@@ -91,6 +93,22 @@ class Node:
         self.files: Dict[str, th.ReplicasDict] = {}
 
     # region Simulation steps
+    def update_status(self) -> int:
+        """Used to update the time to live of the node instance.
+
+        When invoked, the network node decides if it should remain online or
+        change some other state.
+
+        Returns:
+            :py:class:`~app.domain.helpers.enums.Status`:
+                The the status of the ``Node``.
+        """
+        if self.is_up():
+            self.uptime -= 1
+            if self.uptime <= 0:
+                self.status = e.Status.OFFLINE
+        return self.status
+
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
         """Instructs the ``Node`` instance to execute the epoch.
 
@@ -240,7 +258,7 @@ class Node:
                                   f"{replica.id} due to corruption.")
     # endregion
 
-    # region Get methods
+    # region Node API
     def get_file_parts(self, fid: str) -> th.ReplicasDict:
         """Gets collection of file parts that correspond to the named file.
 
@@ -278,25 +296,17 @@ class Node:
         """
         return len(self.files.get(fid, {}))
 
-    def get_status(self) -> int:
-        """Used to obtain the status of the ``Node``.
+    def is_up(self) -> bool:
+        """Returns ``True`` if the node is online, else ``False``."""
+        return self.status == e.Status.ONLINE
 
-        This method equates a ping. When invoked, the ``Node`` decides if it
-        should remain online or change some other state depending on his
-        remaining :py:attr:`uptime`.
-
-        Returns:
-            :py:class:`~app.domain.helpers.enums.Status`:
-                The the status of the ``Node``.
-        """
-        if self.status == e.Status.ONLINE:
-            self.uptime -= 1
-            if self.uptime <= 0:
-                self.status = e.Status.OFFLINE
-        return self.status
+    def is_suspect(self) -> bool:
+        """Returns ``True`` if the node is behaving suspiciously,
+        else ``False``."""
+        return self.status == e.Status.SUSPECT
     # endregion
 
-    # region Python dunder methods' overrides
+    # region Dunder methods' overrides
     def __hash__(self):
         return hash(str(self.id))
 
@@ -312,13 +322,17 @@ class HiveNode(Node):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     Attributes:
+        clusters:
+            A collection of :py:class:`cluster groups
+            <app.domain.cluster_groups.HiveCluster>` the ``HiveNode`` is a
+            member of.
         routing_table (Dict[str, :py:class:`~pd:pandas.DataFrame`]):
             Contains the information required to appropriately route file
             block blocks to other HiveNode instances.
     """
     def __init__(self, uid: str, uptime: float) -> None:
         super().__init__(uid, uptime)
-        self.hives: Dict[str, th.ClusterType] = {}
+        self.clusters: Dict[str, th.ClusterType] = {}
         self.routing_table: Dict[str, pd.DataFrame] = {}
 
     # region Simulation steps
@@ -392,7 +406,9 @@ class HiveNode(Node):
         # Number of times the block needs to be replicated.
         lost_replicas: int = replica.can_replicate(cluster.current_epoch)
         if lost_replicas > 0:
-            sorted_members = [*cluster.v_.sort_values(0, ascending=False).index]
+            sorted_members = list(
+                cluster.v_.sort_values(0, ascending=False).index
+            )
             for destination in sorted_members:
                 if lost_replicas == 0:
                     break
@@ -475,8 +491,8 @@ class HiveNode(Node):
             The name or address of the selected destination.
         """
         routing_vector: pd.DataFrame = self.routing_table[fid]
-        hive_members: List[str] = [*routing_vector.index]
-        member_chances: List[float] = [*routing_vector.iloc[:, 0]]
+        hive_members = list(routing_vector.index)
+        member_chances = list(routing_vector.iloc[:, 0])
         try:
             return np.random.choice(a=hive_members, p=member_chances).item()
         except ValueError as vE:
@@ -497,25 +513,21 @@ class HiveNodeExt(HiveNode):
     behaviours.
     """
 
-    # region Get methods
-    def get_status(self) -> int:
-        """Used to obtain the status of the ``HiveNodeExt``.
+    # region Simulation steps
+    def update_status(self) -> int:
+        """Used to update the time to live of the node instance.
 
-        This method equates a ping. When invoked, the ``HiveNodeExt``
-        decides if it should remain online or change some other state
-        depending on his remaining :py:attr:`~Node.uptime`.
+        When invoked, the network node decides if it should remain online or
+        change some other state.
 
         Overrides:
-            :py:meth:`app.domain.network_nodes.Node.get_status`.
-
-            When not ONLINE the node sets itself as Suspect and will only become
-            offline when the monitor marks him as so (e.g.: due to complaints).
+            :py:meth:`app.domain.network_nodes.Node.update_status`.
 
         Returns:
             :py:class:`~app.domain.helpers.enums.Status`:
                 The the status of the ``Node``.
         """
-        if self.status == e.Status.ONLINE:
+        if self.is_up():
             self.uptime -= 1
             if self.uptime <= 0:
                 print(f"    [x] {self.id} now offline (suspect status).")
@@ -528,6 +540,26 @@ class HDFSNode(Node):
     """Represents a data node in the Hadoop Distribute File System."""
 
     # region Simulation steps
+    def update_status(self) -> int:
+        """Used to update the time to live of the node instance.
+
+        When invoked, the network node decides if it should remain online or
+        change some other state.
+
+        Overrides:
+            :py:meth:`app.domain.network_nodes.Node.update_status`.
+
+        Returns:
+            :py:class:`~app.domain.helpers.enums.Status`:
+                The the status of the ``Node``.
+        """
+        if self.is_up():
+            self.uptime -= 1
+            if self.uptime <= 0:
+                print(f"    [x] {self.id} now offline (suspect status).")
+                self.status = e.Status.SUSPECT
+        return self.status
+
     def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
         """Instructs the ``HDFSNode`` instance to execute the epoch.
 
@@ -593,7 +625,7 @@ class HDFSNode(Node):
         # Number of times the block needs to be replicated.
         lost_replicas: int = replica.can_replicate(cluster.current_epoch)
         if lost_replicas > 0:
-            choices = [*cluster.members.values()]
+            choices = list(cluster.members.values())
             choices.sort(key=lambda node: node.uptime, reverse=True)
             for destination in choices:
                 if lost_replicas == 0:
@@ -607,28 +639,269 @@ class HDFSNode(Node):
             replica.update_epochs_to_recover(cluster.current_epoch)
     # endregion
 
-    # region Get Methods
-    def get_status(self) -> int:
-        """Used to obtain the status of the ``HDFSNode``.
 
-        This method equates a ping. When invoked, the ``HDFSNode``
-        decides if it should remain online or change some other state
-        depending on his remaining :py:attr:`~Node.uptime`.
+class NewscastNode(Node):
+    """Represents a Peer running Newscast protocol, using shuffling
+    techniques to exchange acquaintances with other network peers and
+    performing peer degree aggregation using AverageFunction.
+
+    Attributes:
+        view:
+            A partial view of the P2P network. ``View`` is a collection of
+            :py:class:`network nodes <app.domain.network_nodes.NewscastNode>`,
+            the ``NewscastNode`` instance may contact other than himself. Keys
+            are :py:class:`NewscastNode` instances, and values are their age
+            in the dictionary. A key-value pair is commonly referenced as a
+            ``descriptor``.
+        aggregation_value:
+            Stores the aggregation value. The type of ``aggregation_value``
+            is defined by the body of the :py:meth:`aggregate` method.
+    """
+    def __init__(self, uid: str, uptime: float) -> None:
+        super().__init__(uid, uptime)
+        self.view: _NetworkView = {}
+        self.aggregation_value: Any = 0
+
+    # region Node API
+    def add_neighbor(self, node: NewscastNode) -> bool:
+        """Adds a new network node to the node instance's view.
+
+        If the view is full, the eldest node is replaced with the new node.
+        Otherwise, the new :py:class:`NewscastNode` is added to the
+        instance's view with age zero, unless the entry is already in
+        :py:attr:`view` or the ``node`` is the current ``NewscastNode``
+        instance.
+
+        Returns:
+            ``True`` if ``node`` was successfuly added, ``False`` otherwise.
+        """
+        if node.id == self.id or node in self.view:
+            return False
+
+        view_size = len(self.view)
+        if view_size < NEWSCAST_CACHE_SIZE:
+            self.view[node] = 0
+            return True
+
+        if view_size == NEWSCAST_CACHE_SIZE:
+            k = tuple(self.view)
+            v = tuple(self.view.values())
+            oldest_node = k[v.index(max(v))]
+            self.view.pop(oldest_node)
+            self.view[node] = 0
+            return True
+
+        return False
+
+    def get_degree(self) -> int:
+        """Counts the number of descriptors in the node's view.
+
+        Returns:
+            The degree of the ``NewscastNode`` instance.
+        """
+        return len(self.view)
+
+    def get_node(self) -> Optional[NewscastNode]:
+        """Gets a random node from the current network view.
+
+        Each candidate :py:class:`NewscastNode` to be returned is first pinged,
+        if no answer is obtained, another node is selected as a candidate by
+        iterating a list representation of :py:attr:`view` and the previous
+        candidate is removed from the :py:attr:`view`.
+
+        Note:
+            Newscast should always return a random node, thus iteration
+            should not be used, but this search is more efficient and readable.
+
+        Returns:
+            The selected ``NewscastNode``.
+        """
+        if self.get_degree() == 0:
+            return None
+
+        neighbors = tuple(self.view)
+
+        i = np.random.randint(0, len(neighbors))
+        candidate_node = neighbors[i]
+        if candidate_node.is_up():
+            return candidate_node
+
+        for candidate_node in neighbors:
+            if candidate_node.is_up():
+                return candidate_node
+            self.view.pop(candidate_node, None)
+
+        return None
+    # endregion
+
+    # region Simulation steps
+    def update_status(self) -> int:
+        """Used to update the time to live of the node instance.
+
+        When invoked, the network node decides if it should remain online or
+        change some other state.
 
         Overrides:
-            :py:meth:`app.domain.network_nodes.Node.get_status`.
-
-            When not ONLINE the node sets itself as Suspect and will only become
-            offline when the monitor marks him as so (e.g.: due to complaints).
+            :py:meth:`app.domain.network_nodes.Node.update_status`.
 
         Returns:
             :py:class:`~app.domain.helpers.enums.Status`:
-                The the status of the ``HDFSNode``.
+                The the status of the ``Node``.
         """
-        if self.status == e.Status.ONLINE:
+        if self.is_up():
             self.uptime -= 1
             if self.uptime <= 0:
-                print(f"    [x] {self.id} now offline (suspect status).")
+                # print(f" [x] {self.id} now has offline or suspicious status.")
+                self.view = {}
                 self.status = e.Status.SUSPECT
+        elif random.uniform(0, 1) < 0.16:
+            # Peer comes online with 16% chance per epoch after going offline.
+            ttl = math.floor(random.uniform(0.04, 0.32) * ms.Master.MAX_EPOCHS)
+            self.uptime = ttl
+            self.status = e.Status.ONLINE
+            # print(f" [o] {self.id} is now back online.")
         return self.status
+
+    def execute_epoch(self, cluster: th.ClusterType, fid: str) -> None:
+        """Instructs the ``NewscastNode`` instance to execute the epoch.
+
+        During the execution of the epoch, the ``NewscastNode``
+        instance randomly selects another ``NewscastNode`` who belongs to his
+        :py:attr:`view` and aggregates their degree using the Average
+        Function. Sometimes, during the epoch, the ``NewscastNode`` instance
+        will also perform shuffling with the selected target.
+
+        Overrides:
+            :py:meth:`app.domain.network_nodes.Node.execute_epoch`.
+
+        Args:
+            cluster (:py:class:`~app.type_hints.ClusterType`):
+                A reference to the
+                :py:class:`~app.domain.cluster_groups.Cluster` that invoked
+                the ``Node`` method.
+            fid:
+                The :py:attr:`file name identifier
+                <app.domain.helpers.smart_dataclasses.FileData.name>`
+                of the file being simulated.
+        """
+        # increase all descriptors' age
+        for k in self.view:
+            self.view[k] += 1
+
+        # select a random node from view, the current node is isolated a
+        # query a central server to find a gateway to the overaly.
+        node = self.get_node() or cluster.get_node()
+
+        if node is None or not node.is_up():
+            return
+
+        # use newscast behavior to shuffle views and aggregate peer degrees
+        self.shuffle(node)
+        self.aggregate(node)
+
+        cluster.log_aggregation(self.aggregation_value)
+    # endregion
+
+    # region File block management
+    def replicate_part(
+            self, cluster: th.ClusterType, replica: sd.FileBlockData
+    ) -> None:
+        pass
+    # endregion
+
+    # region Newscast peer shuffling and aggregation
+    def aggregate(self, node: NewscastNode = None) -> None:
+        """The network node instance contacts another node from his view, then,
+        both nodes assign the mean of their degrees to
+        :py:attr:`aggregation_value`.
+
+        Args:
+            node:
+                When ``node`` is None a random ``NewscastNode`` is selected
+                from :py:attr:`view`. When specified to be contacted is the
+                one referenced in the parameter.
+        """
+        candidate_node = node or self.get_node()
+
+        if candidate_node is None:
+            return
+
+        mean = (self.get_degree() + candidate_node.get_degree()) / 2
+        candidate_node.aggregation_value = mean
+        self.aggregation_value = mean
+
+    def shuffle(self, node: NewscastNode) -> None:
+        """Starts a shuffle process that merges and crops two nodes' views at
+        the current node and at the destination node.
+
+        The final view consists of most up to date descriptors from both
+        :py:attr:`views <view>` up to a maximum of :py:attr:`max_view_size`
+        descriptors.
+
+        Args:
+            node:
+                The node to be contacted for shuffling.
+        """
+        my_view = dict(self.view)
+        my_view[self] = 0
+        his_view = node.shuffle_request(my_view)
+        buffer = self._merge(self.view, his_view)
+        self.view = self._select_view(buffer)
+
+    def shuffle_request(self, senders_view: _NetworkView) -> _NetworkView:
+        """Merges and crops two nodes' views at the current node.
+
+        The final view consists of most up to date descriptors from both
+        :py:attr:`views <view>` up to a maximum of :py:attr:`max_view_size`
+        descriptors.
+
+        Args:
+            senders_view:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+
+        Returns:
+            A :py:attr:`view` and a fresh ``descriptor``
+            from the ``NewscastNode`` instance, before it is
+            merged with the requestor's view.
+        """
+        my_view = dict(self.view)
+        my_view[self] = 0
+        buffer = self._merge(self.view, senders_view)
+        self.view = self._select_view(buffer)
+        return my_view
+
+    def _merge(self, a: _NetworkView, b: _NetworkView) -> _NetworkView:
+        """Merges two network views. If a node descriptor exists in both
+        views, the most recent descriptor is kept.
+
+        Args:
+            a:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+            b:
+                A dictionary where keys are :py:class:`network nodes <Node>`
+                and values are their respective age in the view.
+
+        Returns:
+            The set union of both views with only the most up to date
+            descriptors.
+        """
+        for k in b:
+            a[k] = min(a[k], b[k]) if k in a else b[k]
+        return a
+
+    def _select_view(self, view_buffer: _NetworkView) -> _NetworkView:
+        """Reduces the size of the view to a predefined maximum size.
+
+        Args:
+            A dictionary where keys are :py:class:`network nodes <Node>`
+            and values are their respective age in the view.
+
+        Returns:
+            The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.
+        """
+        view_buffer = sorted(view_buffer.items(), key=lambda x: x[1])
+        view_buffer = view_buffer[:NEWSCAST_CACHE_SIZE]
+        return dict(view_buffer)
     # endregion

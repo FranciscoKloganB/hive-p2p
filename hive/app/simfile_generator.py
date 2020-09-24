@@ -24,7 +24,7 @@ from typing import List, Dict, Any
 import numpy
 
 from environment_settings import SHARED_ROOT, SIMULATION_ROOT
-from scripts.python import normal_distribution_generator as ng
+from scripts.python import normal_distr_sampler as ng
 
 
 # region Input Consumption and Verification
@@ -52,7 +52,7 @@ def _input_character_option(message: str, white_list: List[str]) -> str:
 
 
 def _input_bounded_integer(
-        message: str, lower_bound: int = 2, upper_bound: int = 16384) -> int:
+        message: str, lower_bound: int = 2, upper_bound: int = 10000000) -> int:
     """Obtains a user inputed integer within the specified closed interval.
 
     Args:
@@ -193,7 +193,7 @@ def _init_nodes_uptime() -> Dict[str, float]:
         and values are their respective uptimes
         :py:attr:`uptime <app.domain.network_nodes.Node.uptime>` values.
     """
-    number_of_nodes = _input_bounded_integer("Network Size [2, 16384]: ")
+    number_of_nodes = _input_bounded_integer("Network Size [2, 10000000]: ")
 
     min_uptime = _input_bounded_float("Min node uptime [0.0, 100.0]: ") / 100
     min_uptime = truncate_float_value(min_uptime, 6)
@@ -204,11 +204,11 @@ def _init_nodes_uptime() -> Dict[str, float]:
     mean = _input_bounded_float("Distribution mean [0.0, 100.0]: ")
     std = _input_bounded_float("Standard deviation [0.0, 100.0]: ")
 
-    samples = ng.generate_samples(surveys=1, mean=mean, std=std).tolist()
+    samples = ng.generate_samples(
+        surveys=1, sample_count=number_of_nodes, mean=mean, std=std).tolist()
 
     nodes_uptime = {}
     for label in itertools.islice(yield_label(), number_of_nodes):
-        # gets and removes last element in samples to assign it to label
         uptime = numpy.abs(samples.pop()[0]) / 100.0
         uptime = numpy.clip(uptime, min_uptime, max_uptime)
         nodes_uptime[label] = truncate_float_value(uptime.item(), 6)
@@ -242,8 +242,9 @@ def _init_persisting_dict() -> Dict[str, Any]:
                            "   u: uniform distribution among network nodes,\n"
                            "   i: ideal distribution, e.g., near a steady-state vector, \n"
                            "   a: all replicas given to N different nodes,\n"
+                           "   o: each network node receives one random replica\n"
                            "}: ")
-        options_list = ["u", "U", "i", "I", "a", "A"]
+        options_list = ["u", "U", "i", "I", "a", "A", "o", "O"]
         option_choice = _input_character_option(options_message, options_list)
 
         persisting[file_name] = {}

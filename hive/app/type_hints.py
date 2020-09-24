@@ -14,17 +14,24 @@ ReplicasDict: Dict[int, sd.FileBlockData]
 HttpResponse: Union[int, e.HttpCodes]
 
 MasterType: Union[
-    ms.Master
+    ms.Master,
+    ms.HiveMaster,
+    ms.HDFSMaster,
+    ms.NewscastMaster
 ]
+
 ClusterType: Union[
     cg.Cluster,
     cg.HiveCluster,
     cg.HiveClusterExt,
-    cg.HDFSCluster
+    cg.HDFSCluster,
+    cg.NewscastCluster
 ]
+
 NodeType: Union[
     nn.Node,
     nn.HiveNode,
     nn.HiveNodeExt,
-    nn.HDFSNode
+    nn.HDFSNode,
+    nn.NewscastNode
 ]

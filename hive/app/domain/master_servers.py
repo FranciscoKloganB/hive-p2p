@@ -6,9 +6,10 @@ file metadata servers or a bank of currently online and offline
 from __future__ import annotations
 
 import json
-from typing import List, Union, Dict, Any, Optional
+import math
+import datetime
+from typing import Union, Dict, Any, Optional
 
-import domain.helpers.enums as e
 import type_hints as th
 import numpy as np
 
@@ -206,6 +207,7 @@ class Master:
     # region Simulation steps
     def execute_simulation(self) -> None:
         """Starts the simulation processes."""
+        start_time = datetime.datetime.now()
         while self.epoch < Master.MAX_EPOCHS_PLUS_ONE and self.cluster_groups:
             print("epoch: {}".format(self.epoch))
             terminated_clusters: List[str] = []
@@ -218,25 +220,29 @@ class Master:
                 print(f"Cluster: {cid} terminated at epoch {self.epoch}")
                 self.cluster_groups.pop(cid)
             self.epoch += 1
+        finish_time = datetime.datetime.now()
+        delta_time = int((finish_time - start_time).total_seconds())
+        print(f"Master ({self.origin}_{self.sim_id}) exec time: {delta_time}")
     # endregion
 
     # region Master API
     def find_online_nodes(
-            self, blacklist: th.NodeDict, n: int) -> th.NodeDict:
+            self, n: int = 1, blacklist: Optional[th.NodeDict] = None
+    ) -> th.NodeDict:
         """Finds ``n`` :py:class:`network nodes
         <app.domain.network_nodes.Node>` who are currently registered at the
         ``Master`` and whose status is online.
 
         Args:
+            n:
+                How many :py:class:`network node
+                <app.domain.network_nodes.Node>` references the requesting
+                entity wants to find.
             blacklist (:py:class:`~app.type_hints.NodeDict`):
                 A collection of :py:attr:`nodes identifiers
                 <app.domain.network_nodes.Node.id>` and their object
                 instances, which specify nodes the requesting entity has
                 no interest in.
-            n:
-                How many :py:class:`network node
-                <app.domain.network_nodes.Node>` references the requesting
-                entity wants to find.
 
         Returns:
             :py:class:`~app.type_hints.NodeDict`:
@@ -244,18 +250,18 @@ class Master:
                 which is at most as big as ``n``, which does not include any
                 node named in ``blacklist``.
         """
+
         selected: th.NodeDict = {}
-        if n <= 0:
+        if n < 1:
             return selected
+        if blacklist is None:
+            blacklist = {}
 
         network_nodes_view = self.network_nodes.copy().values()
         for node in network_nodes_view:
-            if len(selected) == n:
+            if len(selected) >= n:
                 return selected
-            elif node.status != e.Status.ONLINE:
-                # TODO: future-iterations review this code.
-                self.network_nodes.pop(node.id, None)
-            elif node.id not in blacklist:
+            if node.id not in blacklist:
                 selected[node.id] = node
         return selected
     # endregion
@@ -283,7 +289,7 @@ class Master:
         """
         cluster_members: th.NodeDict = {}
         nodes = np.random.choice(
-            a=[*self.network_nodes.keys()], size=size, replace=False)
+            a=tuple(self.network_nodes), size=size, replace=False)
 
         for node_id in nodes:
             cluster_members[node_id] = self.network_nodes[node_id]
@@ -370,7 +376,7 @@ class HDFSMaster(Master):
 
             The other difference is that the spread strategy is ignored.
             We are not interested in knowing if the way the files are
-            initially spread affects the time it takes for hives to
+            initially spread affects the time it takes for clusters to
             achieve a steady-state distribution since in HDFS
             :py:class:`file block replicas
             <app.domain.helpers.smart_dataclasses.FileBlockData>` are
@@ -413,6 +419,16 @@ class HDFSMaster(Master):
 
 
 class NewscastMaster(Master):
+    def __init__(self,
+                 simfile_name: str,
+                 sid: int,
+                 epochs: int,
+                 cluster_class: str,
+                 node_class: str) -> None:
+        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
+        for cluster in self.cluster_groups.values():
+            cluster.wire_k_out()
+
     # region Simulation setup
     def _process_simfile(
             self, path: str, cluster_class: str, node_class: str) -> None:
@@ -476,7 +492,8 @@ class NewscastMaster(Master):
 
                 file_path = os.path.join(SHARED_ROOT, fname)
                 block_size = os.path.getsize(file_path) / cluster_size
-                file_blocks = self._split_files(fname, cluster, block_size)
+                block_size = math.ceil(block_size)
+                file_blocks = self._split_files(fname, cluster, int(block_size))
 
                 cluster.spread_files(file_blocks, spread_strategy)
     # endregion
