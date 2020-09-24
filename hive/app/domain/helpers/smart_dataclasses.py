@@ -58,14 +58,8 @@ class FileData:
         self.name: str = name
         self.existing_replicas = 0
         self.logger: LoggingData = LoggingData()
-        self.out_file: IO = open(
-            os.path.join(
-                OUTFILE_ROOT, "{}_{}{}.{}".format(
-                    Path(name).resolve().stem,
-                    Path(origin).resolve().stem,
-                    sim_id,
-                    "json")
-            ), "w+")
+        self.out_file: IO = open(os.path.join(
+            OUTFILE_ROOT, f"{Path(origin).resolve().stem}_{sim_id}.json"), "w+")
 
     def fwrite(self, msg: str) -> None:
         """Appends a message to the output stream of ``FileData``.
