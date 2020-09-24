@@ -69,6 +69,13 @@ be regenerated after their are lost."""
 REPLICATION_LEVEL: int = 3
 """The amount of blocks each file block has."""
 
+
+def set_replication_level(n: int) -> None:
+    """Changes REPLICATION_LEVEL constant value at run time."""
+    global REPLICATION_LEVEL
+    REPLICATION_LEVEL = n
+
+
 MIN_CONVERGENCE_THRESHOLD: int = 0
 """The number of consecutive epoch time steps that a 
 :py:class:`~app.domain.cluster_groups.HiveCluster` must converge before epochs 
