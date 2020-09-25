@@ -42,7 +42,10 @@ def plot_values(tkey, global_mean, global_cs_mean, terminations):
     # Display legends
     plt.legend(loc='lower right')
 
-    plt.show()
+    # plt.show()
+    figure_path = os.path.join(
+        directory, 'simulation_plots', 'avg_graphs', f'{figure_name}_{tkey}')
+    plt.savefig(figure_path)
 
 
 def process_file(key, outfile_json):
@@ -114,9 +117,11 @@ if __name__ == "__main__":
 
     skey = 0
     nkey = ""
+    figure_name = ""
 
-    short_opts = "p:t:e:s:n:"
-    long_opts = ["patterns=", "targets=", "epochs=", "size=", "name="]
+    short_opts = "p:t:e:s:n:f:"
+    long_opts = ["patterns=", "targets=", "epochs=",
+                 "size=", "name=", "figure_name="]
 
     try:
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
@@ -138,11 +143,13 @@ if __name__ == "__main__":
                 skey = int(str(args).strip())
             if options in ("-n", "--name"):
                 nkey = str(args).strip()
+            if options in ("-f", "--figure_name"):
+                figure_name = str(args).strip()
 
         if not (epochs > 0 and skey > 0):
             sys.exit(f"Must specify epochs (-e) and network size (-s).")
 
-        if nkey == "":
+        if not (nkey != "" and figure_name != ""):
             sys.exit(f"System name (-n) must be specified for plot title completion.")
 
         if len(targets) == 0:
@@ -156,8 +163,8 @@ if __name__ == "__main__":
                  "  --targets -t (comma seperated list of str)\n"
                  "  --epochs -e (int)\n"
                  "  --size -s (int)\n"
-                 "  --name -n (name)\n")
-
+                 "  --name -n (str)\n"
+                 "  --figure_name -f (str)\n")
     directory = os.path.abspath(
         os.path.join(os.getcwd(), '..', '..', '..', 'static', 'outfiles'))
     # endregion
