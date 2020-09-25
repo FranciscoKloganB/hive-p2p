@@ -101,7 +101,15 @@ def cum_sum_mean(cs_avg_list, terminations):
 if __name__ == "__main__":
     # region args processing
     patterns = []
-    targets = []
+    targets = [
+        "blocks_corrupted",
+        "blocks_existing",
+        "blocks_lost",
+        "blocks_moved",
+        "delay_replication",
+        "off_node_count",
+    ]
+
     epochs = 0
 
     skey = 0
