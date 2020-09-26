@@ -1146,16 +1146,15 @@ class HDFSCluster(Cluster):
                             self._set_fail(f"Lost all replicas of file replica "
                                            f"with id: {replica.id}")
                 # Simulate missed heartbeats.
-                if node.id in self.data_node_heartbeats:
-                    self.data_node_heartbeats[node.id] -= 1
-                    print(f"    > Logged missed heartbeat {node.id}, "
-                          f"node remaining lives: "
-                          f"{self.data_node_heartbeats[node.id]}")
-                    if self.data_node_heartbeats[node.id] <= 0:
-                        off_nodes.append(node)
-                        node_replicas = node.get_file_parts(self.file.name)
-                        for replica in node_replicas.values():
-                            self.set_replication_epoch(replica)
+                self.data_node_heartbeats[node.id] -= 1
+                print(f"    > Logged missed heartbeat {node.id}, "
+                      f"node remaining lives: "
+                      f"{self.data_node_heartbeats[node.id]}")
+                if self.data_node_heartbeats[node.id] <= 0:
+                    off_nodes.append(node)
+                    node_replicas = node.get_file_parts(self.file.name)
+                    for replica in node_replicas.values():
+                        self.set_replication_epoch(replica)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self._set_fail("All data nodes disconnected before maintenance.")
