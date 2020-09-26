@@ -1196,7 +1196,6 @@ class HDFSCluster(Cluster):
                 during the current epoch.
         """
         for node in off_nodes:
-            # TODO: Bug???
             print(f"    [o] Evicted suspect {node.id}.")
             self.suspicious_nodes.discard(node.id)
             self.data_node_heartbeats.pop(node.id, -1)
@@ -1207,8 +1206,7 @@ class HDFSCluster(Cluster):
     def membership_maintenance(self) -> th.NodeDict:
         new_members = super().membership_maintenance()
         for nid in new_members:
-            if nid not in self.data_node_heartbeats:
-                self.data_node_heartbeats[nid] = 5
+            self.data_node_heartbeats[nid] = 5
     # endregion
 
 
