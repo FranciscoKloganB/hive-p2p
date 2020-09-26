@@ -131,7 +131,7 @@ class Cluster:
                    sender: str,
                    receiver: str,
                    replica: sd.FileBlockData,
-                   is_fresh: bool = False) -> th.HttpResponse:
+                   is_fresh: bool = False) -> int:
         """Sends a :py:class:`file block replica
         <app.domain.helpers.smart_dataclasses.FileBlockData>` to some other
         :py:class:`network node <app.domain.network_nodes.Node>` in
