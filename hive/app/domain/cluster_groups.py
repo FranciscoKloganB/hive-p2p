@@ -1093,7 +1093,7 @@ class HiveClusterExt(HiveCluster):
                 self.nodes_complaints.pop(node.id, -1)
                 self.members.pop(node.id, None)
                 node.remove_file_routing(self.file.name)
-                if 0 < t < self.current_epoch:
+                if 0 < t <= self.current_epoch:
                     t = self.current_epoch - t
                     self.file.logger.log_suspicous_node_detection_delay(node.id, t)
         super().membership_maintenance()
