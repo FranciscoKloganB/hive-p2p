@@ -942,7 +942,7 @@ class HiveClusterExt(HiveCluster):
     kicking them out of the group.
 
     Attributes:
-        complaint_threshold (float):
+        complaint_threshold (int):
             Reference value that defines the maximum number of complaints a
             :py:class:`network node <app.domain.network_nodes.HiveNodeExt>`
             can receive before it is evicted from the ``HiveClusterExt``.
@@ -972,7 +972,7 @@ class HiveClusterExt(HiveCluster):
                  sim_id: int = 0,
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
-        self.complaint_threshold: float = len(members) * 0.5
+        self.complaint_threshold: int = int(math.floor(len(self.members) * 0.5))
         self.nodes_complaints: Dict[str, int] = {}
         self.suspicious_nodes: Dict[str, int] = {}
         self._epoch_complaints: set = set()
@@ -1012,7 +1012,7 @@ class HiveClusterExt(HiveCluster):
                 self.nodes_complaints[complainee] = 1
             print(f"    > Logged complaint {complaint_id}, "
                   f"complainee complaint count: "
-                  f"{self.nodes_complaints[complainee]}")
+                  f"{self.nodes_complaints[complainee]} / {self.complaint_threshold}")
     # endregion
 
     # region Simulation steps
@@ -1057,7 +1057,7 @@ class HiveClusterExt(HiveCluster):
                             self._set_fail(f"Lost all replicas of file replica "
                                            f"with id: {replica.id}")
 
-                if self.nodes_complaints[node.id] >= self.complaint_threshold:
+                if self.nodes_complaints[node.id] > self.complaint_threshold:
                     off_nodes.append(node)
                     for replica in node_replicas.values():
                         self.set_replication_epoch(replica)
@@ -1096,7 +1096,7 @@ class HiveClusterExt(HiveCluster):
                     t = self.current_epoch - t
                     self.file.logger.log_suspicous_node_detection_delay(node.id, t)
         super().membership_maintenance()
-        self.complaint_threshold = len(self.members) * 0.5
+        self.complaint_threshold = int(math.floor(len(self.members) * 0.5))
     # endregion
 
 
