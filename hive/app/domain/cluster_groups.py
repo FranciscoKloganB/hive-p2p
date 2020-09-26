@@ -155,8 +155,7 @@ class Cluster:
                 This argument facilitates simulation.
 
         Returns:
-            :py:class:`~app.domain.helpers.enums.HttpCodes`:
-                An http code sent by the ``receiver``.
+            An http code sent by the ``receiver``.
         """
         if sender == receiver:
             return e.HttpCodes.DUMMY
@@ -258,9 +257,6 @@ class Cluster:
                     using the created probability vector.
         """
         self.file.logger.initial_spread = "i"
-
-        choices: Tuple[th.NodeType]
-        selected_nodes: List[th.NodeType]
 
         choices = self._members_view
         uptime_sum = sum(c.uptime for c in choices)
@@ -1331,8 +1327,8 @@ class NewscastCluster(Cluster):
         self.sum: float = 0.0
         self.sqrsum: float = 0.0
         self.n: int = 0
-        self.count_min: int = 0.0
-        self.count_max: int = 0.0
+        self.count_min: float = 0.0
+        self.count_max: float = 0.0
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "o") -> None:
         """Distributes a collection of :py:class:`file block replicas
