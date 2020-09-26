@@ -1031,14 +1031,12 @@ class HiveClusterExt(HiveCluster):
             elif node.is_suspect():
                 node_replicas = node.get_file_parts(self.file.name)
                 if node.id not in self.suspicious_nodes:
-                    self.suspicious_nodes[node.id] = 1
+                    self.suspicious_nodes[node.id] = self.current_epoch
                     lost_parts_count += len(node_replicas)
                     for replica in node_replicas.values():
                         if replica.decrement_and_get_references() == 0:
                             self._set_fail(f"Lost all replicas of file replica "
                                            f"with id: {replica.id}")
-                else:
-                    self.suspicious_nodes[node.id] += 1
 
                 ccount = self.nodes_complaints.get(node.id, -1)
                 if ccount >= self.complaint_threshold:
@@ -1069,12 +1067,15 @@ class HiveClusterExt(HiveCluster):
                 during the current epoch.
         """
         for node in off_nodes:
-            # TODO: Bug???
             print(f"    [o] Evicted suspect {node.id}.")
             tte = self.suspicious_nodes.pop(node.id, -1)
-            self.file.logger.log_suspicous_node_detection_delay(node.id, tte)
             self.nodes_complaints.pop(node.id, -1)
             self.members.pop(node.id, None)
+
+            if 0 < tte < self.current_epoch:
+                t = self.current_epoch - tte
+                self.file.logger.log_suspicous_node_detection_delay(node.id, t)
+
             node.remove_file_routing(self.file.name)
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
