@@ -473,7 +473,7 @@ class LoggingData:
         self.cluster_status_bm: List[str] = [""] * max_epochs
         self.cluster_status_am: List[str] = [""] * max_epochs
         self.delay_replication: List[float] = [0.0] * max_epochs_plus_one
-        self.delay_suspects_detection: Dict[int, str] = {}
+        self.delay_suspects_detection: Dict[str, int] = {}
         self.initial_spread = ""
         self.matrices_nodes_degrees: List[Dict[str, float]] = []
         self.off_node_count: List[int] = [0] * max_epochs
