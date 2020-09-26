@@ -1057,8 +1057,7 @@ class HiveClusterExt(HiveCluster):
                             self._set_fail(f"Lost all replicas of file replica "
                                            f"with id: {replica.id}")
 
-                ccount = self.nodes_complaints.get(node.id, -1)
-                if ccount >= self.complaint_threshold:
+                if self.nodes_complaints[node.id] >= self.complaint_threshold:
                     off_nodes.append(node)
                     for replica in node_replicas.values():
                         self.set_replication_epoch(replica)
