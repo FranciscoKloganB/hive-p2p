@@ -261,7 +261,7 @@ class Master:
         for node in network_nodes_view:
             if len(selected) >= n:
                 return selected
-            if node.id not in blacklist:
+            if node.id not in blacklist and node.is_up():
                 selected[node.id] = node
         return selected
     # endregion
