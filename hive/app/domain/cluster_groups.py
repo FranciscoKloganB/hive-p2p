@@ -667,7 +667,7 @@ class HiveCluster(Cluster):
             "reliability" of network nodes.
         """
         uptime_sum = sum(member_uptimes)
-        u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]
+        u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]  # TODO: Bug???
 
         v_ = pd.DataFrame(data=u_, index=member_ids)
         self.v_ = v_
@@ -1069,6 +1069,7 @@ class HiveClusterExt(HiveCluster):
                 during the current epoch.
         """
         for node in off_nodes:
+            # TODO: Bug???
             print(f"    [o] Evicted suspect {node.id}.")
             tte = self.suspicious_nodes.pop(node.id, -1)
             self.file.logger.log_suspicous_node_detection_delay(node.id, tte)
@@ -1195,6 +1196,7 @@ class HDFSCluster(Cluster):
                 during the current epoch.
         """
         for node in off_nodes:
+            # TODO: Bug???
             print(f"    [o] Evicted suspect {node.id}.")
             self.suspicious_nodes.discard(node.id)
             self.data_node_heartbeats.pop(node.id, -1)
