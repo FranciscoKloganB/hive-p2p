@@ -1047,20 +1047,22 @@ class HiveClusterExt(HiveCluster):
         for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
-            elif node.is_suspect():
+            elif node.is_suspect() and node.id not in self.suspicious_nodes:
+                self.suspicious_nodes[node.id] = self.current_epoch
                 node_replicas = node.get_file_parts(self.file.name)
-                if node.id not in self.suspicious_nodes:
-                    self.suspicious_nodes[node.id] = self.current_epoch
-                    lost_parts_count += len(node_replicas)
-                    for replica in node_replicas.values():
-                        if replica.decrement_and_get_references() == 0:
-                            self._set_fail(f"Lost all replicas of file replica "
-                                           f"with id: {replica.id}")
+                lost_parts_count += len(node_replicas)
+                for replica in node_replicas.values():
+                    if replica.decrement_and_get_references() == 0:
+                        self._set_fail(f"Lost all replicas of file replica "
+                                       f"with id: {replica.id}")
 
-                if self.nodes_complaints[node.id] > self.complaint_threshold:
-                    off_nodes.append(node)
-                    for replica in node_replicas.values():
-                        self.set_replication_epoch(replica)
+        for nid, complaints in self.nodes_complaints.items():
+            if complaints > self.complaint_threshold:
+                node = self.members[nid]
+                node_replicas = node.get_file_parts(self.file.name)
+                for replica in node_replicas.values():
+                    self.set_replication_epoch(replica)
+                off_nodes.append(node)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self._set_fail("All cluster members disconnected before maintenance.")
