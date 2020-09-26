@@ -1068,12 +1068,12 @@ class HiveClusterExt(HiveCluster):
         """
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
-            tte = self.suspicious_nodes.pop(node.id, -1)
+            t = self.suspicious_nodes.pop(node.id, -1)
             self.nodes_complaints.pop(node.id, -1)
             self.members.pop(node.id, None)
 
-            if 0 < tte < self.current_epoch:
-                t = self.current_epoch - tte
+            if 0 < t < self.current_epoch:
+                t = self.current_epoch - t
                 self.file.logger.log_suspicous_node_detection_delay(node.id, t)
 
             node.remove_file_routing(self.file.name)
