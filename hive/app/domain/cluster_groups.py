@@ -64,6 +64,12 @@ class Cluster:
             Indicates if the Cluster instance is active. Used by
             :py:class:`~app.domain.master_servers.Master` to manage the
             simulation processes.
+        _membership_changed (bool):
+            Flag indicates wether or not :py:attr:`_members_view` needs
+            to be updated during :py:meth:`membership_maintenance`. The
+            variable is set to false at the beggining of every epoch and set
+            to true if the length of ``off_nodes`` list return by
+            :py:meth:`nodes_execute` is bigger than zero.
         _recovery_epoch_sum (int):
             Helper attribute that facilitates the storage of the sum of the
             values returned by all
@@ -122,7 +128,7 @@ class Cluster:
         self.redundant_size: int = self.sufficient_size + len(self.members)
 
         self.running: bool = True
-
+        self._membership_changed: bool = False
         self._recovery_epoch_sum: int = 0
         self._recovery_epoch_calls: int = 0
 
@@ -225,6 +231,7 @@ class Cluster:
                 The simulation's current epoch.
         """
         self.current_epoch = epoch
+        self._membership_changed = False
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
         for member in self._members_view:
@@ -297,6 +304,7 @@ class Cluster:
         off_nodes = self.nodes_execute()
         self.evaluate()
         self.maintain(off_nodes)
+
         if epoch == ms.Master.MAX_EPOCHS:
             self.running = False
 
@@ -331,15 +339,17 @@ class Cluster:
         raise NotImplementedError("")
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
-        """Evicts disconnected :py:attr:`members` from the ``Cluster`` and
-        attempts to recruit new ones.
+        """Offers basic maintenance functionality for Cluster types.
+
+        If ``off_nodes`` list param as at least one node reference,
+        :py:attr:`_membership_changed` is set to ``True``.
 
         Args:
-            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
-                The subset of :py:attr:`members` who disconnected
-                during the current epoch.
+            off_nodes:
+                A possibly empty of offline nodes.
         """
-        raise NotImplementedError("")
+        if len(off_nodes) > 0:
+            self._membership_changed = True
 
     def membership_maintenance(self) -> th.NodeDict:
         """Attempts to recruits new network nodes to be members of the cluster.
@@ -358,7 +368,9 @@ class Cluster:
             new_members = self._get_new_members()
             if new_members:
                 self.members.update(new_members)
-                self._members_view = list(self.members.values())
+
+        if self._membership_changed:
+            self._members_view = list(self.members.values())  # Is this it?
 
         sam = len(self.members)
         status_am = self.get_cluster_status()
@@ -601,6 +613,17 @@ class HiveCluster(Cluster):
         self._log_evaluation(pcount)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
+        """Evicts any node who is referenced in off_nodes list.
+
+        Extends:
+            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.
+
+        Args:
+            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
+                The subset of :py:attr:`~Cluster.members` who disconnected
+                during the current epoch.
+        """
+        super().maintain(off_nodes)
         for node in off_nodes:
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
@@ -1062,15 +1085,17 @@ class HiveClusterExt(HiveCluster):
                 The subset of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
         """
-        for node in off_nodes:
-            print(f"    [o] Evicted suspect {node.id}.")
-            t = self.suspicious_nodes.pop(node.id, -1)
-            self.nodes_complaints.pop(node.id, -1)
-            self.members.pop(node.id, None)
-            node.remove_file_routing(self.file.name)
-            if 0 < t < self.current_epoch:
-                t = self.current_epoch - t
-                self.file.logger.log_suspicous_node_detection_delay(node.id, t)
+        if len(off_nodes) > 0:
+            self._membership_changed = True
+            for node in off_nodes:
+                print(f"    [o] Evicted suspect {node.id}.")
+                t = self.suspicious_nodes.pop(node.id, -1)
+                self.nodes_complaints.pop(node.id, -1)
+                self.members.pop(node.id, None)
+                node.remove_file_routing(self.file.name)
+                if 0 < t < self.current_epoch:
+                    t = self.current_epoch - t
+                    self.file.logger.log_suspicous_node_detection_delay(node.id, t)
         super().membership_maintenance()
         self.complaint_threshold = len(self.members) * 0.5
     # endregion
@@ -1180,7 +1205,7 @@ class HDFSCluster(Cluster):
         """Evicts any :py:class:`network node <app.domain.network_nodes.HDFSNode>`
         whose heartbeats in :py:attr:`data_node_heartbeats` reached zero.
 
-        Overrides:
+        Extends:
             :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.
 
         Args:
@@ -1188,6 +1213,7 @@ class HDFSCluster(Cluster):
                 The subset of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
         """
+        super().maintain(off_nodes)
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
             self.suspicious_nodes.discard(node.id)
@@ -1304,9 +1330,6 @@ class NewscastCluster(Cluster):
             "count_min": self.count_min,
             "count_max": self.count_max
         })
-
-    def maintain(self, off_nodes: List[th.NodeType]) -> None:
-        pass
     # endregion
 
     # region Simulation setup
