@@ -1147,9 +1147,8 @@ class HDFSCluster(Cluster):
                                            f"with id: {replica.id}")
                 # Simulate missed heartbeats.
                 self.data_node_heartbeats[node.id] -= 1
-                print(f"    > Logged missed heartbeat {node.id}, "
-                      f"node remaining lives: "
-                      f"{self.data_node_heartbeats[node.id]}")
+                print(f"    > Logged missed heartbeat {node.id}, node remaining"
+                      f" lives: {self.data_node_heartbeats[node.id]}")
                 if self.data_node_heartbeats[node.id] <= 0:
                     off_nodes.append(node)
                     node_replicas = node.get_file_parts(self.file.name)
