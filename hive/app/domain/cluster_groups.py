@@ -64,6 +64,12 @@ class Cluster:
             Indicates if the Cluster instance is active. Used by
             :py:class:`~app.domain.master_servers.Master` to manage the
             simulation processes.
+        _membership_changed (bool):
+            Flag indicates wether or not :py:attr:`_members_view` needs
+            to be updated during :py:meth:`membership_maintenance`. The
+            variable is set to false at the beggining of every epoch and set
+            to true if the length of ``off_nodes`` list return by
+            :py:meth:`nodes_execute` is bigger than zero.
         _recovery_epoch_sum (int):
             Helper attribute that facilitates the storage of the sum of the
             values returned by all
@@ -122,7 +128,7 @@ class Cluster:
         self.redundant_size: int = self.sufficient_size + len(self.members)
 
         self.running: bool = True
-
+        self._membership_changed: bool = False
         self._recovery_epoch_sum: int = 0
         self._recovery_epoch_calls: int = 0
 
@@ -131,7 +137,7 @@ class Cluster:
                    sender: str,
                    receiver: str,
                    replica: sd.FileBlockData,
-                   is_fresh: bool = False) -> th.HttpResponse:
+                   is_fresh: bool = False) -> int:
         """Sends a :py:class:`file block replica
         <app.domain.helpers.smart_dataclasses.FileBlockData>` to some other
         :py:class:`network node <app.domain.network_nodes.Node>` in
@@ -155,8 +161,7 @@ class Cluster:
                 This argument facilitates simulation.
 
         Returns:
-            :py:class:`~app.domain.helpers.enums.HttpCodes`:
-                An http code sent by the ``receiver``.
+            An http code sent by the ``receiver``.
         """
         if sender == receiver:
             return e.HttpCodes.DUMMY
@@ -226,6 +231,7 @@ class Cluster:
                 The simulation's current epoch.
         """
         self.current_epoch = epoch
+        self._membership_changed = False
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
         for member in self._members_view:
@@ -258,9 +264,6 @@ class Cluster:
                     using the created probability vector.
         """
         self.file.logger.initial_spread = "i"
-
-        choices: Tuple[th.NodeType]
-        selected_nodes: List[th.NodeType]
 
         choices = self._members_view
         uptime_sum = sum(c.uptime for c in choices)
@@ -301,6 +304,7 @@ class Cluster:
         off_nodes = self.nodes_execute()
         self.evaluate()
         self.maintain(off_nodes)
+
         if epoch == ms.Master.MAX_EPOCHS:
             self.running = False
 
@@ -335,15 +339,17 @@ class Cluster:
         raise NotImplementedError("")
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
-        """Evicts disconnected :py:attr:`members` from the ``Cluster`` and
-        attempts to recruit new ones.
+        """Offers basic maintenance functionality for Cluster types.
+
+        If ``off_nodes`` list param as at least one node reference,
+        :py:attr:`_membership_changed` is set to ``True``.
 
         Args:
-            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
-                The subset of :py:attr:`members` who disconnected
-                during the current epoch.
+            off_nodes:
+                A possibly empty of offline nodes.
         """
-        raise NotImplementedError("")
+        if len(off_nodes) > 0:
+            self._membership_changed = True
 
     def membership_maintenance(self) -> th.NodeDict:
         """Attempts to recruits new network nodes to be members of the cluster.
@@ -362,7 +368,9 @@ class Cluster:
             new_members = self._get_new_members()
             if new_members:
                 self.members.update(new_members)
-                self._members_view = list(self.members.values())
+
+        if self._membership_changed:
+            self._members_view = list(self.members.values())  # Is this it?
 
         sam = len(self.members)
         status_am = self.get_cluster_status()
@@ -605,6 +613,17 @@ class HiveCluster(Cluster):
         self._log_evaluation(pcount)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
+        """Evicts any node who is referenced in off_nodes list.
+
+        Extends:
+            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.
+
+        Args:
+            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
+                The subset of :py:attr:`~Cluster.members` who disconnected
+                during the current epoch.
+        """
+        super().maintain(off_nodes)
         for node in off_nodes:
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
@@ -667,7 +686,7 @@ class HiveCluster(Cluster):
             "reliability" of network nodes.
         """
         uptime_sum = sum(member_uptimes)
-        u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]
+        u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]  # TODO: Bug???
 
         v_ = pd.DataFrame(data=u_, index=member_ids)
         self.v_ = v_
@@ -923,7 +942,7 @@ class HiveClusterExt(HiveCluster):
     kicking them out of the group.
 
     Attributes:
-        complaint_threshold (float):
+        complaint_threshold (int):
             Reference value that defines the maximum number of complaints a
             :py:class:`network node <app.domain.network_nodes.HiveNodeExt>`
             can receive before it is evicted from the ``HiveClusterExt``.
@@ -953,7 +972,7 @@ class HiveClusterExt(HiveCluster):
                  sim_id: int = 0,
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
-        self.complaint_threshold: float = len(members) * 0.5
+        self.complaint_threshold: int = int(math.floor(len(self.members) * 0.5))
         self.nodes_complaints: Dict[str, int] = {}
         self.suspicious_nodes: Dict[str, int] = {}
         self._epoch_complaints: set = set()
@@ -993,7 +1012,7 @@ class HiveClusterExt(HiveCluster):
                 self.nodes_complaints[complainee] = 1
             print(f"    > Logged complaint {complaint_id}, "
                   f"complainee complaint count: "
-                  f"{self.nodes_complaints[complainee]}")
+                  f"{self.nodes_complaints[complainee]} / {self.complaint_threshold}")
     # endregion
 
     # region Simulation steps
@@ -1028,23 +1047,22 @@ class HiveClusterExt(HiveCluster):
         for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
-            elif node.is_suspect():
+            elif node.is_suspect() and node.id not in self.suspicious_nodes:
+                self.suspicious_nodes[node.id] = self.current_epoch
                 node_replicas = node.get_file_parts(self.file.name)
-                if node.id not in self.suspicious_nodes:
-                    self.suspicious_nodes[node.id] = 1
-                    lost_parts_count += len(node_replicas)
-                    for replica in node_replicas.values():
-                        if replica.decrement_and_get_references() == 0:
-                            self._set_fail(f"Lost all replicas of file replica "
-                                           f"with id: {replica.id}")
-                else:
-                    self.suspicious_nodes[node.id] += 1
+                lost_parts_count += len(node_replicas)
+                for replica in node_replicas.values():
+                    if replica.decrement_and_get_references() == 0:
+                        self._set_fail(f"Lost all replicas of file replica "
+                                       f"with id: {replica.id}")
 
-                ccount = self.nodes_complaints.get(node.id, -1)
-                if ccount >= self.complaint_threshold:
-                    off_nodes.append(node)
-                    for replica in node_replicas.values():
-                        self.set_replication_epoch(replica)
+        for nid, complaints in self.nodes_complaints.items():
+            if complaints > self.complaint_threshold:
+                node = self.members[nid]
+                node_replicas = node.get_file_parts(self.file.name)
+                for replica in node_replicas.values():
+                    self.set_replication_epoch(replica)
+                off_nodes.append(node)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self._set_fail("All cluster members disconnected before maintenance.")
@@ -1068,15 +1086,19 @@ class HiveClusterExt(HiveCluster):
                 The subset of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
         """
-        for node in off_nodes:
-            print(f"    [o] Evicted suspect {node.id}.")
-            tte = self.suspicious_nodes.pop(node.id, -1)
-            self.file.logger.log_suspicous_node_detection_delay(node.id, tte)
-            self.nodes_complaints.pop(node.id, -1)
-            self.members.pop(node.id, None)
-            node.remove_file_routing(self.file.name)
+        if len(off_nodes) > 0:
+            self._membership_changed = True
+            for node in off_nodes:
+                print(f"    [o] Evicted suspect {node.id}.")
+                t = self.suspicious_nodes.pop(node.id, -1)
+                self.nodes_complaints.pop(node.id, -1)
+                self.members.pop(node.id, None)
+                node.remove_file_routing(self.file.name)
+                if 0 < t <= self.current_epoch:
+                    t = self.current_epoch - t
+                    self.file.logger.log_suspicous_node_detection_delay(node.id, t)
         super().membership_maintenance()
-        self.complaint_threshold = len(self.members) * 0.5
+        self.complaint_threshold = int(math.floor(len(self.members) * 0.5))
     # endregion
 
 
@@ -1145,16 +1167,14 @@ class HDFSCluster(Cluster):
                             self._set_fail(f"Lost all replicas of file replica "
                                            f"with id: {replica.id}")
                 # Simulate missed heartbeats.
-                if node.id in self.data_node_heartbeats:
-                    self.data_node_heartbeats[node.id] -= 1
-                    print(f"    > Logged missed heartbeat {node.id}, "
-                          f"node remaining lives: "
-                          f"{self.data_node_heartbeats[node.id]}")
-                    if self.data_node_heartbeats[node.id] <= 0:
-                        off_nodes.append(node)
-                        node_replicas = node.get_file_parts(self.file.name)
-                        for replica in node_replicas.values():
-                            self.set_replication_epoch(replica)
+                self.data_node_heartbeats[node.id] -= 1
+                print(f"    > Logged missed heartbeat {node.id}, node remaining"
+                      f" lives: {self.data_node_heartbeats[node.id]}")
+                if self.data_node_heartbeats[node.id] <= 0:
+                    off_nodes.append(node)
+                    node_replicas = node.get_file_parts(self.file.name)
+                    for replica in node_replicas.values():
+                        self.set_replication_epoch(replica)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self._set_fail("All data nodes disconnected before maintenance.")
@@ -1186,7 +1206,7 @@ class HDFSCluster(Cluster):
         """Evicts any :py:class:`network node <app.domain.network_nodes.HDFSNode>`
         whose heartbeats in :py:attr:`data_node_heartbeats` reached zero.
 
-        Overrides:
+        Extends:
             :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.
 
         Args:
@@ -1194,6 +1214,7 @@ class HDFSCluster(Cluster):
                 The subset of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
         """
+        super().maintain(off_nodes)
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
             self.suspicious_nodes.discard(node.id)
@@ -1205,8 +1226,7 @@ class HDFSCluster(Cluster):
     def membership_maintenance(self) -> th.NodeDict:
         new_members = super().membership_maintenance()
         for nid in new_members:
-            if nid not in self.data_node_heartbeats:
-                self.data_node_heartbeats[nid] = 5
+            self.data_node_heartbeats[nid] = 5
     # endregion
 
 
@@ -1311,9 +1331,6 @@ class NewscastCluster(Cluster):
             "count_min": self.count_min,
             "count_max": self.count_max
         })
-
-    def maintain(self, off_nodes: List[th.NodeType]) -> None:
-        pass
     # endregion
 
     # region Simulation setup
@@ -1334,8 +1351,8 @@ class NewscastCluster(Cluster):
         self.sum: float = 0.0
         self.sqrsum: float = 0.0
         self.n: int = 0
-        self.count_min: int = 0.0
-        self.count_max: int = 0.0
+        self.count_min: float = 0.0
+        self.count_max: float = 0.0
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "o") -> None:
         """Distributes a collection of :py:class:`file block replicas
