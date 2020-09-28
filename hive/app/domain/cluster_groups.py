@@ -899,7 +899,7 @@ class HiveCluster(Cluster):
             print(f"converged: {converged}")
             print(self._pretty_print_eq_distr_table(target, atol, rtol))
         return converged
-        
+
     def _log_evaluation(self, pcount: int) -> None:
         super()._log_evaluation(pcount)
         if self.equal_distributions():
