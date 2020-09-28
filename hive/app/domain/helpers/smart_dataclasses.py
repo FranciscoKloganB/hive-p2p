@@ -510,9 +510,9 @@ class LoggingData:
         set_len = len(self.convergence_set)
         if set_len > 0:
             self.convergence_sets.append(self.convergence_set)
-            self.convergence_set = []
             if set_len > self.largest_convergence_window:
                 self.largest_convergence_window = set_len
+            self.convergence_set = []
         self.cswc = 0
 
     def _recursive_len(self, item: Any) -> int:
