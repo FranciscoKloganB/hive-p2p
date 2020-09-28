@@ -894,18 +894,12 @@ class HiveCluster(Cluster):
         target = self.v_.multiply(pcount)
         rtol = self.v_[0].min()
         atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
-        # converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
+        converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
         if DEBUG:
-            # print(f"converged: {converged}")
+            print(f"converged: {converged}")
             print(self._pretty_print_eq_distr_table(target, atol, rtol))
-        # return converged
-        a = self.cv_[0].values
-        b = target[0].values
-        for i in range(len(a)):
-            if np.abs(a[i] - b[i]) > atol + np.abs(rtol) * b[i]:
-                return False
-        return True
-
+        return converged
+        
     def _log_evaluation(self, pcount: int) -> None:
         super()._log_evaluation(pcount)
         if self.equal_distributions():
