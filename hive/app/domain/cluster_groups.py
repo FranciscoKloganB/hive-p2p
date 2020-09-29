@@ -620,13 +620,13 @@ class HiveCluster(Cluster):
         if not self.members:
             self._set_fail("Cluster has no remaining members.")
 
-        pcount: int = 0
+        plive: int = 0
         for node in self._members_view:
             node_parts_count = node.get_file_parts_count(self.file.name)
             self.cv_.at[node.id, 0] = node_parts_count
             self.avg_.at[node.id, 0] += node_parts_count
-            pcount += node_parts_count
-        self._log_evaluation(pcount)
+            plive += node_parts_count
+        self._log_evaluation(plive)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         """Evicts any node who is referenced in off_nodes list.
