@@ -638,7 +638,7 @@ class HiveCluster(Cluster):
                 The subset of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
         """
-        super().maintain(off_nodes)
+        super().maintain(off_nodes)  # Sets _membership_changed = True
         for node in off_nodes:
             self.members.pop(node.id, None)
             node.remove_file_routing(self.file.name)
@@ -667,8 +667,9 @@ class HiveCluster(Cluster):
             self.remove_cloud_reference()
 
         new_members = super().membership_maintenance()
-        if new_members:
+        if self._membership_changed:
             self.create_and_bcast_new_transition_matrix()
+
         return new_members
     # endregion
 
@@ -1210,7 +1211,7 @@ class HiveClusterExt(HiveCluster):
                     self.file.logger.log_suspicous_node_detection_delay(node.id, t)
         super().membership_maintenance()
         self.complaint_threshold = int(math.floor(len(self.members) * 0.5))
-        self.avg
+
     # endregion
 
 
