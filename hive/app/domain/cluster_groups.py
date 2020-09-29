@@ -1023,7 +1023,7 @@ class HiveClusterPerfect(HiveCluster):
         self._log_evaluation(pcount)
     # endregion
 
-    
+
 class HiveClusterExt(HiveCluster):
     """Represents a group of network nodes persisting a file.
 
