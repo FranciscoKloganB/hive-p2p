@@ -948,21 +948,15 @@ class HiveClusterPerfect(HiveCluster):
     errors and there is no link loss, i.e., it is used to study properties of
     the system independently of computing environment.
     """
-
-    # region Simulation setup
-    def _setup_epoch(self, epoch: int) -> None:
-        """Initializes some attributes cluster attributes at the start of an
-        epoch.
-
-        Overrides:
-            :py:meth:`app.domain.cluster_groups.Cluster._setup_epoch`
-
-        Args:
-            epoch:
-                The simulation's current epoch.
-        """
-        self.current_epoch = epoch
-    # endregion
+    def __init__(self,
+                 master: th.MasterType,
+                 file_name: str,
+                 members: th.NodeDict,
+                 sim_id: int = 0,
+                 origin: str = "") -> None:
+        super().__init__(master, file_name, members, sim_id, origin)
+        self.corruption_chances: List[float] = [0.0, 1.0]
+        set_loss_chance(0.0)  # environment_settings.set_loss_chance
 
     # region Swarm guidance structure management
     def new_desired_distribution(
