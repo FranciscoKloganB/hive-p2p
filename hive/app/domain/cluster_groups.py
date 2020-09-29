@@ -991,11 +991,23 @@ class HiveClusterPerfect(HiveCluster):
     # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
         self.current_epoch = epoch
+        self.timer += 1
+
         self.nodes_execute()
         self.evaluate()
 
         if epoch == ms.Master.MAX_EPOCHS:
             self.running = False
+            self.avg_ /= self.timer
+            self.avg_ /= np.sum(self.avg_)
+
+            rtol = self.v_[0].min()
+            atol = np.clip(ABS_TOLERANCE, 0.0, 1.0)
+
+            mag = float('inf')
+            if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
+                mag = np.sqrt((self.v_.subtract(self.avg_)).sum(axis=0))
+            self.file.logger.log_topology_avg_convergence(mag)
 
     def nodes_execute(self) -> List[th.NodeType]:
         """Queries all network node members execute the epoch.
@@ -1018,7 +1030,6 @@ class HiveClusterPerfect(HiveCluster):
             node_parts_count = node.get_file_parts_count(self.file.name)
             self.cv_.at[node.id, 0] = node_parts_count
             self.avg_.at[node.id, 0] += node_parts_count
-            self.timer += 1
             pcount += node_parts_count
         self._log_evaluation(pcount)
     # endregion
