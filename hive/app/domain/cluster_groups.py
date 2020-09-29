@@ -1204,6 +1204,7 @@ class HiveClusterExt(HiveCluster):
                 during the current epoch.
         """
         if len(off_nodes) > 0:
+            self._normalize_avg_()
             self._membership_changed = True
             for node in off_nodes:
                 print(f"    [o] Evicted suspect {node.id}.")
@@ -1216,7 +1217,6 @@ class HiveClusterExt(HiveCluster):
                     self.file.logger.log_suspicous_node_detection_delay(node.id, t)
         super().membership_maintenance()
         self.complaint_threshold = int(math.floor(len(self.members) * 0.5))
-
     # endregion
 
 
