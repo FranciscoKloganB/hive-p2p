@@ -558,8 +558,7 @@ class LoggingData:
             magnitude:
                 The distance between the desired steady-state vector for a
                 cluster's topology and the average density distribution
-                vector for that same topology, assuming both were close
-                to each other.
+                vector for that same topology.
         """
         self.topologies_avg_convergence.append(magnitude)
 
