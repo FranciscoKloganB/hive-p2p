@@ -1321,7 +1321,7 @@ class HDFSCluster(Cluster):
             if node.is_up():
                 node_replicas = node.get_file_parts_count(self.file.name)
                 plive += node_replicas
-                
+
         self._log_evaluation(plive)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
