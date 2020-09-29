@@ -699,10 +699,8 @@ class HiveCluster(Cluster):
         uptime_sum = sum(member_uptimes)
         u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]
 
-        v_ = pd.DataFrame(data=u_, index=member_ids)
-        self.v_ = v_
-        cv_ = pd.DataFrame(data=[0] * len(v_), index=member_ids)
-        self.cv_ = cv_
+        self.v_ = pd.DataFrame(data=u_, index=member_ids)
+        self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
 
         return u_
 
