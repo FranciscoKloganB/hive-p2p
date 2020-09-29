@@ -988,7 +988,42 @@ class HiveClusterPerfect(HiveCluster):
         return u_
     # endregion
 
+    # region Simulation steps
+    def execute_epoch(self, epoch: int) -> None:
+        self.current_epoch = epoch
+        self.nodes_execute()
+        self.evaluate()
 
+        if epoch == ms.Master.MAX_EPOCHS:
+            self.running = False
+
+    def nodes_execute(self) -> List[th.NodeType]:
+        """Queries all network node members execute the epoch.
+
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.
+
+        Returns:
+            List[:py:class:`~app.type_hints.NodeType`]:
+                 A collection of members who disconnected during the current
+                 epoch. See
+                 :py:meth:`app.domain.network_nodes.Node.update_status`.
+        """
+        for node in self._members_view:
+            node.execute_epoch(self, self.file.name)
+
+    def evaluate(self) -> None:
+        pcount: int = 0
+        for node in self._members_view:
+            node_parts_count = node.get_file_parts_count(self.file.name)
+            self.cv_.at[node.id, 0] = node_parts_count
+            self.avg_.at[node.id, 0] += node_parts_count
+            self.timer += 1
+            pcount += node_parts_count
+        self._log_evaluation(pcount)
+    # endregion
+
+    
 class HiveClusterExt(HiveCluster):
     """Represents a group of network nodes persisting a file.
 
