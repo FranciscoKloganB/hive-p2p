@@ -697,7 +697,7 @@ class HiveCluster(Cluster):
             "reliability" of network nodes.
         """
         uptime_sum = sum(member_uptimes)
-        u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]  # TODO: Bug???
+        u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]
 
         v_ = pd.DataFrame(data=u_, index=member_ids)
         self.v_ = v_
