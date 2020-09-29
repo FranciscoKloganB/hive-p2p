@@ -640,7 +640,6 @@ class HiveCluster(Cluster):
         """
         if len(off_nodes) > 0:
             self._normalize_avg_()
-            self._timer = 0
             self._membership_changed = True
             for node in off_nodes:
                 self.members.pop(node.id, None)
@@ -711,7 +710,7 @@ class HiveCluster(Cluster):
         self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
         self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
         self._timer = 0
-        
+
         return u_
 
     def new_transition_matrix(self) -> pd.DataFrame:
