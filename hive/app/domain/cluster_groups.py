@@ -572,6 +572,10 @@ class HiveCluster(Cluster):
     # endregion
 
     # region Simulation steps
+    def execute_epoch(self, epoch: int) -> None:
+        self.timer += 1
+        super().execute_epoch(epoch)
+
     def nodes_execute(self) -> List[th.NodeType]:
         """Queries all network node members execute the epoch.
 
@@ -916,6 +920,18 @@ class HiveCluster(Cluster):
         else:
             self.file.logger.save_sets_and_reset()
 
+    def _normalize_avg_(self):
+        self.avg_ /= self.timer
+        self.avg_ /= np.sum(self.avg_)
+
+        rtol = self.v_[0].min()
+        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0)
+
+        magnitude = float('inf')
+        if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
+            magnitude = np.sqrt((self.v_.subtract(self.avg_)).sum(axis=0))
+        self.file.logger.log_topology_avg_convergence(magnitude)
+
     def _pretty_print_eq_distr_table(
             self, target: pd.DataFrame, atol: float, rtol: float) -> Any:
         """Pretty prints a PSQL formatted table for visual vector comparison.
@@ -998,16 +1014,7 @@ class HiveClusterPerfect(HiveCluster):
 
         if epoch == ms.Master.MAX_EPOCHS:
             self.running = False
-            self.avg_ /= self.timer
-            self.avg_ /= np.sum(self.avg_)
-
-            rtol = self.v_[0].min()
-            atol = np.clip(ABS_TOLERANCE, 0.0, 1.0)
-
-            mag = float('inf')
-            if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
-                mag = np.sqrt((self.v_.subtract(self.avg_)).sum(axis=0))
-            self.file.logger.log_topology_avg_convergence(mag)
+            self._normalize_avg_()
 
     def nodes_execute(self) -> List[th.NodeType]:
         """Queries all network node members execute the epoch.
@@ -1203,6 +1210,7 @@ class HiveClusterExt(HiveCluster):
                     self.file.logger.log_suspicous_node_detection_delay(node.id, t)
         super().membership_maintenance()
         self.complaint_threshold = int(math.floor(len(self.members) * 0.5))
+        self.avg
     # endregion
 
 
