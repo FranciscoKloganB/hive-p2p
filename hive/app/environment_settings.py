@@ -34,6 +34,7 @@ import os
 from typing import List
 
 from utils.convertions import truncate_float_value
+import numpy
 
 DEBUG: bool = False
 """Indicates if some debug related actions or prints to the terminal should 
@@ -85,6 +86,15 @@ start being marked with verified convergence in
 LOSS_CHANCE: float = 0.04
 """Defines the probability of a message not being delivered to a destination 
 due to network link problems, in the simulation environment."""
+
+
+def set_loss_chance(v: float) -> None:
+    """Changes LOSS_CHANCE constant value at run time."""
+    global LOSS_CHANCE
+    global DELIVER_CHANCE
+    LOSS_CHANCE = numpy.clip(v, 0.0, 1.0)
+    DELIVER_CHANCE = 1.0 - LOSS_CHANCE
+
 
 ABS_TOLERANCE: float = 0.05
 """Defines the maximum amount of absolute positive or negative deviation that a 
