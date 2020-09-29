@@ -709,7 +709,9 @@ class HiveCluster(Cluster):
 
         self.v_ = pd.DataFrame(data=u_, index=member_ids)
         self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
-
+        self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        self._timer = 0
+        
         return u_
 
     def new_transition_matrix(self) -> pd.DataFrame:
@@ -1003,6 +1005,8 @@ class HiveClusterPerfect(HiveCluster):
 
         self.v_ = pd.DataFrame(data=u_, index=member_ids)
         self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        self._timer = 0
 
         return u_
     # endregion
