@@ -438,10 +438,10 @@ class LoggingData:
         off_node_count (List[int]):
             The number of :py:mod:`network nodes <app.domain.network_nodes>`
             whose status changed to offline or suspicious, at each epoch.
-        topologies_avg_convergence (List[int]):
-            Stores an integer for each of the clusters' used topologies. Zero
-            means the density distribution average did not approximate the
-            desired density distribution and anything else means it did.
+        topologies_avg_convergence (List[float]):
+            Stores floats for each of the clusters' used topologies
+            representing the magnitude difference between the average density
+            distribution and the desired steady state density distribution.
         transmissions_failed (List[int]):
             The number of message transmissions that were lost in the
             overlay network of a :py:mod:`cluster group
@@ -481,7 +481,7 @@ class LoggingData:
         self.initial_spread = ""
         self.matrices_nodes_degrees: List[Dict[str, float]] = []
         self.off_node_count: List[int] = [0] * max_epochs
-        self.topologies_avg_convergence: List[int] = [0] * max_epochs
+        self.topologies_avg_convergence: List[float] = []
         self.transmissions_failed: List[int] = [0] * max_epochs
         ###############################
 
@@ -550,6 +550,19 @@ class LoggingData:
     # endregion
 
     # region Helpers
+    def log_topology_avg_convergence(self, magnitude: int) -> None:
+        """Logs the degree of all nodes in a Markov Matrix overlay, at the
+        time of its creation, before any faults on the overlay occurs.
+
+        Args:
+            magnitude:
+                The distance between the desired steady-state vector for a
+                cluster's topology and the average density distribution
+                vector for that same topology, assuming both were close
+                to each other.
+        """
+        self.topologies_avg_convergence.append(magnitude)
+
     def log_matrices_degrees(self, nodes_degrees: Dict[str, float]):
         """Logs the degree of all nodes in a Markov Matrix overlay, at the
         time of its creation, before any faults on the overlay occurs.
