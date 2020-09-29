@@ -214,12 +214,12 @@ if __name__ == "__main__":
     threading = 0
     simdirectory = False
     simfile = None
-    iterations = 30
-    duration = 720
+    iterations = 1
+    duration = 480
 
     master_class = "HiveMaster"
-    cluster_class = "HiveCluster"
-    node_class = "HiveNode"
+    cluster_class = "HiveClusterExt"
+    node_class = "HiveNodeExt"
 
     try:
         short_opts = "df:i:t:e:m:c:n:"
