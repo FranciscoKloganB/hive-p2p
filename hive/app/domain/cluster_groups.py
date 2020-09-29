@@ -496,7 +496,7 @@ class HiveCluster(Cluster):
         self.cv_: pd.DataFrame = pd.DataFrame()
         self.v_: pd.DataFrame = pd.DataFrame()
         self.avg_: pd.DataFrame = pd.DataFrame()
-        self.timer: int = 0
+        self._timer: int = 0
         self.create_and_bcast_new_transition_matrix()
 
     # region Simulation setup
@@ -573,7 +573,7 @@ class HiveCluster(Cluster):
 
     # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
-        self.timer += 1
+        self._timer += 1
         super().execute_epoch(epoch)
 
     def nodes_execute(self) -> List[th.NodeType]:
@@ -638,10 +638,13 @@ class HiveCluster(Cluster):
                 The subset of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
         """
-        super().maintain(off_nodes)  # Sets _membership_changed = True
-        for node in off_nodes:
-            self.members.pop(node.id, None)
-            node.remove_file_routing(self.file.name)
+        if len(off_nodes) > 0:
+            self._normalize_avg_()
+            self._timer = 0
+            self._membership_changed = True
+            for node in off_nodes:
+                self.members.pop(node.id, None)
+                node.remove_file_routing(self.file.name)
         self.membership_maintenance()
 
     def membership_maintenance(self) -> th.NodeDict:
@@ -777,7 +780,6 @@ class HiveCluster(Cluster):
         tries = 1
         result: pd.DataFrame = pd.DataFrame()
         while tries <= 3:
-            # print(f"validating transition matrix... attempt: {tries}")
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
                 self.broadcast_transition_matrix(result)
@@ -922,7 +924,7 @@ class HiveCluster(Cluster):
             self.file.logger.save_sets_and_reset()
 
     def _normalize_avg_(self):
-        self.avg_ /= self.timer
+        self.avg_ /= self._timer
         self.avg_ /= np.sum(self.avg_)
 
         rtol = self.v_[0].min()
@@ -1008,7 +1010,7 @@ class HiveClusterPerfect(HiveCluster):
     # region Simulation steps
     def execute_epoch(self, epoch: int) -> None:
         self.current_epoch = epoch
-        self.timer += 1
+        self._timer += 1
 
         self.nodes_execute()
         self.evaluate()
