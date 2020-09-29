@@ -382,20 +382,23 @@ class Cluster:
     # endregion
 
     # region Helpers
-    def _log_evaluation(self, pcount: int) -> None:
+    def _log_evaluation(self, plive: int, ptotal: int) -> None:
         """Helper that collects ``Cluster`` data and registers it on a
         :py:class:`logger <app.domain.helpers.smart_dataclasses.LoggingData>`
         object.
 
         Args:
-            pcount:
-                The number of existing parts in the system at the
+            plive:
+                The number of existing parts in the cluster at the
+                simulation's current epoch at online or suspect nodes.
+            ptotal:
+                The number of existing parts in the cluster at the
                 simulation's current epoch.
         """
-        self.file.logger.log_existing_file_blocks(pcount, self.current_epoch)
-        if pcount <= 0:
+        self.file.logger.log_existing_file_blocks(plive, self.current_epoch)
+        if plive <= 0:
             self._set_fail("Cluster has no remaining parts.")
-        self.file.existing_replicas = pcount
+        self.file.existing_replicas = ptotal
 
     def _set_fail(self, message: str) -> None:
         """Ends the Cluster instance simulation.
@@ -915,8 +918,8 @@ class HiveCluster(Cluster):
             print(self._pretty_print_eq_distr_table(target, atol, rtol))
         return converged
 
-    def _log_evaluation(self, pcount: int) -> None:
-        super()._log_evaluation(pcount)
+    def _log_evaluation(self, pcount: int, ptotal: int) -> None:
+        super()._log_evaluation(pcount, ptotal)
         if self.equal_distributions():
             self.file.logger.register_convergence(self.current_epoch)
         else:
@@ -1301,13 +1304,13 @@ class HDFSCluster(Cluster):
         if not self.members:
             self._set_fail("Cluster has no remaining members.")
 
-        pcount: int = 0
+        plive: int = 0
         members = self._members_view
         for node in members:
             if node.is_up():
                 node_replicas = node.get_file_parts_count(self.file.name)
-                pcount += node_replicas
-        self._log_evaluation(pcount)
+                plive += node_replicas
+        self._log_evaluation(plive, -1)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         """Evicts any :py:class:`network node <app.domain.network_nodes.HDFSNode>`
