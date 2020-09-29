@@ -942,6 +942,16 @@ class HiveCluster(Cluster):
     # endregion
 
 
+class HiveClusterPerfect(HiveCluster):
+    """Represents a group of network nodes persisting a file using swarm
+    guidance algorithm.
+
+    This implementation assumes nodes never disconnect, there are no disk
+    errors and there is no link loss, i.e., it is used to study properties of
+    the system independently of computing environment.
+    """
+
+
 class HiveClusterExt(HiveCluster):
     """Represents a group of network nodes persisting a file.
 
