@@ -476,6 +476,15 @@ class HiveCluster(Cluster):
             realizations for ideal persistence of the file.
         cv_ (:py:class:`~pd:pandas.DataFrame`):
             Tracks the file current density distribution, updated at each epoch.
+        avg_ (:py:class:`~pd:pandas.DataFrame`):
+            Tracks the file average density distribution. Used to assert if
+            throughout the life time of a cluster, the desired density
+            distribution :py:attr:`v_` was achieved on average. Differs from
+            :py:attr:`cv_` because `cv_` is used for instantaneous
+            convergence comparison.
+        timer (int):
+            Used as a logical clock to divide the entries of :py:attr:`avg_`
+            when a topology changes.
     """
     def __init__(self,
                  master: th.MasterType,
@@ -486,6 +495,8 @@ class HiveCluster(Cluster):
         super().__init__(master, file_name, members, sim_id, origin)
         self.cv_: pd.DataFrame = pd.DataFrame()
         self.v_: pd.DataFrame = pd.DataFrame()
+        self.avg_: pd.DataFrame = pd.DataFrame()
+        self.timer: int = 0
         self.create_and_bcast_new_transition_matrix()
 
     # region Simulation setup
