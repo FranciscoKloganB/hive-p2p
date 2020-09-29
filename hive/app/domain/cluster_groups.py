@@ -629,14 +629,15 @@ class HiveCluster(Cluster):
         plive: int = 0
         ptotal: int = 0
         for node in self._members_view:
-            node_parts_count = node.get_file_parts_count(self.file.name)
-            ptotal += node_parts_count
-            self.avg_.at[node.id, 0] += node_parts_count
+            c = node.get_file_parts_count(self.file.name)
+            self.avg_.at[node.id, 0] += c
+            ptotal += c
             if node.is_up():
-                plive += node_parts_count
-                self.cv_.at[node.id, 0] = node_parts_count
+                self.cv_.at[node.id, 0] = c
+                plive += c
             else:
                 self.cv_.at[node.id, 0] = 0
+
         self._log_evaluation(plive, ptotal)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
@@ -1316,11 +1317,11 @@ class HDFSCluster(Cluster):
             self._set_fail("Cluster has no remaining members.")
 
         plive: int = 0
-        members = self._members_view
-        for node in members:
+        for node in self._members_view:
             if node.is_up():
                 node_replicas = node.get_file_parts_count(self.file.name)
                 plive += node_replicas
+                
         self._log_evaluation(plive)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
