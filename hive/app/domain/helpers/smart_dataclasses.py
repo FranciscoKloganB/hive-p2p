@@ -438,6 +438,10 @@ class LoggingData:
         off_node_count (List[int]):
             The number of :py:mod:`network nodes <app.domain.network_nodes>`
             whose status changed to offline or suspicious, at each epoch.
+        topologies_avg_convergence (List[int]):
+            Stores an integer for each of the clusters' used topologies. Zero
+            means the density distribution average did not approximate the
+            desired density distribution and anything else means it did.
         transmissions_failed (List[int]):
             The number of message transmissions that were lost in the
             overlay network of a :py:mod:`cluster group
@@ -477,6 +481,7 @@ class LoggingData:
         self.initial_spread = ""
         self.matrices_nodes_degrees: List[Dict[str, float]] = []
         self.off_node_count: List[int] = [0] * max_epochs
+        self.topologies_avg_convergence: List[int] = [0] * max_epochs
         self.transmissions_failed: List[int] = [0] * max_epochs
         ###############################
 
