@@ -950,6 +950,35 @@ class HiveClusterPerfect(HiveCluster):
     errors and there is no link loss, i.e., it is used to study properties of
     the system independently of computing environment.
     """
+    # region Swarm guidance structure management
+    def new_desired_distribution(
+            self, member_ids: List[str], member_uptimes: List[float]
+    ) -> List[float]:
+        """Creates a random desired distribution.
+
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.HiveCluster.new_desired_distribution`
+
+        Args:
+            member_ids:
+                A list of :py:attr:`node identifiers
+                <app.domain.network_nodes.Node.id>` who are
+                :py:attr:`~Cluster.members` of the ``HiveCluster``.
+            member_uptimes:
+                This method's parameter is ignored and can be ``None``.
+
+        Returns:
+            A list of floats with which represent how the files should be
+            distributed among network nodes in the long-run.
+        """
+        u_ = np.random.random_sample(len(member_ids))
+        u_ /= np.sum(u_)
+
+        self.v_ = pd.DataFrame(data=u_, index=member_ids)
+        self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+
+        return u_
+    # endregion
 
 
 class HiveClusterExt(HiveCluster):
