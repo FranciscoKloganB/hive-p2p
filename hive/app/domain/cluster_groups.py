@@ -382,7 +382,7 @@ class Cluster:
     # endregion
 
     # region Helpers
-    def _log_evaluation(self, plive: int, ptotal: int) -> None:
+    def _log_evaluation(self, plive: int, ptotal: int = -1) -> None:
         """Helper that collects ``Cluster`` data and registers it on a
         :py:class:`logger <app.domain.helpers.smart_dataclasses.LoggingData>`
         object.
@@ -393,7 +393,13 @@ class Cluster:
                 simulation's current epoch at online or suspect nodes.
             ptotal:
                 The number of existing parts in the cluster at the
-                simulation's current epoch.
+                simulation's current epoch. This parameter is optional and
+                may be used or not depending on the intent of the system.
+                As a rule of thumb ``plive`` tracks the number of parts that
+                are alive in the system for logging purposes, where as
+                ``ptotal`` is used for comparisons and averages, e.g.,
+                :py:meth:`HiveCluster evaluate
+                <app.domain.cluster_groups.HiveCluster.evaluate>`.
         """
         self.file.logger.log_existing_file_blocks(plive, self.current_epoch)
         if plive <= 0:
@@ -621,12 +627,17 @@ class HiveCluster(Cluster):
             self._set_fail("Cluster has no remaining members.")
 
         plive: int = 0
+        ptotal: int = 0
         for node in self._members_view:
             node_parts_count = node.get_file_parts_count(self.file.name)
-            self.cv_.at[node.id, 0] = node_parts_count
+            if node.is_up():
+                plive += node_parts_count
+                self.cv_.at[node.id, 0] = node_parts_count
+            else:
+                self.cv_.at[node.id, 0] = 0
+            ptotal += node_parts_count
             self.avg_.at[node.id, 0] += node_parts_count
-            plive += node_parts_count
-        self._log_evaluation(plive)
+        self._log_evaluation(plive, ptotal)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         """Evicts any node who is referenced in off_nodes list.
@@ -908,17 +919,17 @@ class HiveCluster(Cluster):
             ``True`` if distributions are close enough to be considered equal,
             otherwise, it returns ``False``.
         """
-        pcount = self.file.existing_replicas
-        target = self.v_.multiply(pcount)
+        ptotal = self.file.existing_replicas
+        target = self.v_.multiply(ptotal)
         rtol = self.v_[0].min()
-        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
+        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * ptotal
         converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
         if DEBUG:
             print(f"converged: {converged}")
             print(self._pretty_print_eq_distr_table(target, atol, rtol))
         return converged
 
-    def _log_evaluation(self, pcount: int, ptotal: int) -> None:
+    def _log_evaluation(self, pcount: int, ptotal: int = -1) -> None:
         super()._log_evaluation(pcount, ptotal)
         if self.equal_distributions():
             self.file.logger.register_convergence(self.current_epoch)
@@ -1310,7 +1321,7 @@ class HDFSCluster(Cluster):
             if node.is_up():
                 node_replicas = node.get_file_parts_count(self.file.name)
                 plive += node_replicas
-        self._log_evaluation(plive, -1)
+        self._log_evaluation(plive)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         """Evicts any :py:class:`network node <app.domain.network_nodes.HDFSNode>`
