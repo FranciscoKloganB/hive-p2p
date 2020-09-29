@@ -630,13 +630,13 @@ class HiveCluster(Cluster):
         ptotal: int = 0
         for node in self._members_view:
             node_parts_count = node.get_file_parts_count(self.file.name)
+            ptotal += node_parts_count
+            self.avg_.at[node.id, 0] += node_parts_count
             if node.is_up():
                 plive += node_parts_count
                 self.cv_.at[node.id, 0] = node_parts_count
             else:
                 self.cv_.at[node.id, 0] = 0
-            ptotal += node_parts_count
-            self.avg_.at[node.id, 0] += node_parts_count
         self._log_evaluation(plive, ptotal)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
