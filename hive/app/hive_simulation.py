@@ -249,11 +249,6 @@ if __name__ == "__main__":
             if options in ("-n", "--network_node"):
                 node_class = str(args).strip()
 
-        if simfile or simdirectory:
-            main(threading, simdirectory, simfile, iterations, duration)
-        else:
-            sys.exit(__err_message__)
-
     except getopt.GetoptError:
         sys.exit(__err_message__)
     except ValueError:
@@ -268,3 +263,9 @@ if __name__ == "__main__":
                  "  --network_node -n (str)\n"
                  "Another cause of error might be a simulation file with "
                  "inconsistent values.")
+
+    if simfile or simdirectory:
+        main(threading, simdirectory, simfile, iterations, duration)
+    else:
+        sys.exit(__err_message__)
+
