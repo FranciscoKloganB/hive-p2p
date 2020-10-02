@@ -630,13 +630,9 @@ class HiveCluster(Cluster):
         for node in self._members_view:
             c = node.get_file_parts_count(self.file.name)
             self.avg_.at[node.id, 0] += c
+            self.cv_.at[node.id, 0] = c
             ptotal += c
-            if node.is_up():
-                self.cv_.at[node.id, 0] = c
-                plive += c
-            else:
-                self.cv_.at[node.id, 0] = 0
-
+            plive += c if node.is_up() else 0
         self._log_evaluation(plive, ptotal)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
@@ -944,6 +940,7 @@ class HiveCluster(Cluster):
         atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0)
 
         magnitude = float('inf')
+        print(f"avg:\n{self.avg_}\n...\ngoal:\n{self.v_}")
         if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
             magnitude = np.sqrt((self.v_.subtract(self.avg_)).sum(axis=0))
         self.file.logger.log_topology_avg_convergence(magnitude)
