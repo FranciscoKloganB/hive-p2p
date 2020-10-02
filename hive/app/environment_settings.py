@@ -87,6 +87,8 @@ LOSS_CHANCE: float = 0.04
 """Defines the probability of a message not being delivered to a destination 
 due to network link problems, in the simulation environment."""
 
+DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
+
 
 def set_loss_chance(v: float) -> None:
     """Changes LOSS_CHANCE constant value at run time."""
@@ -144,7 +146,6 @@ def get_disk_error_chances(simulation_epochs: int) -> List[float]:
 
 # region Other simulation constants
 TRUE_FALSE = [True, False]
-DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
 COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 # endregion
 
