@@ -987,8 +987,8 @@ class HiveClusterPerfect(HiveCluster):
                  sim_id: int = 0,
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
+        es.set_loss_chance(0.0) 
         self.corruption_chances: List[float] = [0.0, 1.0]
-        es.set_loss_chance(0.0)  # environment_settings.set_loss_chance
 
     # region Swarm guidance structure management
     def new_desired_distribution(
