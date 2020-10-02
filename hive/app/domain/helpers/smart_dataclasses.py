@@ -140,8 +140,8 @@ class FileData:
         sim_data_dict = sd.__dict__
         sim_data_dict.update(extras)
         json_string = json.dumps(
-            # sim_data_dict, indent=4, sort_keys=True, ensure_ascii=False)
-            sim_data_dict, sort_keys=True, ensure_ascii=False)
+            sim_data_dict, indent=4, sort_keys=True, ensure_ascii=False)
+
         self.fwrite(json_string)
 
     def fclose(self, msg: str = None) -> None:
