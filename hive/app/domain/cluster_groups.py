@@ -13,13 +13,11 @@ from tabulate import tabulate
 import numpy as np
 import pandas as pd
 import type_hints as th
+import environment_settings as es
 import domain.master_servers as ms
 import domain.helpers.enums as e
 import domain.helpers.matrices as mm
 import domain.helpers.smart_dataclasses as sd
-
-
-from environment_settings import *
 
 
 class Cluster:
@@ -111,7 +109,7 @@ class Cluster:
         """
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-        self.corruption_chances: List[float] = get_disk_error_chances(
+        self.corruption_chances: List[float] = es.get_disk_error_chances(
             ms.Master.MAX_EPOCHS)
 
         self.master = master
@@ -122,7 +120,7 @@ class Cluster:
         self.file: sd.FileData = sd.FileData(file_name, sim_id, _)
 
         expected_fails = math.ceil(len(self.members) * 0.34)
-        self.critical_size: int = REPLICATION_LEVEL
+        self.critical_size: int = es.REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + expected_fails
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
@@ -168,11 +166,12 @@ class Cluster:
 
         self.file.logger.log_bandwidth_units(1, self.current_epoch)
 
-        if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):
+        tf = es.TRUE_FALSE
+        if np.random.choice(a=tf, p=es.COMMUNICATION_CHANCES):
             self.file.logger.log_lost_messages(1, self.current_epoch)
             return e.HttpCodes.TIME_OUT
 
-        is_corrupted = np.random.choice(a=TRUE_FALSE, p=self.corruption_chances)
+        is_corrupted = np.random.choice(a=tf, p=self.corruption_chances)
         if not is_fresh and is_corrupted:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return e.HttpCodes.BAD_REQUEST
@@ -272,7 +271,7 @@ class Cluster:
         for replica in replicas.values():
             choice_view = tuple(choices)
             selected_nodes = np.random.choice(
-                a=choice_view, p=chances, size=REPLICATION_LEVEL, replace=False)
+                a=choice_view, p=chances, size=es.REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
                 replica.references += 1
                 node.receive_part(replica)
@@ -551,9 +550,10 @@ class HiveCluster(Cluster):
 
         choices: List[th.NodeType]
         selected_nodes: List[th.NodeType]
+        rl = es.REPLICATION_LEVEL
         if strat == "a":
             selected_nodes = np.random.choice(
-                a=self._members_view, size=REPLICATION_LEVEL, replace=False)
+                a=self._members_view, size=rl, replace=False)
             for node in selected_nodes:
                 for replica in replicas.values():
                     replica.references += 1
@@ -562,7 +562,7 @@ class HiveCluster(Cluster):
         elif strat == "u":
             for replica in replicas.values():
                 selected_nodes = np.random.choice(
-                    a=self._members_view, size=REPLICATION_LEVEL, replace=False)
+                    a=self._members_view, size=rl, replace=False)
                 for node in selected_nodes:
                     replica.references += 1
                     node.receive_part(replica)
@@ -573,8 +573,7 @@ class HiveCluster(Cluster):
             for replica in replicas.values():
                 choices_view = tuple(choices)
                 selected_nodes = np.random.choice(
-                    a=choices_view, p=desired_distribution,
-                    size=REPLICATION_LEVEL, replace=False)
+                    a=choices_view, p=desired_distribution, size=rl, replace=False)
                 for node in selected_nodes:
                     replica.references += 1
                     node.receive_part(replica)
@@ -923,9 +922,9 @@ class HiveCluster(Cluster):
         ptotal = self.file.existing_replicas
         target = self.v_.multiply(ptotal)
         rtol = self.v_[0].min()
-        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * ptotal
+        atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0) * ptotal
         converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
-        if DEBUG:
+        if es.DEBUG:
             print(f"converged: {converged}")
             print(self._pretty_print_eq_distr_table(target, atol, rtol))
         return converged
@@ -942,7 +941,7 @@ class HiveCluster(Cluster):
         self.avg_ /= np.sum(self.avg_)
 
         rtol = self.v_[0].min()
-        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0)
+        atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0)
 
         magnitude = float('inf')
         if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
@@ -989,7 +988,7 @@ class HiveClusterPerfect(HiveCluster):
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
         self.corruption_chances: List[float] = [0.0, 1.0]
-        set_loss_chance(0.0)  # environment_settings.set_loss_chance
+        es.set_loss_chance(0.0)  # environment_settings.set_loss_chance
 
     # region Swarm guidance structure management
     def new_desired_distribution(
@@ -1401,7 +1400,7 @@ class NewscastCluster(Cluster):
         """
         network_size = len(self._members_view)
         for i in range(network_size):
-            s = np.random.randint(0, network_size, size=NEWSCAST_CACHE_SIZE)
+            s = np.random.randint(0, network_size, size=es.NEWSCAST_CACHE_SIZE)
             s = list(dict.fromkeys(s))
             member = self._members_view[i]
             for j in s:

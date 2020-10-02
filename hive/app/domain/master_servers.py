@@ -5,17 +5,18 @@ file metadata servers or a bank of currently online and offline
 :py:mod:`storage nodes <app.domain.network_nodes>`."""
 from __future__ import annotations
 
+import os
 import json
 import math
 import datetime
-from typing import Union, Dict, Any, Optional
+from typing import Union, Dict, Any, Optional, List
 
 import type_hints as th
 import numpy as np
+import environment_settings as es
 
 from utils.convertions import class_name_to_obj
 from domain.helpers.smart_dataclasses import FileBlockData
-from environment_settings import *
 
 _PersistentingDict: Dict[str, Dict[str, Union[List[str], str]]]
 
@@ -92,7 +93,7 @@ class Master:
         self.cluster_groups: th.ClusterDict = {}
         self.network_nodes: th.NodeDict = {}
 
-        simfile_path: str = os.path.join(SIMULATION_ROOT, simfile_name)
+        simfile_path: str = os.path.join(es.SIMULATION_ROOT, simfile_name)
         self._process_simfile(simfile_path, cluster_class, node_class)
 
     # region Simulation setup
@@ -137,7 +138,7 @@ class Master:
                 fspreads[fname] = spread_strategy
                 size = d[fname]['cluster_size']
                 cluster = self._new_cluster_group(cluster_class, size, fname)
-                fblocks[fname] = self._split_files(fname, cluster, READ_SIZE)
+                fblocks[fname] = self._split_files(fname, cluster, es.READ_SIZE)
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
@@ -190,7 +191,7 @@ class Master:
                 attribute :py:attr:`~app.domain.helpers.smart_dataclasses.FileBlockData.number`
                 is the key.
         """
-        with open(os.path.join(SHARED_ROOT, fname), "rb") as file:
+        with open(os.path.join(es.SHARED_ROOT, fname), "rb") as file:
             bid: int = 0
             d: th.ReplicasDict = {}
             while True:
@@ -295,7 +296,7 @@ class Master:
             cluster_members[node_id] = self.network_nodes[node_id]
 
         cluster = class_name_to_obj(
-            CLUSTER_GROUPS,
+            es.CLUSTER_GROUPS,
             cluster_class,
             [self, fname, cluster_members, self.sim_id, self.origin]
         )
@@ -323,7 +324,8 @@ class Master:
             :py:class:`~app.type_hints.NodeType`:
                 The :py:class:`~app.domain.network_nodes.Node` instance.
         """
-        return class_name_to_obj(NETWORK_NODES, node_class, [nid, node_uptime])
+        return class_name_to_obj(
+            es.NETWORK_NODES, node_class, [nid, node_uptime])
     # endregion
 
 
@@ -490,7 +492,7 @@ class NewscastMaster(Master):
                 cluster = self._new_cluster_group(
                     cluster_class, cluster_size, fname)
 
-                file_path = os.path.join(SHARED_ROOT, fname)
+                file_path = os.path.join(es.SHARED_ROOT, fname)
                 block_size = os.path.getsize(file_path) / cluster_size
                 block_size = math.ceil(block_size)
                 file_blocks = self._split_files(fname, cluster, int(block_size))
