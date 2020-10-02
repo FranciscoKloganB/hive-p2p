@@ -201,14 +201,17 @@
 <span class="sd">&quot;&quot;&quot;Defines the probability of a message being delivered to a destination, </span>
 <span class="sd">in the simulation environment.&quot;&quot;&quot;</span>
 
+<span class="n">COMMUNICATION_CHANCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">LOSS_CHANCE</span><span class="p">,</span> <span class="n">DELIVER_CHANCE</span><span class="p">]</span>
+
 
 <div class="viewcode-block" id="set_loss_chance"><a class="viewcode-back" href="../../app.html#app.environment_settings.set_loss_chance">[docs]</a><span class="k">def</span> <span class="nf">set_loss_chance</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Changes LOSS_CHANCE constant value at run time.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">LOSS_CHANCE</span>
     <span class="k">global</span> <span class="n">DELIVER_CHANCE</span>
+    <span class="k">global</span> <span class="n">COMMUNICATION_CHANCES</span>
     <span class="n">LOSS_CHANCE</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
-    <span class="n">DELIVER_CHANCE</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">LOSS_CHANCE</span></div>
-
+    <span class="n">DELIVER_CHANCE</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">LOSS_CHANCE</span>
+    <span class="n">COMMUNICATION_CHANCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">LOSS_CHANCE</span><span class="p">,</span> <span class="n">DELIVER_CHANCE</span><span class="p">]</span></div>
 
 <span class="n">ABS_TOLERANCE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
 <span class="sd">&quot;&quot;&quot;Defines the maximum amount of absolute positive or negative deviation that a </span>
@@ -258,7 +261,6 @@
 
 <span class="c1"># region Other simulation constants</span>
 <span class="n">TRUE_FALSE</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">]</span>
-<span class="n">COMMUNICATION_CHANCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">LOSS_CHANCE</span><span class="p">,</span> <span class="n">DELIVER_CHANCE</span><span class="p">]</span>
 <span class="c1"># endregion</span>
 
 <span class="c1"># region OS paths</span>
