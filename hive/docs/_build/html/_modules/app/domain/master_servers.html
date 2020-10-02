@@ -371,7 +371,7 @@
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network_nodes_view</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">selected</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">selected</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
         <span class="k">return</span> <span class="n">selected</span></div>
     <span class="c1"># endregion</span>

@@ -218,6 +218,7 @@
         <span class="n">sd</span><span class="o">.</span><span class="n">blocks_lost</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">blocks_lost</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
 
         <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_bm</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_bm</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+        <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_am</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_am</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
         <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_bm</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_bm</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
         <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_am</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_am</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
 
@@ -547,6 +548,10 @@
 <span class="sd">        off_node_count (List[int]):</span>
 <span class="sd">            The number of :py:mod:`network nodes &lt;app.domain.network_nodes&gt;`</span>
 <span class="sd">            whose status changed to offline or suspicious, at each epoch.</span>
+<span class="sd">        topologies_avg_convergence (List[float]):</span>
+<span class="sd">            Stores floats for each of the clusters&#39; used topologies</span>
+<span class="sd">            representing the magnitude difference between the average density</span>
+<span class="sd">            distribution and the desired steady state density distribution.</span>
 <span class="sd">        transmissions_failed (List[int]):</span>
 <span class="sd">            The number of message transmissions that were lost in the</span>
 <span class="sd">            overlay network of a :py:mod:`cluster group</span>
@@ -582,10 +587,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cluster_status_bm</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cluster_status_am</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delay_replication</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs_plus_one</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">delay_suspects_detection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_suspects_detection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">matrices_nodes_degrees</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">off_node_count</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topologies_avg_convergence</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transmissions_failed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span></div>
         <span class="c1">###############################</span>
 
@@ -619,9 +625,9 @@
         <span class="n">set_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">set_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">convergence_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">set_len</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">largest_convergence_window</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">largest_convergence_window</span> <span class="o">=</span> <span class="n">set_len</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="LoggingData._recursive_len"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData._recursive_len">[docs]</a>    <span class="k">def</span> <span class="nf">_recursive_len</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -654,6 +660,18 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
+<div class="viewcode-block" id="LoggingData.log_topology_avg_convergence"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_topology_avg_convergence">[docs]</a>    <span class="k">def</span> <span class="nf">log_topology_avg_convergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the degree of all nodes in a Markov Matrix overlay, at the</span>
+<span class="sd">        time of its creation, before any faults on the overlay occurs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            magnitude:</span>
+<span class="sd">                The distance between the desired steady-state vector for a</span>
+<span class="sd">                cluster&#39;s topology and the average density distribution</span>
+<span class="sd">                vector for that same topology.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topologies_avg_convergence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">magnitude</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="LoggingData.log_matrices_degrees"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">[docs]</a>    <span class="k">def</span> <span class="nf">log_matrices_degrees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;Logs the degree of all nodes in a Markov Matrix overlay, at the</span>
 <span class="sd">        time of its creation, before any faults on the overlay occurs.</span>
