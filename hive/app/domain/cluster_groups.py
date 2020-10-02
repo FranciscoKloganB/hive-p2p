@@ -788,7 +788,8 @@ class HiveCluster(Cluster):
         """
         tries = 1
         result: pd.DataFrame = pd.DataFrame()
-        while tries <= 3:
+        while tries <= 10:
+            print(f"Creating new transition matrix... try #{tries}.")
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
                 self.broadcast_transition_matrix(result)
@@ -942,7 +943,7 @@ class HiveCluster(Cluster):
         magnitude = float('inf')
         print(f"avg:\n{self.avg_}\n...\ngoal:\n{self.v_}")
         if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
-            magnitude = np.sqrt((self.v_.subtract(self.avg_)).sum(axis=0))
+            magnitude = np.sqrt((self.v_.subtract(self.avg_)).sum(axis=0)).item()
         self.file.logger.log_topology_avg_convergence(magnitude)
 
     def _pretty_print_eq_distr_table(
