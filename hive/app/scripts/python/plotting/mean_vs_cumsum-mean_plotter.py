@@ -75,7 +75,7 @@ def process_file(key, outfile_json):
 
 
 def cum_sum_mean(cs_avg_list, terminations):
-    # Epoch 1 is index 0, epoch 720 is epoch 719.
+    # Epoch 1 is index 0, epoch 480 is epoch 479.
     breakpoints = sorted(
         [epoch - 1 for epoch in terminations], reverse=True)
 

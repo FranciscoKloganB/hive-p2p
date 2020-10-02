@@ -1415,6 +1415,19 @@ whose status changed to offline or suspicious, at each epoch.</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.topologies_avg_convergence">
+<code class="sig-name descname">topologies_avg_convergence</code></dt>
+<dd><p>Stores floats for each of the clusters’ used topologies
+representing the magnitude difference between the average density
+distribution and the desired steady state density distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List[<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt id="app.domain.helpers.smart_dataclasses.LoggingData.transmissions_failed">
 <code class="sig-name descname">transmissions_failed</code></dt>
 <dd><p>The number of message transmissions that were lost in the
@@ -1645,6 +1658,23 @@ and <code class="docutils literal notranslate"><span class="pre">out-degree</spa
 to be offline by the perfect failure detector.</p></li>
 <li><p><strong>node_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A unique <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Network</span> <span class="pre">Node</span></code></a> identifier.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.helpers.smart_dataclasses.LoggingData.log_topology_avg_convergence">
+<code class="sig-name descname">log_topology_avg_convergence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">magnitude</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#LoggingData.log_topology_avg_convergence"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Logs the degree of all nodes in a Markov Matrix overlay, at the
+time of its creation, before any faults on the overlay occurs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>magnitude</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The distance between the desired steady-state vector for a
+cluster’s topology and the average density distribution
+vector for that same topology.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>

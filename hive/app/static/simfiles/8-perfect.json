@@ -1,0 +1,18 @@
+{
+    "nodes_uptime": {
+        "a": 1.0,
+        "b": 1.0,
+        "c": 1.0,
+        "d": 1.0,
+        "e": 1.0,
+        "f": 1.0,
+        "g": 1.0,
+        "h": 1.0
+    },
+    "persisting": {
+        "FBZ_0134.NEF": {
+            "spread": "a",
+            "cluster_size": 8
+        }
+    }
+}

@@ -34,6 +34,7 @@ import os
 from typing import List
 
 from utils.convertions import truncate_float_value
+import numpy
 
 DEBUG: bool = False
 """Indicates if some debug related actions or prints to the terminal should 
@@ -86,6 +87,22 @@ LOSS_CHANCE: float = 0.04
 """Defines the probability of a message not being delivered to a destination 
 due to network link problems, in the simulation environment."""
 
+DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
+"""Defines the probability of a message being delivered to a destination, 
+in the simulation environment."""
+
+COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
+
+
+def set_loss_chance(v: float) -> None:
+    """Changes LOSS_CHANCE constant value at run time."""
+    global LOSS_CHANCE
+    global DELIVER_CHANCE
+    global COMMUNICATION_CHANCES
+    LOSS_CHANCE = numpy.clip(v, 0.0, 1.0)
+    DELIVER_CHANCE = 1.0 - LOSS_CHANCE
+    COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
+
 ABS_TOLERANCE: float = 0.05
 """Defines the maximum amount of absolute positive or negative deviation that a 
 current distribution :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` can 
@@ -134,8 +151,6 @@ def get_disk_error_chances(simulation_epochs: int) -> List[float]:
 
 # region Other simulation constants
 TRUE_FALSE = [True, False]
-DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
-COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 # endregion
 
 # region OS paths

@@ -126,9 +126,9 @@
 <span class="kn">import</span> <span class="nn">type_hints</span> <span class="k">as</span> <span class="nn">th</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">environment_settings</span> <span class="k">as</span> <span class="nn">es</span>
 
 <span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">crypto</span>
-<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">NEWSCAST_CACHE_SIZE</span>
 
 <span class="n">_NetworkView</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Node</span><span class="p">],</span> <span class="nb">int</span><span class="p">]</span>
 
@@ -695,7 +695,7 @@
         <span class="n">file_view</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">number</span><span class="p">,</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">file_view</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">replicate_part</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">replica</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">):</span>
                 <span class="c1"># Don&#39;t set corrupt flag to ``True``, doing so causes</span>
                 <span class="c1"># set_recovery_epoch to be called. HDFS Corruption is silent.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">discard_part</span><span class="p">(</span><span class="n">fid</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
@@ -789,11 +789,11 @@
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="n">view_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">view_size</span> <span class="o">&lt;</span> <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">view_size</span> <span class="o">&lt;</span> <span class="n">es</span><span class="o">.</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">return</span> <span class="kc">True</span>
 
-        <span class="k">if</span> <span class="n">view_size</span> <span class="o">==</span> <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">view_size</span> <span class="o">==</span> <span class="n">es</span><span class="o">.</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span>
             <span class="n">k</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
             <span class="n">v</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
             <span class="n">oldest_node</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">v</span><span class="p">))]</span>
@@ -1012,7 +1012,7 @@
 <span class="sd">            The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">view_buffer</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">view_buffer</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">view_buffer</span> <span class="o">=</span> <span class="n">view_buffer</span><span class="p">[:</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">]</span>
+        <span class="n">view_buffer</span> <span class="o">=</span> <span class="n">view_buffer</span><span class="p">[:</span><span class="n">es</span><span class="o">.</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">]</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">view_buffer</span><span class="p">)</span></div></div>
     <span class="c1"># endregion</span>
 </pre></div>
