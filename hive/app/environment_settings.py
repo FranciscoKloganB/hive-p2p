@@ -88,6 +88,8 @@ LOSS_CHANCE: float = 0.04
 due to network link problems, in the simulation environment."""
 
 DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
+"""Defines the probability of a message being delivered to a destination, 
+in the simulation environment."""
 
 
 def set_loss_chance(v: float) -> None:
