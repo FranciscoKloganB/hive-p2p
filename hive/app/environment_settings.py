@@ -91,14 +91,17 @@ DELIVER_CHANCE: float = 1.0 - LOSS_CHANCE
 """Defines the probability of a message being delivered to a destination, 
 in the simulation environment."""
 
+COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
+
 
 def set_loss_chance(v: float) -> None:
     """Changes LOSS_CHANCE constant value at run time."""
     global LOSS_CHANCE
     global DELIVER_CHANCE
+    global COMMUNICATION_CHANCES
     LOSS_CHANCE = numpy.clip(v, 0.0, 1.0)
     DELIVER_CHANCE = 1.0 - LOSS_CHANCE
-
+    COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 
 ABS_TOLERANCE: float = 0.05
 """Defines the maximum amount of absolute positive or negative deviation that a 
@@ -148,7 +151,6 @@ def get_disk_error_chances(simulation_epochs: int) -> List[float]:
 
 # region Other simulation constants
 TRUE_FALSE = [True, False]
-COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 # endregion
 
 # region OS paths
