@@ -103,7 +103,8 @@ def set_loss_chance(v: float) -> None:
     DELIVER_CHANCE = 1.0 - LOSS_CHANCE
     COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 
-ABS_TOLERANCE: float = 0.05
+
+ABS_TOLERANCE: float = 0.075
 """Defines the maximum amount of absolute positive or negative deviation that a 
 current distribution :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` can 
 have from the desired steady state 
