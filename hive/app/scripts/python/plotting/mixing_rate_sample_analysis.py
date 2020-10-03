@@ -20,6 +20,45 @@ __MIXING_RATE_HOME__ = os.path.abspath(os.path.join(
 __MIXING_RATE_PLOTS_HOME__ = os.path.join(__MIXING_RATE_HOME__, 'plots')
 
 
+# region Helpers
+def __makedirs__():
+    if not os.path.exists(__MIXING_RATE_PLOTS_HOME__):
+        os.mkdir(__MIXING_RATE_PLOTS_HOME__)
+
+
+def __shorten_labels__(labels: List[str]) -> List[str]:
+    """Shortens functions' names for better plot labeling.
+
+    Args:
+        labels:
+            A collection of labels to be shortened.
+    """
+    blacklist = {"new_", "_transition_matrix"}
+    labels_count = len(labels)
+    for i in range(labels_count):
+        text = labels[i]
+        for word in blacklist:
+            text = text.replace(word, "")
+        labels[i] = text
+    return labels
+
+
+def __set_box_color__(bp: Any, color: str) -> None:
+    """Changes the colors of a boxplot.
+
+    Args:
+        bp:
+            The boxplot reference object to be modified.
+        color:
+            A string specifying the color to apply to the boxplot in
+            hexadecimal RBG.
+    """
+    plt.setp(bp['boxes'], color=color)
+    plt.setp(bp['whiskers'], color=color)
+    plt.setp(bp['caps'], color=color)
+    plt.setp(bp['medians'], color=color)
+# endregion
+
 # region Box Plots
 def box_plot(json: _ResultsDict) -> None:
     """Creates a Box Plots that show the minimum, maximum, Q1, Q2, Q3 and IQR
@@ -182,46 +221,6 @@ def __create_pie_chart__(
     src = pl.Path(file_name).stem
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_f{src}-n{skey}_s{slen}"
     plt.savefig(fig_name, bbox_inches='tight')
-# endregion
-
-
-# region Helpers
-def __makedirs__():
-    if not os.path.exists(__MIXING_RATE_PLOTS_HOME__):
-        os.mkdir(__MIXING_RATE_PLOTS_HOME__)
-
-
-def __shorten_labels__(labels: List[str]) -> List[str]:
-    """Shortens functions' names for better plot labeling.
-
-    Args:
-        labels:
-            A collection of labels to be shortened.
-    """
-    blacklist = {"new_", "_transition_matrix"}
-    labels_count = len(labels)
-    for i in range(labels_count):
-        text = labels[i]
-        for word in blacklist:
-            text = text.replace(word, "")
-        labels[i] = text
-    return labels
-
-
-def __set_box_color__(bp: Any, color: str) -> None:
-    """Changes the colors of a boxplot.
-
-    Args:
-        bp:
-            The boxplot reference object to be modified.
-        color:
-            A string specifying the color to apply to the boxplot in
-            hexadecimal RBG.
-    """
-    plt.setp(bp['boxes'], color=color)
-    plt.setp(bp['whiskers'], color=color)
-    plt.setp(bp['caps'], color=color)
-    plt.setp(bp['medians'], color=color)
 # endregion
 
 
