@@ -919,7 +919,7 @@ class HiveCluster(Cluster):
         """
         ptotal = self.file.existing_replicas
         target = self.v_.multiply(ptotal)
-        rtol = np.clip(self.v_[0].min(), 0.0, 0.15 - es.ABS_TOLERANCE) * ptotal
+        rtol = np.clip(self.v_[0].min(), 0.0, 0.1 - es.ABS_TOLERANCE) * ptotal
         atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0) * ptotal
         converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
         if es.DEBUG:
