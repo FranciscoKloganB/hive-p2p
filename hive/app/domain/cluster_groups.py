@@ -923,8 +923,8 @@ class HiveCluster(Cluster):
         atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0) * ptotal
         converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
         if es.DEBUG:
-            print(f"converged: {converged}")
-            print(self._pretty_print_eq_distr_table(target, atol, rtol))
+            print(f"converged: {converged}\n"
+                  f"{self._pretty_print_eq_distr_table(target, atol, rtol)}")
         return converged
 
     def _log_evaluation(self, pcount: int, ptotal: int = -1) -> None:
