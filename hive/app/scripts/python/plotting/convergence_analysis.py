@@ -167,7 +167,7 @@ def instantaneous_convergence_plot(
     plt.figure()
 
     if (bar):
-        plt.bar(epoch_buckets, epoch_vals, width=bucket_size*.8)
+        plt.bar(epoch_buckets, epoch_vals, width=bucket_size*.6)
     else:
         plt.plot(epoch_buckets, epoch_vals)
 
@@ -194,7 +194,42 @@ def instantaneous_convergence_plot(
                fontproperties=cfg.fp_axis_labels)
     # plt.ylim(0, 1.025)
 
-    figure_name = f"{plots_directory}/iac_hist_N{ns}O{opt}D{errs}L{ll}"
+    figure_name = f"{plots_directory}/ic_plot_N{ns}O{opt}D{errs}L{ll}"
+    plt.savefig(figure_name, bbox_inches="tight")
+
+
+def boxplot_first_convergence(outfiles_view):
+    samples = []
+    for filename in outfiles_view:
+        filepath = os.path.join(directory, filename)
+        with open(filepath) as outfile:
+            outdata = json.load(outfile)
+            sets = outdata["convergence_sets"]
+            for s in sets:
+                samples.append(s[0])
+
+    plt.figure()
+
+    plt.boxplot(
+        samples, flierprops=cfg.outlyer_shape, whis=0.75, vert=False, notch=True
+    )
+
+    plt.suptitle(
+        "Simulations' first instantaneous convergences",
+        fontproperties=cfg.fp_title
+    )
+
+    plt.title(
+        f"Cluster size: {ns}, Disk errors: {errs}, Link loss: {ll}, "
+        f"Optimzations: {opt}, Number of Simulations: {len(outfiles_view)}",
+        fontproperties=cfg.fp_subtitle
+    )
+
+    plt.xlabel("epochs",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+
+    figure_name = f"{plots_directory}/fc_boxplot_{ns}O{opt}D{errs}L{ll}"
     plt.savefig(figure_name, bbox_inches="tight")
 
 
@@ -262,13 +297,9 @@ if __name__ == "__main__":
     for pattern in patterns:
         outfiles_view = list(filter(lambda f: pattern in f, outfiles_view))
         # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
-        # TODO:
-        #  1. box plot instantenous convergence epochs.
-        instantaneous_convergence_plot(outfiles_view, bucket_size=5)
-
+        instantaneous_convergence_plot(outfiles_view, bar=True, bucket_size=5)
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
-        # TODO:
-        #  1. box plot for first convergence
+        boxplot_first_convergence(outfiles_view)
 
         # Q4. Quantas partes são suficientes para um Swarm Guidance satisfatório? (250, 500, 750, 1000)
         # TODO:
