@@ -10,7 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
-from typing import List, Tuple
+from typing import List, Tuple, Any
+
 
 # region Old Plots (ACC 1.0 Paper) - Trashy Trash
 def plotvalues(convergence_times_list, directory, state):
@@ -96,8 +97,86 @@ def main(directory, state):
 # endregion
 
 
-def box_plot_instantaneous_convergence(outfiles_view: List[str]) -> None:
-    pass
+# region Helpers
+def __makedirs__():
+    if not os.path.exists(plots_directory):
+        os.mkdir(plots_directory)
+
+
+def __shorten_labels__(labels: List[str]) -> List[str]:
+    """Shortens functions' names for better plot labeling.
+
+    Args:
+        labels:
+            A collection of labels to be shortened.
+    """
+    blacklist = {"new_", "_transition_matrix"}
+    labels_count = len(labels)
+    for i in range(labels_count):
+        text = labels[i]
+        for word in blacklist:
+            text = text.replace(word, "")
+        labels[i] = text
+    return labels
+
+
+def __set_box_color__(bp: Any, color: str) -> None:
+    """Changes the colors of a boxplot.
+
+    Args:
+        bp:
+            The boxplot reference object to be modified.
+        color:
+            A string specifying the color to apply to the boxplot in
+            hexadecimal RBG.
+    """
+    plt.setp(bp['boxes'], color=color)
+    plt.setp(bp['whiskers'], color=color)
+    plt.setp(bp['caps'], color=color)
+    plt.setp(bp['medians'], color=color)
+# endregion
+
+
+def instantaneous_convergence_histogram(outfiles_view: List[str]) -> None:
+    epochs_convergence_count = {i: 0 for i in range(epochs + 1)}
+    for filename in outfiles_view:
+        filepath = os.path.join(directory, filename)
+        with open(filepath) as outfile:
+            outdata = json.load(outfile)
+            sets = outdata["convergence_sets"]
+            for s in sets:
+                for e in s:
+                    epochs_convergence_count[e] += 1
+
+    epoch_vals = list(epochs_convergence_count.values())
+    epoch_ids = list(epochs_convergence_count)
+
+    fig = plt.figure()
+    plt.bar(epoch_ids, epoch_vals, width=1)
+
+    plt.suptitle(
+        "Instants with verified convergencerences over the simulations course",
+        fontproperties=cfg.fp_title,
+        y=0.999
+    )
+
+    plt.title(
+        f"Network size: {ns}, Opt: {opt}, Disk Errors: {errs}, Link Loss: {ll}",
+        fontproperties=cfg.fp_subtitle
+    )
+
+    plt.xlabel("epochs",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    plt.ylabel("number of instantenous convergences",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+
+    plt.xlim(0, epochs)
+    plt.ylim(0, max(epoch_vals) + 1)
+
+    plt.show()
+    # plt.savefig(f"{plots_directory}/ic_hist_N{ns}O{opt}D{errs}L{ll}")
 
 
 if __name__ == "__main__":
@@ -105,12 +184,16 @@ if __name__ == "__main__":
     patterns = []
 
     epochs = 0
-    skey = 0
-    nkey = ""
-    figure_name = ""
 
-    short_opts = "p:e:s:n:f:"
-    long_opts = ["patterns=", "epochs=", "size=", "name=", "figure_name="]
+    ns = 8
+    opt = "n"
+    errs = "n"
+    ll = "n"
+
+    short_opts = "p:e:n:o:d:l:"
+    long_opts = [
+        "patterns=", "epochs=",
+        "network_size=", "optimizations=", "disk_errors=", "link_loss="]
 
     try:
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
@@ -123,30 +206,37 @@ if __name__ == "__main__":
                 patterns = patterns.split(",")
             if options in ("-e", "--epochs"):
                 epochs = int(str(args).strip())
-            if options in ("-s", "--size"):
-                skey = int(str(args).strip())
-            if options in ("-n", "--name"):
-                nkey = str(args).strip()
-            if options in ("-f", "--figure_name"):
-                figure_name = str(args).strip()
+            if options in ("-n", "--network_size"):
+                ns = int(str(args).strip())
+            if options in ("-o", "--optimizations"):
+                opt = str(args).strip()
+            if options in ("-d", "--disk_errors"):
+                errs = str(args).strip()
+            if options in ("-l", "--link_loss"):
+                ll = str(args).strip()
 
-        if not (epochs > 0 and skey > 0):
+        if not (epochs > 0):
             sys.exit(f"Must specify epochs (-e) and network size (-s).")
-
-        if not (nkey != "" and figure_name != ""):
-            sys.exit(f"System (-n) and Figure (-f) name must be specified "
-                     f"for plot titling.")
 
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --patterns -p (comma seperated list of str)\n"
                  "  --epochs -e (int)\n"
-                 "  --size -s (int)\n"
-                 "  --name -n (str)\n"
-                 "  --figure_name -f (str)\n")
+                 "  --network_size -n (int)\n"
+                 "  --optimizations -o (str)\n"
+                 "  --disk_errors -d (str)\n"
+                 "  --link_loss -l (str)\n")
 
+    # endregion
+
+    # region path setup
     directory = os.path.abspath(
         os.path.join(os.getcwd(), '..', '..', '..', 'static', 'outfiles'))
+
+    plots_directory = os.path.join(
+        directory, 'simulation_plots', 'convergence_analysis')
+
+    __makedirs__()
     # endregion
 
     outfiles_view = os.listdir(directory)
@@ -155,7 +245,7 @@ if __name__ == "__main__":
         # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
         # TODO:
         #  1. box plot instantenous convergence epochs.
-        box_plot_instantaneous_convergence(outfiles_view)
+        instantaneous_convergence_histogram(outfiles_view)
 
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
         # TODO:
