@@ -1,26 +1,18 @@
 """
 This script collects data
 """
-import getopt
-import json
 import os
 import sys
+import json
+import getopt
+
+import numpy as np
+import matplotlib.pyplot as plt
+import _matplotlib_configs as cfg
+
 from typing import List, Tuple
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-
-def usage():
-    print(" -------------------------------------------------------------------------")
-    print(" Francisco Barros (francisco.teixeira.de.barros@tecnico.ulisboa.pt\n")
-    print(" Collect data regarding lost parts from a collection of output files located in referenced directory\n")
-    print(" Typical usage: python convergence_sets_plots.py --meandir=mean32 --istate=a\n")
-    print(" Display all optional flags and other important notices: hive_simulation.py --help\n")
-    print(" -------------------------------------------------------------------------\n")
-    sys.exit(" ")
-
-
+# region Old Plots (ACC 1.0 Paper) - Trashy Trash
 def plotvalues(convergence_times_list, directory, state):
     print()
     # Format data sources
@@ -101,36 +93,80 @@ def main(directory, state):
         process_file(os.path.join(path, filename), convergence_times_list)
     # Calculate the global mean at epoch i; Since we have a sum of means, at each epoch, we only need to divide each element by the number of seen instances
     plotvalues(convergence_times_list, directory, state)
+# endregion
+
+
+def box_plot_instantaneous_convergence(outfiles_view: List[str]) -> None:
+    pass
 
 
 if __name__ == "__main__":
-    meandir = None
-    istate = None
+    # region args processing
+    patterns = []
+
+    epochs = 0
+    skey = 0
+    nkey = ""
+    figure_name = ""
+
+    short_opts = "p:e:s:n:f:"
+    long_opts = ["patterns=", "epochs=", "size=", "name=", "figure_name="]
+
     try:
-        options, args = getopt.getopt(sys.argv[1:], "ud:i:", ["usage", "meandir=", "istate="])
+        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+
         for options, args in options:
-            if options in ("-u", "--usage"):
-                usage()
-                sys.exit(0)
-            elif options in ("-d", "--meandir"):
-                meandir = str(args).strip()
-            elif options in ("-i", "--istate"):
-                istate = str(args).strip()
-    except getopt.GetoptError:
-        usage()
-        sys.exit(0)
-    if (meandir and istate):
-        main(meandir, istate)
-    else:
-        main('mean32', 'a')
-        main('mean32', 'i')
-        main('mean32', 'u')
-        main('mean56', 'a')
-        main('mean56', 'i')
-        main('mean56', 'u')
-        main('mean78', 'a')
-        main('mean78', 'i')
-        main('mean78', 'u')
-        main('mean90', 'a')
-        main('mean90', 'i')
-        main('mean90', 'u')
+            if options in ("-p", "--patterns"):
+                patterns = str(args).strip()
+                if not patterns:
+                    sys.exit(f"Blank pattern is not a valid pattern.")
+                patterns = patterns.split(",")
+            if options in ("-e", "--epochs"):
+                epochs = int(str(args).strip())
+            if options in ("-s", "--size"):
+                skey = int(str(args).strip())
+            if options in ("-n", "--name"):
+                nkey = str(args).strip()
+            if options in ("-f", "--figure_name"):
+                figure_name = str(args).strip()
+
+        if not (epochs > 0 and skey > 0):
+            sys.exit(f"Must specify epochs (-e) and network size (-s).")
+
+        if not (nkey != "" and figure_name != ""):
+            sys.exit(f"System (-n) and Figure (-f) name must be specified "
+                     f"for plot titling.")
+
+    except ValueError:
+        sys.exit("Execution arguments should have the following data types:\n"
+                 "  --patterns -p (comma seperated list of str)\n"
+                 "  --epochs -e (int)\n"
+                 "  --size -s (int)\n"
+                 "  --name -n (str)\n"
+                 "  --figure_name -f (str)\n")
+
+    directory = os.path.abspath(
+        os.path.join(os.getcwd(), '..', '..', '..', 'static', 'outfiles'))
+    # endregion
+
+    outfiles_view = os.listdir(directory)
+    for pattern in patterns:
+        outfiles_view = list(filter(lambda f: pattern in f, outfiles_view))
+        # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
+        # TODO:
+        #  1. box plot instantenous convergence epochs.
+        box_plot_instantaneous_convergence(outfiles_view)
+
+        # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
+        # TODO:
+        #  1. box plot for first convergence
+
+        # Q4. Quantas partes são suficientes para um Swarm Guidance satisfatório? (250, 500, 750, 1000)
+        # TODO:
+        #  1. bar chart average time spent in instantenous convergence.
+        #  Along with the charts and plots from Q5.
+
+        # Q5. Fazendo a média dos vectores de distribuição, verifica-se uma proximidade ao vector ideal?
+        # TODO:
+        #  1. pie chart with % of times the desired density distribution was on average.
+        #  2. box plot magnitude distance between average distribution and desired distribution
