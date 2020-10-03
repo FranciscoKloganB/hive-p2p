@@ -192,7 +192,6 @@ def instantaneous_convergence_plot(
     plt.ylabel("instantaneous convergence occurrences",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
-    # plt.ylim(0, 1.025)
 
     figure_name = f"{plots_directory}/ic_plot_N{ns}O{opt}D{errs}L{ll}"
     plt.savefig(figure_name, bbox_inches="tight")
