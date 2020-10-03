@@ -630,13 +630,9 @@ class HiveCluster(Cluster):
         for node in self._members_view:
             c = node.get_file_parts_count(self.file.name)
             self.avg_.at[node.id, 0] += c
+            self.cv_.at[node.id, 0] = c
             ptotal += c
-            if node.is_up():
-                self.cv_.at[node.id, 0] = c
-                plive += c
-            else:
-                self.cv_.at[node.id, 0] = 0
-
+            plive += c if node.is_up() else 0
         self._log_evaluation(plive, ptotal)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
@@ -792,11 +788,13 @@ class HiveCluster(Cluster):
         """
         tries = 1
         result: pd.DataFrame = pd.DataFrame()
-        while tries <= 3:
+        while tries <= 5:
+            print(f"Creating new transition matrix... try #{tries}.")
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
                 self.broadcast_transition_matrix(result)
                 break
+            tries += 1
         # Only tries to generate a valid matrix up to three times,
         # then resumes with the last generated matrix even if it never
         # converges.
@@ -921,7 +919,7 @@ class HiveCluster(Cluster):
         """
         ptotal = self.file.existing_replicas
         target = self.v_.multiply(ptotal)
-        rtol = self.v_[0].min()
+        rtol = np.clip(self.v_[0].min(), 0.0, 0.125 - es.ABS_TOLERANCE)
         atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0) * ptotal
         converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
         if es.DEBUG:
@@ -940,12 +938,14 @@ class HiveCluster(Cluster):
         self.avg_ /= self._timer
         self.avg_ /= np.sum(self.avg_)
 
-        rtol = self.v_[0].min()
+        rtol = np.clip(self.v_[0].min(), 0.0, 0.1 - es.ABS_TOLERANCE)
         atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0)
 
         magnitude = float('inf')
+        print(f"avg:\n{self.avg_}\n...\ngoal:\n{self.v_}")
         if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
-            magnitude = np.sqrt((self.v_.subtract(self.avg_)).sum(axis=0))
+            absolute_dif = np.abs(self.v_.subtract(self.avg_))
+            magnitude = np.sqrt(absolute_dif).sum(axis=0).item()
         self.file.logger.log_topology_avg_convergence(magnitude)
 
     def _pretty_print_eq_distr_table(
@@ -987,8 +987,8 @@ class HiveClusterPerfect(HiveCluster):
                  sim_id: int = 0,
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
+        es.set_loss_chance(0.0)
         self.corruption_chances: List[float] = [0.0, 1.0]
-        es.set_loss_chance(0.0)  # environment_settings.set_loss_chance
 
     # region Swarm guidance structure management
     def new_desired_distribution(
