@@ -26,3 +26,8 @@ fp_axis_labels = FontProperties(
     weight='semibold',
     size='medium'
 )
+
+outlyer_shape = {
+    # 'markerfacecolor': 'g',
+    'marker': 'D'
+}
