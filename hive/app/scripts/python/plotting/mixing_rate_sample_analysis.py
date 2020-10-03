@@ -59,6 +59,7 @@ def __set_box_color__(bp: Any, color: str) -> None:
     plt.setp(bp['medians'], color=color)
 # endregion
 
+
 # region Box Plots
 def box_plot(json: _ResultsDict) -> None:
     """Creates a Box Plots that show the minimum, maximum, Q1, Q2, Q3 and IQR
