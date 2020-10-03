@@ -228,8 +228,8 @@ errors, at an epoch basis.</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="app.environment_settings.ABS_TOLERANCE">
-<code class="sig-name descname">ABS_TOLERANCE</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></em><em class="property"> = 0.05</em></dt>
+<dt id="app.environment_settings.ATOL">
+<code class="sig-name descname">ATOL</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></em><em class="property"> = 0.05</em></dt>
 <dd><p>Defines the maximum amount of absolute positive or negative deviation that a
 current distribution <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.cv_" title="app.domain.cluster_groups.HiveCluster.cv_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cv_</span></code></a> can
 have from the desired steady state
@@ -336,6 +336,20 @@ object.</p>
 <dt id="app.environment_settings.REPLICATION_LEVEL">
 <code class="sig-name descname">REPLICATION_LEVEL</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 3</em></dt>
 <dd><p>The amount of blocks each file block has.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="app.environment_settings.RTOL">
+<code class="sig-name descname">RTOL</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></em><em class="property"> = 0.05</em></dt>
+<dd><p>Defines the maximum amount of relative positive or negative deviation that a
+current distribution <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.cv_" title="app.domain.cluster_groups.HiveCluster.cv_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cv_</span></code></a> can
+have from the desired steady state
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>, in order for the
+distributions to be considered equal and thus marking the epoch as convergent.</p>
+<p>This constant will be used by
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.equal_distributions" title="app.domain.cluster_groups.HiveCluster.equal_distributions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster.equal_distributions()</span></code></a> along
+with a relative tolerance that is the minimum value in
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">

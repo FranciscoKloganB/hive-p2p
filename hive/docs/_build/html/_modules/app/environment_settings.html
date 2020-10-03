@@ -213,8 +213,22 @@
     <span class="n">DELIVER_CHANCE</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">LOSS_CHANCE</span>
     <span class="n">COMMUNICATION_CHANCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">LOSS_CHANCE</span><span class="p">,</span> <span class="n">DELIVER_CHANCE</span><span class="p">]</span></div>
 
-<span class="n">ABS_TOLERANCE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
+
+<span class="n">ATOL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
 <span class="sd">&quot;&quot;&quot;Defines the maximum amount of absolute positive or negative deviation that a </span>
+<span class="sd">current distribution :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` can </span>
+<span class="sd">have from the desired steady state </span>
+<span class="sd">:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`, in order for the </span>
+<span class="sd">distributions to be considered equal and thus marking the epoch as convergent. </span>
+
+<span class="sd">This constant will be used by </span>
+<span class="sd">:py:meth:`app.domain.cluster_groups.HiveCluster.equal_distributions` along </span>
+<span class="sd">with a relative tolerance that is the minimum value in </span>
+<span class="sd">:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">RTOL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="sd">&quot;&quot;&quot;Defines the maximum amount of relative positive or negative deviation that a </span>
 <span class="sd">current distribution :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` can </span>
 <span class="sd">have from the desired steady state </span>
 <span class="sd">:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`, in order for the </span>

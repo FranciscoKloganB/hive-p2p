@@ -239,11 +239,11 @@
         <span class="k">if</span> <span class="n">sdir</span><span class="p">:</span>
             <span class="n">snames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">snames</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                     <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">__start_simulation__</span><span class="p">,</span> <span class="n">sn</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">__can_exec_simfile__</span><span class="p">(</span><span class="n">sname</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">__start_simulation__</span><span class="p">,</span> <span class="n">sname</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div>
 
 
@@ -269,11 +269,11 @@
     <span class="k">if</span> <span class="n">sdir</span><span class="p">:</span>
         <span class="n">snames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">snames</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">__start_simulation__</span><span class="p">(</span><span class="n">sn</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">__can_exec_simfile__</span><span class="p">(</span><span class="n">sname</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">__start_simulation__</span><span class="p">(</span><span class="n">sname</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span></div>
 <span class="c1"># endregion</span>
 
@@ -359,11 +359,6 @@
             <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-n&quot;</span><span class="p">,</span> <span class="s2">&quot;--network_node&quot;</span><span class="p">):</span>
                 <span class="n">node_class</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">simfile</span> <span class="ow">or</span> <span class="n">simdirectory</span><span class="p">:</span>
-            <span class="n">main</span><span class="p">(</span><span class="n">threading</span><span class="p">,</span> <span class="n">simdirectory</span><span class="p">,</span> <span class="n">simfile</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">__err_message__</span><span class="p">)</span>
-
     <span class="k">except</span> <span class="n">getopt</span><span class="o">.</span><span class="n">GetoptError</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">__err_message__</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
@@ -378,6 +373,12 @@
                  <span class="s2">&quot;  --network_node -n (str)</span><span class="se">\n</span><span class="s2">&quot;</span>
                  <span class="s2">&quot;Another cause of error might be a simulation file with &quot;</span>
                  <span class="s2">&quot;inconsistent values.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">simfile</span> <span class="ow">or</span> <span class="n">simdirectory</span><span class="p">:</span>
+        <span class="n">main</span><span class="p">(</span><span class="n">threading</span><span class="p">,</span> <span class="n">simdirectory</span><span class="p">,</span> <span class="n">simfile</span><span class="p">,</span> <span class="n">iterations</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">__err_message__</span><span class="p">)</span>
+
 </pre></div>
 
             </div>
