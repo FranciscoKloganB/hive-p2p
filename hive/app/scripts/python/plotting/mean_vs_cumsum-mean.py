@@ -11,6 +11,13 @@ import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
 
+# region Helpers
+def __makedirs__():
+    if not os.path.exists(plots_directory):
+        os.mkdir(plots_directory)
+# endregion
+
+
 def plot_values(tkey, global_mean, global_cs_mean, terminations):
     termination_epochs = [int(key) for key in terminations]
 
@@ -43,8 +50,7 @@ def plot_values(tkey, global_mean, global_cs_mean, terminations):
     plt.legend(loc='lower right')
 
     # plt.show()
-    figure_path = os.path.join(
-        directory, 'simulation_plots', 'avg_graphs', f'{figure_name}_{tkey}')
+    figure_path = os.path.join(plots_directory, f'{figure_name}_{tkey}')
     plt.savefig(figure_path)
 
 
@@ -165,8 +171,16 @@ if __name__ == "__main__":
                  "  --size -s (int)\n"
                  "  --name -n (str)\n"
                  "  --figure_name -f (str)\n")
+    # endregion
+
+    # region path setup
     directory = os.path.abspath(
         os.path.join(os.getcwd(), '..', '..', '..', 'static', 'outfiles'))
+
+    plots_directory = os.path.join(
+        directory, 'simulation_plots', 'miscellaneous_mean_graphs')
+
+    __makedirs__()
     # endregion
 
     outfiles_view = os.listdir(directory)
