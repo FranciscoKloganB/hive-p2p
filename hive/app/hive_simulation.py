@@ -129,11 +129,11 @@ def _parallel_main(threads_count: int,
         if sdir:
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
-                for i in range(iters):
+                for i in range(1, iters + 1):
                     executor.submit(__start_simulation__, sn, i, epochs)
         else:
             __can_exec_simfile__(sname)
-            for i in range(iters):
+            for i in range(1, iters + 1):
                 executor.submit(__start_simulation__, sname, i, epochs)
 
 
@@ -159,11 +159,11 @@ def _single_main(
     if sdir:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
-            for i in range(iters):
+            for i in range(1, iters + 1):
                 __start_simulation__(sn, i, epochs)
     else:
         __can_exec_simfile__(sname)
-        for i in range(iters):
+        for i in range(1, iters + 1):
             __start_simulation__(sname, i, epochs)
 # endregion
 
