@@ -137,8 +137,8 @@ def __set_box_color__(bp: Any, color: str) -> None:
 # endregion
 
 
-def instantaneous_convergence_histogram(outfiles_view: List[str]) -> None:
-    epochs_convergence_count = {i: 0 for i in range(epochs + 1)}
+def instantaneous_convergence_plot(outfiles_view: List[str]) -> None:
+    epoch_cc = {i: 0 for i in range(1, epochs + 1)}
     for filename in outfiles_view:
         filepath = os.path.join(directory, filename)
         with open(filepath) as outfile:
@@ -146,37 +146,51 @@ def instantaneous_convergence_histogram(outfiles_view: List[str]) -> None:
             sets = outdata["convergence_sets"]
             for s in sets:
                 for e in s:
-                    epochs_convergence_count[e] += 1
+                    epoch_cc[e] += 1
 
-    epoch_vals = list(epochs_convergence_count.values())
-    epoch_ids = list(epochs_convergence_count)
+    # create buckets of 5%
+    bucket_size = 5
+    bucket_count = int(100 / bucket_size)
+    epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
+    epoch_vals = [0] * bucket_count
+    for i in range(bucket_count):
+        low = bucket_size * i
+        high = bucket_size * (i + 1)
+        for epoch, count in epoch_cc.items():
+            if low < epoch <= high:
+                epoch_vals[i] += count
 
-    fig = plt.figure()
-    plt.bar(epoch_ids, epoch_vals, width=1)
+    # max_occurrence = max(epoch_vals)
+    # epoch_vals = np.divide(epoch_vals, max_occurrence)
+
+    plt.figure()
+
+    plt.bar(epoch_buckets, epoch_vals, width=bucket_size*.8)
+    plt.axhline(y=np.mean(epoch_vals), color='c', linestyle='--')
 
     plt.suptitle(
-        "Instants with verified convergencerences over the simulations course",
-        fontproperties=cfg.fp_title,
-        y=0.999
+        "Instantaneous convergences vs. Simulations' progress",
+        fontproperties=cfg.fp_title
     )
 
     plt.title(
-        f"Network size: {ns}, Opt: {opt}, Disk Errors: {errs}, Link Loss: {ll}",
+        f"Cluster size: {ns}, Disk errors: {errs}, Link loss: {ll}, "
+        f"Optimzations: {opt}, Number of Simulations: {len(outfiles_view)}",
         fontproperties=cfg.fp_subtitle
     )
 
-    plt.xlabel("epochs",
+    plt.xlabel("simulations' progress",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
-    plt.ylabel("number of instantenous convergences",
+    plt.xlim(bucket_size - bucket_size * 0.5, 100 + bucket_size*0.5)
+
+    plt.ylabel("instantaneous convergence occurrences",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
+    # plt.ylim(0, 1.025)
 
-    plt.xlim(0, epochs)
-    plt.ylim(0, max(epoch_vals) + 1)
-
-    plt.show()
-    # plt.savefig(f"{plots_directory}/ic_hist_N{ns}O{opt}D{errs}L{ll}")
+    figure_name = f"{plots_directory}/iac_hist_N{ns}O{opt}D{errs}L{ll}"
+    plt.savefig(figure_name, bbox_inches="tight")
 
 
 if __name__ == "__main__":
@@ -245,7 +259,7 @@ if __name__ == "__main__":
         # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
         # TODO:
         #  1. box plot instantenous convergence epochs.
-        instantaneous_convergence_histogram(outfiles_view)
+        instantaneous_convergence_plot(outfiles_view)
 
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
         # TODO:
