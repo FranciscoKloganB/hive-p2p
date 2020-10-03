@@ -299,7 +299,6 @@ if __name__ == "__main__":
         instantaneous_convergence_plot(outfiles_view, bar=True, bucket_size=5)
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
         boxplot_first_convergence(outfiles_view)
-
         # Q4. Quantas partes são suficientes para um Swarm Guidance satisfatório? (250, 500, 750, 1000)
         # TODO:
         #  1. bar chart average time spent in instantenous convergence.
