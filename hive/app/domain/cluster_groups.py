@@ -938,7 +938,7 @@ class HiveCluster(Cluster):
         self.avg_ /= self._timer
         self.avg_ /= np.sum(self.avg_)
 
-        rtol = np.clip(self.v_[0].min(), 0.0, 0.1 - es.ABS_TOLERANCE)
+        rtol = np.clip(self.v_[0].min(), 0.0, 0.051 - es.ABS_TOLERANCE)
         atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0)
 
         magnitude = float('inf')
