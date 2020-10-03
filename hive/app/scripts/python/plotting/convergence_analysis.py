@@ -137,7 +137,9 @@ def __set_box_color__(bp: Any, color: str) -> None:
 # endregion
 
 
-def instantaneous_convergence_plot(outfiles_view: List[str]) -> None:
+def instantaneous_convergence_plot(
+        outfiles_view: List[str], bar: bool = False, bucket_size: int = 5
+) -> None:
     epoch_cc = {i: 0 for i in range(1, epochs + 1)}
     for filename in outfiles_view:
         filepath = os.path.join(directory, filename)
@@ -149,7 +151,6 @@ def instantaneous_convergence_plot(outfiles_view: List[str]) -> None:
                     epoch_cc[e] += 1
 
     # create buckets of 5%
-    bucket_size = 5
     bucket_count = int(100 / bucket_size)
     epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
     epoch_vals = [0] * bucket_count
@@ -165,7 +166,11 @@ def instantaneous_convergence_plot(outfiles_view: List[str]) -> None:
 
     plt.figure()
 
-    plt.bar(epoch_buckets, epoch_vals, width=bucket_size*.8)
+    if (bar):
+        plt.bar(epoch_buckets, epoch_vals, width=bucket_size*.8)
+    else:
+        plt.plot(epoch_buckets, epoch_vals)
+
     plt.axhline(y=np.mean(epoch_vals), color='c', linestyle='--')
 
     plt.suptitle(
@@ -259,7 +264,7 @@ if __name__ == "__main__":
         # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
         # TODO:
         #  1. box plot instantenous convergence epochs.
-        instantaneous_convergence_plot(outfiles_view)
+        instantaneous_convergence_plot(outfiles_view, bucket_size=5)
 
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
         # TODO:
