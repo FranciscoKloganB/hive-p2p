@@ -788,12 +788,13 @@ class HiveCluster(Cluster):
         """
         tries = 1
         result: pd.DataFrame = pd.DataFrame()
-        while tries <= 10:
+        while tries <= 5:
             print(f"Creating new transition matrix... try #{tries}.")
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
                 self.broadcast_transition_matrix(result)
                 break
+            tries += 1
         # Only tries to generate a valid matrix up to three times,
         # then resumes with the last generated matrix even if it never
         # converges.
