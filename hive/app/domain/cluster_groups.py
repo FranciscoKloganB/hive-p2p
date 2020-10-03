@@ -1049,7 +1049,6 @@ class HiveClusterPerfect(HiveCluster):
     # region Helpers
     def select_fastest_topology(
             self, a: np.ndarray, v_: np.ndarray) -> np.ndarray:
-        print("MH Transition Matrix")
         fastest_matrix, _ = mm.new_mh_transition_matrix(a, v_)
         size = fastest_matrix.shape[0]
         for j in range(size):
