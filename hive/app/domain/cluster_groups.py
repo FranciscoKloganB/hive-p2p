@@ -919,13 +919,12 @@ class HiveCluster(Cluster):
         """
         ptotal = self.file.existing_replicas
         target = self.v_.multiply(ptotal)
-        rtol = np.clip(self.v_[0].min(), 0.0, 0.125 - es.ABS_TOLERANCE)
-        atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0) * ptotal
-        converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
+        atol = np.clip(es.ATOL, 0.0, 1.0) * ptotal
+        result = np.allclose(self.cv_, target, rtol=es.RTOL, atol=atol)
         if es.DEBUG:
-            print(f"converged: {converged}\n"
-                  f"{self._pretty_print_eq_distr_table(target, atol, rtol)}")
-        return converged
+            print(f"converged: {result}\n"
+                  f"{self._pretty_print_eq_distr_table(target, es.RTOL, atol)}")
+        return result
 
     def _log_evaluation(self, pcount: int, ptotal: int = -1) -> None:
         super()._log_evaluation(pcount, ptotal)
@@ -938,8 +937,8 @@ class HiveCluster(Cluster):
         self.avg_ /= self._timer
         self.avg_ /= np.sum(self.avg_)
 
-        rtol = np.clip(self.v_[0].min(), 0.0, 0.1 - es.ABS_TOLERANCE)
-        atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0)
+        rtol = np.clip(self.v_[0].min(), 0.0, 0.1 - es.ATOL)
+        atol = np.clip(es.ATOL, 0.0, 1.0)
 
         magnitude = float('inf')
         print(f"avg:\n{self.avg_}\n...\ngoal:\n{self.v_}")
@@ -949,7 +948,7 @@ class HiveCluster(Cluster):
         self.file.logger.log_topology_avg_convergence(magnitude)
 
     def _pretty_print_eq_distr_table(
-            self, target: pd.DataFrame, atol: float, rtol: float) -> Any:
+            self, target: pd.DataFrame, rtol: float, atol: float) -> Any:
         """Pretty prints a PSQL formatted table for visual vector comparison.
 
         Args:
