@@ -989,7 +989,7 @@ class HiveClusterPerfect(HiveCluster):
     # region Swarm guidance structure management
     def new_desired_distribution(
             self, member_ids: List[str], member_uptimes: List[float]
-    ) -> List[float]:
+    ) -> np.ndarray:
         """Creates a random desired distribution.
 
         Overrides:
@@ -1004,8 +1004,9 @@ class HiveClusterPerfect(HiveCluster):
                 This method's parameter is ignored and can be ``None``.
 
         Returns:
-            A list of floats with which represent how the files should be
-            distributed among network nodes in the long-run.
+            :py:class:`~np:numpy.ndarray`:
+                A list of floats with which represent how the files should be
+                distributed among network nodes in the long-run.
         """
         u_ = np.random.random_sample(len(member_ids))
         u_ /= np.sum(u_)
@@ -1044,6 +1045,7 @@ class HiveClusterPerfect(HiveCluster):
         """
         for node in self._members_view:
             node.execute_epoch(self, self.file.name)
+        return []
     # endregion
 
     # region Helpers

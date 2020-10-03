@@ -600,7 +600,7 @@
 <span class="sd">            distribution :py:attr:`v_` was achieved on average. Differs from</span>
 <span class="sd">            :py:attr:`cv_` because `cv_` is used for instantaneous</span>
 <span class="sd">            convergence comparison.</span>
-<span class="sd">        timer (int):</span>
+<span class="sd">        _timer (int):</span>
 <span class="sd">            Used as a logical clock to divide the entries of :py:attr:`avg_`</span>
 <span class="sd">            when a topology changes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1093,13 +1093,13 @@
                  <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
-        <span class="n">es</span><span class="o">.</span><span class="n">set_loss_chance</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="c1"># es.set_loss_chance(0.0)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span></div>
 
     <span class="c1"># region Swarm guidance structure management</span>
 <div class="viewcode-block" id="HiveClusterPerfect.new_desired_distribution"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterPerfect.new_desired_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">new_desired_distribution</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">member_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">member_uptimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates a random desired distribution.</span>
 
 <span class="sd">        Overrides:</span>
@@ -1114,8 +1114,9 @@
 <span class="sd">                This method&#39;s parameter is ignored and can be ``None``.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            A list of floats with which represent how the files should be</span>
-<span class="sd">            distributed among network nodes in the long-run.</span>
+<span class="sd">            :py:class:`~np:numpy.ndarray`:</span>
+<span class="sd">                A list of floats with which represent how the files should be</span>
+<span class="sd">                distributed among network nodes in the long-run.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">u_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random_sample</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">member_ids</span><span class="p">))</span>
         <span class="n">u_</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">u_</span><span class="p">)</span>
@@ -1153,7 +1154,19 @@
 <span class="sd">                 :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div></div>
+            <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Helpers</span>
+<span class="sd">&quot;&quot;&quot;    def select_fastest_topology(</span>
+<span class="sd">            self, a: np.ndarray, v_: np.ndarray) -&gt; np.ndarray:</span>
+<span class="sd">        fastest_matrix, _ = mm.new_mh_transition_matrix(a, v_)</span>
+<span class="sd">        size = fastest_matrix.shape[0]</span>
+<span class="sd">        for j in range(size):</span>
+<span class="sd">            fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])</span>
+<span class="sd">            fastest_matrix[:, j] /= fastest_matrix[:, j].sum()</span>
+<span class="sd">        return fastest_matrix&quot;&quot;&quot;</span>
     <span class="c1"># endregion</span>
 
 
