@@ -16,9 +16,9 @@ import domain.master_servers as ms
 import type_hints as th
 import pandas as pd
 import numpy as np
+import environment_settings as es
 
 from utils import crypto
-from environment_settings import TRUE_FALSE, NEWSCAST_CACHE_SIZE
 
 _NetworkView: Dict[Union[str, Node], int]
 
@@ -585,7 +585,7 @@ class HDFSNode(Node):
         file_view: th.ReplicasDict = self.files.get(fid, {}).copy()
         for number, replica in file_view.items():
             self.replicate_part(cluster, replica)
-            if np.random.choice(a=TRUE_FALSE, p=cluster.corruption_chances):
+            if np.random.choice(a=es.TRUE_FALSE, p=cluster.corruption_chances):
                 # Don't set corrupt flag to ``True``, doing so causes
                 # set_recovery_epoch to be called. HDFS Corruption is silent.
                 self.discard_part(fid, number)
@@ -679,11 +679,11 @@ class NewscastNode(Node):
             return False
 
         view_size = len(self.view)
-        if view_size < NEWSCAST_CACHE_SIZE:
+        if view_size < es.NEWSCAST_CACHE_SIZE:
             self.view[node] = 0
             return True
 
-        if view_size == NEWSCAST_CACHE_SIZE:
+        if view_size == es.NEWSCAST_CACHE_SIZE:
             k = tuple(self.view)
             v = tuple(self.view.values())
             oldest_node = k[v.index(max(v))]
@@ -902,6 +902,6 @@ class NewscastNode(Node):
             The ``view_buffer`` with at most :py:attr:`max_view_size` descriptors.
         """
         view_buffer = sorted(view_buffer.items(), key=lambda x: x[1])
-        view_buffer = view_buffer[:NEWSCAST_CACHE_SIZE]
+        view_buffer = view_buffer[:es.NEWSCAST_CACHE_SIZE]
         return dict(view_buffer)
     # endregion

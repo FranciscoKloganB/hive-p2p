@@ -13,13 +13,11 @@ from tabulate import tabulate
 import numpy as np
 import pandas as pd
 import type_hints as th
+import environment_settings as es
 import domain.master_servers as ms
 import domain.helpers.enums as e
 import domain.helpers.matrices as mm
 import domain.helpers.smart_dataclasses as sd
-
-
-from environment_settings import *
 
 
 class Cluster:
@@ -64,6 +62,12 @@ class Cluster:
             Indicates if the Cluster instance is active. Used by
             :py:class:`~app.domain.master_servers.Master` to manage the
             simulation processes.
+        _membership_changed (bool):
+            Flag indicates wether or not :py:attr:`_members_view` needs
+            to be updated during :py:meth:`membership_maintenance`. The
+            variable is set to false at the beggining of every epoch and set
+            to true if the length of ``off_nodes`` list return by
+            :py:meth:`nodes_execute` is bigger than zero.
         _recovery_epoch_sum (int):
             Helper attribute that facilitates the storage of the sum of the
             values returned by all
@@ -105,7 +109,7 @@ class Cluster:
         """
         self.id: str = str(uuid.uuid4())
         self.current_epoch: int = 0
-        self.corruption_chances: List[float] = get_disk_error_chances(
+        self.corruption_chances: List[float] = es.get_disk_error_chances(
             ms.Master.MAX_EPOCHS)
 
         self.master = master
@@ -116,13 +120,13 @@ class Cluster:
         self.file: sd.FileData = sd.FileData(file_name, sim_id, _)
 
         expected_fails = math.ceil(len(self.members) * 0.34)
-        self.critical_size: int = REPLICATION_LEVEL
+        self.critical_size: int = es.REPLICATION_LEVEL
         self.sufficient_size: int = self.critical_size + expected_fails
         self.original_size: int = len(members)
         self.redundant_size: int = self.sufficient_size + len(self.members)
 
         self.running: bool = True
-
+        self._membership_changed: bool = False
         self._recovery_epoch_sum: int = 0
         self._recovery_epoch_calls: int = 0
 
@@ -131,7 +135,7 @@ class Cluster:
                    sender: str,
                    receiver: str,
                    replica: sd.FileBlockData,
-                   is_fresh: bool = False) -> th.HttpResponse:
+                   is_fresh: bool = False) -> int:
         """Sends a :py:class:`file block replica
         <app.domain.helpers.smart_dataclasses.FileBlockData>` to some other
         :py:class:`network node <app.domain.network_nodes.Node>` in
@@ -155,19 +159,19 @@ class Cluster:
                 This argument facilitates simulation.
 
         Returns:
-            :py:class:`~app.domain.helpers.enums.HttpCodes`:
-                An http code sent by the ``receiver``.
+            An http code sent by the ``receiver``.
         """
         if sender == receiver:
             return e.HttpCodes.DUMMY
 
         self.file.logger.log_bandwidth_units(1, self.current_epoch)
 
-        if np.random.choice(a=TRUE_FALSE, p=COMMUNICATION_CHANCES):
+        tf = es.TRUE_FALSE
+        if np.random.choice(a=tf, p=es.COMMUNICATION_CHANCES):
             self.file.logger.log_lost_messages(1, self.current_epoch)
             return e.HttpCodes.TIME_OUT
 
-        is_corrupted = np.random.choice(a=TRUE_FALSE, p=self.corruption_chances)
+        is_corrupted = np.random.choice(a=tf, p=self.corruption_chances)
         if not is_fresh and is_corrupted:
             self.file.logger.log_corrupted_file_blocks(1, self.current_epoch)
             return e.HttpCodes.BAD_REQUEST
@@ -226,6 +230,7 @@ class Cluster:
                 The simulation's current epoch.
         """
         self.current_epoch = epoch
+        self._membership_changed = False
         self._recovery_epoch_sum = 0
         self._recovery_epoch_calls = 0
         for member in self._members_view:
@@ -259,9 +264,6 @@ class Cluster:
         """
         self.file.logger.initial_spread = "i"
 
-        choices: Tuple[th.NodeType]
-        selected_nodes: List[th.NodeType]
-
         choices = self._members_view
         uptime_sum = sum(c.uptime for c in choices)
         chances = [c.uptime / uptime_sum for c in choices]
@@ -269,7 +271,7 @@ class Cluster:
         for replica in replicas.values():
             choice_view = tuple(choices)
             selected_nodes = np.random.choice(
-                a=choice_view, p=chances, size=REPLICATION_LEVEL, replace=False)
+                a=choice_view, p=chances, size=es.REPLICATION_LEVEL, replace=False)
             for node in selected_nodes:
                 replica.references += 1
                 node.receive_part(replica)
@@ -301,6 +303,7 @@ class Cluster:
         off_nodes = self.nodes_execute()
         self.evaluate()
         self.maintain(off_nodes)
+
         if epoch == ms.Master.MAX_EPOCHS:
             self.running = False
 
@@ -335,15 +338,17 @@ class Cluster:
         raise NotImplementedError("")
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
-        """Evicts disconnected :py:attr:`members` from the ``Cluster`` and
-        attempts to recruit new ones.
+        """Offers basic maintenance functionality for Cluster types.
+
+        If ``off_nodes`` list param as at least one node reference,
+        :py:attr:`_membership_changed` is set to ``True``.
 
         Args:
-            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
-                The subset of :py:attr:`members` who disconnected
-                during the current epoch.
+            off_nodes:
+                A possibly empty of offline nodes.
         """
-        raise NotImplementedError("")
+        if len(off_nodes) > 0:
+            self._membership_changed = True
 
     def membership_maintenance(self) -> th.NodeDict:
         """Attempts to recruits new network nodes to be members of the cluster.
@@ -362,7 +367,9 @@ class Cluster:
             new_members = self._get_new_members()
             if new_members:
                 self.members.update(new_members)
-                self._members_view = list(self.members.values())
+
+        if self._membership_changed:
+            self._members_view = list(self.members.values())  # Is this it?
 
         sam = len(self.members)
         status_am = self.get_cluster_status()
@@ -374,20 +381,29 @@ class Cluster:
     # endregion
 
     # region Helpers
-    def _log_evaluation(self, pcount: int) -> None:
+    def _log_evaluation(self, plive: int, ptotal: int = -1) -> None:
         """Helper that collects ``Cluster`` data and registers it on a
         :py:class:`logger <app.domain.helpers.smart_dataclasses.LoggingData>`
         object.
 
         Args:
-            pcount:
-                The number of existing parts in the system at the
-                simulation's current epoch.
+            plive:
+                The number of existing parts in the cluster at the
+                simulation's current epoch at online or suspect nodes.
+            ptotal:
+                The number of existing parts in the cluster at the
+                simulation's current epoch. This parameter is optional and
+                may be used or not depending on the intent of the system.
+                As a rule of thumb ``plive`` tracks the number of parts that
+                are alive in the system for logging purposes, where as
+                ``ptotal`` is used for comparisons and averages, e.g.,
+                :py:meth:`HiveCluster evaluate
+                <app.domain.cluster_groups.HiveCluster.evaluate>`.
         """
-        self.file.logger.log_existing_file_blocks(pcount, self.current_epoch)
-        if pcount <= 0:
+        self.file.logger.log_existing_file_blocks(plive, self.current_epoch)
+        if plive <= 0:
             self._set_fail("Cluster has no remaining parts.")
-        self.file.existing_replicas = pcount
+        self.file.existing_replicas = ptotal
 
     def _set_fail(self, message: str) -> None:
         """Ends the Cluster instance simulation.
@@ -468,6 +484,15 @@ class HiveCluster(Cluster):
             realizations for ideal persistence of the file.
         cv_ (:py:class:`~pd:pandas.DataFrame`):
             Tracks the file current density distribution, updated at each epoch.
+        avg_ (:py:class:`~pd:pandas.DataFrame`):
+            Tracks the file average density distribution. Used to assert if
+            throughout the life time of a cluster, the desired density
+            distribution :py:attr:`v_` was achieved on average. Differs from
+            :py:attr:`cv_` because `cv_` is used for instantaneous
+            convergence comparison.
+        timer (int):
+            Used as a logical clock to divide the entries of :py:attr:`avg_`
+            when a topology changes.
     """
     def __init__(self,
                  master: th.MasterType,
@@ -478,6 +503,8 @@ class HiveCluster(Cluster):
         super().__init__(master, file_name, members, sim_id, origin)
         self.cv_: pd.DataFrame = pd.DataFrame()
         self.v_: pd.DataFrame = pd.DataFrame()
+        self.avg_: pd.DataFrame = pd.DataFrame()
+        self._timer: int = 0
         self.create_and_bcast_new_transition_matrix()
 
     # region Simulation setup
@@ -523,9 +550,10 @@ class HiveCluster(Cluster):
 
         choices: List[th.NodeType]
         selected_nodes: List[th.NodeType]
+        rl = es.REPLICATION_LEVEL
         if strat == "a":
             selected_nodes = np.random.choice(
-                a=self._members_view, size=REPLICATION_LEVEL, replace=False)
+                a=self._members_view, size=rl, replace=False)
             for node in selected_nodes:
                 for replica in replicas.values():
                     replica.references += 1
@@ -534,7 +562,7 @@ class HiveCluster(Cluster):
         elif strat == "u":
             for replica in replicas.values():
                 selected_nodes = np.random.choice(
-                    a=self._members_view, size=REPLICATION_LEVEL, replace=False)
+                    a=self._members_view, size=rl, replace=False)
                 for node in selected_nodes:
                     replica.references += 1
                     node.receive_part(replica)
@@ -545,14 +573,17 @@ class HiveCluster(Cluster):
             for replica in replicas.values():
                 choices_view = tuple(choices)
                 selected_nodes = np.random.choice(
-                    a=choices_view, p=desired_distribution,
-                    size=REPLICATION_LEVEL, replace=False)
+                    a=choices_view, p=desired_distribution, size=rl, replace=False)
                 for node in selected_nodes:
                     replica.references += 1
                     node.receive_part(replica)
     # endregion
 
     # region Simulation steps
+    def execute_epoch(self, epoch: int) -> None:
+        self._timer += 1
+        super().execute_epoch(epoch)
+
     def nodes_execute(self) -> List[th.NodeType]:
         """Queries all network node members execute the epoch.
 
@@ -594,20 +625,33 @@ class HiveCluster(Cluster):
         if not self.members:
             self._set_fail("Cluster has no remaining members.")
 
-        pcount: int = 0
+        plive: int = 0
+        ptotal: int = 0
         for node in self._members_view:
-            if node.is_up():
-                node_parts_count = node.get_file_parts_count(self.file.name)
-                self.cv_.at[node.id, 0] = node_parts_count
-                pcount += node_parts_count
-            else:
-                self.cv_.at[node.id, 0] = 0
-        self._log_evaluation(pcount)
+            c = node.get_file_parts_count(self.file.name)
+            self.avg_.at[node.id, 0] += c
+            self.cv_.at[node.id, 0] = c
+            ptotal += c
+            plive += c if node.is_up() else 0
+        self._log_evaluation(plive, ptotal)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
-        for node in off_nodes:
-            self.members.pop(node.id, None)
-            node.remove_file_routing(self.file.name)
+        """Evicts any node who is referenced in off_nodes list.
+
+        Extends:
+            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.
+
+        Args:
+            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):
+                The subset of :py:attr:`~Cluster.members` who disconnected
+                during the current epoch.
+        """
+        if len(off_nodes) > 0:
+            self._normalize_avg_()
+            self._membership_changed = True
+            for node in off_nodes:
+                self.members.pop(node.id, None)
+                node.remove_file_routing(self.file.name)
         self.membership_maintenance()
 
     def membership_maintenance(self) -> th.NodeDict:
@@ -633,8 +677,9 @@ class HiveCluster(Cluster):
             self.remove_cloud_reference()
 
         new_members = super().membership_maintenance()
-        if new_members:
+        if self._membership_changed:
             self.create_and_bcast_new_transition_matrix()
+
         return new_members
     # endregion
 
@@ -669,10 +714,10 @@ class HiveCluster(Cluster):
         uptime_sum = sum(member_uptimes)
         u_ = [member_uptime / uptime_sum for member_uptime in member_uptimes]
 
-        v_ = pd.DataFrame(data=u_, index=member_ids)
-        self.v_ = v_
-        cv_ = pd.DataFrame(data=[0] * len(v_), index=member_ids)
-        self.cv_ = cv_
+        self.v_ = pd.DataFrame(data=u_, index=member_ids)
+        self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        self._timer = 0
 
         return u_
 
@@ -743,12 +788,13 @@ class HiveCluster(Cluster):
         """
         tries = 1
         result: pd.DataFrame = pd.DataFrame()
-        while tries <= 3:
-            # print(f"validating transition matrix... attempt: {tries}")
+        while tries <= 5:
+            print(f"Creating new transition matrix... try #{tries}.")
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
                 self.broadcast_transition_matrix(result)
                 break
+            tries += 1
         # Only tries to generate a valid matrix up to three times,
         # then resumes with the last generated matrix even if it never
         # converges.
@@ -871,22 +917,36 @@ class HiveCluster(Cluster):
             ``True`` if distributions are close enough to be considered equal,
             otherwise, it returns ``False``.
         """
-        pcount = self.file.existing_replicas
-        target = self.v_.multiply(pcount)
-        rtol = self.v_[0].min()
-        atol = np.clip(ABS_TOLERANCE, 0.0, 1.0) * pcount
-
-        if DEBUG:
+        ptotal = self.file.existing_replicas
+        target = self.v_.multiply(ptotal)
+        rtol = np.clip(self.v_[0].min(), 0.0, 0.125 - es.ABS_TOLERANCE)
+        atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0) * ptotal
+        converged = np.allclose(self.cv_, target, rtol=rtol, atol=atol)
+        if es.DEBUG:
+            print(f"converged: {converged}")
             print(self._pretty_print_eq_distr_table(target, atol, rtol))
+        return converged
 
-        return np.allclose(self.cv_, target, rtol=rtol, atol=atol)
-
-    def _log_evaluation(self, pcount: int) -> None:
-        super()._log_evaluation(pcount)
+    def _log_evaluation(self, pcount: int, ptotal: int = -1) -> None:
+        super()._log_evaluation(pcount, ptotal)
         if self.equal_distributions():
             self.file.logger.register_convergence(self.current_epoch)
         else:
             self.file.logger.save_sets_and_reset()
+
+    def _normalize_avg_(self):
+        self.avg_ /= self._timer
+        self.avg_ /= np.sum(self.avg_)
+
+        rtol = np.clip(self.v_[0].min(), 0.0, 0.1 - es.ABS_TOLERANCE)
+        atol = np.clip(es.ABS_TOLERANCE, 0.0, 1.0)
+
+        magnitude = float('inf')
+        print(f"avg:\n{self.avg_}\n...\ngoal:\n{self.v_}")
+        if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
+            absolute_dif = np.abs(self.v_.subtract(self.avg_))
+            magnitude = np.sqrt(absolute_dif).sum(axis=0).item()
+        self.file.logger.log_topology_avg_convergence(magnitude)
 
     def _pretty_print_eq_distr_table(
             self, target: pd.DataFrame, atol: float, rtol: float) -> Any:
@@ -912,6 +972,85 @@ class HiveCluster(Cluster):
     # endregion
 
 
+class HiveClusterPerfect(HiveCluster):
+    """Represents a group of network nodes persisting a file using swarm
+    guidance algorithm.
+
+    This implementation assumes nodes never disconnect, there are no disk
+    errors and there is no link loss, i.e., it is used to study properties of
+    the system independently of computing environment.
+    """
+    def __init__(self,
+                 master: th.MasterType,
+                 file_name: str,
+                 members: th.NodeDict,
+                 sim_id: int = 0,
+                 origin: str = "") -> None:
+        super().__init__(master, file_name, members, sim_id, origin)
+        es.set_loss_chance(0.0)
+        self.corruption_chances: List[float] = [0.0, 1.0]
+
+    # region Swarm guidance structure management
+    def new_desired_distribution(
+            self, member_ids: List[str], member_uptimes: List[float]
+    ) -> List[float]:
+        """Creates a random desired distribution.
+
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.HiveCluster.new_desired_distribution`
+
+        Args:
+            member_ids:
+                A list of :py:attr:`node identifiers
+                <app.domain.network_nodes.Node.id>` who are
+                :py:attr:`~Cluster.members` of the ``HiveCluster``.
+            member_uptimes:
+                This method's parameter is ignored and can be ``None``.
+
+        Returns:
+            A list of floats with which represent how the files should be
+            distributed among network nodes in the long-run.
+        """
+        u_ = np.random.random_sample(len(member_ids))
+        u_ /= np.sum(u_)
+
+        self.v_ = pd.DataFrame(data=u_, index=member_ids)
+        self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        self._timer = 0
+
+        return u_
+    # endregion
+
+    # region Simulation steps
+    def execute_epoch(self, epoch: int) -> None:
+        self.current_epoch = epoch
+        self._timer += 1
+
+        self.nodes_execute()
+        self.evaluate()
+
+        if epoch == ms.Master.MAX_EPOCHS:
+            self.running = False
+            self._normalize_avg_()
+
+    def nodes_execute(self) -> List[th.NodeType]:
+        """Queries all network node members execute the epoch.
+
+        Overrides:
+            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.
+
+        Returns:
+            List[:py:class:`~app.type_hints.NodeType`]:
+                 A collection of members who disconnected during the current
+                 epoch. See
+                 :py:meth:`app.domain.network_nodes.Node.update_status`.
+        """
+        for node in self._members_view:
+            node.execute_epoch(self, self.file.name)
+    # endregion
+
+
 class HiveClusterExt(HiveCluster):
     """Represents a group of network nodes persisting a file.
 
@@ -923,7 +1062,7 @@ class HiveClusterExt(HiveCluster):
     kicking them out of the group.
 
     Attributes:
-        complaint_threshold (float):
+        complaint_threshold (int):
             Reference value that defines the maximum number of complaints a
             :py:class:`network node <app.domain.network_nodes.HiveNodeExt>`
             can receive before it is evicted from the ``HiveClusterExt``.
@@ -953,7 +1092,7 @@ class HiveClusterExt(HiveCluster):
                  sim_id: int = 0,
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
-        self.complaint_threshold: float = len(members) * 0.5
+        self.complaint_threshold: int = int(math.floor(len(self.members) * 0.5))
         self.nodes_complaints: Dict[str, int] = {}
         self.suspicious_nodes: Dict[str, int] = {}
         self._epoch_complaints: set = set()
@@ -993,7 +1132,7 @@ class HiveClusterExt(HiveCluster):
                 self.nodes_complaints[complainee] = 1
             print(f"    > Logged complaint {complaint_id}, "
                   f"complainee complaint count: "
-                  f"{self.nodes_complaints[complainee]}")
+                  f"{self.nodes_complaints[complainee]} / {self.complaint_threshold}")
     # endregion
 
     # region Simulation steps
@@ -1028,23 +1167,22 @@ class HiveClusterExt(HiveCluster):
         for node in self._members_view:
             if node.is_up():
                 node.execute_epoch(self, self.file.name)
-            elif node.is_suspect():
+            elif node.is_suspect() and node.id not in self.suspicious_nodes:
+                self.suspicious_nodes[node.id] = self.current_epoch
                 node_replicas = node.get_file_parts(self.file.name)
-                if node.id not in self.suspicious_nodes:
-                    self.suspicious_nodes[node.id] = 1
-                    lost_parts_count += len(node_replicas)
-                    for replica in node_replicas.values():
-                        if replica.decrement_and_get_references() == 0:
-                            self._set_fail(f"Lost all replicas of file replica "
-                                           f"with id: {replica.id}")
-                else:
-                    self.suspicious_nodes[node.id] += 1
+                lost_parts_count += len(node_replicas)
+                for replica in node_replicas.values():
+                    if replica.decrement_and_get_references() == 0:
+                        self._set_fail(f"Lost all replicas of file replica "
+                                       f"with id: {replica.id}")
 
-                ccount = self.nodes_complaints.get(node.id, -1)
-                if ccount >= self.complaint_threshold:
-                    off_nodes.append(node)
-                    for replica in node_replicas.values():
-                        self.set_replication_epoch(replica)
+        for nid, complaints in self.nodes_complaints.items():
+            if complaints > self.complaint_threshold:
+                node = self.members[nid]
+                node_replicas = node.get_file_parts(self.file.name)
+                for replica in node_replicas.values():
+                    self.set_replication_epoch(replica)
+                off_nodes.append(node)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self._set_fail("All cluster members disconnected before maintenance.")
@@ -1068,15 +1206,20 @@ class HiveClusterExt(HiveCluster):
                 The subset of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
         """
-        for node in off_nodes:
-            print(f"    [o] Evicted suspect {node.id}.")
-            tte = self.suspicious_nodes.pop(node.id, -1)
-            self.file.logger.log_suspicous_node_detection_delay(node.id, tte)
-            self.nodes_complaints.pop(node.id, -1)
-            self.members.pop(node.id, None)
-            node.remove_file_routing(self.file.name)
+        if len(off_nodes) > 0:
+            self._normalize_avg_()
+            self._membership_changed = True
+            for node in off_nodes:
+                print(f"    [o] Evicted suspect {node.id}.")
+                t = self.suspicious_nodes.pop(node.id, -1)
+                self.nodes_complaints.pop(node.id, -1)
+                self.members.pop(node.id, None)
+                # node.remove_file_routing(self.file.name)
+                if 0 < t <= self.current_epoch:
+                    t = self.current_epoch - t
+                    self.file.logger.log_suspicous_node_detection_delay(node.id, t)
         super().membership_maintenance()
-        self.complaint_threshold = len(self.members) * 0.5
+        self.complaint_threshold = int(math.floor(len(self.members) * 0.5))
     # endregion
 
 
@@ -1145,16 +1288,14 @@ class HDFSCluster(Cluster):
                             self._set_fail(f"Lost all replicas of file replica "
                                            f"with id: {replica.id}")
                 # Simulate missed heartbeats.
-                if node.id in self.data_node_heartbeats:
-                    self.data_node_heartbeats[node.id] -= 1
-                    print(f"    > Logged missed heartbeat {node.id}, "
-                          f"node remaining lives: "
-                          f"{self.data_node_heartbeats[node.id]}")
-                    if self.data_node_heartbeats[node.id] <= 0:
-                        off_nodes.append(node)
-                        node_replicas = node.get_file_parts(self.file.name)
-                        for replica in node_replicas.values():
-                            self.set_replication_epoch(replica)
+                self.data_node_heartbeats[node.id] -= 1
+                print(f"    > Logged missed heartbeat {node.id}, node remaining"
+                      f" lives: {self.data_node_heartbeats[node.id]}")
+                if self.data_node_heartbeats[node.id] <= 0:
+                    off_nodes.append(node)
+                    node_replicas = node.get_file_parts(self.file.name)
+                    for replica in node_replicas.values():
+                        self.set_replication_epoch(replica)
 
         if len(self.suspicious_nodes) >= len(self.members):
             self._set_fail("All data nodes disconnected before maintenance.")
@@ -1174,19 +1315,19 @@ class HDFSCluster(Cluster):
         if not self.members:
             self._set_fail("Cluster has no remaining members.")
 
-        pcount: int = 0
-        members = self._members_view
-        for node in members:
+        plive: int = 0
+        for node in self._members_view:
             if node.is_up():
                 node_replicas = node.get_file_parts_count(self.file.name)
-                pcount += node_replicas
-        self._log_evaluation(pcount)
+                plive += node_replicas
+
+        self._log_evaluation(plive)
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         """Evicts any :py:class:`network node <app.domain.network_nodes.HDFSNode>`
         whose heartbeats in :py:attr:`data_node_heartbeats` reached zero.
 
-        Overrides:
+        Extends:
             :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.
 
         Args:
@@ -1194,6 +1335,7 @@ class HDFSCluster(Cluster):
                 The subset of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
         """
+        super().maintain(off_nodes)
         for node in off_nodes:
             print(f"    [o] Evicted suspect {node.id}.")
             self.suspicious_nodes.discard(node.id)
@@ -1205,8 +1347,7 @@ class HDFSCluster(Cluster):
     def membership_maintenance(self) -> th.NodeDict:
         new_members = super().membership_maintenance()
         for nid in new_members:
-            if nid not in self.data_node_heartbeats:
-                self.data_node_heartbeats[nid] = 5
+            self.data_node_heartbeats[nid] = 5
     # endregion
 
 
@@ -1259,7 +1400,7 @@ class NewscastCluster(Cluster):
         """
         network_size = len(self._members_view)
         for i in range(network_size):
-            s = np.random.randint(0, network_size, size=NEWSCAST_CACHE_SIZE)
+            s = np.random.randint(0, network_size, size=es.NEWSCAST_CACHE_SIZE)
             s = list(dict.fromkeys(s))
             member = self._members_view[i]
             for j in s:
@@ -1311,9 +1452,6 @@ class NewscastCluster(Cluster):
             "count_min": self.count_min,
             "count_max": self.count_max
         })
-
-    def maintain(self, off_nodes: List[th.NodeType]) -> None:
-        pass
     # endregion
 
     # region Simulation setup
@@ -1334,8 +1472,8 @@ class NewscastCluster(Cluster):
         self.sum: float = 0.0
         self.sqrsum: float = 0.0
         self.n: int = 0
-        self.count_min: int = 0.0
-        self.count_max: int = 0.0
+        self.count_min: float = 0.0
+        self.count_max: float = 0.0
 
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "o") -> None:
         """Distributes a collection of :py:class:`file block replicas

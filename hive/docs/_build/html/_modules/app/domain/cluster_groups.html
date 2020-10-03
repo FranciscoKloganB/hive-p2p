@@ -123,13 +123,11 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">type_hints</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="kn">import</span> <span class="nn">environment_settings</span> <span class="k">as</span> <span class="nn">es</span>
 <span class="kn">import</span> <span class="nn">domain.master_servers</span> <span class="k">as</span> <span class="nn">ms</span>
 <span class="kn">import</span> <span class="nn">domain.helpers.enums</span> <span class="k">as</span> <span class="nn">e</span>
 <span class="kn">import</span> <span class="nn">domain.helpers.matrices</span> <span class="k">as</span> <span class="nn">mm</span>
 <span class="kn">import</span> <span class="nn">domain.helpers.smart_dataclasses</span> <span class="k">as</span> <span class="nn">sd</span>
-
-
-<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="o">*</span>
 
 
 <div class="viewcode-block" id="Cluster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster">[docs]</a><span class="k">class</span> <span class="nc">Cluster</span><span class="p">:</span>
@@ -174,6 +172,12 @@
 <span class="sd">            Indicates if the Cluster instance is active. Used by</span>
 <span class="sd">            :py:class:`~app.domain.master_servers.Master` to manage the</span>
 <span class="sd">            simulation processes.</span>
+<span class="sd">        _membership_changed (bool):</span>
+<span class="sd">            Flag indicates wether or not :py:attr:`_members_view` needs</span>
+<span class="sd">            to be updated during :py:meth:`membership_maintenance`. The</span>
+<span class="sd">            variable is set to false at the beggining of every epoch and set</span>
+<span class="sd">            to true if the length of ``off_nodes`` list return by</span>
+<span class="sd">            :py:meth:`nodes_execute` is bigger than zero.</span>
 <span class="sd">        _recovery_epoch_sum (int):</span>
 <span class="sd">            Helper attribute that facilitates the storage of the sum of the</span>
 <span class="sd">            values returned by all</span>
@@ -215,7 +219,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_disk_error_chances</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">get_disk_error_chances</span><span class="p">(</span>
             <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">master</span> <span class="o">=</span> <span class="n">master</span>
@@ -226,13 +230,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileData</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span>
 
         <span class="n">expected_fails</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.34</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">REPLICATION_LEVEL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">REPLICATION_LEVEL</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sufficient_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critical_size</span> <span class="o">+</span> <span class="n">expected_fails</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sufficient_size</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">running</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_membership_changed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
 
@@ -241,7 +245,7 @@
                    <span class="n">sender</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">receiver</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                    <span class="n">replica</span><span class="p">:</span> <span class="n">sd</span><span class="o">.</span><span class="n">FileBlockData</span><span class="p">,</span>
-                   <span class="n">is_fresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">:</span>
+                   <span class="n">is_fresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sends a :py:class:`file block replica</span>
 <span class="sd">        &lt;app.domain.helpers.smart_dataclasses.FileBlockData&gt;` to some other</span>
 <span class="sd">        :py:class:`network node &lt;app.domain.network_nodes.Node&gt;` in</span>
@@ -265,19 +269,19 @@
 <span class="sd">                This argument facilitates simulation.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            :py:class:`~app.domain.helpers.enums.HttpCodes`:</span>
-<span class="sd">                An http code sent by the ``receiver``.</span>
+<span class="sd">            An http code sent by the ``receiver``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">sender</span> <span class="o">==</span> <span class="n">receiver</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">DUMMY</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_bandwidth_units</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">COMMUNICATION_CHANCES</span><span class="p">):</span>
+        <span class="n">tf</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">TRUE_FALSE</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">tf</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">COMMUNICATION_CHANCES</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_lost_messages</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">TIME_OUT</span>
 
-        <span class="n">is_corrupted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">TRUE_FALSE</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">)</span>
+        <span class="n">is_corrupted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">tf</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_fresh</span> <span class="ow">and</span> <span class="n">is_corrupted</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_corrupted_file_blocks</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">HttpCodes</span><span class="o">.</span><span class="n">BAD_REQUEST</span>
@@ -336,6 +340,7 @@
 <span class="sd">                The simulation&#39;s current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_membership_changed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_sum</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recovery_epoch_calls</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
@@ -369,9 +374,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;i&quot;</span>
 
-        <span class="n">choices</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
-        <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
-
         <span class="n">choices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span>
         <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">)</span>
         <span class="n">chances</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">choices</span><span class="p">]</span>
@@ -379,7 +381,7 @@
         <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">choice_view</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span>
             <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                <span class="n">a</span><span class="o">=</span><span class="n">choice_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">chances</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">a</span><span class="o">=</span><span class="n">choice_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">chances</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
                 <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span></div>
@@ -411,6 +413,7 @@
         <span class="n">off_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes_execute</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maintain</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -445,15 +448,17 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Cluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Evicts disconnected :py:attr:`members` from the ``Cluster`` and</span>
-<span class="sd">        attempts to recruit new ones.</span>
+        <span class="sd">&quot;&quot;&quot;Offers basic maintenance functionality for Cluster types.</span>
+
+<span class="sd">        If ``off_nodes`` list param as at least one node reference,</span>
+<span class="sd">        :py:attr:`_membership_changed` is set to ``True``.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):</span>
-<span class="sd">                The subset of :py:attr:`members` who disconnected</span>
-<span class="sd">                during the current epoch.</span>
+<span class="sd">            off_nodes:</span>
+<span class="sd">                A possibly empty of offline nodes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_membership_changed</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="Cluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Attempts to recruits new network nodes to be members of the cluster.</span>
@@ -472,7 +477,9 @@
             <span class="n">new_members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_new_members</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">new_members</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_members</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_membership_changed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>  <span class="c1"># Is this it?</span>
 
         <span class="n">sam</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span>
         <span class="n">status_am</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cluster_status</span><span class="p">()</span>
@@ -484,20 +491,29 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
-<div class="viewcode-block" id="Cluster._log_evaluation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._log_evaluation">[docs]</a>    <span class="k">def</span> <span class="nf">_log_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Cluster._log_evaluation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._log_evaluation">[docs]</a>    <span class="k">def</span> <span class="nf">_log_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plive</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ptotal</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Helper that collects ``Cluster`` data and registers it on a</span>
 <span class="sd">        :py:class:`logger &lt;app.domain.helpers.smart_dataclasses.LoggingData&gt;`</span>
 <span class="sd">        object.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            pcount:</span>
-<span class="sd">                The number of existing parts in the system at the</span>
-<span class="sd">                simulation&#39;s current epoch.</span>
+<span class="sd">            plive:</span>
+<span class="sd">                The number of existing parts in the cluster at the</span>
+<span class="sd">                simulation&#39;s current epoch at online or suspect nodes.</span>
+<span class="sd">            ptotal:</span>
+<span class="sd">                The number of existing parts in the cluster at the</span>
+<span class="sd">                simulation&#39;s current epoch. This parameter is optional and</span>
+<span class="sd">                may be used or not depending on the intent of the system.</span>
+<span class="sd">                As a rule of thumb ``plive`` tracks the number of parts that</span>
+<span class="sd">                are alive in the system for logging purposes, where as</span>
+<span class="sd">                ``ptotal`` is used for comparisons and averages, e.g.,</span>
+<span class="sd">                :py:meth:`HiveCluster evaluate</span>
+<span class="sd">                &lt;app.domain.cluster_groups.HiveCluster.evaluate&gt;`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_existing_file_blocks</span><span class="p">(</span><span class="n">pcount</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">pcount</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_existing_file_blocks</span><span class="p">(</span><span class="n">plive</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">plive</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining parts.&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span> <span class="o">=</span> <span class="n">pcount</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span> <span class="o">=</span> <span class="n">ptotal</span></div>
 
 <div class="viewcode-block" id="Cluster._set_fail"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.Cluster._set_fail">[docs]</a>    <span class="k">def</span> <span class="nf">_set_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Ends the Cluster instance simulation.</span>
@@ -578,6 +594,15 @@
 <span class="sd">            realizations for ideal persistence of the file.</span>
 <span class="sd">        cv_ (:py:class:`~pd:pandas.DataFrame`):</span>
 <span class="sd">            Tracks the file current density distribution, updated at each epoch.</span>
+<span class="sd">        avg_ (:py:class:`~pd:pandas.DataFrame`):</span>
+<span class="sd">            Tracks the file average density distribution. Used to assert if</span>
+<span class="sd">            throughout the life time of a cluster, the desired density</span>
+<span class="sd">            distribution :py:attr:`v_` was achieved on average. Differs from</span>
+<span class="sd">            :py:attr:`cv_` because `cv_` is used for instantaneous</span>
+<span class="sd">            convergence comparison.</span>
+<span class="sd">        timer (int):</span>
+<span class="sd">            Used as a logical clock to divide the entries of :py:attr:`avg_`</span>
+<span class="sd">            when a topology changes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="HiveCluster.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
@@ -588,6 +613,8 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_and_bcast_new_transition_matrix</span><span class="p">()</span></div>
 
     <span class="c1"># region Simulation setup</span>
@@ -633,9 +660,10 @@
 
         <span class="n">choices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
         <span class="n">selected_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]</span>
+        <span class="n">rl</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">REPLICATION_LEVEL</span>
         <span class="k">if</span> <span class="n">strat</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
             <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">rl</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -644,7 +672,7 @@
         <span class="k">elif</span> <span class="n">strat</span> <span class="o">==</span> <span class="s2">&quot;u&quot;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                    <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">rl</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
@@ -655,14 +683,17 @@
             <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">choices_view</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span>
                 <span class="n">selected_nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-                    <span class="n">a</span><span class="o">=</span><span class="n">choices_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">desired_distribution</span><span class="p">,</span>
-                    <span class="n">size</span><span class="o">=</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="n">a</span><span class="o">=</span><span class="n">choices_view</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">desired_distribution</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">rl</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
                     <span class="n">replica</span><span class="o">.</span><span class="n">references</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="n">node</span><span class="o">.</span><span class="n">receive_part</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="HiveCluster.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="HiveCluster.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
 
@@ -704,20 +735,37 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
 
-        <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">plive</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ptotal</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">c</span>
+            <span class="n">ptotal</span> <span class="o">+=</span> <span class="n">c</span>
             <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
-                <span class="n">node_parts_count</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_parts_count</span>
-                <span class="n">pcount</span> <span class="o">+=</span> <span class="n">node_parts_count</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+                <span class="n">plive</span> <span class="o">+=</span> <span class="n">c</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">plive</span><span class="p">,</span> <span class="n">ptotal</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HiveCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">remove_file_routing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;Evicts any node who is referenced in off_nodes list.</span>
+
+<span class="sd">        Extends:</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.maintain`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            off_nodes (List[:py:class:`~app.type_hints.NodeType`]):</span>
+<span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
+<span class="sd">                during the current epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_avg_</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_membership_changed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">remove_file_routing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="HiveCluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
@@ -743,8 +791,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">remove_cloud_reference</span><span class="p">()</span>
 
         <span class="n">new_members</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">new_members</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_membership_changed</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">create_and_bcast_new_transition_matrix</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="n">new_members</span></div>
     <span class="c1"># endregion</span>
 
@@ -779,10 +828,10 @@
         <span class="n">uptime_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">member_uptimes</span><span class="p">)</span>
         <span class="n">u_</span> <span class="o">=</span> <span class="p">[</span><span class="n">member_uptime</span> <span class="o">/</span> <span class="n">uptime_sum</span> <span class="k">for</span> <span class="n">member_uptime</span> <span class="ow">in</span> <span class="n">member_uptimes</span><span class="p">]</span>
 
-        <span class="n">v_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">u_</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_</span> <span class="o">=</span> <span class="n">v_</span>
-        <span class="n">cv_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span> <span class="o">=</span> <span class="n">cv_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">u_</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">return</span> <span class="n">u_</span></div>
 
@@ -854,7 +903,6 @@
         <span class="n">tries</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">result</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
         <span class="k">while</span> <span class="n">tries</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="c1"># print(f&quot;validating transition matrix... attempt: {tries}&quot;)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_transition_matrix</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">broadcast_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
@@ -981,22 +1029,34 @@
 <span class="sd">            ``True`` if distributions are close enough to be considered equal,</span>
 <span class="sd">            otherwise, it returns ``False``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">pcount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span>
+        <span class="n">ptotal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ptotal</span><span class="p">)</span>
         <span class="n">rtol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-        <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">ABS_TOLERANCE</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">pcount</span>
-
-        <span class="k">if</span> <span class="n">DEBUG</span><span class="p">:</span>
+        <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">ABS_TOLERANCE</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">ptotal</span>
+        <span class="n">converged</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">es</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;converged: </span><span class="si">{</span><span class="n">converged</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pretty_print_eq_distr_table</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">atol</span><span class="p">,</span> <span class="n">rtol</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">converged</span></div>
 
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="HiveCluster._log_evaluation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._log_evaluation">[docs]</a>    <span class="k">def</span> <span class="nf">_log_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span>
+<div class="viewcode-block" id="HiveCluster._log_evaluation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._log_evaluation">[docs]</a>    <span class="k">def</span> <span class="nf">_log_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ptotal</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">,</span> <span class="n">ptotal</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equal_distributions</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">register_convergence</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">save_sets_and_reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="HiveCluster._normalize_avg_"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._normalize_avg_">[docs]</a>    <span class="k">def</span> <span class="nf">_normalize_avg_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">)</span>
+
+        <span class="n">rtol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">ABS_TOLERANCE</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">):</span>
+            <span class="n">magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_topology_avg_convergence</span><span class="p">(</span><span class="n">magnitude</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HiveCluster._pretty_print_eq_distr_table"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._pretty_print_eq_distr_table">[docs]</a>    <span class="k">def</span> <span class="nf">_pretty_print_eq_distr_table</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
@@ -1022,6 +1082,85 @@
     <span class="c1"># endregion</span>
 
 
+<div class="viewcode-block" id="HiveClusterPerfect"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterPerfect">[docs]</a><span class="k">class</span> <span class="nc">HiveClusterPerfect</span><span class="p">(</span><span class="n">HiveCluster</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents a group of network nodes persisting a file using swarm</span>
+<span class="sd">    guidance algorithm.</span>
+
+<span class="sd">    This implementation assumes nodes never disconnect, there are no disk</span>
+<span class="sd">    errors and there is no link loss, i.e., it is used to study properties of</span>
+<span class="sd">    the system independently of computing environment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="HiveClusterPerfect.__init__"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterPerfect.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">master</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">MasterType</span><span class="p">,</span>
+                 <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">members</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">,</span>
+                 <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+        <span class="n">es</span><span class="o">.</span><span class="n">set_loss_chance</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>  <span class="c1"># environment_settings.set_loss_chance</span></div>
+
+    <span class="c1"># region Swarm guidance structure management</span>
+<div class="viewcode-block" id="HiveClusterPerfect.new_desired_distribution"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterPerfect.new_desired_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">new_desired_distribution</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">member_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">member_uptimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a random desired distribution.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.HiveCluster.new_desired_distribution`</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            member_ids:</span>
+<span class="sd">                A list of :py:attr:`node identifiers</span>
+<span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` who are</span>
+<span class="sd">                :py:attr:`~Cluster.members` of the ``HiveCluster``.</span>
+<span class="sd">            member_uptimes:</span>
+<span class="sd">                This method&#39;s parameter is ignored and can be ``None``.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of floats with which represent how the files should be</span>
+<span class="sd">            distributed among network nodes in the long-run.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">u_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random_sample</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">member_ids</span><span class="p">))</span>
+        <span class="n">u_</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">u_</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">u_</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">u_</span></div>
+    <span class="c1"># endregion</span>
+
+    <span class="c1"># region Simulation steps</span>
+<div class="viewcode-block" id="HiveClusterPerfect.execute_epoch"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterPerfect.execute_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">=</span> <span class="n">epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodes_execute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">running</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_avg_</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="HiveClusterPerfect.nodes_execute"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterPerfect.nodes_execute">[docs]</a>    <span class="k">def</span> <span class="nf">nodes_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Queries all network node members execute the epoch.</span>
+
+<span class="sd">        Overrides:</span>
+<span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.nodes_execute`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[:py:class:`~app.type_hints.NodeType`]:</span>
+<span class="sd">                 A collection of members who disconnected during the current</span>
+<span class="sd">                 epoch. See</span>
+<span class="sd">                 :py:meth:`app.domain.network_nodes.Node.update_status`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div></div>
+    <span class="c1"># endregion</span>
+
+
 <div class="viewcode-block" id="HiveClusterExt"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveClusterExt">[docs]</a><span class="k">class</span> <span class="nc">HiveClusterExt</span><span class="p">(</span><span class="n">HiveCluster</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Represents a group of network nodes persisting a file.</span>
 
@@ -1033,7 +1172,7 @@
 <span class="sd">    kicking them out of the group.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        complaint_threshold (float):</span>
+<span class="sd">        complaint_threshold (int):</span>
 <span class="sd">            Reference value that defines the maximum number of complaints a</span>
 <span class="sd">            :py:class:`network node &lt;app.domain.network_nodes.HiveNodeExt&gt;`</span>
 <span class="sd">            can receive before it is evicted from the ``HiveClusterExt``.</span>
@@ -1063,7 +1202,7 @@
                  <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">members</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_epoch_complaints</span><span class="p">:</span> <span class="nb">set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
@@ -1103,7 +1242,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="p">[</span><span class="n">complainee</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    &gt; Logged complaint </span><span class="si">{</span><span class="n">complaint_id</span><span class="si">}</span><span class="s2">, &quot;</span>
                   <span class="sa">f</span><span class="s2">&quot;complainee complaint count: &quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="p">[</span><span class="n">complainee</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+                  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="p">[</span><span class="n">complainee</span><span class="p">]</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -1138,23 +1277,22 @@
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">is_suspect</span><span class="p">():</span>
+            <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">is_suspect</span><span class="p">()</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-                    <span class="n">lost_parts_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_replicas</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">node_replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="n">replica</span><span class="o">.</span><span class="n">decrement_and_get_references</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lost all replicas of file replica &quot;</span>
-                                           <span class="sa">f</span><span class="s2">&quot;with id: </span><span class="si">{</span><span class="n">replica</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">lost_parts_count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_replicas</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">node_replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">replica</span><span class="o">.</span><span class="n">decrement_and_get_references</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lost all replicas of file replica &quot;</span>
+                                       <span class="sa">f</span><span class="s2">&quot;with id: </span><span class="si">{</span><span class="n">replica</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-                <span class="n">ccount</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">ccount</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span><span class="p">:</span>
-                    <span class="n">off_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">node_replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">nid</span><span class="p">,</span> <span class="n">complaints</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">complaints</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span><span class="p">:</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span>
+                <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">node_replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
+                <span class="n">off_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All cluster members disconnected before maintenance.&quot;</span><span class="p">)</span>
@@ -1178,15 +1316,20 @@
 <span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">                during the current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [o] Evicted suspect </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-            <span class="n">tte</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_suspicous_node_detection_delay</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">tte</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">remove_file_routing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_avg_</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_membership_changed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [o] Evicted suspect </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nodes_complaints</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="c1"># node.remove_file_routing(self.file.name)</span>
+                <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span><span class="p">:</span>
+                    <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">-</span> <span class="n">t</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_suspicous_node_detection_delay</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complaint_threshold</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">))</span></div></div>
     <span class="c1"># endregion</span>
 
 
@@ -1255,16 +1398,14 @@
                             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lost all replicas of file replica &quot;</span>
                                            <span class="sa">f</span><span class="s2">&quot;with id: </span><span class="si">{</span><span class="n">replica</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="c1"># Simulate missed heartbeats.</span>
-                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    &gt; Logged missed heartbeat </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">, &quot;</span>
-                          <span class="sa">f</span><span class="s2">&quot;node remaining lives: &quot;</span>
-                          <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="n">off_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-                        <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                        <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">node_replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    &gt; Logged missed heartbeat </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">, node remaining&quot;</span>
+                      <span class="sa">f</span><span class="s2">&quot; lives: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">off_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">replica</span> <span class="ow">in</span> <span class="n">node_replicas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">set_replication_epoch</span><span class="p">(</span><span class="n">replica</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;All data nodes disconnected before maintenance.&quot;</span><span class="p">)</span>
@@ -1284,19 +1425,19 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_fail</span><span class="p">(</span><span class="s2">&quot;Cluster has no remaining members.&quot;</span><span class="p">)</span>
 
-        <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">members</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+        <span class="n">plive</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">node_replicas</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_file_parts_count</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                <span class="n">pcount</span> <span class="o">+=</span> <span class="n">node_replicas</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">)</span></div>
+                <span class="n">plive</span> <span class="o">+=</span> <span class="n">node_replicas</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">plive</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HDFSCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Evicts any :py:class:`network node &lt;app.domain.network_nodes.HDFSNode&gt;`</span>
 <span class="sd">        whose heartbeats in :py:attr:`data_node_heartbeats` reached zero.</span>
 
-<span class="sd">        Overrides:</span>
+<span class="sd">        Extends:</span>
 <span class="sd">            :py:meth:`app.domain.cluster_groups.Cluster.execute_epoch`.</span>
 
 <span class="sd">        Args:</span>
@@ -1304,6 +1445,7 @@
 <span class="sd">                The subset of :py:attr:`~Cluster.members` who disconnected</span>
 <span class="sd">                during the current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">maintain</span><span class="p">(</span><span class="n">off_nodes</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">off_nodes</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [o] Evicted suspect </span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">suspicious_nodes</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
@@ -1315,8 +1457,7 @@
 <div class="viewcode-block" id="HDFSCluster.membership_maintenance"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HDFSCluster.membership_maintenance">[docs]</a>    <span class="k">def</span> <span class="nf">membership_maintenance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span><span class="p">:</span>
         <span class="n">new_members</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">membership_maintenance</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">nid</span> <span class="ow">in</span> <span class="n">new_members</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">nid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_node_heartbeats</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span></div></div>
     <span class="c1"># endregion</span>
 
 
@@ -1369,7 +1510,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">network_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">network_size</span><span class="p">):</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">network_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">network_size</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">)</span>
             <span class="n">s</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
             <span class="n">member</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
@@ -1421,9 +1562,6 @@
             <span class="s2">&quot;count_min&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">count_min</span><span class="p">,</span>
             <span class="s2">&quot;count_max&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">count_max</span>
         <span class="p">})</span></div>
-
-<div class="viewcode-block" id="NewscastCluster.maintain"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.maintain">[docs]</a>    <span class="k">def</span> <span class="nf">maintain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">off_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">th</span><span class="o">.</span><span class="n">NodeType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">pass</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation setup</span>
@@ -1444,8 +1582,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sum</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sqrsum</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">count_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">count_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span></div>
 
 <div class="viewcode-block" id="NewscastCluster.spread_files"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.spread_files">[docs]</a>    <span class="k">def</span> <span class="nf">spread_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">replicas</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span><span class="p">,</span> <span class="n">strat</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;o&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Distributes a collection of :py:class:`file block replicas</span>

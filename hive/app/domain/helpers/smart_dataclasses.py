@@ -2,16 +2,16 @@
 encapsulating attribute and method behaviour."""
 from __future__ import annotations
 
+import os
 import json
-
 import domain.cluster_groups as cg
 import domain.master_servers as ms
+import environment_settings as es
 
 from pathlib import Path
 from random import randint
 from typing import Any, Dict, IO, List
 from utils import convertions, crypto
-from environment_settings import *
 
 
 class FileData:
@@ -63,7 +63,8 @@ class FileData:
         self.existing_replicas = 0
         self.logger: LoggingData = LoggingData()
         self.out_file: IO = open(os.path.join(
-            OUTFILE_ROOT, f"{Path(origin).resolve().stem}_{sim_id}.json"), "w+")
+            es.OUTFILE_ROOT, f"{Path(origin).resolve().stem}_{sim_id}.json"),
+            "w+")
 
     def fwrite(self, msg: str) -> None:
         """Appends a message to the output stream of ``FileData``.
@@ -108,6 +109,7 @@ class FileData:
         sd.blocks_lost = sd.blocks_lost[:epoch]
 
         sd.cluster_status_bm = sd.cluster_status_bm[:epoch]
+        sd.cluster_status_am = sd.cluster_status_am[:epoch]
         sd.cluster_size_bm = sd.cluster_size_bm[:epoch]
         sd.cluster_size_am = sd.cluster_size_am[:epoch]
 
@@ -122,17 +124,17 @@ class FileData:
             "simfile_name": origin,
             "hive_id": cluster.id,
             "file_name": self.name,
-            "read_size": READ_SIZE,
+            "read_size": es.READ_SIZE,
             "critical_size_threshold": cluster.critical_size,
             "sufficient_size_threshold": cluster.sufficient_size,
             "original_hive_size": cluster.original_size,
             "redundant_size": cluster.redundant_size,
             "max_epochs": ms.Master.MAX_EPOCHS,
-            "min_replication_delay": MIN_REPLICATION_DELAY,
-            "max_replication_delay": MAX_REPLICATION_DELAY,
-            "replication_level": REPLICATION_LEVEL,
-            "convergence_treshold": MIN_CONVERGENCE_THRESHOLD,
-            "channel_loss": LOSS_CHANCE,
+            "min_replication_delay": es.MIN_REPLICATION_DELAY,
+            "max_replication_delay": es.MAX_REPLICATION_DELAY,
+            "replication_level": es.REPLICATION_LEVEL,
+            "convergence_treshold": es.MIN_CONVERGENCE_THRESHOLD,
+            "channel_loss": es.LOSS_CHANCE,
             "corruption_chance_tod": cluster.corruption_chances[0]
         }
 
@@ -254,7 +256,7 @@ class FileBlockData:
             delay_replication in a simulation.
         """
         new_proposed_epoch = float(
-            epoch + randint(MIN_REPLICATION_DELAY, MAX_REPLICATION_DELAY))
+            epoch + randint(es.MIN_REPLICATION_DELAY, es.MAX_REPLICATION_DELAY))
         if new_proposed_epoch < self.replication_epoch:
             self.replication_epoch = new_proposed_epoch
         if self.replication_epoch == float('inf'):
@@ -274,7 +276,7 @@ class FileBlockData:
             epoch:
                 Simulation's current epoch.
         """
-        self.replication_epoch = float('inf') if self.references == REPLICATION_LEVEL else float(epoch + 1)
+        self.replication_epoch = float('inf') if self.references == es.REPLICATION_LEVEL else float(epoch + 1)
 
     def can_replicate(self, epoch: int) -> int:
         """Informs the calling network node if file block needs replication.
@@ -291,8 +293,9 @@ class FileBlockData:
         if self.replication_epoch == float('inf'):
             return 0
 
-        if 0 < self.references < REPLICATION_LEVEL and self.replication_epoch - float(epoch) <= 0.0:
-            return REPLICATION_LEVEL - self.references
+        if 0 < self.references < es.REPLICATION_LEVEL and \
+                self.replication_epoch - float(epoch) <= 0.0:
+            return es.REPLICATION_LEVEL - self.references
 
         return 0
 
@@ -437,6 +440,10 @@ class LoggingData:
         off_node_count (List[int]):
             The number of :py:mod:`network nodes <app.domain.network_nodes>`
             whose status changed to offline or suspicious, at each epoch.
+        topologies_avg_convergence (List[float]):
+            Stores floats for each of the clusters' used topologies
+            representing the magnitude difference between the average density
+            distribution and the desired steady state density distribution.
         transmissions_failed (List[int]):
             The number of message transmissions that were lost in the
             overlay network of a :py:mod:`cluster group
@@ -472,10 +479,11 @@ class LoggingData:
         self.cluster_status_bm: List[str] = [""] * max_epochs
         self.cluster_status_am: List[str] = [""] * max_epochs
         self.delay_replication: List[float] = [0.0] * max_epochs_plus_one
-        self.delay_suspects_detection: Dict[int, str] = {}
+        self.delay_suspects_detection: Dict[str, int] = {}
         self.initial_spread = ""
         self.matrices_nodes_degrees: List[Dict[str, float]] = []
         self.off_node_count: List[int] = [0] * max_epochs
+        self.topologies_avg_convergence: List[float] = []
         self.transmissions_failed: List[int] = [0] * max_epochs
         ###############################
 
@@ -496,7 +504,7 @@ class LoggingData:
                 The simulation epoch at which the convergence was verified.
         """
         self.cswc += 1
-        if self.cswc >= MIN_CONVERGENCE_THRESHOLD:
+        if self.cswc >= es.MIN_CONVERGENCE_THRESHOLD:
             self.convergence_set.append(epoch)
 
     def save_sets_and_reset(self) -> None:
@@ -509,9 +517,9 @@ class LoggingData:
         set_len = len(self.convergence_set)
         if set_len > 0:
             self.convergence_sets.append(self.convergence_set)
-            self.convergence_set = []
             if set_len > self.largest_convergence_window:
                 self.largest_convergence_window = set_len
+            self.convergence_set = []
         self.cswc = 0
 
     def _recursive_len(self, item: Any) -> int:
@@ -544,6 +552,18 @@ class LoggingData:
     # endregion
 
     # region Helpers
+    def log_topology_avg_convergence(self, magnitude: int) -> None:
+        """Logs the degree of all nodes in a Markov Matrix overlay, at the
+        time of its creation, before any faults on the overlay occurs.
+
+        Args:
+            magnitude:
+                The distance between the desired steady-state vector for a
+                cluster's topology and the average density distribution
+                vector for that same topology.
+        """
+        self.topologies_avg_convergence.append(magnitude)
+
     def log_matrices_degrees(self, nodes_degrees: Dict[str, float]):
         """Logs the degree of all nodes in a Markov Matrix overlay, at the
         time of its creation, before any faults on the overlay occurs.

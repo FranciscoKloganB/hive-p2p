@@ -115,17 +115,18 @@
 <span class="sd">:py:mod:`storage nodes &lt;app.domain.network_nodes&gt;`.&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">import</span> <span class="nn">type_hints</span> <span class="k">as</span> <span class="nn">th</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">environment_settings</span> <span class="k">as</span> <span class="nn">es</span>
 
 <span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">class_name_to_obj</span>
 <span class="kn">from</span> <span class="nn">domain.helpers.smart_dataclasses</span> <span class="kn">import</span> <span class="n">FileBlockData</span>
-<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="n">_PersistentingDict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]]</span>
 
@@ -202,7 +203,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ClusterDict</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">NodeDict</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="n">simfile_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">simfile_name</span><span class="p">)</span>
+        <span class="n">simfile_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">simfile_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_process_simfile</span><span class="p">(</span><span class="n">simfile_path</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation setup</span>
@@ -247,7 +248,7 @@
                 <span class="n">fspreads</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="n">spread_strategy</span>
                 <span class="n">size</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">fname</span><span class="p">][</span><span class="s1">&#39;cluster_size&#39;</span><span class="p">]</span>
                 <span class="n">cluster</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_cluster_group</span><span class="p">(</span><span class="n">cluster_class</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-                <span class="n">fblocks</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_files</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">READ_SIZE</span><span class="p">)</span>
+                <span class="n">fblocks</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_files</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">es</span><span class="o">.</span><span class="n">READ_SIZE</span><span class="p">)</span>
 
             <span class="c1"># Distribute files before starting simulation</span>
             <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
@@ -300,7 +301,7 @@
 <span class="sd">                attribute :py:attr:`~app.domain.helpers.smart_dataclasses.FileBlockData.number`</span>
 <span class="sd">                is the key.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">fname</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">bid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">d</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">ReplicasDict</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -371,7 +372,7 @@
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">network_nodes_view</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selected</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">n</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">selected</span>
-            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">blacklist</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">is_up</span><span class="p">():</span>
                 <span class="n">selected</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span>
         <span class="k">return</span> <span class="n">selected</span></div>
     <span class="c1"># endregion</span>
@@ -405,7 +406,7 @@
             <span class="n">cluster_members</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_nodes</span><span class="p">[</span><span class="n">node_id</span><span class="p">]</span>
 
         <span class="n">cluster</span> <span class="o">=</span> <span class="n">class_name_to_obj</span><span class="p">(</span>
-            <span class="n">CLUSTER_GROUPS</span><span class="p">,</span>
+            <span class="n">es</span><span class="o">.</span><span class="n">CLUSTER_GROUPS</span><span class="p">,</span>
             <span class="n">cluster_class</span><span class="p">,</span>
             <span class="p">[</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">cluster_members</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">]</span>
         <span class="p">)</span>
@@ -433,7 +434,8 @@
 <span class="sd">            :py:class:`~app.type_hints.NodeType`:</span>
 <span class="sd">                The :py:class:`~app.domain.network_nodes.Node` instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">class_name_to_obj</span><span class="p">(</span><span class="n">NETWORK_NODES</span><span class="p">,</span> <span class="n">node_class</span><span class="p">,</span> <span class="p">[</span><span class="n">nid</span><span class="p">,</span> <span class="n">node_uptime</span><span class="p">])</span></div></div>
+        <span class="k">return</span> <span class="n">class_name_to_obj</span><span class="p">(</span>
+            <span class="n">es</span><span class="o">.</span><span class="n">NETWORK_NODES</span><span class="p">,</span> <span class="n">node_class</span><span class="p">,</span> <span class="p">[</span><span class="n">nid</span><span class="p">,</span> <span class="n">node_uptime</span><span class="p">])</span></div></div>
     <span class="c1"># endregion</span>
 
 
@@ -600,7 +602,7 @@
                 <span class="n">cluster</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_cluster_group</span><span class="p">(</span>
                     <span class="n">cluster_class</span><span class="p">,</span> <span class="n">cluster_size</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
 
-                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
                 <span class="n">block_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="o">/</span> <span class="n">cluster_size</span>
                 <span class="n">block_size</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">block_size</span><span class="p">)</span>
                 <span class="n">file_blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_files</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">block_size</span><span class="p">))</span>

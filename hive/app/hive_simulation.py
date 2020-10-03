@@ -129,11 +129,11 @@ def _parallel_main(threads_count: int,
         if sdir:
             snames = os.listdir(SIMULATION_ROOT)
             for sn in snames:
-                for i in range(iters):
+                for i in range(1, iters + 1):
                     executor.submit(__start_simulation__, sn, i, epochs)
         else:
             __can_exec_simfile__(sname)
-            for i in range(iters):
+            for i in range(1, iters + 1):
                 executor.submit(__start_simulation__, sname, i, epochs)
 
 
@@ -159,11 +159,11 @@ def _single_main(
     if sdir:
         snames = os.listdir(SIMULATION_ROOT)
         for sn in snames:
-            for i in range(iters):
+            for i in range(1, iters + 1):
                 __start_simulation__(sn, i, epochs)
     else:
         __can_exec_simfile__(sname)
-        for i in range(iters):
+        for i in range(1, iters + 1):
             __start_simulation__(sname, i, epochs)
 # endregion
 
@@ -214,12 +214,12 @@ if __name__ == "__main__":
     threading = 0
     simdirectory = False
     simfile = None
-    iterations = 30
-    duration = 720
+    iterations = 1
+    duration = 480
 
     master_class = "HiveMaster"
-    cluster_class = "HiveCluster"
-    node_class = "HiveNode"
+    cluster_class = "HiveClusterExt"
+    node_class = "HiveNodeExt"
 
     try:
         short_opts = "df:i:t:e:m:c:n:"
@@ -249,11 +249,6 @@ if __name__ == "__main__":
             if options in ("-n", "--network_node"):
                 node_class = str(args).strip()
 
-        if simfile or simdirectory:
-            main(threading, simdirectory, simfile, iterations, duration)
-        else:
-            sys.exit(__err_message__)
-
     except getopt.GetoptError:
         sys.exit(__err_message__)
     except ValueError:
@@ -268,3 +263,9 @@ if __name__ == "__main__":
                  "  --network_node -n (str)\n"
                  "Another cause of error might be a simulation file with "
                  "inconsistent values.")
+
+    if simfile or simdirectory:
+        main(threading, simdirectory, simfile, iterations, duration)
+    else:
+        sys.exit(__err_message__)
+

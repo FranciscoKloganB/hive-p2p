@@ -112,16 +112,16 @@
 <span class="sd">encapsulating attribute and method behaviour.&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">json</span>
-
 <span class="kn">import</span> <span class="nn">domain.cluster_groups</span> <span class="k">as</span> <span class="nn">cg</span>
 <span class="kn">import</span> <span class="nn">domain.master_servers</span> <span class="k">as</span> <span class="nn">ms</span>
+<span class="kn">import</span> <span class="nn">environment_settings</span> <span class="k">as</span> <span class="nn">es</span>
 
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">randint</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">IO</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">convertions</span><span class="p">,</span> <span class="n">crypto</span>
-<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="o">*</span>
 
 
 <div class="viewcode-block" id="FileData"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData">[docs]</a><span class="k">class</span> <span class="nc">FileData</span><span class="p">:</span>
@@ -173,7 +173,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">existing_replicas</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span> <span class="n">LoggingData</span> <span class="o">=</span> <span class="n">LoggingData</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">out_file</span><span class="p">:</span> <span class="n">IO</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">sim_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span></div>
+            <span class="n">es</span><span class="o">.</span><span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">origin</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">sim_id</span><span class="si">}</span><span class="s2">.json&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;w+&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FileData.fwrite"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileData.fwrite">[docs]</a>    <span class="k">def</span> <span class="nf">fwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Appends a message to the output stream of ``FileData``.</span>
@@ -218,6 +219,7 @@
         <span class="n">sd</span><span class="o">.</span><span class="n">blocks_lost</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">blocks_lost</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
 
         <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_bm</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_bm</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
+        <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_am</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_status_am</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
         <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_bm</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_bm</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
         <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_am</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">cluster_size_am</span><span class="p">[:</span><span class="n">epoch</span><span class="p">]</span>
 
@@ -232,17 +234,17 @@
             <span class="s2">&quot;simfile_name&quot;</span><span class="p">:</span> <span class="n">origin</span><span class="p">,</span>
             <span class="s2">&quot;hive_id&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
             <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;read_size&quot;</span><span class="p">:</span> <span class="n">READ_SIZE</span><span class="p">,</span>
+            <span class="s2">&quot;read_size&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">READ_SIZE</span><span class="p">,</span>
             <span class="s2">&quot;critical_size_threshold&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">critical_size</span><span class="p">,</span>
             <span class="s2">&quot;sufficient_size_threshold&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sufficient_size</span><span class="p">,</span>
             <span class="s2">&quot;original_hive_size&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span>
             <span class="s2">&quot;redundant_size&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">,</span>
             <span class="s2">&quot;max_epochs&quot;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">,</span>
-            <span class="s2">&quot;min_replication_delay&quot;</span><span class="p">:</span> <span class="n">MIN_REPLICATION_DELAY</span><span class="p">,</span>
-            <span class="s2">&quot;max_replication_delay&quot;</span><span class="p">:</span> <span class="n">MAX_REPLICATION_DELAY</span><span class="p">,</span>
-            <span class="s2">&quot;replication_level&quot;</span><span class="p">:</span> <span class="n">REPLICATION_LEVEL</span><span class="p">,</span>
-            <span class="s2">&quot;convergence_treshold&quot;</span><span class="p">:</span> <span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">,</span>
-            <span class="s2">&quot;channel_loss&quot;</span><span class="p">:</span> <span class="n">LOSS_CHANCE</span><span class="p">,</span>
+            <span class="s2">&quot;min_replication_delay&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">MIN_REPLICATION_DELAY</span><span class="p">,</span>
+            <span class="s2">&quot;max_replication_delay&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">MAX_REPLICATION_DELAY</span><span class="p">,</span>
+            <span class="s2">&quot;replication_level&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">REPLICATION_LEVEL</span><span class="p">,</span>
+            <span class="s2">&quot;convergence_treshold&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">,</span>
+            <span class="s2">&quot;channel_loss&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">LOSS_CHANCE</span><span class="p">,</span>
             <span class="s2">&quot;corruption_chance_tod&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="p">}</span>
 
@@ -364,7 +366,7 @@
 <span class="sd">            delay_replication in a simulation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">new_proposed_epoch</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
-            <span class="n">epoch</span> <span class="o">+</span> <span class="n">randint</span><span class="p">(</span><span class="n">MIN_REPLICATION_DELAY</span><span class="p">,</span> <span class="n">MAX_REPLICATION_DELAY</span><span class="p">))</span>
+            <span class="n">epoch</span> <span class="o">+</span> <span class="n">randint</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">MIN_REPLICATION_DELAY</span><span class="p">,</span> <span class="n">es</span><span class="o">.</span><span class="n">MAX_REPLICATION_DELAY</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">new_proposed_epoch</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">=</span> <span class="n">new_proposed_epoch</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
@@ -384,7 +386,7 @@
 <span class="sd">            epoch:</span>
 <span class="sd">                Simulation&#39;s current epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span> <span class="o">==</span> <span class="n">REPLICATION_LEVEL</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span> <span class="o">==</span> <span class="n">es</span><span class="o">.</span><span class="n">REPLICATION_LEVEL</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FileBlockData.can_replicate"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.can_replicate">[docs]</a>    <span class="k">def</span> <span class="nf">can_replicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Informs the calling network node if file block needs replication.</span>
@@ -401,8 +403,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="mi">0</span>
 
-        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span> <span class="o">&lt;</span> <span class="n">REPLICATION_LEVEL</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">REPLICATION_LEVEL</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span> <span class="o">&lt;</span> <span class="n">es</span><span class="o">.</span><span class="n">REPLICATION_LEVEL</span> <span class="ow">and</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">replication_epoch</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">es</span><span class="o">.</span><span class="n">REPLICATION_LEVEL</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span>
 
         <span class="k">return</span> <span class="mi">0</span></div>
 
@@ -547,6 +550,10 @@
 <span class="sd">        off_node_count (List[int]):</span>
 <span class="sd">            The number of :py:mod:`network nodes &lt;app.domain.network_nodes&gt;`</span>
 <span class="sd">            whose status changed to offline or suspicious, at each epoch.</span>
+<span class="sd">        topologies_avg_convergence (List[float]):</span>
+<span class="sd">            Stores floats for each of the clusters&#39; used topologies</span>
+<span class="sd">            representing the magnitude difference between the average density</span>
+<span class="sd">            distribution and the desired steady state density distribution.</span>
 <span class="sd">        transmissions_failed (List[int]):</span>
 <span class="sd">            The number of message transmissions that were lost in the</span>
 <span class="sd">            overlay network of a :py:mod:`cluster group</span>
@@ -582,10 +589,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">cluster_status_bm</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cluster_status_am</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delay_replication</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs_plus_one</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">delay_suspects_detection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delay_suspects_detection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">matrices_nodes_degrees</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">off_node_count</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topologies_avg_convergence</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transmissions_failed</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span></div>
         <span class="c1">###############################</span>
 
@@ -606,7 +614,7 @@
 <span class="sd">                The simulation epoch at which the convergence was verified.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span> <span class="o">&gt;=</span> <span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span> <span class="o">&gt;=</span> <span class="n">es</span><span class="o">.</span><span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LoggingData.save_sets_and_reset"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset">[docs]</a>    <span class="k">def</span> <span class="nf">save_sets_and_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -619,9 +627,9 @@
         <span class="n">set_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">set_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">convergence_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">set_len</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">largest_convergence_window</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">largest_convergence_window</span> <span class="o">=</span> <span class="n">set_len</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convergence_set</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cswc</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="LoggingData._recursive_len"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData._recursive_len">[docs]</a>    <span class="k">def</span> <span class="nf">_recursive_len</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -654,6 +662,18 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
+<div class="viewcode-block" id="LoggingData.log_topology_avg_convergence"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_topology_avg_convergence">[docs]</a>    <span class="k">def</span> <span class="nf">log_topology_avg_convergence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Logs the degree of all nodes in a Markov Matrix overlay, at the</span>
+<span class="sd">        time of its creation, before any faults on the overlay occurs.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            magnitude:</span>
+<span class="sd">                The distance between the desired steady-state vector for a</span>
+<span class="sd">                cluster&#39;s topology and the average density distribution</span>
+<span class="sd">                vector for that same topology.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topologies_avg_convergence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">magnitude</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="LoggingData.log_matrices_degrees"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">[docs]</a>    <span class="k">def</span> <span class="nf">log_matrices_degrees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;Logs the degree of all nodes in a Markov Matrix overlay, at the</span>
 <span class="sd">        time of its creation, before any faults on the overlay occurs.</span>

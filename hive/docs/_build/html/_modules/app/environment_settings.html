@@ -144,6 +144,7 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
 <span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">truncate_float_value</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
 
 <span class="n">DEBUG</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="sd">&quot;&quot;&quot;Indicates if some debug related actions or prints to the terminal should </span>
@@ -179,6 +180,13 @@
 <span class="n">REPLICATION_LEVEL</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="sd">&quot;&quot;&quot;The amount of blocks each file block has.&quot;&quot;&quot;</span>
 
+
+<div class="viewcode-block" id="set_replication_level"><a class="viewcode-back" href="../../app.html#app.environment_settings.set_replication_level">[docs]</a><span class="k">def</span> <span class="nf">set_replication_level</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Changes REPLICATION_LEVEL constant value at run time.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">REPLICATION_LEVEL</span>
+    <span class="n">REPLICATION_LEVEL</span> <span class="o">=</span> <span class="n">n</span></div>
+
+
 <span class="n">MIN_CONVERGENCE_THRESHOLD</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="sd">&quot;&quot;&quot;The number of consecutive epoch time steps that a </span>
 <span class="sd">:py:class:`~app.domain.cluster_groups.HiveCluster` must converge before epochs </span>
@@ -188,6 +196,22 @@
 <span class="n">LOSS_CHANCE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.04</span>
 <span class="sd">&quot;&quot;&quot;Defines the probability of a message not being delivered to a destination </span>
 <span class="sd">due to network link problems, in the simulation environment.&quot;&quot;&quot;</span>
+
+<span class="n">DELIVER_CHANCE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">LOSS_CHANCE</span>
+<span class="sd">&quot;&quot;&quot;Defines the probability of a message being delivered to a destination, </span>
+<span class="sd">in the simulation environment.&quot;&quot;&quot;</span>
+
+<span class="n">COMMUNICATION_CHANCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">LOSS_CHANCE</span><span class="p">,</span> <span class="n">DELIVER_CHANCE</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="set_loss_chance"><a class="viewcode-back" href="../../app.html#app.environment_settings.set_loss_chance">[docs]</a><span class="k">def</span> <span class="nf">set_loss_chance</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Changes LOSS_CHANCE constant value at run time.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">LOSS_CHANCE</span>
+    <span class="k">global</span> <span class="n">DELIVER_CHANCE</span>
+    <span class="k">global</span> <span class="n">COMMUNICATION_CHANCES</span>
+    <span class="n">LOSS_CHANCE</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">DELIVER_CHANCE</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">LOSS_CHANCE</span>
+    <span class="n">COMMUNICATION_CHANCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">LOSS_CHANCE</span><span class="p">,</span> <span class="n">DELIVER_CHANCE</span><span class="p">]</span></div>
 
 <span class="n">ABS_TOLERANCE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
 <span class="sd">&quot;&quot;&quot;Defines the maximum amount of absolute positive or negative deviation that a </span>
@@ -237,8 +261,6 @@
 
 <span class="c1"># region Other simulation constants</span>
 <span class="n">TRUE_FALSE</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">]</span>
-<span class="n">DELIVER_CHANCE</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">LOSS_CHANCE</span>
-<span class="n">COMMUNICATION_CHANCES</span> <span class="o">=</span> <span class="p">[</span><span class="n">LOSS_CHANCE</span><span class="p">,</span> <span class="n">DELIVER_CHANCE</span><span class="p">]</span>
 <span class="c1"># endregion</span>
 
 <span class="c1"># region OS paths</span>
