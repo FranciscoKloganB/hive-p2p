@@ -490,7 +490,7 @@ class HiveCluster(Cluster):
             distribution :py:attr:`v_` was achieved on average. Differs from
             :py:attr:`cv_` because `cv_` is used for instantaneous
             convergence comparison.
-        timer (int):
+        _timer (int):
             Used as a logical clock to divide the entries of :py:attr:`avg_`
             when a topology changes.
     """
@@ -1044,6 +1044,18 @@ class HiveClusterPerfect(HiveCluster):
         """
         for node in self._members_view:
             node.execute_epoch(self, self.file.name)
+    # endregion
+
+    # region Helpers
+    def select_fastest_topology(
+            self, a: np.ndarray, v_: np.ndarray) -> np.ndarray:
+        print("MH Transition Matrix")
+        fastest_matrix, _ = mm.new_mh_transition_matrix(a, v_)
+        size = fastest_matrix.shape[0]
+        for j in range(size):
+            fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])
+            fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
+        return fastest_matrix
     # endregion
 
 
