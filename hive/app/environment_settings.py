@@ -104,9 +104,21 @@ def set_loss_chance(v: float) -> None:
     COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 
 
-ABS_TOLERANCE: float = 0.0625
-
+ATOL: float = 0.05
 """Defines the maximum amount of absolute positive or negative deviation that a 
+current distribution :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` can 
+have from the desired steady state 
+:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`, in order for the 
+distributions to be considered equal and thus marking the epoch as convergent. 
+
+This constant will be used by 
+:py:meth:`app.domain.cluster_groups.HiveCluster.equal_distributions` along 
+with a relative tolerance that is the minimum value in 
+:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`.
+"""
+
+RTOL: float = 0.05
+"""Defines the maximum amount of relative positive or negative deviation that a 
 current distribution :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` can 
 have from the desired steady state 
 :py:attr:`~app.domain.cluster_groups.HiveCluster.v_`, in order for the 
