@@ -937,15 +937,12 @@ class HiveCluster(Cluster):
         self.avg_ /= self._timer
         self.avg_ /= np.sum(self.avg_)
 
-        rtol = np.clip(self.v_[0].min(), 0.0, 0.1 - es.ATOL)
-        atol = np.clip(es.ATOL, 0.0, 1.0)
+        distance = np.abs(self.v_.subtract(self.avg_))
+        magnitude = np.sqrt(distance).sum(axis=0).item()
 
-        magnitude = float('inf')
-        print(f"avg:\n{self.avg_}\n...\ngoal:\n{self.v_}")
-        if np.allclose(self.avg_, self.v_, rtol=rtol, atol=atol):
-            absolute_dif = np.abs(self.v_.subtract(self.avg_))
-            magnitude = np.sqrt(absolute_dif).sum(axis=0).item()
-        self.file.logger.log_topology_avg_convergence(magnitude)
+        goaled = np.allclose(self.avg_, self.v_, rtol=es.RTOL, atol=es.ATOL)
+
+        self.file.logger.log_topology_goal_performance(goaled, magnitude)
 
     def _pretty_print_eq_distr_table(
             self, target: pd.DataFrame, rtol: float, atol: float) -> Any:
