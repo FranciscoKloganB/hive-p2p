@@ -1373,6 +1373,7 @@ class NewscastCluster(Cluster):
         super().__init__(master, file_name, members, sim_id, origin)
 
     # region Cluster API
+    # noinspection PyAttributeOutsideInit
     def log_aggregation(self, value: float):
         if value < self.min:
             self.min = value
