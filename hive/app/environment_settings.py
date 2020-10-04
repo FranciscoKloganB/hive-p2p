@@ -41,7 +41,7 @@ DEBUG: bool = False
 be performed."""
 
 
-READ_SIZE: int = 131072
+READ_SIZE: int = 121026
 """Defines the raw size of each file block before it's wrapped in a 
 :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instance 
 object. 
