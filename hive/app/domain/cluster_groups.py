@@ -1046,7 +1046,7 @@ class HiveClusterPerfect(HiveCluster):
     # endregion
 
     # region Helpers
-    """    
+    # """
     def select_fastest_topology(
             self, a: np.ndarray, v_: np.ndarray) -> np.ndarray:
         fastest_matrix, _ = mm.new_mh_transition_matrix(a, v_)
@@ -1055,7 +1055,7 @@ class HiveClusterPerfect(HiveCluster):
             fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
-    """
+    # """
     # endregion
 
 
