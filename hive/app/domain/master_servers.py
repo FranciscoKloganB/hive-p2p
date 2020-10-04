@@ -139,10 +139,12 @@ class Master:
                 size = d[fname]['cluster_size']
                 cluster = self._new_cluster_group(cluster_class, size, fname)
 
-                file_size = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
-                read_size = int(file_size / 2000)
-                fblocks[fname] = self._split_files(fname, cluster, read_size)
+                # file_size = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
+                # read_size = int(file_size / 2000)
+                # fblocks[fname] = self._split_files(fname, cluster, read_size)
 
+                fblocks[fname] = self._split_files(fname, cluster, es.READ_SIZE)
+                
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
                 spread_strategy = fspreads[cluster.file.name]
