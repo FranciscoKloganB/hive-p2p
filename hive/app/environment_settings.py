@@ -67,7 +67,7 @@ MAX_REPLICATION_DELAY: int = 3
 """The maximum amount of epoch time steps replica file block blocks take to 
 be regenerated after their are lost."""
 
-REPLICATION_LEVEL: int = 1
+REPLICATION_LEVEL: int = 3
 """The amount of blocks each file block has."""
 
 
