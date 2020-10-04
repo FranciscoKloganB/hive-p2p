@@ -63,7 +63,7 @@ MIN_REPLICATION_DELAY: int = 1
 """The minimum amount of epoch time steps replica file block blocks take to 
 be regenerated after their are lost."""
 
-MAX_REPLICATION_DELAY: int = 4
+MAX_REPLICATION_DELAY: int = 3
 """The maximum amount of epoch time steps replica file block blocks take to 
 be regenerated after their are lost."""
 
