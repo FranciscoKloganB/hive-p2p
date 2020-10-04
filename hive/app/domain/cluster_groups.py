@@ -937,7 +937,7 @@ class HiveCluster(Cluster):
         magnitude = np.sqrt(distance).sum(axis=0).item()
 
         atol = np.clip(1 / self.original_size, 0.0, es.ATOL)
-        goaled = np.allclose(self.avg_, self.v_, rtol=es.RTOL + atol)
+        goaled = np.allclose(self.avg_, self.v_, rtol=es.RTOL, atol=atol)
 
         self.file.logger.log_topology_goal_performance(goaled, magnitude)
 
