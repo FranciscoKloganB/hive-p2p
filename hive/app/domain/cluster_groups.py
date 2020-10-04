@@ -919,7 +919,7 @@ class HiveCluster(Cluster):
         """
         ptotal = self.file.existing_replicas
         target = self.v_.multiply(ptotal)
-        atol = np.clip(1 / self.original_size, 0.0, es.ATOL) * ptotal
+        atol = np.clip(es.ATOL, 0.0, 1.0) * ptotal
         result = np.allclose(self.cv_, target, rtol=es.RTOL, atol=atol)
         if es.DEBUG:
             print(f"converged: {result}\n"
@@ -940,8 +940,7 @@ class HiveCluster(Cluster):
         distance = np.abs(self.v_.subtract(self.avg_))
         magnitude = np.sqrt(distance).sum(axis=0).item()
 
-        # atol = np.clip(1 / self.original_size, 0.0, es.ATOL)
-        goaled = np.allclose(self.avg_, self.v_, rtol=es.RTOL, atol=0.0)
+        goaled = np.allclose(self.avg_, self.v_, rtol=es.RTOL, atol=es.ATOL)
 
         self.file.logger.log_topology_goal_performance(goaled, magnitude)
 
