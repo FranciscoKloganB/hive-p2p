@@ -1029,12 +1029,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ptotal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">existing_replicas</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ptotal</span><span class="p">)</span>
-        <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">ATOL</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">ptotal</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">es</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;converged: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_pretty_print_eq_distr_table</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">es</span><span class="o">.</span><span class="n">RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">result</span></div>
+        <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">es</span><span class="o">.</span><span class="n">ATOL</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">*</span> <span class="n">ptotal</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HiveCluster._log_evaluation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.HiveCluster._log_evaluation">[docs]</a>    <span class="k">def</span> <span class="nf">_log_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcount</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ptotal</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_log_evaluation</span><span class="p">(</span><span class="n">pcount</span><span class="p">,</span> <span class="n">ptotal</span><span class="p">)</span>
@@ -1050,7 +1046,8 @@
         <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">))</span>
         <span class="n">magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
-        <span class="n">goaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">ATOL</span><span class="p">)</span>
+        <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">es</span><span class="o">.</span><span class="n">ATOL</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">goaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_topology_goal_performance</span><span class="p">(</span><span class="n">goaled</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">)</span></div>
 
@@ -1093,7 +1090,7 @@
                  <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
-        <span class="c1"># es.set_loss_chance(0.0)</span>
+        <span class="n">es</span><span class="o">.</span><span class="n">set_loss_chance</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span></div>
 
     <span class="c1"># region Swarm guidance structure management</span>
@@ -1155,18 +1152,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_members_view</span><span class="p">:</span>
             <span class="n">node</span><span class="o">.</span><span class="n">execute_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[]</span></div></div>
+        <span class="k">return</span> <span class="p">[]</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
-<span class="sd">&quot;&quot;&quot;    def select_fastest_topology(</span>
+    <span class="sd">&quot;&quot;&quot;    </span>
+<span class="sd">    def select_fastest_topology(</span>
 <span class="sd">            self, a: np.ndarray, v_: np.ndarray) -&gt; np.ndarray:</span>
 <span class="sd">        fastest_matrix, _ = mm.new_mh_transition_matrix(a, v_)</span>
 <span class="sd">        size = fastest_matrix.shape[0]</span>
 <span class="sd">        for j in range(size):</span>
 <span class="sd">            fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])</span>
 <span class="sd">            fastest_matrix[:, j] /= fastest_matrix[:, j].sum()</span>
-<span class="sd">        return fastest_matrix&quot;&quot;&quot;</span>
+<span class="sd">        return fastest_matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
     <span class="c1"># endregion</span>
 
 
@@ -1484,6 +1483,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span></div>
 
     <span class="c1"># region Cluster API</span>
+    <span class="c1"># noinspection PyAttributeOutsideInit</span>
 <div class="viewcode-block" id="NewscastCluster.log_aggregation"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.NewscastCluster.log_aggregation">[docs]</a>    <span class="k">def</span> <span class="nf">log_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">min</span> <span class="o">=</span> <span class="n">value</span>
