@@ -68,7 +68,7 @@ MAX_REPLICATION_DELAY: int = 3
 be regenerated after their are lost."""
 
 REPLICATION_LEVEL: int = 3
-"""The amount of blocks each file block has."""
+"""The amount of replicas each file block has."""
 
 
 def set_replication_level(n: int) -> None:
