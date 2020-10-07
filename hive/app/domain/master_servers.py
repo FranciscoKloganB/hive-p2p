@@ -370,10 +370,9 @@ class HDFSMaster(Master):
 
                 - The default and, thus recommended, block size for the \
                 hadoop distributed file system is 128MB. The system is not \
-                designed to perform well with small file blocks, but Hives \
-                requires many file blocks for stochastic swarm guidance to \
-                work, hence being more effective with small block sizes. By \
-                default Hives runs with 128KB blocks.
+                designed to perform well with small file blocks, but SG \
+                requires many file blocks to  work, hence being more \
+                effective with small block sizes.
 
                 - Hadoop limits the minimum block size to be 1MB, \
                 `dfs.namenode.fs-limits.min-block-size <https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size>`_. \

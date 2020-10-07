@@ -1833,7 +1833,7 @@ invoked with fixed <cite>bsize</cite> = 1MB. The reason for this is
 two-fold:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>The default and, thus recommended, block size for the                 hadoop distributed file system is 128MB. The system is not                 designed to perform well with small file blocks, but Hives                 requires many file blocks for stochastic swarm guidance to                 work, hence being more effective with small block sizes. By                 default Hives runs with 128KB blocks.</p></li>
+<li><p>The default and, thus recommended, block size for the                 hadoop distributed file system is 128MB. The system is not                 designed to perform well with small file blocks, but SG                 requires many file blocks to  work, hence being more                 effective with small block sizes.</p></li>
 <li><p>Hadoop limits the minimum block size to be 1MB,                 <a class="reference external" href="https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size">dfs.namenode.fs-limits.min-block-size</a>.                 For this reason, we make HDFSMaster split files into 1MB                 chunks, as that is the closest we would get to our Hive’s                 default block size in the real world.</p></li>
 </ul>
 </div></blockquote>
