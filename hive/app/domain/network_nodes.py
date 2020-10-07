@@ -233,7 +233,7 @@ class Node:
                      number: int,
                      corrupt: bool = False,
                      cluster: th.ClusterType = None) -> None:
-        """Safely deletes a part from the HiveNode instance's disk.
+        """Safely deletes a part from the SGNode instance's disk.
 
         Args:
             fid:
@@ -318,17 +318,17 @@ class Node:
     # endregion
 
 
-class HiveNode(Node):
+class SGNode(Node):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
     Attributes:
         clusters:
             A collection of :py:class:`cluster groups
-            <app.domain.cluster_groups.HiveCluster>` the ``HiveNode`` is a
+            <app.domain.cluster_groups.SGCluster>` the ``SGNode`` is a
             member of.
         routing_table (Dict[str, :py:class:`~pd:pandas.DataFrame`]):
             Contains the information required to appropriately route file
-            block blocks to other HiveNode instances.
+            block blocks to other SGNode instances.
     """
     def __init__(self, uid: str, uptime: float) -> None:
         super().__init__(uid, uptime)
@@ -340,7 +340,7 @@ class HiveNode(Node):
         """Instructs the ``Node`` instance to execute the epoch.
 
         The method iterates all file block blocks in :py:attr:`files` and
-        independently decides if they should be sent to another ``HiveNode``
+        independently decides if they should be sent to another ``SGNode``
         by following the probabilities in :py:attr:`routing_table` column
         vectors.
 
@@ -457,10 +457,10 @@ class HiveNode(Node):
                              "or pandas.DataFrame as transition vector type.")
 
     def remove_file_routing(self, fid: str) -> None:
-        """Removes a file name from the ``HiveNode`` routing table.
+        """Removes a file name from the ``SGNode`` routing table.
 
-        This method is called when a ``HiveNode`` is evicted from the
-        :py:class:`cluster group <app.domain.cluster_groups.HiveCluster>` and
+        This method is called when a ``SGNode`` is evicted from the
+        :py:class:`cluster group <app.domain.cluster_groups.SGCluster>` and
         results in the deletion from disk of all :py:class:`file block replicas
         <app.domain.helpers.smart_dataclasses.FileBlockData>` with
         identifier ``fid``.
@@ -503,12 +503,12 @@ class HiveNode(Node):
     # endregion
 
 
-class HiveNodeExt(HiveNode):
+class SGNodeExt(SGNode):
     """Represents a network node that executes a Swarm Guidance algorithm.
 
-    ``HiveNodeExt`` instances differ from :py:class:`HiveNode` in the sense
+    ``SGNodeExt`` instances differ from :py:class:`SGNode` in the sense
     that the latter does not monitor the peers belonging to his
-    :py:class:`cluster groups <app.domain.cluster_groups.HiveClusterExt>`,
+    :py:class:`cluster groups <app.domain.cluster_groups.SGClusterExt>`,
     concerning their connectivity :py:attr:`~Node.status` or suspicious
     behaviours.
     """

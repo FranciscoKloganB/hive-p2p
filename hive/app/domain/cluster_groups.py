@@ -397,8 +397,8 @@ class Cluster:
                 As a rule of thumb ``plive`` tracks the number of parts that
                 are alive in the system for logging purposes, where as
                 ``ptotal`` is used for comparisons and averages, e.g.,
-                :py:meth:`HiveCluster evaluate
-                <app.domain.cluster_groups.HiveCluster.evaluate>`.
+                :py:meth:`SGCluster evaluate
+                <app.domain.cluster_groups.SGCluster.evaluate>`.
         """
         self.file.logger.log_existing_file_blocks(plive, self.current_epoch)
         if plive <= 0:
@@ -474,7 +474,7 @@ class Cluster:
     # endregion
 
 
-class HiveCluster(Cluster):
+class SGCluster(Cluster):
     """Represents a group of network nodes persisting a file using swarm
     guidance algorithm.
 
@@ -511,7 +511,7 @@ class HiveCluster(Cluster):
     def spread_files(self, replicas: th.ReplicasDict, strat: str = "i") -> None:
         """Distributes a collection of
         :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData`
-        objects among the :py:attr:`~Cluster.members` of the ``HiveCluster``.
+        objects among the :py:attr:`~Cluster.members` of the ``SGCluster``.
 
         Overrides:
             :py:meth:`app.domain.cluster_groups.Cluster.spread_files`.
@@ -662,7 +662,7 @@ class HiveCluster(Cluster):
         Extends:
             :py:meth:`app.domain.cluster_groups.Cluster.membership_maintenance`.
 
-            ``HiveCluster.membership_maintenance`` adds and removes cloud
+            ``SGCluster.membership_maintenance`` adds and removes cloud
             references depending depending on the length of :py:attr:`~Cluster.members`
             before maintenance is performed.
 
@@ -688,7 +688,7 @@ class HiveCluster(Cluster):
             self, member_ids: List[str], member_uptimes: List[float]
     ) -> List[float]:
         """Sets a new :py:attr:`desired distribution <v_>` for the
-        ``HiveCluster``.
+        ``SGCluster``.
 
         Received ``member_uptimes`` are normalized to create a stochastic
         representation of the desired distribution, which can be used by the
@@ -698,7 +698,7 @@ class HiveCluster(Cluster):
             member_ids:
                 A list of :py:attr:`node identifiers
                 <app.domain.network_nodes.Node.id>` who are
-                :py:attr:`~Cluster.members` of the ``HiveCluster``.
+                :py:attr:`~Cluster.members` of the ``SGCluster``.
             member_uptimes:
                 A list of :py:attr:`node identifiers
                 <app.domain.network_nodes.Node.uptime>`.
@@ -706,7 +706,7 @@ class HiveCluster(Cluster):
         Note:
             ``member_ids`` and ``member_uptimes`` elements at each index should
             belong to each other, i.e., they should originate from from the
-            same :py:class:`network node <app.domain.network_nodes.HiveNode>`.
+            same :py:class:`network node <app.domain.network_nodes.SGNode>`.
         Returns:
             A list of floats with normalized uptimes which represent the
             "reliability" of network nodes.
@@ -746,7 +746,7 @@ class HiveCluster(Cluster):
 
     def broadcast_transition_matrix(self, m: pd.DataFrame) -> None:
         """Slices a  matrix and delivers columns to the respective
-        :py:class:`network nodes <app.domain.network_nodes.HiveNode>`.
+        :py:class:`network nodes <app.domain.network_nodes.SGNode>`.
 
         Args:
             m (:py:class:`~pd:pandas.DataFrame`)
@@ -774,16 +774,16 @@ class HiveCluster(Cluster):
 
     def create_and_bcast_new_transition_matrix(self) -> None:
         """Helper method that attempts to generate a markov matrix to be
-        sliced and distributed to the ``HiveCluster``
+        sliced and distributed to the ``SGCluster``
         :py:attr:`~Cluster.members`.
 
         At most three transition matrices will be generated. The first to be
         successfully :py:meth:`validated <_validate_transition_matrix>` is
         distributed to the :py:class:`network nodes
-        <app.domain.network_nodes.HiveNode>`. If all matrices are invalid,
+        <app.domain.network_nodes.SGNode>`. If all matrices are invalid,
         the last matrix will be used to prevent infinite loops in the
         simulation. This is not an issue as eventually the membership of the
-        ``HiveCluster`` will change, thus, more opportunities to perform a
+        ``SGCluster`` will change, thus, more opportunities to perform a
         correct swarm guidance behavior will be possible.
         """
         tries = 1
@@ -886,13 +886,13 @@ class HiveCluster(Cluster):
 
     def add_cloud_reference(self) -> None:
         """Adds a cloud server to the :py:attr:`~Cluster.members` of
-        the ``HiveCluster``.
+        the ``SGCluster``.
 
-        This method is used when ``HiveCluster`` membership size becomes
+        This method is used when ``SGCluster`` membership size becomes
         compromised and a backup solution using cloud approaches is desired.
         The idea is that surviving members upload their replicas to the cloud
         server, e.g., an Amazon S3 instance. See Master method
-        :py:meth:`~app.domain.master_servers.HiveMaster.get_cloud_reference`
+        :py:meth:`~app.domain.master_servers.SGMaster.get_cloud_reference`
         for more details.
 
         Note:
@@ -904,9 +904,9 @@ class HiveCluster(Cluster):
     # region Helpers
     def equal_distributions(self) -> bool:
         """Asserts if the :py:attr:`desired distribution
-        <app.domain.cluster_groups.HiveCluster.v_>` and
+        <app.domain.cluster_groups.SGCluster.v_>` and
         :py:attr:`current distribution
-        <app.domain.cluster_groups.HiveCluster.cv_>` are equal.
+        <app.domain.cluster_groups.SGCluster.cv_>` are equal.
 
         Equalility is calculated using numpy allclose function which has the
         following formula: ::
@@ -965,7 +965,7 @@ class HiveCluster(Cluster):
     # endregion
 
 
-class HiveClusterPerfect(HiveCluster):
+class SGClusterPerfect(SGCluster):
     """Represents a group of network nodes persisting a file using swarm
     guidance algorithm.
 
@@ -990,13 +990,13 @@ class HiveClusterPerfect(HiveCluster):
         """Creates a random desired distribution.
 
         Overrides:
-            :py:meth:`app.domain.cluster_groups.HiveCluster.new_desired_distribution`
+            :py:meth:`app.domain.cluster_groups.SGCluster.new_desired_distribution`
 
         Args:
             member_ids:
                 A list of :py:attr:`node identifiers
                 <app.domain.network_nodes.Node.id>` who are
-                :py:attr:`~Cluster.members` of the ``HiveCluster``.
+                :py:attr:`~Cluster.members` of the ``SGCluster``.
             member_uptimes:
                 This method's parameter is ignored and can be ``None``.
 
@@ -1059,21 +1059,21 @@ class HiveClusterPerfect(HiveCluster):
     # endregion
 
 
-class HiveClusterExt(HiveCluster):
+class SGClusterExt(SGCluster):
     """Represents a group of network nodes persisting a file.
 
-    ``HiveClusterExt`` instances differ from
-    :py:class:`~app.domain.cluster_groups.HiveCluster` because their members are
-    of type :py:class:`~app.domain.network_nodes.HiveNodeExt`. When combined
+    ``SGClusterExt`` instances differ from
+    :py:class:`~app.domain.cluster_groups.SGCluster` because their members are
+    of type :py:class:`~app.domain.network_nodes.SGNodeExt`. When combined
     these classes give nodes the responsibility of collaborating in the
-    detection of faulty members of the ``HiveClusterExt`` and eventually
+    detection of faulty members of the ``SGClusterExt`` and eventually
     kicking them out of the group.
 
     Attributes:
         complaint_threshold (int):
             Reference value that defines the maximum number of complaints a
-            :py:class:`network node <app.domain.network_nodes.HiveNodeExt>`
-            can receive before it is evicted from the ``HiveClusterExt``.
+            :py:class:`network node <app.domain.network_nodes.SGNodeExt>`
+            can receive before it is evicted from the ``SGClusterExt``.
         nodes_complaints (Dict[str, int]):
             A dictionary mapping :py:attr:`network node identifiers'
             <app.domain.network_nodes.Node.id>` to the number of complaints
@@ -1120,10 +1120,10 @@ class HiveClusterExt(HiveCluster):
         Args:
             complainter:
                 The identifier of the complaining
-                :py:class:`~app.domain.network_nodes.HiveNodeExt`.
+                :py:class:`~app.domain.network_nodes.SGNodeExt`.
             complainee:
                 The identifier of the
-                :py:class:`~app.domain.network_nodes.HiveNodeExt`
+                :py:class:`~app.domain.network_nodes.SGNodeExt`
                 being complained about.
             reason (:py:data:`app.type_hints.HttpResponse`):
                 The :py:class:`http code <app.domain.helpers.enums.HttpCodes>`
@@ -1152,14 +1152,14 @@ class HiveClusterExt(HiveCluster):
         """Queries all network node members execute the epoch.
 
         Overrides:
-            :py:meth:`app.domain.cluster_groups.HiveCluster.nodes_execute`.
+            :py:meth:`app.domain.cluster_groups.SGCluster.nodes_execute`.
 
-            Offline :py:class:`network nodes <app.domain.network_nodes.HiveNodeExt>`
+            Offline :py:class:`network nodes <app.domain.network_nodes.SGNodeExt>`
             are considered suspects until enough complaints
-            from other ``HiveNodeExt`` :py:attr:`~Cluster.members` are received.
+            from other ``SGNodeExt`` :py:attr:`~Cluster.members` are received.
             This is important because lost parts can not be logged multiple
             times. Yet suspected :py:class:`network nodes
-            <app.domain.network_nodes.HiveNodeExt>` need to be contabilized
+            <app.domain.network_nodes.SGNodeExt>` need to be contabilized
             as offline for simulation purposes without being evicted from the
             group until they are detected by their peers as being offline.
 
@@ -1167,7 +1167,7 @@ class HiveClusterExt(HiveCluster):
             List[:py:class:`~app.type_hints.NodeType`]:
                 A collection of :py:attr:`~Cluster.members` who disconnected
                 during the current epoch.
-                See :py:meth:`app.domain.network_nodes.HiveNodeExt.update_status`.
+                See :py:meth:`app.domain.network_nodes.SGNodeExt.update_status`.
         """
         lost_parts_count: int = 0
         off_nodes = []
@@ -1203,7 +1203,7 @@ class HiveClusterExt(HiveCluster):
 
     def maintain(self, off_nodes: List[th.NodeType]) -> None:
         """Evicts any :py:class:`network node
-        <app.domain.network_nodes.HiveNodeExt>` who has
+        <app.domain.network_nodes.SGNodeExt>` who has
         been complained about more than :py:attr:`complaint_threshold` times.
 
         Overrides:

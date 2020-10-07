@@ -79,7 +79,7 @@ def set_replication_level(n: int) -> None:
 
 MIN_CONVERGENCE_THRESHOLD: int = 0
 """The number of consecutive epoch time steps that a 
-:py:class:`~app.domain.cluster_groups.HiveCluster` must converge before epochs 
+:py:class:`~app.domain.cluster_groups.SGCluster` must converge before epochs 
 start being marked with verified convergence in 
 :py:attr:`app.domain.helpers.smart_dataclasses.LoggingData.convergence_set`."""
 
@@ -106,28 +106,28 @@ def set_loss_chance(v: float) -> None:
 
 ATOL: float = 0.05
 """Defines the maximum amount of absolute positive or negative deviation that a 
-current distribution :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` can 
+current distribution :py:attr:`~app.domain.cluster_groups.SGCluster.cv_` can 
 have from the desired steady state 
-:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`, in order for the 
+:py:attr:`~app.domain.cluster_groups.SGCluster.v_`, in order for the 
 distributions to be considered equal and thus marking the epoch as convergent. 
 
 This constant will be used by 
-:py:meth:`app.domain.cluster_groups.HiveCluster.equal_distributions` along 
+:py:meth:`app.domain.cluster_groups.SGCluster.equal_distributions` along 
 with a relative tolerance that is the minimum value in 
-:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`.
+:py:attr:`~app.domain.cluster_groups.SGCluster.v_`.
 """
 
 RTOL: float = 0.05
 """Defines the maximum amount of relative positive or negative deviation that a 
-current distribution :py:attr:`~app.domain.cluster_groups.HiveCluster.cv_` can 
+current distribution :py:attr:`~app.domain.cluster_groups.SGCluster.cv_` can 
 have from the desired steady state 
-:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`, in order for the 
+:py:attr:`~app.domain.cluster_groups.SGCluster.v_`, in order for the 
 distributions to be considered equal and thus marking the epoch as convergent. 
 
 This constant will be used by 
-:py:meth:`app.domain.cluster_groups.HiveCluster.equal_distributions` along 
+:py:meth:`app.domain.cluster_groups.SGCluster.equal_distributions` along 
 with a relative tolerance that is the minimum value in 
-:py:attr:`~app.domain.cluster_groups.HiveCluster.v_`.
+:py:attr:`~app.domain.cluster_groups.SGCluster.v_`.
 """
 
 

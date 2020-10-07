@@ -334,13 +334,13 @@ class Master:
     # endregion
 
 
-class HiveMaster(Master):
+class SGMaster(Master):
     # region Master API
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
 
         The cloud storage provider can be used to temporarely host files
-        belonging to :py:class:`cluster clusters <app.domain.HiveCluster>` in bad
+        belonging to :py:class:`cluster clusters <app.domain.SGCluster>` in bad
         conditions that may compromise the file durability of the files they
         are responsible for persisting.
 
