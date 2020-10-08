@@ -57,8 +57,7 @@ def plotvalues(convergence_times_list, directory, state):
     bb.y1 -= 0.15  # yOffset
     leg.set_bbox_to_anchor(bb, transform=ax.transAxes)
     fig.tight_layout()
-    # plt.show()
-    plt.savefig("{}-{}-{}".format("convergence_sets", directory, state))
+    plt.savefig(f"convergence_sets-{directory}-{state}", bbox_inches="tight", format="pdf")
 
 
 def process_file(filepath, convergence_times_list):
@@ -196,7 +195,7 @@ def instantaneous_convergence_plot(
     plt.ylim(0, len(outfiles_view) + 10)
 
     figure_name = f"{plots_directory}/ic_plot_N{ns}O{opt}D{errs}L{ll}"
-    plt.savefig(figure_name, bbox_inches="tight")
+    plt.savefig(figure_name, bbox_inches="tight", format="pdf")
 
 
 def boxplot_first_convergence(outfiles_view):
@@ -231,7 +230,7 @@ def boxplot_first_convergence(outfiles_view):
                fontproperties=cfg.fp_axis_labels)
 
     figure_name = f"{plots_directory}/fc_boxplot_{ns}O{opt}D{errs}L{ll}"
-    plt.savefig(figure_name, bbox_inches="tight")
+    plt.savefig(figure_name, bbox_inches="tight", format="pdf")
 
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ def plot_values(tkey, global_mean, global_cs_mean, terminations):
 
     # plt.show()
     figure_path = os.path.join(plots_directory, f'{figure_name}_{tkey}')
-    plt.savefig(figure_path)
+    plt.savefig(figure_path,  bbox_inches="tight", format="pdf")
 
 
 def process_file(key, outfile_json):

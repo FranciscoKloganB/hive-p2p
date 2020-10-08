@@ -124,7 +124,7 @@ def __create_box_plot__(
 
     src = pl.Path(file_name).stem
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_f{src}-n{skey}_s{slen}"
-    plt.savefig(fig_name, bbox_inches='tight')
+    plt.savefig(fig_name, bbox_inches="tight", format="pdf")
 # endregion
 
 
@@ -221,7 +221,7 @@ def __create_pie_chart__(
 
     src = pl.Path(file_name).stem
     fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_f{src}-n{skey}_s{slen}"
-    plt.savefig(fig_name, bbox_inches='tight')
+    plt.savefig(fig_name, bbox_inches="tight", format="pdf")
 # endregion
 
 
