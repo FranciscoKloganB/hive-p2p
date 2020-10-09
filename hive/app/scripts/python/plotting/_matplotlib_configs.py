@@ -17,12 +17,18 @@ fp_title = FontProperties(
 
 fp_subtitle = FontProperties(
     family='sans-serif',
-    size='small'
+    size='large',
+    weight='demibold'
 )
 
 fp_axis_labels = FontProperties(
     family='sans-serif',
     style='italic',
     weight='semibold',
-    size='medium'
+    size='x-large'
 )
+
+outlyer_shape = {
+    # 'markerfacecolor': 'g',
+    'marker': 'D'
+}

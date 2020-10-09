@@ -225,12 +225,10 @@
 
     <span class="c1"># Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)</span>
     <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">t</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># Aopt entries must be non-negative</span>
-        <span class="p">(</span><span class="n">t</span> <span class="o">@</span> <span class="n">ones_vector</span><span class="p">)</span> <span class="o">==</span> <span class="n">ones_vector</span><span class="p">,</span>
-        <span class="c1"># Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one</span>
-        <span class="n">cvx</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ones_matrix</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="n">zeros_matrix</span><span class="p">,</span>
-        <span class="c1"># optimized matrix has no new connections. It may have less than original adjencency matrix</span>
-        <span class="p">(</span><span class="n">v_</span> <span class="o">@</span> <span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="n">v_</span><span class="p">,</span>  <span class="c1"># Resulting matrix must be a markov matrix.</span>
+        <span class="n">t</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># Entries must be non-negative</span>
+        <span class="p">(</span><span class="n">t</span> <span class="o">@</span> <span class="n">ones_vector</span><span class="p">)</span> <span class="o">==</span> <span class="n">ones_vector</span><span class="p">,</span>  <span class="c1"># Row vector sum equals one</span>
+        <span class="n">cvx</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ones_matrix</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="n">zeros_matrix</span><span class="p">,</span>   <span class="c1"># any zero entry in topology is also a zero in the new matrix</span>
+        <span class="p">(</span><span class="n">v_</span> <span class="o">@</span> <span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="n">v_</span><span class="p">,</span>  <span class="c1"># The resulting markov matrix must converge to equilibrium.</span>
     <span class="p">]</span>
 
     <span class="c1"># Formulate and Solve Problem</span>
@@ -325,15 +323,12 @@
 
     <span class="c1"># Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)</span>
     <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">a_opt</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># a_opt entries must be non-negative</span>
-        <span class="p">(</span><span class="n">a_opt</span> <span class="o">@</span> <span class="n">ones_vector</span><span class="p">)</span> <span class="o">==</span> <span class="n">ones_vector</span><span class="p">,</span>
-        <span class="c1"># a_opt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one</span>
-        <span class="n">cvx</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">a_opt</span><span class="p">,</span> <span class="n">ones_matrix</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="n">zeros_matrix</span><span class="p">,</span>
-        <span class="c1"># optimized matrix has no new connections. It may have less than original adjencency matrix</span>
-        <span class="p">(</span><span class="n">a_opt</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="o">-</span><span class="n">t</span> <span class="o">*</span> <span class="n">i</span><span class="p">),</span>
-        <span class="c1"># eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 &lt;= x &lt;= 1</span>
+        <span class="n">a_opt</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># Entries must be non-negative</span>
+        <span class="p">(</span><span class="n">a_opt</span> <span class="o">@</span> <span class="n">ones_vector</span><span class="p">)</span> <span class="o">==</span> <span class="n">ones_vector</span><span class="p">,</span>  <span class="c1"># Row vector sum equals one</span>
+        <span class="n">cvx</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">a_opt</span><span class="p">,</span> <span class="n">ones_matrix</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="n">zeros_matrix</span><span class="p">,</span>  <span class="c1"># any zero entry in topology is also a zero in the new matrix</span>
+        <span class="p">(</span><span class="n">a_opt</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="o">-</span><span class="n">t</span> <span class="o">*</span> <span class="n">i</span><span class="p">),</span>  <span class="c1"># eigenvalue lower bound,</span>
         <span class="p">(</span><span class="n">a_opt</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span>  <span class="c1"># eigenvalue upper bound</span>
-    <span class="p">]</span>
+    <span class="p">]</span>  <span class="c1"># cvxpy does not accept chained constraints, e.g.: 0 &lt;= x &lt;= 1</span>
 
     <span class="c1"># Formulate and Solve Problem</span>
     <span class="n">objective</span> <span class="o">=</span> <span class="n">cvx</span><span class="o">.</span><span class="n">Minimize</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>

@@ -228,17 +228,17 @@ errors, at an epoch basis.</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="app.environment_settings.ABS_TOLERANCE">
-<code class="sig-name descname">ABS_TOLERANCE</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></em><em class="property"> = 0.05</em></dt>
+<dt id="app.environment_settings.ATOL">
+<code class="sig-name descname">ATOL</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></em><em class="property"> = 0.05</em></dt>
 <dd><p>Defines the maximum amount of absolute positive or negative deviation that a
-current distribution <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.cv_" title="app.domain.cluster_groups.HiveCluster.cv_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cv_</span></code></a> can
+current distribution <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.cv_" title="app.domain.cluster_groups.SGCluster.cv_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cv_</span></code></a> can
 have from the desired steady state
-<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>, in order for the
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>, in order for the
 distributions to be considered equal and thus marking the epoch as convergent.</p>
 <p>This constant will be used by
-<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.equal_distributions" title="app.domain.cluster_groups.HiveCluster.equal_distributions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.HiveCluster.equal_distributions()</span></code></a> along
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.equal_distributions" title="app.domain.cluster_groups.SGCluster.equal_distributions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.SGCluster.equal_distributions()</span></code></a> along
 with a relative tolerance that is the minimum value in
-<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster.v_" title="app.domain.cluster_groups.HiveCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>.</p>
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -271,7 +271,7 @@ due to network link problems, in the simulation environment.</p>
 
 <dl class="py data">
 <dt id="app.environment_settings.MAX_REPLICATION_DELAY">
-<code class="sig-name descname">MAX_REPLICATION_DELAY</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 4</em></dt>
+<code class="sig-name descname">MAX_REPLICATION_DELAY</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 3</em></dt>
 <dd><p>The maximum amount of epoch time steps replica file block blocks take to
 be regenerated after their are lost.</p>
 </dd></dl>
@@ -280,7 +280,7 @@ be regenerated after their are lost.</p>
 <dt id="app.environment_settings.MIN_CONVERGENCE_THRESHOLD">
 <code class="sig-name descname">MIN_CONVERGENCE_THRESHOLD</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 0</em></dt>
 <dd><p>The number of consecutive epoch time steps that a
-<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.HiveCluster" title="app.domain.cluster_groups.HiveCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiveCluster</span></code></a> must converge before epochs
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster" title="app.domain.cluster_groups.SGCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">SGCluster</span></code></a> must converge before epochs
 start being marked with verified convergence in
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set"><code class="xref py py-attr docutils literal notranslate"><span class="pre">app.domain.helpers.smart_dataclasses.LoggingData.convergence_set</span></code></a>.</p>
 </dd></dl>
@@ -335,7 +335,21 @@ object.</p>
 <dl class="py data">
 <dt id="app.environment_settings.REPLICATION_LEVEL">
 <code class="sig-name descname">REPLICATION_LEVEL</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 3</em></dt>
-<dd><p>The amount of blocks each file block has.</p>
+<dd><p>The amount of replicas each file block has.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="app.environment_settings.RTOL">
+<code class="sig-name descname">RTOL</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></em><em class="property"> = 0.05</em></dt>
+<dd><p>Defines the maximum amount of relative positive or negative deviation that a
+current distribution <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.cv_" title="app.domain.cluster_groups.SGCluster.cv_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cv_</span></code></a> can
+have from the desired steady state
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>, in order for the
+distributions to be considered equal and thus marking the epoch as convergent.</p>
+<p>This constant will be used by
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.equal_distributions" title="app.domain.cluster_groups.SGCluster.equal_distributions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.SGCluster.equal_distributions()</span></code></a> along
+with a relative tolerance that is the minimum value in
+<a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -769,7 +783,7 @@ method <code class="docutils literal notranslate"><span class="pre">n</span></co
 
 <dl class="py data">
 <dt id="app.type_hints.ClusterType">
-<code class="sig-name descname">ClusterType</code><em class="property">: Union<span class="p">[</span>cg.Cluster<span class="p">, </span>cg.HiveCluster<span class="p">, </span>cg.HiveClusterExt<span class="p">, </span>cg.HDFSCluster<span class="p">, </span>cg.NewscastCluster<span class="p">]</span></em></dt>
+<code class="sig-name descname">ClusterType</code><em class="property">: Union<span class="p">[</span>cg.Cluster<span class="p">, </span>cg.SGCluster<span class="p">, </span>cg.SGClusterExt<span class="p">, </span>cg.HDFSCluster<span class="p">, </span>cg.NewscastCluster<span class="p">]</span></em></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -779,7 +793,7 @@ method <code class="docutils literal notranslate"><span class="pre">n</span></co
 
 <dl class="py data">
 <dt id="app.type_hints.MasterType">
-<code class="sig-name descname">MasterType</code><em class="property">: Union<span class="p">[</span>ms.Master<span class="p">, </span>ms.HiveMaster<span class="p">, </span>ms.HDFSMaster<span class="p">, </span>ms.NewscastMaster<span class="p">]</span></em></dt>
+<code class="sig-name descname">MasterType</code><em class="property">: Union<span class="p">[</span>ms.Master<span class="p">, </span>ms.SGMaster<span class="p">, </span>ms.HDFSMaster<span class="p">, </span>ms.NewscastMaster<span class="p">]</span></em></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -789,7 +803,7 @@ method <code class="docutils literal notranslate"><span class="pre">n</span></co
 
 <dl class="py data">
 <dt id="app.type_hints.NodeType">
-<code class="sig-name descname">NodeType</code><em class="property">: Union<span class="p">[</span>nn.Node<span class="p">, </span>nn.HiveNode<span class="p">, </span>nn.HiveNodeExt<span class="p">, </span>nn.HDFSNode<span class="p">, </span>nn.NewscastNode<span class="p">]</span></em></dt>
+<code class="sig-name descname">NodeType</code><em class="property">: Union<span class="p">[</span>nn.Node<span class="p">, </span>nn.SGNode<span class="p">, </span>nn.SGNodeExt<span class="p">, </span>nn.HDFSNode<span class="p">, </span>nn.NewscastNode<span class="p">]</span></em></dt>
 <dd></dd></dl>
 
 <dl class="py data">

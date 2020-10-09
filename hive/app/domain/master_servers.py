@@ -138,8 +138,13 @@ class Master:
                 fspreads[fname] = spread_strategy
                 size = d[fname]['cluster_size']
                 cluster = self._new_cluster_group(cluster_class, size, fname)
-                fblocks[fname] = self._split_files(fname, cluster, es.READ_SIZE)
 
+                file_size = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
+                read_size = int(file_size / 333)
+                fblocks[fname] = self._split_files(fname, cluster, read_size)
+
+                # fblocks[fname] = self._split_files(fname, cluster, es.READ_SIZE)
+                
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():
                 spread_strategy = fspreads[cluster.file.name]
@@ -329,13 +334,13 @@ class Master:
     # endregion
 
 
-class HiveMaster(Master):
+class SGMaster(Master):
     # region Master API
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
 
         The cloud storage provider can be used to temporarely host files
-        belonging to :py:class:`cluster clusters <app.domain.HiveCluster>` in bad
+        belonging to :py:class:`cluster clusters <app.domain.SGCluster>` in bad
         conditions that may compromise the file durability of the files they
         are responsible for persisting.
 
@@ -365,10 +370,9 @@ class HDFSMaster(Master):
 
                 - The default and, thus recommended, block size for the \
                 hadoop distributed file system is 128MB. The system is not \
-                designed to perform well with small file blocks, but Hives \
-                requires many file blocks for stochastic swarm guidance to \
-                work, hence being more effective with small block sizes. By \
-                default Hives runs with 128KB blocks.
+                designed to perform well with small file blocks, but SG \
+                requires many file blocks to  work, hence being more \
+                effective with small block sizes.
 
                 - Hadoop limits the minimum block size to be 1MB, \
                 `dfs.namenode.fs-limits.min-block-size <https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size>`_. \

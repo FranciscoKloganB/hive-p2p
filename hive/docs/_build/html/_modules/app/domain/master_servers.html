@@ -248,8 +248,13 @@
                 <span class="n">fspreads</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="n">spread_strategy</span>
                 <span class="n">size</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">fname</span><span class="p">][</span><span class="s1">&#39;cluster_size&#39;</span><span class="p">]</span>
                 <span class="n">cluster</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_cluster_group</span><span class="p">(</span><span class="n">cluster_class</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-                <span class="n">fblocks</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_files</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">es</span><span class="o">.</span><span class="n">READ_SIZE</span><span class="p">)</span>
 
+                <span class="n">file_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">fname</span><span class="p">))</span>
+                <span class="n">read_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">file_size</span> <span class="o">/</span> <span class="mi">333</span><span class="p">)</span>
+                <span class="n">fblocks</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_files</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">read_size</span><span class="p">)</span>
+
+                <span class="c1"># fblocks[fname] = self._split_files(fname, cluster, es.READ_SIZE)</span>
+                
             <span class="c1"># Distribute files before starting simulation</span>
             <span class="k">for</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cluster_groups</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                 <span class="n">spread_strategy</span> <span class="o">=</span> <span class="n">fspreads</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
@@ -439,13 +444,13 @@
     <span class="c1"># endregion</span>
 
 
-<div class="viewcode-block" id="HiveMaster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HiveMaster">[docs]</a><span class="k">class</span> <span class="nc">HiveMaster</span><span class="p">(</span><span class="n">Master</span><span class="p">):</span>
+<div class="viewcode-block" id="SGMaster"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.SGMaster">[docs]</a><span class="k">class</span> <span class="nc">SGMaster</span><span class="p">(</span><span class="n">Master</span><span class="p">):</span>
     <span class="c1"># region Master API</span>
-<div class="viewcode-block" id="HiveMaster.get_cloud_reference"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.HiveMaster.get_cloud_reference">[docs]</a>    <span class="k">def</span> <span class="nf">get_cloud_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<div class="viewcode-block" id="SGMaster.get_cloud_reference"><a class="viewcode-back" href="../../../app.domain.html#app.domain.master_servers.SGMaster.get_cloud_reference">[docs]</a>    <span class="k">def</span> <span class="nf">get_cloud_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Use to obtain a reference to 3rd party cloud storage provider</span>
 
 <span class="sd">        The cloud storage provider can be used to temporarely host files</span>
-<span class="sd">        belonging to :py:class:`cluster clusters &lt;app.domain.HiveCluster&gt;` in bad</span>
+<span class="sd">        belonging to :py:class:`cluster clusters &lt;app.domain.SGCluster&gt;` in bad</span>
 <span class="sd">        conditions that may compromise the file durability of the files they</span>
 <span class="sd">        are responsible for persisting.</span>
 
@@ -475,10 +480,9 @@
 
 <span class="sd">                - The default and, thus recommended, block size for the \</span>
 <span class="sd">                hadoop distributed file system is 128MB. The system is not \</span>
-<span class="sd">                designed to perform well with small file blocks, but Hives \</span>
-<span class="sd">                requires many file blocks for stochastic swarm guidance to \</span>
-<span class="sd">                work, hence being more effective with small block sizes. By \</span>
-<span class="sd">                default Hives runs with 128KB blocks.</span>
+<span class="sd">                designed to perform well with small file blocks, but SG \</span>
+<span class="sd">                requires many file blocks to  work, hence being more \</span>
+<span class="sd">                effective with small block sizes.</span>
 
 <span class="sd">                - Hadoop limits the minimum block size to be 1MB, \</span>
 <span class="sd">                `dfs.namenode.fs-limits.min-block-size &lt;https://hadoop.apache.org/docs/r2.6.0/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml#dfs.namenode.fs-limits.min-block-size&gt;`_. \</span>
