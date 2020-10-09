@@ -109,9 +109,9 @@ def __create_box_plot__(
                labels=func_labels,
                rotation=45)
 
-    plt.title(f"Algorithm performance comparison for networks of size {skey}",
-              pad=cfg.title_pad,
-              fontproperties=cfg.fp_title)
+    # plt.title(f"Algorithm performance comparison for networks of size {skey}",
+    #           pad=cfg.title_pad,
+    #           fontproperties=cfg.fp_title)
     plt.xlabel("generating function",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
@@ -123,8 +123,8 @@ def __create_box_plot__(
     plt.ylim(0.1, 1.1)
 
     src = pl.Path(file_name).stem
-    fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/bp_f{src}-n{skey}_s{slen}"
-    plt.savefig(fig_name, bbox_inches="tight", format="pdf")
+    figname = f"{__MIXING_RATE_PLOTS_HOME__}/bp_f{src}-n{skey}_s{slen}.pdf"
+    plt.savefig(figname, bbox_inches="tight", format="pdf")
 # endregion
 
 
@@ -192,10 +192,10 @@ def __create_pie_chart__(
 
     fig1, ax = plt.subplots()
 
-    plt.title(f"Algorithm selection frequency for networks of size {skey}",
-              x=0.57, y=1,
-              pad=cfg.title_pad,
-              fontproperties=cfg.fp_title)
+    # plt.title(f"Algorithm selection frequency for networks of size {skey}",
+    #           x=0.57, y=1,
+    #           pad=cfg.title_pad,
+    #           fontproperties=cfg.fp_title)
 
     wedges, texts, autotexts = ax.pie(
         wins,
@@ -220,8 +220,8 @@ def __create_pie_chart__(
     ax.axis('equal')
 
     src = pl.Path(file_name).stem
-    fig_name = f"{__MIXING_RATE_PLOTS_HOME__}/pc_f{src}-n{skey}_s{slen}"
-    plt.savefig(fig_name, bbox_inches="tight", format="pdf")
+    figname = f"{__MIXING_RATE_PLOTS_HOME__}/pc_f{src}-n{skey}_s{slen}.pdf"
+    plt.savefig(figname, bbox_inches="tight", format="pdf")
 # endregion
 
 
