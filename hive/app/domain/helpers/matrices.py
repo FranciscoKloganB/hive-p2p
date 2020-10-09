@@ -115,12 +115,10 @@ def new_go_transition_matrix(
 
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
-        t >= 0,  # Aopt entries must be non-negative
-        (t @ ones_vector) == ones_vector,
-        # Aopt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(t, ones_matrix - a) == zeros_matrix,
-        # optimized matrix has no new connections. It may have less than original adjencency matrix
-        (v_ @ t) == v_,  # Resulting matrix must be a markov matrix.
+        t >= 0,  # Entries must be non-negative
+        (t @ ones_vector) == ones_vector,  # Row vector sum equals one
+        cvx.multiply(t, ones_matrix - a) == zeros_matrix,   # any zero entry in topology is also a zero in the new matrix
+        (v_ @ t) == v_,  # The resulting markov matrix must converge to equilibrium.
     ]
 
     # Formulate and Solve Problem
@@ -215,15 +213,12 @@ def _adjency_matrix_sdp_optimization(
 
     # Create constraints - Python @ is Matrix Multiplication (MatLab equivalent is *), # Python * is Element-Wise Multiplication (MatLab equivalent is .*)
     constraints = [
-        a_opt >= 0,  # a_opt entries must be non-negative
-        (a_opt @ ones_vector) == ones_vector,
-        # a_opt lines are stochastics, thus all entries in a line sum to one and are necessarely smaller than one
-        cvx.multiply(a_opt, ones_matrix - a) == zeros_matrix,
-        # optimized matrix has no new connections. It may have less than original adjencency matrix
-        (a_opt - u) >> (-t * i),
-        # eigenvalue lower bound, cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
+        a_opt >= 0,  # Entries must be non-negative
+        (a_opt @ ones_vector) == ones_vector,  # Row vector sum equals one
+        cvx.multiply(a_opt, ones_matrix - a) == zeros_matrix,  # any zero entry in topology is also a zero in the new matrix
+        (a_opt - u) >> (-t * i),  # eigenvalue lower bound,
         (a_opt - u) << (t * i)  # eigenvalue upper bound
-    ]
+    ]  # cvxpy does not accept chained constraints, e.g.: 0 <= x <= 1
 
     # Formulate and Solve Problem
     objective = cvx.Minimize(t)

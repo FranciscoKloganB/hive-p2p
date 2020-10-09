@@ -15,23 +15,23 @@ HttpResponse: Union[int, e.HttpCodes]
 
 MasterType: Union[
     ms.Master,
-    ms.HiveMaster,
+    ms.SGMaster,
     ms.HDFSMaster,
     ms.NewscastMaster
 ]
 
 ClusterType: Union[
     cg.Cluster,
-    cg.HiveCluster,
-    cg.HiveClusterExt,
+    cg.SGCluster,
+    cg.SGClusterExt,
     cg.HDFSCluster,
     cg.NewscastCluster
 ]
 
 NodeType: Union[
     nn.Node,
-    nn.HiveNode,
-    nn.HiveNodeExt,
+    nn.SGNode,
+    nn.SGNodeExt,
     nn.HDFSNode,
     nn.NewscastNode
 ]

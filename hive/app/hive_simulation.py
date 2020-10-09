@@ -217,9 +217,9 @@ if __name__ == "__main__":
     iterations = 1
     duration = 480
 
-    master_class = "HiveMaster"
-    cluster_class = "HiveClusterExt"
-    node_class = "HiveNodeExt"
+    master_class = "SGMaster"
+    cluster_class = "SGClusterExt"
+    node_class = "SGNodeExt"
 
     try:
         short_opts = "df:i:t:e:m:c:n:"

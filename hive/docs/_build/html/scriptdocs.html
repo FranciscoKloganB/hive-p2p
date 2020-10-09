@@ -189,37 +189,37 @@ without blank spaces. Example:</p>
 <tr class="row-odd"><td><p>–iters</p></td>
 <td><p>-i</p></td>
 <td><p>int</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">30</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
 <td><p>How many times each simulation file is executed.</p></td>
 </tr>
 <tr class="row-even"><td><p>–epochs</p></td>
 <td><p>-e</p></td>
 <td><p>int</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">720</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">480</span></code></p></td>
 <td><p>Number of discrete time steps (epochs) each executed simulation lasts.</p></td>
 </tr>
 <tr class="row-odd"><td><p>–threading</p></td>
 <td><p>-t</p></td>
 <td><p>int</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
 <td><p>Number of threads the script will create. Each thread runs one simulation at a time.</p></td>
 </tr>
 <tr class="row-even"><td><p>–master_server</p></td>
 <td><p>-m</p></td>
 <td><p>str</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">&quot;HiveMaster&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;SGMaster&quot;</span></code></p></td>
 <td><p>Name of the class that manages the systems’ <code class="docutils literal notranslate"><span class="pre">cluster_groups</span></code> and reads the simulation file (See <a class="reference internal" href="app.domain.html#module-app.domain.master_servers" title="app.domain.master_servers"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.master_servers</span></code></a>)</p></td>
 </tr>
 <tr class="row-odd"><td><p>–cluster_group</p></td>
 <td><p>-c</p></td>
 <td><p>str</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">&quot;HiveCluster&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;SGClusterExt&quot;</span></code></p></td>
 <td><p>Name of the class that represents a <code class="docutils literal notranslate"><span class="pre">cluster_group</span></code> (See <a class="reference internal" href="app.domain.html#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.cluster_groups</span></code></a>).</p></td>
 </tr>
 <tr class="row-even"><td><p>–network_node</p></td>
 <td><p>-n</p></td>
 <td><p>str</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">&quot;HiveNode&quot;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;SGNodeExt&quot;</span></code></p></td>
 <td><p>Name of the class that represents a <code class="docutils literal notranslate"><span class="pre">network_node</span></code> (See <a class="reference internal" href="app.domain.html#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">app.domain.network_nodes</span></code></a>).</p></td>
 </tr>
 </tbody>

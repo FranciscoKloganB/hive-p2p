@@ -440,10 +440,12 @@ class LoggingData:
         off_node_count (List[int]):
             The number of :py:mod:`network nodes <app.domain.network_nodes>`
             whose status changed to offline or suspicious, at each epoch.
-        topologies_avg_convergence (List[float]):
-            Stores floats for each of the clusters' used topologies
-            representing the magnitude difference between the average density
-            distribution and the desired steady state density distribution.
+        topologies_goal_achieved (List[bool]):
+            Stores if a boolean indicating if each topology achieved the
+            desired density distribution, on average.
+        topologies_goal_distance (List[float]):
+            Stores magnitude difference between the desired density
+            distribution and the topologies' average density distribution.
         transmissions_failed (List[int]):
             The number of message transmissions that were lost in the
             overlay network of a :py:mod:`cluster group
@@ -483,7 +485,8 @@ class LoggingData:
         self.initial_spread = ""
         self.matrices_nodes_degrees: List[Dict[str, float]] = []
         self.off_node_count: List[int] = [0] * max_epochs
-        self.topologies_avg_convergence: List[float] = []
+        self.topologies_goal_achieved: List[bool] = []
+        self.topologies_goal_distance: List[float] = []
         self.transmissions_failed: List[int] = [0] * max_epochs
         ###############################
 
@@ -552,17 +555,20 @@ class LoggingData:
     # endregion
 
     # region Helpers
-    def log_topology_avg_convergence(self, magnitude: int) -> None:
-        """Logs the degree of all nodes in a Markov Matrix overlay, at the
-        time of its creation, before any faults on the overlay occurs.
+    def log_topology_goal_performance(
+            self, achieved_goal: bool, distance_magnitude: int) -> None:
+        """Logs wether or not the topology reached it's goals, on average.
 
         Args:
-            magnitude:
-                The distance between the desired steady-state vector for a
-                cluster's topology and the average density distribution
-                vector for that same topology.
+            achieved_goal:
+                Indicates wether or not the topology being registered
+                achieved it's desired density distribution.
+            distance_magnitude:
+                The magnitude of the distance between the desired density
+                distribution and the topology's average density distribution.
         """
-        self.topologies_avg_convergence.append(magnitude)
+        self.topologies_goal_achieved.append(achieved_goal)
+        self.topologies_goal_distance.append(distance_magnitude)
 
     def log_matrices_degrees(self, nodes_degrees: Dict[str, float]):
         """Logs the degree of all nodes in a Markov Matrix overlay, at the
