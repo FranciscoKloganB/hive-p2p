@@ -109,9 +109,9 @@ def __create_box_plot__(
                rotation=45, fontsize="large", fontweight="semibold")
     plt.yticks(fontsize="large", fontweight="semibold")
 
-    # plt.title(f"Algorithm performance comparison for networks of size {skey}",
-    #           pad=cfg.title_pad,
-    #           fontproperties=cfg.fp_title)
+    plt.title(f"Generating functions' SLEM on clusters of size {skey}",
+              pad=cfg.title_pad,
+              fontproperties=cfg.fp_title)
     plt.xlabel("generating function",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
@@ -192,10 +192,10 @@ def __create_pie_chart__(
 
     fig1, ax = plt.subplots()
 
-    # plt.title(f"Algorithm selection frequency for networks of size {skey}",
-    #           x=0.57, y=1,
-    #           pad=cfg.title_pad,
-    #           fontproperties=cfg.fp_title)
+    plt.title(f"Generating functions' selection frequency for networks of size {skey}",
+              x=0.57, y=1,
+              pad=cfg.title_pad,
+              fontproperties=cfg.fp_title)
 
     wedges, texts, autotexts = ax.pie(
         wins,

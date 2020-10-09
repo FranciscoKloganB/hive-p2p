@@ -12,7 +12,7 @@ legends_pad = 12
 fp_title = FontProperties(
     family='sans-serif',
     weight='bold',
-    size='x-large'
+    size='large'
 )
 
 fp_subtitle = FontProperties(
