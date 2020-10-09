@@ -105,9 +105,9 @@ def __create_box_plot__(
                 flierprops=outlyer_shape,
                 widths=1,
                 notch=True)
-    plt.xticks(ticks=range(0, func_count * 2, 2),
-               labels=func_labels,
-               rotation=45)
+    plt.xticks(ticks=range(0, func_count * 2, 2), labels=func_labels,
+               rotation=45, fontsize="large", fontweight="semibold")
+    plt.yticks(fontsize="large", fontweight="semibold")
 
     # plt.title(f"Algorithm performance comparison for networks of size {skey}",
     #           pad=cfg.title_pad,
