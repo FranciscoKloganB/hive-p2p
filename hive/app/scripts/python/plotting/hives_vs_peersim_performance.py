@@ -5,6 +5,8 @@ Experiments differ in the number of network nodes that exist in the
 simulation."""
 from __future__ import annotations
 
+import os
+
 import numpy
 
 import matplotlib.pyplot as plt
@@ -15,11 +17,12 @@ def autolabel(rects):
     """Attach a text label above each bar in *rects*, displaying its height."""
     for rect in rects:
         height = rect.get_height()
-        ax.annotate("{}".format(height),
+        ax.annotate(f"{height}",
                     xy=(rect.get_x() + rect.get_width() / 2, height),
                     xytext=(0, 3),  # 3 points vertical offset
                     textcoords="offset points",
-                    ha="center", va="bottom")
+                    ha="center", va="bottom",
+                    fontsize="large", fontweight="semibold", color="dimgrey")
 
 
 if __name__ == "__main__":
@@ -55,8 +58,12 @@ if __name__ == "__main__":
 
     plt.xlabel("number of network nodes",
                labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+
     plt.ylabel("time in seconds",
                labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+
+    plt.xticks(fontsize="large", fontweight="semibold")
+    plt.yticks(fontsize="large", fontweight="semibold")
 
     autolabel(rects1)
     autolabel(rects2)
@@ -65,4 +72,8 @@ if __name__ == "__main__":
 
     fig.tight_layout()
 
-    plt.show()
+    figdir = os.path.abspath(os.path.join(
+        os.getcwd(), '..', '..', '..', 'static', 'outfiles', 'simulation_plots')
+    )
+    figname = f"{figdir}/simulators_execution_times.pdf"
+    plt.savefig(figname, bbox_inches="tight", format="pdf")
