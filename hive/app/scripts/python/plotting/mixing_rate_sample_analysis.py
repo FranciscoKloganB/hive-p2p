@@ -5,13 +5,13 @@ import json
 import math
 import os
 import sys
+from typing import OrderedDict, List, Any, Dict
 
-import numpy as np
-import pathlib as pl
 import matplotlib.pyplot as plt
+import numpy as np
+
 import _matplotlib_configs as cfg
 
-from typing import OrderedDict, List, Any, Dict
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
 
@@ -112,17 +112,16 @@ def __create_box_plot__(
     plt.title(f"Generating functions' SLEM on clusters of size {skey}",
               pad=cfg.title_pad,
               fontproperties=cfg.fp_title)
-    plt.xlabel("generating function",
+    plt.xlabel("function name abbreviation",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
-    plt.ylabel("mixing rate",
+    plt.ylabel("slem",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
 
     plt.xlim(-2, func_count * 2)
     plt.ylim(0.1, 1.1)
 
-    src = pl.Path(file_name).stem
     figname = f"{__MIXING_RATE_PLOTS_HOME__}/mr_s{skey}bp.pdf"
     plt.savefig(figname, bbox_inches="tight", format="pdf")
 # endregion
@@ -219,7 +218,6 @@ def __create_pie_chart__(
     leg._legend_box.sep = cfg.legends_pad
     ax.axis('equal')
 
-    src = pl.Path(file_name).stem
     figname = f"{__MIXING_RATE_PLOTS_HOME__}/mr_s{skey}pc.pdf"
     plt.savefig(figname, bbox_inches="tight", format="pdf")
 # endregion
