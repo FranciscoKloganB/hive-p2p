@@ -123,7 +123,7 @@ def __create_box_plot__(
     plt.ylim(0.1, 1.1)
 
     src = pl.Path(file_name).stem
-    figname = f"{__MIXING_RATE_PLOTS_HOME__}/bp_f{src}-n{skey}_s{slen}.pdf"
+    figname = f"{__MIXING_RATE_PLOTS_HOME__}/mr_s{skey}bp.pdf"
     plt.savefig(figname, bbox_inches="tight", format="pdf")
 # endregion
 
@@ -220,7 +220,7 @@ def __create_pie_chart__(
     ax.axis('equal')
 
     src = pl.Path(file_name).stem
-    figname = f"{__MIXING_RATE_PLOTS_HOME__}/pc_f{src}-n{skey}_s{slen}.pdf"
+    figname = f"{__MIXING_RATE_PLOTS_HOME__}/mr_s{skey}pc.pdf"
     plt.savefig(figname, bbox_inches="tight", format="pdf")
 # endregion
 
