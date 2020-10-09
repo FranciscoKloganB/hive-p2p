@@ -11,7 +11,7 @@ legends_pad = 12
 
 fp_title = FontProperties(
     family='sans-serif',
-    weight='bold',
+    weight='semibold',
     size='large'
 )
 
@@ -23,8 +23,8 @@ fp_subtitle = FontProperties(
 fp_axis_labels = FontProperties(
     family='sans-serif',
     style='italic',
-    weight='semibold',
-    size='medium'
+    weight='medium',
+    size='large'
 )
 
 outlyer_shape = {
