@@ -110,14 +110,11 @@ def __create_box_plot__(
     plt.yticks(fontsize="large", fontweight="semibold")
 
     plt.title(f"Generating functions' SLEM on clusters of size {skey}",
-              pad=cfg.title_pad,
-              fontproperties=cfg.fp_title)
+              pad=cfg.title_pad, fontproperties=cfg.fp_title)
     plt.xlabel("function name abbreviation",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel("slem",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
 
     plt.xlim(-2, func_count * 2)
     plt.ylim(0.1, 1.1)

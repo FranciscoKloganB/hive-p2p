@@ -45,17 +45,18 @@ if __name__ == "__main__":
     ax.legend()
 
     # Use supertitle as title and title as subtitle
-    plt.suptitle("Simulators' performance comparison",
-                 fontproperties=cfg.fp_title,
-                 x=0.56, y=0.999)
-    plt.title("30 cycles of Newscast Shuffling and AverageFunction aggregation",
-              fontproperties=cfg.fp_subtitle)
-    plt.xlabel("Number of network nodes",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
-    plt.ylabel("Execution time in seconds",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+    # plt.suptitle("Simulators' performance comparison, Hives vs. PeerSim",
+    #              fontproperties=cfg.fp_title,
+    #              x=0.56, y=0.999)
+    # plt.title("30 cycles of Newscast Shuffling and AverageFunction aggregation",
+    #           fontproperties=cfg.fp_subtitle)
+    plt.title("Simulators' performance comparison, Hives vs. PeerSim",
+              pad=cfg.title_pad, fontproperties=cfg.fp_title)
+
+    plt.xlabel("number of network nodes",
+               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.ylabel("time in seconds",
+               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
 
     autolabel(rects1)
     autolabel(rects2)
