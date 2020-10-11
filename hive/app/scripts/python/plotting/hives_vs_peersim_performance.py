@@ -22,7 +22,7 @@ def autolabel(rects):
                     xytext=(0, 3),  # 3 points vertical offset
                     textcoords="offset points",
                     ha="center", va="bottom",
-                    fontsize="large", fontweight="semibold", color="dimgrey")
+                    fontsize="x-large", fontweight="semibold", color="dimgrey")
 
 
 if __name__ == "__main__":
@@ -62,8 +62,8 @@ if __name__ == "__main__":
     plt.ylabel("time in seconds",
                labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
 
-    plt.xticks(fontsize="large", fontweight="semibold")
-    plt.yticks(fontsize="large", fontweight="semibold")
+    plt.xticks(fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
 
     autolabel(rects1)
     autolabel(rects2)

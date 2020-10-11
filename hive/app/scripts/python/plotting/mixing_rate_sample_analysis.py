@@ -106,8 +106,8 @@ def __create_box_plot__(
                 widths=1,
                 notch=True)
     plt.xticks(ticks=range(0, func_count * 2, 2), labels=func_labels,
-               rotation=45, fontsize="large", fontweight="semibold")
-    plt.yticks(fontsize="large", fontweight="semibold")
+               rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
 
     plt.title(f"Generating functions' SLEM on clusters of size {skey}",
               pad=cfg.title_pad, fontproperties=cfg.fp_title)
