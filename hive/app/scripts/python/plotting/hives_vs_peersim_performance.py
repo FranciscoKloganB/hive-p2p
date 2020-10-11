@@ -22,7 +22,7 @@ def autolabel(rects):
                     xytext=(0, 3),  # 3 points vertical offset
                     textcoords="offset points",
                     ha="center", va="bottom",
-                    fontsize="x-large", fontweight="semibold", color="dimgrey")
+                    fontsize="large", fontweight="semibold", color="dimgrey")
 
 
 if __name__ == "__main__":
