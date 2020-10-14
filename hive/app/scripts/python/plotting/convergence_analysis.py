@@ -180,8 +180,7 @@ def instantaneous_convergence_plot(
     )
 
     plt.title(
-        f"Cluster size: {ns}, Disk errors: {errs}, Link loss: {ll}, "
-        f"Optimzations: {opt}, Number of Simulations: {len(outfiles_view)}",
+        f"Cluster size: {ns}, Disk errors: {errs}, Link loss: {ll}, Opt: {opt}",
         fontproperties=cfg.fp_subtitle
     )
 
@@ -238,13 +237,11 @@ def boxplot_first_convergence(outfiles_view):
 if __name__ == "__main__":
     # region args processing
     patterns = []
-
     epochs = 0
-
     ns = 8
-    opt = "n"
-    errs = "n"
-    ll = "n"
+    opt = "N"
+    # errs = "N"
+    # ll = "N"
 
     short_opts = "p:e:n:o:d:l:"
     long_opts = [
@@ -266,10 +263,10 @@ if __name__ == "__main__":
                 ns = int(str(args).strip())
             if options in ("-o", "--optimizations"):
                 opt = str(args).strip()
-            if options in ("-d", "--disk_errors"):
-                errs = str(args).strip()
-            if options in ("-l", "--link_loss"):
-                ll = str(args).strip()
+            # if options in ("-d", "--disk_errors"):
+            #     errs = str(args).strip()
+            # if options in ("-l", "--link_loss"):
+            #     ll = str(args).strip()
 
         if not (epochs > 0):
             sys.exit(f"Must specify epochs (-e) and network size (-s).")
