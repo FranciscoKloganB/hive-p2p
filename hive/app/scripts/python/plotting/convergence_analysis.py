@@ -138,7 +138,7 @@ def __set_box_color__(bp: Any, color: str) -> None:
 # endregion
 
 
-def instantaneous_convergence_plot(
+def barchart_instantaneous_convergence(
         outfiles_view: List[str], bar: bool = False, bucket_size: int = 5
 ) -> None:
     epoch_cc = {i: 0 for i in range(1, epochs + 1)}
@@ -294,11 +294,11 @@ if __name__ == "__main__":
             pml = outdata["channel_loss"]
 
         # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
-        instantaneous_convergence_plot(outfiles_view, bar=True, bucket_size=5)
+        barchart_instantaneous_convergence(outfiles_view, bar=True, bucket_size=5)
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
         boxplot_first_convergence(outfiles_view)
         # Q4. Quantas partes são suficientes para um Swarm Guidance satisfatório? (250, 500, 750, 1000)
-        barchart_
+        boxplot_time_instantaneous_convergence(outfiles_view)
         # TODO:
         #  1. bar chart average time spent in instantenous convergence.
         #  Along with the charts and plots from Q5.
