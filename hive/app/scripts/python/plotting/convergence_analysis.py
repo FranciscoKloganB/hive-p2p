@@ -180,7 +180,7 @@ def instantaneous_convergence_plot(
     )
 
     plt.title(
-        f"Cluster size: {ns}, Disk errors: {errs}, Link loss: {ll}, Opt: {opt}",
+        f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%",
         fontproperties=cfg.fp_subtitle
     )
 
@@ -195,8 +195,8 @@ def instantaneous_convergence_plot(
 
     plt.ylim(0, len(outfiles_view) + 10)
 
-    figname = f"{plots_directory}/ic_plot_N{ns}O{opt}D{errs}L{ll}.pdf"
-    plt.savefig(figname, bbox_inches="tight", format="pdf")
+    figure_name = f"{plots_directory}/instantaneousConvergencePlot-{ns}-O{opt}-Pde{pde}-Pml{pml}"
+    plt.savefig(figure_name, bbox_inches="tight", format="pdf")
 
 
 def boxplot_first_convergence(outfiles_view):
@@ -221,8 +221,7 @@ def boxplot_first_convergence(outfiles_view):
     )
 
     plt.title(
-        f"Cluster size: {ns}, Disk errors: {errs}, Link loss: {ll}, "
-        f"Optimzations: {opt}, Number of Simulations: {len(outfiles_view)}",
+        f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%",
         fontproperties=cfg.fp_subtitle
     )
 
@@ -230,7 +229,7 @@ def boxplot_first_convergence(outfiles_view):
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
 
-    figure_name = f"{plots_directory}/fc_boxplot_{ns}O{opt}D{errs}L{ll}"
+    figure_name = f"{plots_directory}/firstConvergenceBP-{ns}-O{opt}-Pde{pde}-Pml{pml}"
     plt.savefig(figure_name, bbox_inches="tight", format="pdf")
 
 
@@ -240,8 +239,8 @@ if __name__ == "__main__":
     epochs = 0
     ns = 8
     opt = "N"
-    # errs = "N"
-    # ll = "N"
+    pde = 0.0
+    pml = 0.0
 
     short_opts = "p:e:n:o:d:l:"
     long_opts = [
@@ -263,10 +262,6 @@ if __name__ == "__main__":
                 ns = int(str(args).strip())
             if options in ("-o", "--optimizations"):
                 opt = str(args).strip()
-            # if options in ("-d", "--disk_errors"):
-            #     errs = str(args).strip()
-            # if options in ("-l", "--link_loss"):
-            #     ll = str(args).strip()
 
         if not (epochs > 0):
             sys.exit(f"Must specify epochs (-e) and network size (-s).")
@@ -276,9 +271,7 @@ if __name__ == "__main__":
                  "  --patterns -p (comma seperated list of str)\n"
                  "  --epochs -e (int)\n"
                  "  --network_size -n (int)\n"
-                 "  --optimizations -o (str)\n"
-                 "  --disk_errors -d (str)\n"
-                 "  --link_loss -l (str)\n")
+                 "  --optimizations -o (str)\n")
 
     # endregion
 
@@ -296,6 +289,11 @@ if __name__ == "__main__":
     for pattern in patterns:
         outfiles_view = list(filter(
             lambda f: pattern in f and f.endswith(".json"), outfiles_view))
+
+        with open(os.path.join(directory, outfiles_view[-1])) as outfile:
+            outdata = json.load(outfile)
+            pde = outdata["corruption_chance_tod"]
+            pml = outdata["channel_loss"]
 
         # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
         instantaneous_convergence_plot(outfiles_view, bar=True, bucket_size=5)
