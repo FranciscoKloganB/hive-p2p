@@ -297,7 +297,9 @@ if __name__ == "__main__":
 
     outfiles_view = os.listdir(directory)
     for pattern in patterns:
-        outfiles_view = list(filter(lambda f: pattern in f, outfiles_view))
+        outfiles_view = list(filter(
+            lambda f: pattern in f and f.endswith(".json"), outfiles_view))
+
         # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
         instantaneous_convergence_plot(outfiles_view, bar=True, bucket_size=5)
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
