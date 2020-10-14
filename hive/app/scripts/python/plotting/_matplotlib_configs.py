@@ -19,7 +19,7 @@ fp_supertitle = fp_title
 
 fp_subtitle = FontProperties(
     family='sans-serif',
-    size='large',
+    size='x-large',
     weight='semibold'
 )
 
