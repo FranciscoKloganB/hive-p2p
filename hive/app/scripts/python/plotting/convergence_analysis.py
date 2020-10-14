@@ -175,7 +175,7 @@ def instantaneous_convergence_plot(
     plt.axhline(y=np.mean(epoch_vals), color='c', linestyle='--')
 
     plt.suptitle(
-        "Instantaneous convergences vs. Simulations' progress",
+        "Counting instantaneous convergence as simulations' progress",
         fontproperties=cfg.fp_title
     )
 
@@ -184,12 +184,12 @@ def instantaneous_convergence_plot(
         fontproperties=cfg.fp_subtitle
     )
 
-    plt.xlabel("simulations' progress",
+    plt.xlabel("simulations' progress (%)",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
     plt.xlim(bucket_size - bucket_size * 0.5, 100 + bucket_size*0.5)
 
-    plt.ylabel("instantaneous convergence occurrences",
+    plt.ylabel(r"c$_{t}$ count",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
 

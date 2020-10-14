@@ -20,7 +20,7 @@ fp_supertitle = fp_title
 fp_subtitle = FontProperties(
     family='sans-serif',
     size='large',
-    weight='roman'
+    weight='semibold'
 )
 
 fp_axis_labels = FontProperties(
