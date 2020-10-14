@@ -127,7 +127,7 @@ class FileData:
             "read_size": es.READ_SIZE,
             "critical_size_threshold": cluster.critical_size,
             "sufficient_size_threshold": cluster.sufficient_size,
-            "original_hive_size": cluster.original_size,
+            "original_size": cluster.original_size,
             "redundant_size": cluster.redundant_size,
             "max_epochs": ms.Master.MAX_EPOCHS,
             "min_replication_delay": es.MIN_REPLICATION_DELAY,

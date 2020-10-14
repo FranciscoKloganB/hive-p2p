@@ -237,15 +237,14 @@ if __name__ == "__main__":
     # region args processing
     patterns = []
     epochs = 0
-    ns = 8
     opt = "N"
+
+    ns = 8
     pde = 0.0
     pml = 0.0
 
-    short_opts = "p:e:n:o:d:l:"
-    long_opts = [
-        "patterns=", "epochs=",
-        "network_size=", "optimizations=", "disk_errors=", "link_loss="]
+    short_opts = "p:e:o:"
+    long_opts = ["patterns=", "epochs=", "optimizations="]
 
     try:
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
@@ -258,8 +257,6 @@ if __name__ == "__main__":
                 patterns = patterns.split(",")
             if options in ("-e", "--epochs"):
                 epochs = int(str(args).strip())
-            if options in ("-n", "--network_size"):
-                ns = int(str(args).strip())
             if options in ("-o", "--optimizations"):
                 opt = str(args).strip()
 
@@ -292,6 +289,7 @@ if __name__ == "__main__":
 
         with open(os.path.join(directory, outfiles_view[-1])) as outfile:
             outdata = json.load(outfile)
+            ns = outdata["original_size"]
             pde = outdata["corruption_chance_tod"]
             pml = outdata["channel_loss"]
 
