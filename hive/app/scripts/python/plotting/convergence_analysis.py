@@ -4,12 +4,15 @@ This script collects data
 import os
 import sys
 import json
+import math
 import getopt
+from itertools import zip_longest
 
 import numpy as np
 import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
+from matplotlib import rc
 from typing import List, Tuple, Any
 
 
@@ -139,9 +142,11 @@ def __set_box_color__(bp: Any, color: str) -> None:
 def __save_figure__(figname: str) -> None:
     fname = f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.pdf"
     plt.savefig(fname, bbox_inches="tight", format="pdf")
+
 # endregion
 
 
+# region barcharts and plots
 def barchart_instantaneous_convergence(
         outfiles_view: List[str], bar: bool = False, bucket_size: int = 5
 ) -> None:
@@ -197,8 +202,10 @@ def barchart_instantaneous_convergence(
     plt.ylim(0, len(outfiles_view) + 10)
 
     __save_figure__("ICC")
+# endregion
 
 
+# region box plots
 def boxplot_first_convergence(outfiles_view):
     samples = []
     for filename in outfiles_view:
@@ -232,14 +239,80 @@ def boxplot_percent_time_instantaneous_convergence(outfiles_view):
             samples.append(time_in_convergence / outdata["terminated"])
 
     plt.figure()
-    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, vert=False, notch=True)
+    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
     plt.suptitle("Clusters' time spent in convergence", fontproperties=cfg.fp_title, y=0.995)
     plt.title(subtitle, fontproperties=cfg.fp_subtitle)
-    plt.xlim(0, 1)
-    plt.xlabel(r"sum(c$_{t}$) / termination epoch",
+    plt.xticks([1], [''])
+    plt.ylim(0, 1)
+    plt.ylabel(r"sum(c$_{t}$) / termination epoch",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
     __save_figure__("TSIC")
+
+
+def __boxplot_and_save__(samples, figname):
+    plt.figure()
+    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
+    plt.suptitle("Clusters' distance to the select equilibrium",
+                 fontproperties=cfg.fp_title, y=0.995)
+    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
+    plt.xticks([1], [''])
+    plt.ylim(0, 1)
+    plt.ylabel(r"distance magnitude / cluster size",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    __save_figure__(figname)
+
+
+def boxplot_avg_convergence_magnitude_distance(outfiles_view):
+    psamples = []
+    nsamples = []
+    for filename in outfiles_view:
+        filepath = os.path.join(directory, filename)
+        with open(filepath) as outfile:
+            outdata = json.load(outfile)
+            classifications = outdata["topologies_goal_achieved"]
+            magnitudes = outdata["topologies_goal_distance"]
+            for success, mag in zip_longest(classifications, magnitudes):
+                normalized_mag = mag / outdata["original_size"]
+                (psamples if success else nsamples).append(normalized_mag)
+
+    __boxplot_and_save__(psamples, "MDS")
+    __boxplot_and_save__(nsamples, "MDNS")
+# endregion
+
+
+# region pie charts
+def piechart_avg_convergence_achieved(outfiles_view):
+    data = [0.0, 0.0]
+    labels = ["achieved", "has not achieved"]
+    for filename in outfiles_view:
+        filepath = os.path.join(directory, filename)
+        with open(filepath) as outfile:
+            outdata = json.load(outfile)
+            classifications = outdata["topologies_goal_achieved"]
+            for success in classifications:
+                data[0 if success else 1] += 1
+
+    fig1, ax = plt.subplots()
+    ax.axis('equal')
+    plt.suptitle("Clusters (%) achieving the selected equilibrium",
+                 fontproperties=cfg.fp_title, y=0.995)
+    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
+    wedges, _, _ = ax.pie(data, startangle=90, autopct='%1.1f%%',
+                          labels=labels, labeldistance=None,
+                          textprops={'color': 'white', 'weight': 'bold'})
+    # bbox_to_anchor(Xanchor, Yanchor, Xc_offset,  Yc_offset)
+    # axis 'equal' ensures that pie is drawn as a circle.
+    leg = ax.legend(wedges,
+                    labels,
+                    frameon=False,
+                    loc="center left",
+                    bbox_to_anchor=(0.7, 0.1, 0, 0))
+    # leg.set_title("achieved goal", prop=cfg.fp_axis_labels)
+    # leg._legend_box.sep = cfg.legends_pad
+    __save_figure__("GA")
+# endregion
 
 
 if __name__ == "__main__":
@@ -269,14 +342,10 @@ if __name__ == "__main__":
             if options in ("-o", "--optimizations"):
                 opt = str(args).strip()
 
-        if not (epochs > 0):
-            sys.exit(f"Must specify epochs (-e) and network size (-s).")
-
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --patterns -p (comma seperated list of str)\n"
                  "  --epochs -e (int)\n"
-                 "  --network_size -n (int)\n"
                  "  --optimizations -o (str)\n")
 
     # endregion
@@ -308,13 +377,12 @@ if __name__ == "__main__":
         barchart_instantaneous_convergence(outfiles_view, bar=True, bucket_size=5)
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
         boxplot_first_convergence(outfiles_view)
-        # Q4. Quantas partes são suficientes para um Swarm Guidance satisfatório? (250, 500, 750, 1000)
+        # Q4. Fazendo a média dos vectores de distribuição, verifica-se uma proximidade ao vector ideal?
+        piechart_avg_convergence_achieved(outfiles_view)
+        boxplot_avg_convergence_magnitude_distance(outfiles_view)
+        # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório? (250, 500, 750, 1000)
+        # To the plots below use the ones from Q2, Q3, Q4 for analysis
         boxplot_percent_time_instantaneous_convergence(outfiles_view)
-        # TODO:
-        #  1. bar chart average time spent in instantenous convergence.
-        #  Along with the charts and plots from Q5.
 
-        # Q5. Fazendo a média dos vectores de distribuição, verifica-se uma proximidade ao vector ideal?
         # TODO:
-        #  1. pie chart with % of times the desired density distribution was on average.
         #  2. box plot magnitude distance between average distribution and desired distribution
