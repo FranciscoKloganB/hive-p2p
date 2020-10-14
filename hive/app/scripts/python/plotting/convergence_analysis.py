@@ -195,7 +195,7 @@ def instantaneous_convergence_plot(
 
     plt.ylim(0, len(outfiles_view) + 10)
 
-    figure_name = f"{plots_directory}/instantaneousConvergencePlot-{ns}-O{opt}-Pde{pde}-Pml{pml}"
+    figure_name = f"{plots_directory}/instantaneousConvergencePlot-{ns}-O{opt}-Pde{pde}-Pml{pml}.pdf"
     plt.savefig(figure_name, bbox_inches="tight", format="pdf")
 
 
@@ -229,7 +229,7 @@ def boxplot_first_convergence(outfiles_view):
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
 
-    figure_name = f"{plots_directory}/firstConvergenceBP-{ns}-O{opt}-Pde{pde}-Pml{pml}"
+    figure_name = f"{plots_directory}/firstConvergenceBP-{ns}-O{opt}-Pde{pde}-Pml{pml}.pdf"
     plt.savefig(figure_name, bbox_inches="tight", format="pdf")
 
 
