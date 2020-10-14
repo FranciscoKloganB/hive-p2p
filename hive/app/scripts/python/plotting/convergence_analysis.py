@@ -58,8 +58,7 @@ def plotvalues(convergence_times_list, directory, state):
 
     leg.set_bbox_to_anchor(bb, transform=ax.transAxes)
 
-    figname = f"convergence_sets-{directory}-{state}.pdf"
-    plt.savefig(figname, bbox_inches="tight", format="pdf")
+    __save_figure__("CSets")
 
 
 def process_file(filepath, convergence_times_list):
@@ -135,6 +134,11 @@ def __set_box_color__(bp: Any, color: str) -> None:
     plt.setp(bp['whiskers'], color=color)
     plt.setp(bp['caps'], color=color)
     plt.setp(bp['medians'], color=color)
+
+
+def __save_figure__(figname: str) -> None:
+    fname = f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.pdf"
+    plt.savefig(fname, bbox_inches="tight", format="pdf")
 # endregion
 
 
@@ -179,10 +183,7 @@ def barchart_instantaneous_convergence(
         fontproperties=cfg.fp_title, y=0.995
     )
 
-    plt.title(
-        f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%",
-        fontproperties=cfg.fp_subtitle
-    )
+    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
 
     plt.xlabel("simulations' progress (%)",
                labelpad=cfg.labels_pad,
@@ -195,8 +196,7 @@ def barchart_instantaneous_convergence(
 
     plt.ylim(0, len(outfiles_view) + 10)
 
-    figure_name = f"{plots_directory}/instantaneousConvergencePlot-{ns}-O{opt}-Pde{pde}-Pml{pml}.pdf"
-    plt.savefig(figure_name, bbox_inches="tight", format="pdf")
+    __save_figure__("ICC")
 
 
 def boxplot_first_convergence(outfiles_view):
@@ -210,34 +210,43 @@ def boxplot_first_convergence(outfiles_view):
                 samples.append(s[0])
 
     plt.figure()
-
-    plt.boxplot(
-        samples, flierprops=cfg.outlyer_shape, whis=0.75, vert=False, notch=True
-    )
-
-    plt.suptitle(
-        "Simulations' first instantaneous convergences",
-        fontproperties=cfg.fp_title
-    )
-
-    plt.title(
-        f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%",
-        fontproperties=cfg.fp_subtitle
-    )
-
-    plt.xlabel("epochs",
+    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, vert=False, notch=True)
+    plt.suptitle("Simulations' first instantaneous convergences", fontproperties=cfg.fp_title, y=0.995)
+    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
+    plt.xlabel("epoch",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
+    __save_figure__("FIC")
 
-    figure_name = f"{plots_directory}/firstConvergenceBP-{ns}-O{opt}-Pde{pde}-Pml{pml}.pdf"
-    plt.savefig(figure_name, bbox_inches="tight", format="pdf")
+
+def boxplot_percent_time_instantaneous_convergence(outfiles_view):
+    samples = []
+    for filename in outfiles_view:
+        filepath = os.path.join(directory, filename)
+        with open(filepath) as outfile:
+            time_in_convergence = 0
+            outdata = json.load(outfile)
+            sets = outdata["convergence_sets"]
+            for s in sets:
+                time_in_convergence += len(s)
+            samples.append(time_in_convergence / outdata["terminated"])
+
+    plt.figure()
+    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, vert=False, notch=True)
+    plt.suptitle("Clusters' time spent in convergence", fontproperties=cfg.fp_title, y=0.995)
+    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
+    plt.xlim(0, 1)
+    plt.xlabel(r"sum(c$_{t}$) / termination epoch",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    __save_figure__("TSIC")
 
 
 if __name__ == "__main__":
     # region args processing
     patterns = []
     epochs = 0
-    opt = "N"
+    opt = "off"
 
     ns = 8
     pde = 0.0
@@ -293,12 +302,14 @@ if __name__ == "__main__":
             pde = outdata["corruption_chance_tod"]
             pml = outdata["channel_loss"]
 
+        subtitle = f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%"
+
         # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
         barchart_instantaneous_convergence(outfiles_view, bar=True, bucket_size=5)
         # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
         boxplot_first_convergence(outfiles_view)
         # Q4. Quantas partes são suficientes para um Swarm Guidance satisfatório? (250, 500, 750, 1000)
-        boxplot_time_instantaneous_convergence(outfiles_view)
+        boxplot_percent_time_instantaneous_convergence(outfiles_view)
         # TODO:
         #  1. bar chart average time spent in instantenous convergence.
         #  Along with the charts and plots from Q5.
