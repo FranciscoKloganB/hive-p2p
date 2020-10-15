@@ -160,8 +160,13 @@ def __boxplot_and_save__(samples: List[Any], figname: str) -> None:
 
 
 def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None:
-    for src in source_keys:
-        outfiles_view = sources_files[src]
+    # region create buckets of 5%
+    bucket_count = int(100 / bucket_size)
+    epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
+    # endregion
+
+    data_dict = {k: [] for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
         epoch_cc = {i: 0 for i in range(1, epochs + 1)}
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
@@ -171,10 +176,7 @@ def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None
                 for s in sets:
                     for e in s:
                         epoch_cc[e] += 1
-
         # region create buckets of 5% and allocate the buuckets' values
-        bucket_count = int(100 / bucket_size)
-        epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
         epoch_vals = [0] * bucket_count
         for i in range(bucket_count):
             low = bucket_size * i
@@ -182,21 +184,27 @@ def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None
             for epoch, count in epoch_cc.items():
                 if low < epoch <= high:
                     epoch_vals[i] += count
+        data_dict[src_key] = epoch_vals
         # endregion
 
-        plt.figure()
-        plt.bar(epoch_buckets, epoch_vals, width=bucket_size*.6)
-        plt.axhline(y=np.mean(epoch_vals), color='c', linestyle='--')
-        plt.suptitle("number of convergences as simulations' progress", fontproperties=cfg.fp_title)
-        # plt.title(f"parts: {src}, {subtitle}", fontproperties=cfg.fp_subtitle)
-        plt.xlabel("simulations' progress (%)",
-                   labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-        plt.xlim(bucket_size - bucket_size * 0.5, 100 + bucket_size*0.5)
-        plt.ylabel(r"c$_{t}$ count",
-                   labelpad=cfg.labels_pad,
-                   fontproperties=cfg.fp_axis_labels)
-        plt.ylim(0, len(outfiles_view) * bucket_size + 20)
-        __save_figure__(f"ICC{src}", image_ext)
+    bar_locations = np.asarray(epoch_buckets)
+    bar_width = bucket_size * 0.25
+
+    fig, ax = plt.subplots()
+    plt.suptitle("convergence observations as simulations' progress", fontproperties=cfg.fp_title)
+    plt.xlabel("simulations' progress (%)", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.ylabel(r"c$_{t}$ count", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size*0.8)
+    plt.ylim(0, 100)
+    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+    ax.set_xticks(epoch_buckets)
+    for i in range(len(source_keys)):
+        key = source_keys[i]
+        epoch_vals = data_dict[key]
+        ax.bar(bar_locations + (bar_width * i) - 0.5 * bar_width, epoch_vals, width=bar_width)
+    ax.legend([f"{x} parts" for x in source_keys], prop=cfg.fp_axis_legend)
+    __save_figure__(f"ICC", image_ext)
 
 
 def boxplot_first_convergence():
@@ -222,7 +230,7 @@ def boxplot_first_convergence():
     __save_figure__("FIC", image_ext)
 
 
-def piechart_avg_convergence_achieved(single_fig: bool = False) -> None:
+def piechart_avg_convergence_achieved() -> None:
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         data = [0.0, 0.0]
@@ -238,6 +246,7 @@ def piechart_avg_convergence_achieved(single_fig: bool = False) -> None:
     s = len(source_keys)
     wedge_labels = ["achieved eq.", "has not achieved eq."]
     fig, axes = plt.subplots(1, s, figsize=(s*3, s))
+    plt.suptitle("clusters (%) achieving the selected equilibrium", fontproperties=cfg.fp_title, x=0.51)
     for i, ax in enumerate(axes.flatten()):
         ax.axis('equal')
         src_key = source_keys[i]
@@ -247,8 +256,7 @@ def piechart_avg_convergence_achieved(single_fig: bool = False) -> None:
             labels=wedge_labels, labeldistance=None,
             textprops={'color': 'white', 'weight': 'bold'}
         )
-        ax.set_xlabel(f"parts: {src_key}", fontproperties=cfg.fp_axis_labels)
-    plt.suptitle("clusters (%) achieving the selected equilibrium", fontproperties=cfg.fp_title, x=0.51)
+        ax.set_xlabel(f"{src_key} parts", fontproperties=cfg.fp_axis_legend)
     plt.legend(labels=wedge_labels, ncol=s, frameon=False,
                loc="best", bbox_to_anchor=(0.5, -0.2),
                prop=cfg.fp_axis_legend)
