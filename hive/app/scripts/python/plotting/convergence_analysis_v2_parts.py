@@ -192,7 +192,7 @@ def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None
         #     fontproperties=cfg.fp_title, y=0.995
         # )
         # plt.title(f"{src}, {subtitle}", fontproperties=cfg.fp_subtitle)
-        plt.title(f"{src}, {subtitle}", fontproperties=cfg.fp_title)
+        plt.title(f"FBR: {src}, {subtitle}", fontproperties=cfg.fp_title)
         plt.xlabel("simulations' progress (%)",
                    labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
         plt.xlim(bucket_size - bucket_size * 0.5, 100 + bucket_size*0.5)
@@ -226,7 +226,7 @@ def boxplot_first_convergence():
     __save_figure__("FIC", image_ext)
 
 
-def piechart_avg_convergence_achieved():
+def piechart_avg_convergence_achieved(single_fig: bool = False) -> None:
     for src in source_keys:
         outfiles_view = sources_files[src]
         data = [0.0, 0.0]
@@ -239,12 +239,11 @@ def piechart_avg_convergence_achieved():
                 for success in classifications:
                     data[0 if success else 1] += 1
 
-        plt.figure()
         fig, ax = plt.subplots()
         ax.axis('equal')
         plt.suptitle("Clusters (%) achieving the selected equilibrium",
                      fontproperties=cfg.fp_title, y=0.995)
-        plt.title(subtitle, fontproperties=cfg.fp_subtitle)
+        plt.title(f"FBR: {src}, {subtitle}", fontproperties=cfg.fp_subtitle)
         wedges, _, _ = ax.pie(data, startangle=90, autopct='%1.1f%%',
                               labels=labels, labeldistance=None,
                               textprops={'color': 'white', 'weight': 'bold'})
@@ -257,7 +256,7 @@ def piechart_avg_convergence_achieved():
                         bbox_to_anchor=(0.7, 0.1, 0, 0))
         # leg.set_title("achieved goal", prop=cfg.fp_axis_labels)
         # leg._legend_box.sep = cfg.legends_pad
-        __save_figure__("GA", image_ext)
+        __save_figure__(f"GA{src}", image_ext)
 
 
 def boxplot_percent_time_instantaneous_convergence():
@@ -357,9 +356,9 @@ if __name__ == "__main__":
     sources = 5
     sources_files = {
         "-100P": [],
-        "-500P": [],
+        # "-500P": [],
         "-1000P": [],
-        "-1500P": [],
+        # "-1500P": [],
         "-2000P": []
     }
     for filename in dirfiles:
@@ -374,9 +373,9 @@ if __name__ == "__main__":
     # endregion
 
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
-    # barchart_instantaneous_convergence_vs_progress(bucket_size=5)
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5)
     # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
-    # boxplot_first_convergence()
+    boxplot_first_convergence()
     # Q4. A média dos vectores de distribuição é proxima ao objetivo?
     piechart_avg_convergence_achieved()
     # boxplot_avg_convergence_magnitude_distance()
