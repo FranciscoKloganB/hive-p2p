@@ -212,9 +212,9 @@ def boxplot_first_convergence(outfiles_view):
         filepath = os.path.join(directory, filename)
         with open(filepath) as outfile:
             outdata = json.load(outfile)
-            sets = outdata["convergence_sets"]
-            for s in sets:
-                samples.append(s[0])
+            for cset in outdata["convergence_sets"]:
+                samples.append(cset[0])
+                break
 
     plt.figure()
     plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, vert=False, notch=True)
