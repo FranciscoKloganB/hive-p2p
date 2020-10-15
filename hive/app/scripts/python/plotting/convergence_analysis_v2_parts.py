@@ -246,7 +246,7 @@ def piechart_avg_convergence_achieved() -> None:
     s = len(source_keys)
     wedge_labels = ["achieved eq.", "has not achieved eq."]
     fig, axes = plt.subplots(1, s, figsize=(s*3, s))
-    plt.suptitle("clusters (%) achieving the selected equilibrium", fontproperties=cfg.fp_title, x=0.51)
+    plt.suptitle("clusters (%) achieving the selected equilibrium on average", fontproperties=cfg.fp_title, x=0.51)
     for i, ax in enumerate(axes.flatten()):
         ax.axis('equal')
         src_key = source_keys[i]
