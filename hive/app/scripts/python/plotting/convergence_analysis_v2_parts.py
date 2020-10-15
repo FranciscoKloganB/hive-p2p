@@ -239,6 +239,7 @@ def piechart_avg_convergence_achieved():
                 for success in classifications:
                     data[0 if success else 1] += 1
 
+        plt.figure()
         fig, ax = plt.subplots()
         ax.axis('equal')
         plt.suptitle("Clusters (%) achieving the selected equilibrium",
@@ -311,8 +312,8 @@ if __name__ == "__main__":
     opt = "off"
     image_ext = "pdf"
 
-    short_opts = "e:o:"
-    long_opts = ["epochs=", "optimizations="]
+    short_opts = "e:o:i:"
+    long_opts = ["epochs=", "optimizations=", "image_format="]
 
     try:
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
@@ -373,9 +374,9 @@ if __name__ == "__main__":
     # endregion
 
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5)
+    # barchart_instantaneous_convergence_vs_progress(bucket_size=5)
     # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
-    boxplot_first_convergence()
+    # boxplot_first_convergence()
     # Q4. A média dos vectores de distribuição é proxima ao objetivo?
     piechart_avg_convergence_achieved()
     # boxplot_avg_convergence_magnitude_distance()
