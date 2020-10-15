@@ -142,12 +142,24 @@ def __set_box_color__(bp: Any, color: str) -> None:
 def __save_figure__(figname: str, ext: str = "pdf") -> None:
     fname = f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{ext}"
     plt.savefig(fname, bbox_inches="tight", format=ext)
+
+
+def __boxplot_and_save__(samples: List[Any], figname: str) -> None:
+    plt.figure()
+    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
+    plt.suptitle("Clusters' distance to the select equilibrium",
+                 fontproperties=cfg.fp_title, y=0.995)
+    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
+    plt.xticks([1], [''])
+    plt.ylim(0, 1)
+    plt.ylabel(r"distance magnitude / cluster size",
+               labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    __save_figure__(figname, image_ext)
 # endregion
 
 
-# region barcharts and plots
 def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None:
-
     for src in source_keys:
         outfiles_view = sources_files[src]
         epoch_cc = {i: 0 for i in range(1, epochs + 1)}
@@ -189,10 +201,8 @@ def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None
                    fontproperties=cfg.fp_axis_labels)
         plt.ylim(0, len(outfiles_view) * bucket_size + 20)
         __save_figure__(f"ICC{src}", image_ext)
-# endregion
 
 
-# region box plots
 def boxplot_first_convergence():
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -214,6 +224,39 @@ def boxplot_first_convergence():
     plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel("epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     __save_figure__("FIC", image_ext)
+
+
+def piechart_avg_convergence_achieved():
+    for src in source_keys:
+        outfiles_view = sources_files[src]
+        data = [0.0, 0.0]
+        labels = ["achieved", "has not achieved"]
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                outdata = json.load(outfile)
+                classifications = outdata["topologies_goal_achieved"]
+                for success in classifications:
+                    data[0 if success else 1] += 1
+
+        fig, ax = plt.subplots()
+        ax.axis('equal')
+        plt.suptitle("Clusters (%) achieving the selected equilibrium",
+                     fontproperties=cfg.fp_title, y=0.995)
+        plt.title(subtitle, fontproperties=cfg.fp_subtitle)
+        wedges, _, _ = ax.pie(data, startangle=90, autopct='%1.1f%%',
+                              labels=labels, labeldistance=None,
+                              textprops={'color': 'white', 'weight': 'bold'})
+        # bbox_to_anchor(Xanchor, Yanchor, Xc_offset,  Yc_offset)
+        # axis 'equal' ensures that pie is drawn as a circle.
+        leg = ax.legend(wedges,
+                        labels,
+                        frameon=False,
+                        loc="center left",
+                        bbox_to_anchor=(0.7, 0.1, 0, 0))
+        # leg.set_title("achieved goal", prop=cfg.fp_axis_labels)
+        # leg._legend_box.sep = cfg.legends_pad
+        __save_figure__("GA", image_ext)
 
 
 def boxplot_percent_time_instantaneous_convergence():
@@ -241,20 +284,6 @@ def boxplot_percent_time_instantaneous_convergence():
     __save_figure__("TSIC", image_ext)
 
 
-def __boxplot_and_save__(samples, figname):
-    plt.figure()
-    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
-    plt.suptitle("Clusters' distance to the select equilibrium",
-                 fontproperties=cfg.fp_title, y=0.995)
-    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
-    plt.xticks([1], [''])
-    plt.ylim(0, 1)
-    plt.ylabel(r"distance magnitude / cluster size",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
-    __save_figure__(figname, image_ext)
-
-
 def boxplot_avg_convergence_magnitude_distance():
     psamples = []
     nsamples = []
@@ -271,49 +300,16 @@ def boxplot_avg_convergence_magnitude_distance():
 
     __boxplot_and_save__(psamples, "MDS")
     __boxplot_and_save__(nsamples, "MDNS")
-# endregion
-
-
-# region pie charts
-def piechart_avg_convergence_achieved(outfiles_view):
-    data = [0.0, 0.0]
-    labels = ["achieved", "has not achieved"]
-    for filename in outfiles_view:
-        filepath = os.path.join(directory, filename)
-        with open(filepath) as outfile:
-            outdata = json.load(outfile)
-            classifications = outdata["topologies_goal_achieved"]
-            for success in classifications:
-                data[0 if success else 1] += 1
-
-    fig1, ax = plt.subplots()
-    ax.axis('equal')
-    plt.suptitle("Clusters (%) achieving the selected equilibrium",
-                 fontproperties=cfg.fp_title, y=0.995)
-    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
-    wedges, _, _ = ax.pie(data, startangle=90, autopct='%1.1f%%',
-                          labels=labels, labeldistance=None,
-                          textprops={'color': 'white', 'weight': 'bold'})
-    # bbox_to_anchor(Xanchor, Yanchor, Xc_offset,  Yc_offset)
-    # axis 'equal' ensures that pie is drawn as a circle.
-    leg = ax.legend(wedges,
-                    labels,
-                    frameon=False,
-                    loc="center left",
-                    bbox_to_anchor=(0.7, 0.1, 0, 0))
-    # leg.set_title("achieved goal", prop=cfg.fp_axis_labels)
-    # leg._legend_box.sep = cfg.legends_pad
-    __save_figure__("GA", image_ext)
-# endregion
 
 
 if __name__ == "__main__":
-    # region args processing    epochs = 0
-    opt = "off"
-
+    # region args processing
     ns = 8
+    epochs = 0
     pde = 0.0
     pml = 0.0
+    opt = "off"
+    image_ext = "pdf"
 
     short_opts = "e:o:"
     long_opts = ["epochs=", "optimizations="]
@@ -326,6 +322,8 @@ if __name__ == "__main__":
                 epochs = int(str(args).strip())
             if options in ("-o", "--optimizations"):
                 opt = str(args).strip()
+            if options in ("-i", "--image_format"):
+                image_ext = str(args).strip()
 
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
@@ -374,18 +372,12 @@ if __name__ == "__main__":
     source_keys = list(sources_files)
     # endregion
 
-    image_ext = "png"
-    
-    # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
+    # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
     barchart_instantaneous_convergence_vs_progress(bucket_size=5)
-    # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
+    # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
     boxplot_first_convergence()
-    # # Q4. Fazendo a média dos vectores de distribuição, verifica-se uma proximidade ao vector ideal?
-    # piechart_avg_convergence_achieved()
+    # Q4. A média dos vectores de distribuição é proxima ao objetivo?
+    piechart_avg_convergence_achieved()
     # boxplot_avg_convergence_magnitude_distance()
-    # # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório? (250, 500, 750, 1000)
-    # # To the plots below use the ones from Q2, Q3, Q4 for analysis
+    # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     # boxplot_percent_time_instantaneous_convergence()
-
-    # TODO:
-    #  2. box plot magnitude distance between average distribution and desired distribution
