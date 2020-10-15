@@ -188,6 +188,7 @@ def boxplot_percent_time_instantaneous_convergence():
 
 
 def boxplot_avg_convergence_magnitude_distance():
+    # region create data samples for each source
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         psamples = []
@@ -201,18 +202,38 @@ def boxplot_avg_convergence_magnitude_distance():
                 for success, mag in zip_longest(classifications, magnitudes):
                     normalized_mag = mag / outdata["original_size"]
                     (psamples if success else nsamples).append(normalized_mag)
-        data_dict[src_key] = (psamples, nsamples)
+        data_dict[src_key] = [psamples, nsamples]
+    # endregion
+
+    psamples = []
+    nsamples = []
+    for src_key in source_keys:
+        psamples.append(data_dict[src_key][0])
+        nsamples.append(data_dict[src_key][1])
 
     plt.figure()
-    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
-    plt.suptitle("Clusters' distance to the select equilibrium",
-                 fontproperties=cfg.fp_title, y=0.995)
-    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
-    plt.xticks([1], [''])
-    plt.ylim(0, 1)
-    plt.ylabel(r"distance magnitude / cluster size",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+    plt.suptitle("clusters' distance to the select equilibrium", fontproperties=cfg.fp_title)
+    plt.ylabel(r"c$_{dm}$ / cluster size", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.xlabel("number of parts in the cluster", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+
+    bpleft = plt.boxplot(psamples,
+                         positions=np.array(range(len(psamples))) * 2.0 - 0.4,
+                         sym='', whis=0.75, widths=0.7)
+    bpright = plt.boxplot(nsamples,
+                          positions=np.array(range(len(nsamples))) * 2.0 + 0.4,
+                          sym='', whis=0.75, widths=0.7)
+    __set_box_color__(bpleft, "#55A868")  # colors are from http://colorbrewer2.org/
+    __set_box_color__(bpright, "#C44E52")
+
+    # craete two fake empty plots for easy labeling
+    plt.plot([], c="#55A868", label='achieved eq.')
+    plt.plot([], c="#C44E52", label='has not achieved eq.')
+    plt.legend(loc="best", prop=cfg.fp_axis_legend)
+
+    plt.xticks(range(0, len(source_keys) * 2, 2), source_keys, rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.xlim(-2, len(source_keys) * 2)
+    plt.ylim(0, 0.3)
+    plt.yticks(fontsize="x-large", fontweight="semibold")
 
     __save_figure__("MD", image_ext)
 
