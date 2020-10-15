@@ -187,12 +187,8 @@ def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None
         plt.figure()
         plt.bar(epoch_buckets, epoch_vals, width=bucket_size*.6)
         plt.axhline(y=np.mean(epoch_vals), color='c', linestyle='--')
-        # plt.suptitle(
-        #     "Number of convergences as simulations' progress",
-        #     fontproperties=cfg.fp_title, y=0.995
-        # )
-        # plt.title(f"{src}, {subtitle}", fontproperties=cfg.fp_subtitle)
-        plt.title(f"FBR: {src}, {subtitle}", fontproperties=cfg.fp_title)
+        plt.suptitle("number of convergences as simulations' progress", fontproperties=cfg.fp_title)
+        # plt.title(f"parts: {src}, {subtitle}", fontproperties=cfg.fp_subtitle)
         plt.xlabel("simulations' progress (%)",
                    labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
         plt.xlim(bucket_size - bucket_size * 0.5, 100 + bucket_size*0.5)
@@ -220,17 +216,16 @@ def boxplot_first_convergence():
     ax.set_xticklabels(data_dict.keys())
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
-    plt.title("clusters' first instantaneous convergence", fontproperties=cfg.fp_title)
+    plt.suptitle("clusters' first instantaneous convergence", fontproperties=cfg.fp_title)
     plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel("epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     __save_figure__("FIC", image_ext)
 
 
 def piechart_avg_convergence_achieved(single_fig: bool = False) -> None:
-    for src in source_keys:
-        outfiles_view = sources_files[src]
+    data_dict = {k: [] for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
         data = [0.0, 0.0]
-        labels = ["achieved", "has not achieved"]
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
@@ -238,25 +233,26 @@ def piechart_avg_convergence_achieved(single_fig: bool = False) -> None:
                 classifications = outdata["topologies_goal_achieved"]
                 for success in classifications:
                     data[0 if success else 1] += 1
+        data_dict[src_key] = list(data)
 
-        fig, ax = plt.subplots()
+    s = len(source_keys)
+    wedge_labels = ["achieved eq.", "has not achieved eq."]
+    fig, axes = plt.subplots(1, s, figsize=(s*3, s))
+    for i, ax in enumerate(axes.flatten()):
         ax.axis('equal')
-        plt.suptitle("Clusters (%) achieving the selected equilibrium",
-                     fontproperties=cfg.fp_title, y=0.995)
-        plt.title(f"FBR: {src}, {subtitle}", fontproperties=cfg.fp_subtitle)
-        wedges, _, _ = ax.pie(data, startangle=90, autopct='%1.1f%%',
-                              labels=labels, labeldistance=None,
-                              textprops={'color': 'white', 'weight': 'bold'})
-        # bbox_to_anchor(Xanchor, Yanchor, Xc_offset,  Yc_offset)
-        # axis 'equal' ensures that pie is drawn as a circle.
-        leg = ax.legend(wedges,
-                        labels,
-                        frameon=False,
-                        loc="center left",
-                        bbox_to_anchor=(0.7, 0.1, 0, 0))
-        # leg.set_title("achieved goal", prop=cfg.fp_axis_labels)
-        # leg._legend_box.sep = cfg.legends_pad
-        __save_figure__(f"GA{src}", image_ext)
+        src_key = source_keys[i]
+        wedges, _, _ = ax.pie(
+            data_dict[src_key],
+            startangle=90, autopct='%1.1f%%',
+            labels=wedge_labels, labeldistance=None,
+            textprops={'color': 'white', 'weight': 'bold'}
+        )
+        ax.set_xlabel(f"parts: {src_key}", fontproperties=cfg.fp_axis_labels)
+    plt.suptitle("clusters (%) achieving the selected equilibrium", fontproperties=cfg.fp_title, x=0.51)
+    plt.legend(labels=wedge_labels, ncol=s, frameon=False,
+               loc="best", bbox_to_anchor=(0.5, -0.2),
+               prop=cfg.fp_axis_legend)
+    __save_figure__(f"GA", image_ext)
 
 
 def boxplot_percent_time_instantaneous_convergence():

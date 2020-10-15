@@ -30,6 +30,13 @@ fp_axis_labels = FontProperties(
     size='xx-large'
 )
 
+fp_axis_legend = FontProperties(
+    family='sans-serif',
+    style='italic',
+    weight='roman',
+    size='x-large'
+)
+
 outlyer_shape = {
     # 'markerfacecolor': 'g',
     'marker': 'D'
