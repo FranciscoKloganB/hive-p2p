@@ -61,7 +61,7 @@ def plotvalues(convergence_times_list, directory, state):
 
     leg.set_bbox_to_anchor(bb, transform=ax.transAxes)
 
-    __save_figure__("CSets")
+    __save_figure__("CSets", image_ext)
 
 
 def process_file(filepath, convergence_times_list):
@@ -139,9 +139,9 @@ def __set_box_color__(bp: Any, color: str) -> None:
     plt.setp(bp['medians'], color=color)
 
 
-def __save_figure__(figname: str) -> None:
-    fname = f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.pdf"
-    plt.savefig(fname, bbox_inches="tight", format="pdf")
+def __save_figure__(figname: str, ext: str = "pdf") -> None:
+    fname = f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{ext}"
+    plt.savefig(fname, bbox_inches="tight", format=ext)
 # endregion
 
 
@@ -188,33 +188,37 @@ def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None
                    labelpad=cfg.labels_pad,
                    fontproperties=cfg.fp_axis_labels)
         plt.ylim(0, len(outfiles_view) * bucket_size + 20)
-        __save_figure__(f"ICC{src}")
+        __save_figure__(f"ICC{src}", image_ext)
 # endregion
 
 
 # region box plots
 def boxplot_first_convergence():
-    samples = []
-    for filename in outfiles_view:
-        filepath = os.path.join(directory, filename)
-        with open(filepath) as outfile:
-            outdata = json.load(outfile)
-            sets = outdata["convergence_sets"]
-            for s in sets:
-                samples.append(s[0])
+    data_dict = {k: [] for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                outdata = json.load(outfile)
+                csets = outdata["convergence_sets"]
+                if csets:
+                    data_dict[src_key].append(csets[0][0])
 
-    plt.figure()
-    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, vert=False, notch=True)
-    plt.suptitle("Simulations' first instantaneous convergences", fontproperties=cfg.fp_title, y=0.995)
-    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
-    plt.xlabel("epoch",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
-    __save_figure__("FIC")
+    fig, ax = plt.subplots()
+    ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75,
+               notch=False)
+    ax.set_xticklabels(data_dict.keys())
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+    plt.title("clusters' first instantaneous convergence", fontproperties=cfg.fp_title)
+    plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.ylabel("epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    __save_figure__("FIC", image_ext)
 
 
 def boxplot_percent_time_instantaneous_convergence():
     samples = []
+    outfiles_view = []
     for filename in outfiles_view:
         filepath = os.path.join(directory, filename)
         with open(filepath) as outfile:
@@ -234,7 +238,7 @@ def boxplot_percent_time_instantaneous_convergence():
     plt.ylabel(r"sum(c$_{t}$) / termination epoch",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
-    __save_figure__("TSIC")
+    __save_figure__("TSIC", image_ext)
 
 
 def __boxplot_and_save__(samples, figname):
@@ -248,12 +252,13 @@ def __boxplot_and_save__(samples, figname):
     plt.ylabel(r"distance magnitude / cluster size",
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
-    __save_figure__(figname)
+    __save_figure__(figname, image_ext)
 
 
 def boxplot_avg_convergence_magnitude_distance():
     psamples = []
     nsamples = []
+    outfiles_view = []
     for filename in outfiles_view:
         filepath = os.path.join(directory, filename)
         with open(filepath) as outfile:
@@ -298,7 +303,7 @@ def piechart_avg_convergence_achieved(outfiles_view):
                     bbox_to_anchor=(0.7, 0.1, 0, 0))
     # leg.set_title("achieved goal", prop=cfg.fp_axis_labels)
     # leg._legend_box.sep = cfg.legends_pad
-    __save_figure__("GA")
+    __save_figure__("GA", image_ext)
 # endregion
 
 
@@ -369,11 +374,12 @@ if __name__ == "__main__":
     source_keys = list(sources_files)
     # endregion
 
+    image_ext = "png"
+    
     # Q2. Existem mais conjuntos de convergencia à medida que a simulação progride?
     barchart_instantaneous_convergence_vs_progress(bucket_size=5)
-    outfiles_view = []
-    # # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
-    # boxplot_first_convergence()
+    # Q3. Quanto tempo em média é preciso até observar a primeira convergencia na rede?
+    boxplot_first_convergence()
     # # Q4. Fazendo a média dos vectores de distribuição, verifica-se uma proximidade ao vector ideal?
     # piechart_avg_convergence_achieved()
     # boxplot_avg_convergence_magnitude_distance()
