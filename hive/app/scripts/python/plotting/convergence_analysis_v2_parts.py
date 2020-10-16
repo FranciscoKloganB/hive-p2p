@@ -119,7 +119,7 @@ def boxplot_first_convergence():
 
     fig, ax = plt.subplots()
     ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75,
-               notch=False)
+               notch=True)
     ax.set_xticklabels(data_dict.keys())
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
@@ -163,27 +163,27 @@ def piechart_avg_convergence_achieved() -> None:
 
 
 def boxplot_percent_time_instantaneous_convergence():
-    samples = []
-    outfiles_view = []
-    for filename in outfiles_view:
-        filepath = os.path.join(directory, filename)
-        with open(filepath) as outfile:
-            time_in_convergence = 0
-            outdata = json.load(outfile)
-            sets = outdata["convergence_sets"]
-            for s in sets:
-                time_in_convergence += len(s)
-            samples.append(time_in_convergence / outdata["terminated"])
+    # region create data samples for each source
+    data_dict = {k: [] for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                time_in_convergence = 0
+                outdata = json.load(outfile)
+                for s in outdata["convergence_sets"]:
+                    time_in_convergence += len(s)
+                data_dict[src_key].append(time_in_convergence / outdata["terminated"])
 
-    plt.figure()
-    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
-    plt.suptitle("Clusters' time spent in convergence", fontproperties=cfg.fp_title, y=0.995)
-    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
-    plt.xticks([1], [''])
+    fig, ax = plt.subplots()
+    ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
+    ax.set_xticklabels(data_dict.keys())
+    plt.suptitle("clusters' time spent in convergence", fontproperties=cfg.fp_title)
+    plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.ylabel(r"sum(c$_{t}$) / termination epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.ylim(0, 1)
-    plt.ylabel(r"sum(c$_{t}$) / termination epoch",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
     __save_figure__("TSIC", image_ext)
 
 
@@ -216,12 +216,11 @@ def boxplot_avg_convergence_magnitude_distance():
     plt.ylabel(r"c$_{dm}$ / cluster size", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.xlabel("number of parts in the cluster", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
 
-    bpleft = plt.boxplot(psamples,
-                         positions=np.array(range(len(psamples))) * 2.0 - 0.4,
-                         sym='', whis=0.75, widths=0.7)
-    bpright = plt.boxplot(nsamples,
-                          positions=np.array(range(len(nsamples))) * 2.0 + 0.4,
-                          sym='', whis=0.75, widths=0.7)
+    bpleft = plt.boxplot(psamples, sym='', whis=0.75, widths=0.7, notch=True,
+                         positions=np.array(range(len(psamples))) * 2.0 - 0.4)
+    bpright = plt.boxplot(nsamples,  sym='', whis=0.75, widths=0.7, notch=True,
+                          positions=np.array(range(len(nsamples))) * 2.0 + 0.4)
+
     __set_box_color__(bpleft, "#55A868")  # colors are from http://colorbrewer2.org/
     __set_box_color__(bpright, "#C44E52")
 
@@ -316,4 +315,4 @@ if __name__ == "__main__":
     piechart_avg_convergence_achieved()
     boxplot_avg_convergence_magnitude_distance()
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
-    # boxplot_percent_time_instantaneous_convergence()
+    boxplot_percent_time_instantaneous_convergence()
