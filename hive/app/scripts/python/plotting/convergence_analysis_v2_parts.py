@@ -6,6 +6,8 @@ import sys
 import json
 import math
 import getopt
+import operator
+import functools
 from itertools import zip_longest
 
 import numpy as np
@@ -13,7 +15,7 @@ import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
 from matplotlib import rc
-from typing import List, Tuple, Any
+from typing import List, Tuple, Any, Dict
 
 
 # region Helpers
@@ -55,7 +57,41 @@ def __boxplot_and_save__(samples: List[Any], figname: str) -> None:
                labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
     __save_figure__(figname, image_ext)
+
+
+def __create_boxplot__(
+        data_dict: Dict[str, Any], suptitle: str, xlabel: str, ylabel: str,
+) -> None:
+    fig, ax = plt.subplots()
+    ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
+    ax.set_xticklabels(data_dict.keys())
+    plt.suptitle(suptitle, fontproperties=cfg.fp_title)
+    plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
 # endregion
+
+
+def boxplot_bandwidth(rl: int = 3, image_name: str = "BW") -> None:
+    filesize = 47185920  # bytes
+    data_dict = {k: [] for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                outdata = json.load(outfile)
+                be = outdata["blocks_existing"]
+                rl = outdata["replication_level"]
+                rl = 3 if rl == 1 else rl  # Hack to compensate mistake in simulations
+                blocksize = (filesize / be) * rl
+                c_bandwidth = np.asarray(outdata["blocks_moved"]) * blocksize
+                data_dict[src_key].append(c_bandwidth)
+
+    __create_boxplot__(data_dict,
+                       suptitle="clusters' bandwidth expenditure",
+                       xlabel="configuration", ylabel="moved blocks x read size")
+
 
 
 def barchart_instantaneous_convergence_vs_progress(
@@ -119,14 +155,13 @@ def boxplot_first_convergence(image_name: str = "FIC"):
                     data_dict[src_key].append(csets[0][0])
 
     fig, ax = plt.subplots()
-    ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75,
-               notch=True)
+    ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
     ax.set_xticklabels(data_dict.keys())
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
-    plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.suptitle("clusters' first instantaneous convergence", fontproperties=cfg.fp_title)
     plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel("epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
     __save_figure__(image_name, image_ext)
 
 
@@ -181,8 +216,8 @@ def boxplot_percent_time_instantaneous_convergence(image_name: str = "TSIC"):
     ax.set_xticklabels(data_dict.keys())
     plt.suptitle("clusters' time spent in convergence", fontproperties=cfg.fp_title)
     plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.ylabel(r"sum(c$_{t}$) / termination epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.ylim(0, 1)
     __save_figure__(image_name, image_ext)
