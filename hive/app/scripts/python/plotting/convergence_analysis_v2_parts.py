@@ -58,7 +58,8 @@ def __boxplot_and_save__(samples: List[Any], figname: str) -> None:
 # endregion
 
 
-def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None:
+def barchart_instantaneous_convergence_vs_progress(
+        bucket_size: int = 5, image_name: str = "ICC") -> None:
     # region create buckets of 5%
     bucket_count = int(100 / bucket_size)
     epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
@@ -103,10 +104,10 @@ def barchart_instantaneous_convergence_vs_progress(bucket_size: int = 5) -> None
         epoch_vals = data_dict[key]
         ax.bar(bar_locations + (bar_width * i) - 0.5 * bar_width, epoch_vals, width=bar_width)
     ax.legend([f"{x} parts" for x in source_keys], prop=cfg.fp_axis_legend)
-    __save_figure__(f"ICC", image_ext)
+    __save_figure__(image_name, image_ext)
 
 
-def boxplot_first_convergence():
+def boxplot_first_convergence(image_name: str = "FIC"):
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         for filename in outfiles_view:
@@ -126,10 +127,10 @@ def boxplot_first_convergence():
     plt.suptitle("clusters' first instantaneous convergence", fontproperties=cfg.fp_title)
     plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel("epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    __save_figure__("FIC", image_ext)
+    __save_figure__(image_name, image_ext)
 
 
-def piechart_avg_convergence_achieved() -> None:
+def piechart_avg_convergence_achieved(image_name: str = "GA") -> None:
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         data = [0.0, 0.0]
@@ -159,10 +160,10 @@ def piechart_avg_convergence_achieved() -> None:
     plt.legend(labels=wedge_labels, ncol=s, frameon=False,
                loc="best", bbox_to_anchor=(0.5, -0.2),
                prop=cfg.fp_axis_legend)
-    __save_figure__(f"GA", image_ext)
+    __save_figure__(image_name, image_ext)
 
 
-def boxplot_percent_time_instantaneous_convergence():
+def boxplot_percent_time_instantaneous_convergence(image_name: str = "TSIC"):
     # region create data samples for each source
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -184,10 +185,10 @@ def boxplot_percent_time_instantaneous_convergence():
     plt.ylabel(r"sum(c$_{t}$) / termination epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.ylim(0, 1)
-    __save_figure__("TSIC", image_ext)
+    __save_figure__(image_name, image_ext)
 
 
-def boxplot_avg_convergence_magnitude_distance():
+def boxplot_avg_convergence_magnitude_distance(image_name: str = "MD"):
     # region create data samples for each source
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -234,7 +235,7 @@ def boxplot_avg_convergence_magnitude_distance():
     plt.ylim(0, 0.3)
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
-    __save_figure__("MD", image_ext)
+    __save_figure__(image_name, image_ext)
 
 
 if __name__ == "__main__":
@@ -307,6 +308,8 @@ if __name__ == "__main__":
     source_keys = list(sources_files)
     # endregion
 
+    # Q1. Quantas mensagens passam na rede por epoch?
+    # TODO: create boxplot and plots
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
     barchart_instantaneous_convergence_vs_progress(bucket_size=5)
     # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
@@ -316,3 +319,5 @@ if __name__ == "__main__":
     boxplot_avg_convergence_magnitude_distance()
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     boxplot_percent_time_instantaneous_convergence()
+    # Q6. Tecnicas de optimização influenciam as questões anteriores?
+    # TODO: alter source file dicts, subtitle and recall functions with diff params
