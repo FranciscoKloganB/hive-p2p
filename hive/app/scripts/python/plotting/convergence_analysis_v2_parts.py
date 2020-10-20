@@ -274,6 +274,20 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
     __save_figure__(figname, image_ext)
 
 
+def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]]:
+    sources_files = {k: [] for k in source_patterns}
+    for filename in dirfiles:
+        for key in sources_files:
+            if key in filename:
+                sources_files[key].append(filename)
+                break
+
+    # remove '-' and 'P' delimiters that avoid incorrect missmapping of sources
+    sources_files = {k[1:-1]: v for k, v in sources_files.items()}
+    source_keys = list(sources_files)
+    return sources_files, source_keys
+
+
 if __name__ == "__main__":
     # region args processing
     ns = 8
@@ -326,23 +340,8 @@ if __name__ == "__main__":
 
     subtitle = f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%"
 
-    sources = 5
-    sources_files = {
-        "-100P": [],
-        # "-500P": [],
-        "-1000P": [],
-        # "-1500P": [],
-        "-2000P": []
-    }
-    for filename in dirfiles:
-        for key in sources_files:
-            if key in filename:
-                sources_files[key].append(filename)
-                break
-
-    # remove '-' and 'P' delimiters that avoid incorrect missmapping of sources
-    sources_files = {k[1:-1]: v for k, v in sources_files.items()}
-    source_keys = list(sources_files)
+    source_patterns = ["-100P", "-1000P", "-2000P"]
+    sources_files, source_keys = setup_sources(source_patterns)
     # endregion
 
     # Q1. Quantas mensagens passam na rede por epoch?
@@ -357,4 +356,10 @@ if __name__ == "__main__":
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     boxplot_percent_time_instantaneous_convergence()
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
+    source_patterns = ["-100P", "-1000P", "-2000P"]
+    sources_files, source_keys = setup_sources(source_patterns)
+    boxplot_bandwidth()
+    boxplot_first_convergence()
+    boxplot_avg_convergence_magnitude_distance()
+    boxplot_percent_time_instantaneous_convergence()
     # TODO: alter source file dicts, subtitle and recall functions with diff params
