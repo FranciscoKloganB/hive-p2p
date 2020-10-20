@@ -283,7 +283,7 @@ def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]
                 break
 
     # remove '-' and 'P' delimiters that avoid incorrect missmapping of sources
-    sources_files = {k[1:-1]: v for k, v in sources_files.items()}
+    # sources_files = {k[1:-1]: v for k, v in sources_files.items()}
     source_keys = list(sources_files)
     return sources_files, source_keys
 
@@ -340,7 +340,7 @@ if __name__ == "__main__":
 
     subtitle = f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%"
 
-    source_patterns = ["-100P", "-1000P", "-2000P"]
+    source_patterns = ["SG8-100P", "SG8-1000P", "SG8-2000P"]
     sources_files, source_keys = setup_sources(source_patterns)
     # endregion
 
@@ -356,7 +356,7 @@ if __name__ == "__main__":
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     boxplot_percent_time_instantaneous_convergence()
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
-    source_patterns = ["-100P", "-1000P", "-2000P"]
+    source_patterns = ["SG8-1000P", "SG8-Opt"]
     sources_files, source_keys = setup_sources(source_patterns)
     boxplot_bandwidth()
     boxplot_first_convergence()
