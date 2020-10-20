@@ -19,11 +19,6 @@ from typing import List, Tuple, Any, Dict, Optional
 
 
 # region Helpers
-def __makedirs__():
-    if not os.path.exists(plots_directory):
-        os.mkdir(plots_directory)
-
-
 def __set_box_color__(bp: Any, color: str) -> None:
     """Changes the colors of a boxplot.
 
@@ -272,7 +267,7 @@ def boxplot_avg_convergence_magnitude_distance(figname: str = "MD"):
         suptitle="clusters' distance to the select equilibrium",
         xlabel="config", ylabel=r"c$_{dm}$ / cluster size",
         figname=figname, figext=image_ext, savefig=False)
-    
+
     plt.xticks(range(0, len(source_keys) * 2, 2), source_keys, rotation=45, fontsize="x-large", fontweight="semibold")
     plt.xlim(-2, len(source_keys) * 2)
     __save_figure__(figname, image_ext)
@@ -314,7 +309,8 @@ if __name__ == "__main__":
     plots_directory = os.path.join(
         directory, 'simulation_plots', 'convergence_analysis')
 
-    __makedirs__()
+    if not os.path.exists(plots_directory):
+        os.mkdir(plots_directory)
     # endregion
 
     # region sample src setup
