@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
 
 from matplotlib import rc
-from typing import List, Tuple, Any, Dict
+from typing import List, Tuple, Any, Dict, Optional
 
 
 # region Helpers
@@ -40,28 +40,14 @@ def __set_box_color__(bp: Any, color: str) -> None:
     plt.setp(bp['medians'], color=color)
 
 
-def __save_figure__(figname: str, ext: str = "pdf") -> None:
-    fname = f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{ext}"
-    plt.savefig(fname, bbox_inches="tight", format=ext)
-
-
-def __boxplot_and_save__(samples: List[Any], figname: str) -> None:
-    plt.figure()
-    plt.boxplot(samples, flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
-    plt.suptitle("Clusters' distance to the select equilibrium",
-                 fontproperties=cfg.fp_title, y=0.995)
-    plt.title(subtitle, fontproperties=cfg.fp_subtitle)
-    plt.xticks([1], [''])
-    plt.ylim(0, 1)
-    plt.ylabel(r"distance magnitude / cluster size",
-               labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
-    __save_figure__(figname, image_ext)
+def __save_figure__(figname: str, figext: str = "png") -> None:
+    fname = f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{figext}"
+    plt.savefig(fname, bbox_inches="tight", format=figext)
 
 
 def __create_boxplot__(
-        data_dict: Dict[str, Any], suptitle: str, xlabel: str, ylabel: str,
-) -> None:
+        data_dict: Dict[str, Any], suptitle: str, xlabel: str, ylabel: str, figname: str, figext: str = "png", savefig: bool = True
+) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
     ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
     ax.set_xticklabels(data_dict.keys())
@@ -70,10 +56,50 @@ def __create_boxplot__(
     plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
+    if savefig:
+        plt.savefig(f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{figext}",
+                    format=figext, bbox_inches="tight")
+    return fig, ax
+
+
+def __create_double_boxplot__(
+        left_data, right_data,
+        suptitle: str, xlabel: str, ylabel: str, figname: str, figext: str = "png",
+        left_color: Optional[str] = None, right_color: Optional[str] = None,
+        left_label: Optional[str] = None, right_label: Optional[str] = None,
+        savefig: bool = True
+) -> Tuple[Any, Any]:
+
+    fig, ax = plt.subplots()
+    bpl = plt.boxplot(left_data, sym='', whis=0.75, widths=0.7, notch=True, positions=np.array(range(len(left_data))) * 2.0 - 0.4)
+    bpr = plt.boxplot(right_data,  sym='', whis=0.75, widths=0.7, notch=True, positions=np.array(range(len(right_data))) * 2.0 + 0.4)
+
+    if left_color:
+        __set_box_color__(bpl, "#55A868")
+        if left_label:
+            plt.plot([], c="#55A868", label=left_label)
+            plt.legend(loc="best", prop=cfg.fp_axis_legend)
+    if right_color:
+        __set_box_color__(bpr, "#C44E52")
+        if right_label:
+            plt.plot([], c="#C44E52", label=right_label)
+            plt.legend(loc="best", prop=cfg.fp_axis_legend)
+
+    plt.suptitle(suptitle, fontproperties=cfg.fp_title)
+    plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+
+    if savefig:
+        plt.savefig(f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{figext}",
+                    format=figext, bbox_inches="tight")
+    return fig, ax
+
 # endregion
 
 
-def boxplot_bandwidth(rl: int = 3, image_name: str = "BW") -> None:
+def boxplot_bandwidth(rl: int = 3, figname: str = "BW") -> None:
     filesize = 47185920  # bytes
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -81,21 +107,22 @@ def boxplot_bandwidth(rl: int = 3, image_name: str = "BW") -> None:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)
-                be = outdata["blocks_existing"]
+                be = outdata["blocks_existing"][0]
                 rl = outdata["replication_level"]
-                rl = 3 if rl == 1 else rl  # Hack to compensate mistake in simulations
-                blocksize = (filesize / be) * rl
+                rl = 3 if rl == 1 else rl  # Hack to compensate mistake in simulationse
+                blocksize = ((filesize / be) * rl) / 1024 / 1024  # from B to KB to MB
                 c_bandwidth = np.asarray(outdata["blocks_moved"]) * blocksize
-                data_dict[src_key].append(c_bandwidth)
+                data_dict[src_key].extend(c_bandwidth)
 
-    __create_boxplot__(data_dict,
-                       suptitle="clusters' bandwidth expenditure",
-                       xlabel="configuration", ylabel="moved blocks x read size")
-
+    __create_boxplot__(
+        data_dict,
+        suptitle="clusters' bandwidth expenditure",
+        xlabel="config", ylabel="moved blocks (MB)",
+        figname=figname, figext=image_ext)
 
 
 def barchart_instantaneous_convergence_vs_progress(
-        bucket_size: int = 5, image_name: str = "ICC") -> None:
+        bucket_size: int = 5, figname: str = "ICC") -> None:
     # region create buckets of 5%
     bucket_count = int(100 / bucket_size)
     epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
@@ -140,10 +167,10 @@ def barchart_instantaneous_convergence_vs_progress(
         epoch_vals = data_dict[key]
         ax.bar(bar_locations + (bar_width * i) - 0.5 * bar_width, epoch_vals, width=bar_width)
     ax.legend([f"{x} parts" for x in source_keys], prop=cfg.fp_axis_legend)
-    __save_figure__(image_name, image_ext)
+    __save_figure__(figname, image_ext)
 
 
-def boxplot_first_convergence(image_name: str = "FIC"):
+def boxplot_first_convergence(figname: str = "FIC"):
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         for filename in outfiles_view:
@@ -154,18 +181,14 @@ def boxplot_first_convergence(image_name: str = "FIC"):
                 if csets:
                     data_dict[src_key].append(csets[0][0])
 
-    fig, ax = plt.subplots()
-    ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
-    ax.set_xticklabels(data_dict.keys())
-    plt.suptitle("clusters' first instantaneous convergence", fontproperties=cfg.fp_title)
-    plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.ylabel("epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
-    plt.yticks(fontsize="x-large", fontweight="semibold")
-    __save_figure__(image_name, image_ext)
+    __create_boxplot__(
+        data_dict,
+        suptitle="clusters' first instantaneous convergence",
+        xlabel="config", ylabel="epoch",
+        figname=figname, figext=image_ext)
 
 
-def piechart_avg_convergence_achieved(image_name: str = "GA") -> None:
+def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         data = [0.0, 0.0]
@@ -195,10 +218,10 @@ def piechart_avg_convergence_achieved(image_name: str = "GA") -> None:
     plt.legend(labels=wedge_labels, ncol=s, frameon=False,
                loc="best", bbox_to_anchor=(0.5, -0.2),
                prop=cfg.fp_axis_legend)
-    __save_figure__(image_name, image_ext)
+    __save_figure__(figname, image_ext)
 
 
-def boxplot_percent_time_instantaneous_convergence(image_name: str = "TSIC"):
+def boxplot_percent_time_instantaneous_convergence(figname: str = "TSIC"):
     # region create data samples for each source
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -211,19 +234,14 @@ def boxplot_percent_time_instantaneous_convergence(image_name: str = "TSIC"):
                     time_in_convergence += len(s)
                 data_dict[src_key].append(time_in_convergence / outdata["terminated"])
 
-    fig, ax = plt.subplots()
-    ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
-    ax.set_xticklabels(data_dict.keys())
-    plt.suptitle("clusters' time spent in convergence", fontproperties=cfg.fp_title)
-    plt.xlabel("number of replicas", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.ylabel(r"sum(c$_{t}$) / termination epoch", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
-    plt.yticks(fontsize="x-large", fontweight="semibold")
-    plt.ylim(0, 1)
-    __save_figure__(image_name, image_ext)
+    __create_boxplot__(
+        data_dict,
+        suptitle="clusters' time spent in convergence",
+        xlabel="config", ylabel=r"sum(c$_{t}$) / termination epoch",
+        figname=figname, figext=image_ext)
 
 
-def boxplot_avg_convergence_magnitude_distance(image_name: str = "MD"):
+def boxplot_avg_convergence_magnitude_distance(figname: str = "MD"):
     # region create data samples for each source
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -247,30 +265,17 @@ def boxplot_avg_convergence_magnitude_distance(image_name: str = "MD"):
         psamples.append(data_dict[src_key][0])
         nsamples.append(data_dict[src_key][1])
 
-    plt.figure()
-    plt.suptitle("clusters' distance to the select equilibrium", fontproperties=cfg.fp_title)
-    plt.ylabel(r"c$_{dm}$ / cluster size", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xlabel("number of parts in the cluster", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-
-    bpleft = plt.boxplot(psamples, sym='', whis=0.75, widths=0.7, notch=True,
-                         positions=np.array(range(len(psamples))) * 2.0 - 0.4)
-    bpright = plt.boxplot(nsamples,  sym='', whis=0.75, widths=0.7, notch=True,
-                          positions=np.array(range(len(nsamples))) * 2.0 + 0.4)
-
-    __set_box_color__(bpleft, "#55A868")  # colors are from http://colorbrewer2.org/
-    __set_box_color__(bpright, "#C44E52")
-
-    # craete two fake empty plots for easy labeling
-    plt.plot([], c="#55A868", label='achieved eq.')
-    plt.plot([], c="#C44E52", label='has not achieved eq.')
-    plt.legend(loc="best", prop=cfg.fp_axis_legend)
-
-    plt.xticks(range(0, len(source_keys) * 2, 2), source_keys, rotation=75, fontsize="x-large", fontweight="semibold")
+    __create_double_boxplot__(
+        psamples, nsamples,
+        left_color="#55A868", right_color="#C44E52",
+        left_label="achieved eq.", right_label="has not achieved eq.",
+        suptitle="clusters' distance to the select equilibrium",
+        xlabel="config", ylabel=r"c$_{dm}$ / cluster size",
+        figname=figname, figext=image_ext, savefig=False)
+    
+    plt.xticks(range(0, len(source_keys) * 2, 2), source_keys, rotation=45, fontsize="x-large", fontweight="semibold")
     plt.xlim(-2, len(source_keys) * 2)
-    plt.ylim(0, 0.3)
-    plt.yticks(fontsize="x-large", fontweight="semibold")
-
-    __save_figure__(image_name, image_ext)
+    __save_figure__(figname, image_ext)
 
 
 if __name__ == "__main__":
@@ -344,7 +349,7 @@ if __name__ == "__main__":
     # endregion
 
     # Q1. Quantas mensagens passam na rede por epoch?
-    # TODO: create boxplot and plots
+    boxplot_bandwidth()
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
     barchart_instantaneous_convergence_vs_progress(bucket_size=5)
     # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
