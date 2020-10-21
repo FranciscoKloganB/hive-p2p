@@ -40,7 +40,6 @@ DEBUG: bool = False
 """Indicates if some debug related actions or prints to the terminal should 
 be performed."""
 
-
 READ_SIZE: int = 131072
 """Defines the raw size of each file block before it's wrapped in a 
 :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instance 
@@ -49,6 +48,25 @@ object.
 Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B; 
 1MB = 1048576B; 20MB = 20971520B }.
 """
+
+
+def set_read_size(n: int) -> None:
+    """Changes READ_SIZE constant value at run time to the given n bytes."""
+    global READ_SIZE
+    READ_SIZE = n
+
+
+NUMBER_PARTS: int = 333
+"""Defines into how many 
+:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instances a file
+is divided into. Either use this or :py:const:`READ_SIZE` but not both."""
+
+
+def set_number_parts(n: int) -> None:
+    """Changes NUMBER_PARTS constant value at run time."""
+    global NUMBER_PARTS
+    NUMBER_PARTS = n
+
 
 NEWSCAST_CACHE_SIZE: int = 20
 """The maximum amount of neighbors a :py:attr:`NewscastNode view 

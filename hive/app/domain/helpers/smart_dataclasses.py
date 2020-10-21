@@ -125,6 +125,7 @@ class FileData:
             "hive_id": cluster.id,
             "file_name": self.name,
             "read_size": es.READ_SIZE,
+            "number_of_parts": es.NUMBER_PARTS,
             "critical_size_threshold": cluster.critical_size,
             "sufficient_size_threshold": cluster.sufficient_size,
             "original_size": cluster.original_size,
