@@ -786,18 +786,15 @@ class SGCluster(Cluster):
         ``SGCluster`` will change, thus, more opportunities to perform a
         correct swarm guidance behavior will be possible.
         """
-        tries = 1
+        tries = 0
         result: pd.DataFrame = pd.DataFrame()
         while tries <= 5:
-            print(f"Creating new transition matrix... try #{tries}.")
+            print(f"Creating new transition matrix... try #{tries + 1}.")
+            tries += 1
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
-                self.broadcast_transition_matrix(result)
                 break
-            tries += 1
-        # Only tries to generate a valid matrix up to three times,
-        # then resumes with the last generated matrix even if it never
-        # converges.
+        # Only tries to create a valid matrix up to five times before proceeding
         self.broadcast_transition_matrix(result)
 
     # noinspection PyIncorrectDocstring
