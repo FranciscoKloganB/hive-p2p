@@ -223,14 +223,12 @@ if __name__ == "__main__":
     cluster_class = "SGClusterExt"
     node_class = "SGNodeExt"
 
-    try:
-        short_opts = "df:i:t:e:m:c:n:"
-        long_opts = [
-            "directory", "file=", "iters=", "threading=", "epochs=",
-            "master_server=", "cluster_group=", "network_node="
-        ]
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+    short_opts = "df:i:t:e:m:c:n:"
+    long_opts = ["directory", "file=", "iters=", "threading=", "epochs=",
+                 "master_server=", "cluster_group=", "network_node="]
 
+    try:
+        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
         for options, args in options:
             if options in ("-t", "--threading"):
                 threading = int(str(args).strip())
