@@ -39,9 +39,10 @@ import getopt
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import Optional
 
-import numpy
+import numpy as np
 import environment_settings as es
 
+from utils.convertions import class_name_to_obj
 from domain.helpers.matlab_utils import MatlabEngineContainer
 
 
@@ -49,11 +50,19 @@ __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
                    "    $ python hive_simulation.py -d")
 
+# region Sample Scenarios available for debug environments
+SCENARIOS: Dict[str, Dict[str, List]] = {}
+
+
+def get_next_scenario(k: str) -> Tuple[np.ndarray, np.ndarray]:
+    if not es.DEBUG:
+        warn("get_next_scenario should not be called outside debug envs.")
+    global SCENARIOS
+    return SCENARIOS[k]["matrices"].pop(), np.ndarray(SCENARIOS[k]["vectors"].pop())
+# endregion
+
 
 # region Module private functions (helpers)
-from utils.convertions import class_name_to_obj
-
-
 def __makedirs__() -> None:
     """Helper method that reates required simulation working directories if
     they do not exist."""
@@ -200,7 +209,7 @@ def main(threads_count: int,
 
     if threads_count != 0:
         _parallel_main(
-            numpy.abs(threads_count).item(), sdir, sname, iters, epochs)
+            np.abs(threads_count).item(), sdir, sname, iters, epochs)
     else:
 
         _single_main(sdir, sname, iters, epochs)
@@ -244,7 +253,6 @@ if __name__ == "__main__":
                 cluster_class = str(args).strip()
             if options in ("-n", "--network_node"):
                 node_class = str(args).strip()
-
     except getopt.GetoptError:
         sys.exit(__err_message__)
     except ValueError:
@@ -260,8 +268,20 @@ if __name__ == "__main__":
                  "Another cause of error might be a simulation file with "
                  "inconsistent values.")
 
+    try:
+        global SCENARIOS
+        scenarios_path = os.path.join(es.RESOURCES_ROOT, "scenarios.json")
+        scenarios = open(scenarios_path, "r")
+        # noinspection PyRedeclaration
+        SCENARIOS = json.load(scenarios)
+        scenarios.close()
+    except OSError:
+        warn(f"Could not load scenarios.json from {es.RESOURCES_ROOT}.\n"
+             " > if you need sample scenarios for swarm guidance in your code, "
+             "please refer to sample_scenario_generator.py, "
+             "otherwise, ignore this warning.")
+
     if simfile or simdirectory:
         main(threading, simdirectory, simfile, iterations, duration)
     else:
         sys.exit(__err_message__)
-
