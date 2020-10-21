@@ -1,21 +1,17 @@
 """
 This script collects data
 """
+import getopt
+import json
 import os
 import sys
-import json
-import math
-import getopt
-import operator
-import functools
 from itertools import zip_longest
-
-import numpy as np
-import matplotlib.pyplot as plt
-import _matplotlib_configs as cfg
-
-from matplotlib import rc
 from typing import List, Tuple, Any, Dict, Optional
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import _matplotlib_configs as cfg
 
 
 # region Helpers
@@ -94,7 +90,7 @@ def __create_double_boxplot__(
 
 
 # region Boxplots
-def boxplot_bandwidth(rl: int = 3, figname: str = "BW") -> None:
+def boxplot_bandwidth(figname: str = "BW") -> None:
     filesize = 47185920  # bytes
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
