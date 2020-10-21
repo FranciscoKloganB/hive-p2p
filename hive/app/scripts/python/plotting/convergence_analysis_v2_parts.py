@@ -29,6 +29,10 @@ def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]
     return sources_files, source_keys
 
 
+def __get_whole_frac__(num: float) -> Tuple[int, int]:
+    return int(num), int(str(num)[(len(str(int(num)))+1):])
+
+
 def __set_box_color__(bp: Any, color: str) -> None:
     """Changes the colors of a boxplot.
 
@@ -86,7 +90,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
     plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     if savefig:
         plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
@@ -95,6 +99,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
 
 def __create_double_boxplot__(left_data, right_data,
                               suptitle: str, xlabel: str, ylabel: str,
+                              labels: List[str],
                               figname: str, figext: str = "png",
                               left_color: Optional[str] = None,
                               right_color: Optional[str] = None,
@@ -107,21 +112,25 @@ def __create_double_boxplot__(left_data, right_data,
     bpr = plt.boxplot(right_data,  sym='', whis=0.75, widths=0.7, notch=True, positions=np.array(range(len(right_data))) * 2.0 + 0.4)
 
     if left_color:
-        __set_box_color__(bpl, "#55A868")
+        __set_box_color__(bpl, left_color)
         if left_label:
-            plt.plot([], c="#55A868", label=left_label)
+            plt.plot([], c=left_color, label=left_label)
             plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
     if right_color:
-        __set_box_color__(bpr, "#C44E52")
+        __set_box_color__(bpr, right_color)
         if right_label:
-            plt.plot([], c="#C44E52", label=right_label)
+            plt.plot([], c=right_color, label=right_label)
             plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
 
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
     plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
+
+    label_count = len(labels)
+    plt.xticks(range(0, label_count * 2, 2), labels, rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.xlim(-2, label_count * 2)
 
     if savefig:
         plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
@@ -154,7 +163,7 @@ def boxplot_bandwidth(figname: str = "BW") -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_first_convergence(figname: str = "FIC"):
+def boxplot_first_convergence(figname: str = "FIC") -> None:
     # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -174,7 +183,7 @@ def boxplot_first_convergence(figname: str = "FIC"):
         figname=figname, figext=image_ext)
 
 
-def boxplot_percent_time_instantaneous_convergence(figname: str = "TSIC"):
+def boxplot_percent_time_instantaneous_convergence(figname: str = "TIC") -> None:
     # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -195,7 +204,7 @@ def boxplot_percent_time_instantaneous_convergence(figname: str = "TSIC"):
         figname=figname, figext=image_ext)
 
 
-def boxplot_avg_convergence_magnitude_distance(figname: str = "MD"):
+def boxplot_avg_convergence_magnitude_distance(figname: str = "MD") -> None:
     # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
@@ -225,11 +234,43 @@ def boxplot_avg_convergence_magnitude_distance(figname: str = "MD"):
         left_label="achieved eq.", right_label="has not achieved eq.",
         suptitle="clusters' distance to the select equilibrium",
         xlabel="config", ylabel=r"c$_{dm}$ / cluster size",
-        figname=figname, figext=image_ext, savefig=False)
+        labels=source_keys,
+        figname=figname, figext=image_ext)
 
-    plt.xticks(range(0, len(source_keys) * 2, 2), source_keys, rotation=45, fontsize="x-large", fontweight="semibold")
-    plt.xlim(-2, len(source_keys) * 2)
-    __save_figure__(figname, image_ext)
+
+def boxplot_node_degree(figname: str = "ND") -> None:
+    """The integral part of the float value is the
+    in-degree, the decimal part is the out-degree."""
+    # region create data dict
+    data_dict = {k: [[], []] for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                outdata = json.load(outfile)
+                matrices_degrees: List[Dict[str, float]] = outdata["matrices_nodes_degrees"]
+                for topology in matrices_degrees:
+                    for nodes_degree in topology.values():
+                        in_degree, out_degree = __get_whole_frac__(nodes_degree)
+                        data_dict[src_key][0].append(in_degree)
+                        data_dict[src_key][1].append(out_degree)
+    # endregion
+
+    isamples = []
+    osamples = []
+    for src_key in source_keys:
+        isamples.append(data_dict[src_key][0])
+        osamples.append(data_dict[src_key][1])
+
+    __create_double_boxplot__(
+        isamples, osamples,
+        left_color="#4C72B0", right_color="#55A868",
+        left_label="in-degree", right_label="out-degree",
+        suptitle="Nodes' degrees depending on the cluster's size",
+        xlabel="config", ylabel="node degrees",
+        labels=source_keys,
+        figname=figname, figext=image_ext)
+
 # endregion
 
 
@@ -367,11 +408,10 @@ if __name__ == "__main__":
         pml = outdata["channel_loss"]
 
     subtitle = f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%"
+    # endregion
 
     source_patterns = ["SG8-100P", "SG8-1000P", "SG8-2000P"]
     sources_files, source_keys = setup_sources(source_patterns)
-    # endregion
-
     # Q1. Quantas mensagens passam na rede por epoch?
     boxplot_bandwidth(figname="bw_parts")
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
@@ -384,6 +424,7 @@ if __name__ == "__main__":
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     boxplot_percent_time_instantaneous_convergence(figname="tic_parts")
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
+
     source_patterns = ["SG8-1000P", "SG8-Opt"]
     # noinspection PyRedeclaration
     sources_files, source_keys = setup_sources(source_patterns)
@@ -392,4 +433,25 @@ if __name__ == "__main__":
     piechart_avg_convergence_achieved(figname="avgc_pie_opt")
     boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
     boxplot_percent_time_instantaneous_convergence(figname="tic_opt")
-    # TODO: alter source file dicts, subtitle and recall functions with diff params
+
+    source_patterns = ["SG8-Opt", "SG16-Opt", "SG32-Opt"]
+    # noinspection PyRedeclaration
+    sources_files, source_keys = setup_sources(source_patterns)
+    # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
+    boxplot_first_convergence(figname="fc_networks")
+    piechart_avg_convergence_achieved(figname="avgc_pie_networks")
+    boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_networks")
+    boxplot_percent_time_instantaneous_convergence(figname="tic_networks")
+
+    source_patterns = ["SG8-1000P", "SG8-Opt", "SG16-Opt", "SG32-Opt"]
+    # noinspection PyRedeclaration
+    sources_files, source_keys = setup_sources(source_patterns)
+    # Q8. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
+    boxplot_node_degree(figname="nd-networks")
+
+    source_patterns = ["SG8-1000P", "SG8-ML"]
+    # noinspection PyRedeclaration
+    sources_files, source_keys = setup_sources(source_patterns)
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
+    boxplot_first_convergence(figname="fc_msgloss")
