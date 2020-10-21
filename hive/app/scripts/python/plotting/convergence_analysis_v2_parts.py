@@ -50,6 +50,32 @@ def __save_figure__(figname: str, figext: str = "png") -> None:
     plt.savefig(fname, bbox_inches="tight", format=figext)
 
 
+def __create_barchart__(data_dict: Dict[str, Any],
+                        bar_locations: np.ndarray, bar_width: float,
+                        bucket_size: float,
+                        suptitle: str, xlabel: str, ylabel: str,
+                        figname: str, figext: str = "png",
+                        savefig: bool = True) -> Tuple[Any, Any]:
+    fig, ax = plt.subplots()
+    plt.suptitle(suptitle, fontproperties=cfg.fp_title)
+    plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+    plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * 0.8)
+    ax.set_xticks(bar_locations)
+    for i in range(len(source_keys)):
+        key = source_keys[i]
+        epoch_vals = data_dict[key]
+        ax.bar(bar_locations + (bar_width * i) - 0.5 * bar_width, epoch_vals, width=bar_width)
+    ax.legend([str(x) for x in source_keys], frameon=False, loc="best", prop=cfg.fp_axis_legend)
+
+    if savefig:
+        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
+
+    return fig, ax
+
+
 def __create_boxplot__(data_dict: Dict[str, Any],
                        suptitle: str, xlabel: str, ylabel: str,
                        figname: str, figext: str = "png",
@@ -106,6 +132,7 @@ def __create_double_boxplot__(left_data, right_data,
 # region Boxplots
 def boxplot_bandwidth(figname: str = "BW") -> None:
     filesize = 47185920  # bytes
+    # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         for filename in outfiles_view:
@@ -118,6 +145,7 @@ def boxplot_bandwidth(figname: str = "BW") -> None:
                 blocksize = ((filesize / be) * rl) / 1024 / 1024  # from B to KB to MB
                 c_bandwidth = np.asarray(outdata["blocks_moved"]) * blocksize
                 data_dict[src_key].extend(c_bandwidth)
+    # endregion
 
     __create_boxplot__(
         data_dict,
@@ -127,6 +155,7 @@ def boxplot_bandwidth(figname: str = "BW") -> None:
 
 
 def boxplot_first_convergence(figname: str = "FIC"):
+    # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         for filename in outfiles_view:
@@ -136,6 +165,7 @@ def boxplot_first_convergence(figname: str = "FIC"):
                 csets = outdata["convergence_sets"]
                 if csets:
                     data_dict[src_key].append(csets[0][0])
+    # endregion
 
     __create_boxplot__(
         data_dict,
@@ -145,7 +175,7 @@ def boxplot_first_convergence(figname: str = "FIC"):
 
 
 def boxplot_percent_time_instantaneous_convergence(figname: str = "TSIC"):
-    # region create data samples for each source
+    # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         for filename in outfiles_view:
@@ -156,6 +186,7 @@ def boxplot_percent_time_instantaneous_convergence(figname: str = "TSIC"):
                 for s in outdata["convergence_sets"]:
                     time_in_convergence += len(s)
                 data_dict[src_key].append(time_in_convergence / outdata["terminated"])
+    # endregion
 
     __create_boxplot__(
         data_dict,
@@ -165,7 +196,7 @@ def boxplot_percent_time_instantaneous_convergence(figname: str = "TSIC"):
 
 
 def boxplot_avg_convergence_magnitude_distance(figname: str = "MD"):
-    # region create data samples for each source
+    # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         psamples = []
@@ -202,6 +233,7 @@ def boxplot_avg_convergence_magnitude_distance(figname: str = "MD"):
 # endregion
 
 
+# region Bar charts
 def barchart_instantaneous_convergence_vs_progress(
         bucket_size: int = 5, figname: str = "ICC") -> None:
     # region create buckets of 5%
@@ -209,6 +241,7 @@ def barchart_instantaneous_convergence_vs_progress(
     epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
     # endregion
 
+    # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         epoch_cc = {i: 0 for i in range(1, epochs + 1)}
@@ -230,6 +263,7 @@ def barchart_instantaneous_convergence_vs_progress(
                     epoch_vals[i] += count
         data_dict[src_key] = epoch_vals
         # endregion
+    # endregion
 
     bar_locations = np.asarray(epoch_buckets)
     bar_width = bucket_size * 0.25
@@ -239,35 +273,12 @@ def barchart_instantaneous_convergence_vs_progress(
         suptitle="convergence observations as simulations' progress",
         xlabel="simulations' progress (%)", ylabel=r"c$_{t}$ count",
         figname=figname)
+# endregion
 
 
-def __create_barchart__(data_dict: Dict[str, Any],
-                        bar_locations: np.ndarray, bar_width: float,
-                        bucket_size: float,
-                        suptitle: str, xlabel: str, ylabel: str,
-                        figname: str, figext: str = "png",
-                        savefig: bool = True) -> Tuple[Any, Any]:
-    fig, ax = plt.subplots()
-    plt.suptitle(suptitle, fontproperties=cfg.fp_title)
-    plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
-    plt.yticks(fontsize="x-large", fontweight="semibold")
-    plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * 0.8)
-    ax.set_xticks(bar_locations)
-    for i in range(len(source_keys)):
-        key = source_keys[i]
-        epoch_vals = data_dict[key]
-        ax.bar(bar_locations + (bar_width * i) - 0.5 * bar_width, epoch_vals, width=bar_width)
-    ax.legend([str(x) for x in source_keys], frameon=False, loc="best", prop=cfg.fp_axis_legend)
-
-    if savefig:
-        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
-
-    return fig, ax
-
-
+# region Pie charts
 def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
+    # region create data dict
     data_dict = {k: [] for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         data = [0.0, 0.0]
@@ -279,10 +290,12 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
                 for success in classifications:
                     data[0 if success else 1] += 1
         data_dict[src_key] = list(data)
+    # endregion
 
     s = len(source_keys)
+    grid = (9, 3)
     wedge_labels = ["achieved eq.", "has not achieved eq."]
-    fig, axes = plt.subplots(1, s, figsize=(s*3, s))
+    fig, axes = plt.subplots(1, s, figsize=grid)
     plt.suptitle("clusters (%) achieving the selected equilibrium on average", fontproperties=cfg.fp_title, x=0.51)
     for i, ax in enumerate(axes.flatten()):
         ax.axis('equal')
@@ -293,9 +306,14 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
             labels=wedge_labels, labeldistance=None,
             textprops={'color': 'white', 'weight': 'bold'}
         )
-        ax.set_xlabel(f"{src_key} parts", fontproperties=cfg.fp_axis_legend)
-    plt.legend(labels=wedge_labels, ncol=s, frameon=False, loc="best", bbox_to_anchor=(0.5, -0.2), prop=cfg.fp_axis_legend)
+        ax.set_xlabel(f"{src_key}", fontproperties=cfg.fp_axis_legend)
+    if s == 2:
+        plt.legend(labels=wedge_labels, ncol=s, frameon=False, loc="best", bbox_to_anchor=(0.75, -0.20), prop=cfg.fp_axis_legend)
+    elif s == 3:
+        plt.legend(labels=wedge_labels, ncol=s, frameon=False, loc="best", bbox_to_anchor=(0.6, -0.20), prop=cfg.fp_axis_legend)
+
     __save_figure__(figname, image_ext)
+# endregion
 
 
 if __name__ == "__main__":
