@@ -994,8 +994,10 @@ class SGClusterPerfect(SGCluster):
         node_ids = [node.id for node in self.members.values()]
 
         a, v_ = hs.get_next_scenario(str(self.original_size))
+        print(a)
+        print(v_)
 
-        self.v_ = pd.DataFrame(data=u_, index=node_ids)
+        self.v_ = pd.DataFrame(data=v_, index=node_ids)
         self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=node_ids)
         self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=node_ids)
         self._timer = 0

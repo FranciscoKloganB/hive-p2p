@@ -51,6 +51,7 @@ __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
                    "    $ python hive_simulation.py -d")
 
+
 # region Sample Scenarios available for debug environments
 def __load_scenarios__():
     scenarios = {}
@@ -73,8 +74,8 @@ _scenarios: Dict[str, Dict[str, List]] = __load_scenarios__()
 def get_next_scenario(k: str) -> Tuple[np.ndarray, np.ndarray]:
     if not es.DEBUG:
         warn("get_next_scenario should not be called outside debug envs.")
-    topology = _scenarios[k]["matrices"].pop()
-    equilibrium = _scenarios[k]["vectors"].pop()
+    topology = np.ndarray(_scenarios[k]["matrices"].pop())
+    equilibrium = np.ndarray(_scenarios[k]["vectors"].pop())
     return topology, equilibrium
 # endregion
 
