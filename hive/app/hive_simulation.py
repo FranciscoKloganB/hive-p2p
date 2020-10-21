@@ -52,13 +52,30 @@ __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -d")
 
 # region Sample Scenarios available for debug environments
-SCENARIOS: Dict[str, Dict[str, List]] = {}
+def __load_scenarios__():
+    scenarios = {}
+    try:
+        scenarios_path = os.path.join(es.RESOURCES_ROOT, "scenarios.json")
+        scenarios_file = open(scenarios_path, "r")
+        scenarios = json.load(scenarios_file)
+        scenarios_file.close()
+    except OSError:
+        warn(f"Could not load scenarios.json from {es.RESOURCES_ROOT}.\n"
+             " > if you need sample scenarios for swarm guidance in your code, "
+             "please refer to sample_scenario_generator.py, "
+             "otherwise, ignore this warning.")
+    return scenarios
+
+
+_scenarios: Dict[str, Dict[str, List]] = __load_scenarios__()
 
 
 def get_next_scenario(k: str) -> Tuple[np.ndarray, np.ndarray]:
     if not es.DEBUG:
         warn("get_next_scenario should not be called outside debug envs.")
-    return SCENARIOS[k]["matrices"].pop(), np.ndarray(SCENARIOS[k]["vectors"].pop())
+    topology = _scenarios[k]["matrices"].pop()
+    equilibrium = _scenarios[k]["vectors"].pop()
+    return topology, equilibrium
 # endregion
 
 
@@ -267,18 +284,6 @@ if __name__ == "__main__":
                  "  --network_node -n (str)\n"
                  "Another cause of error might be a simulation file with "
                  "inconsistent values.")
-
-    try:
-        scenarios_path = os.path.join(es.RESOURCES_ROOT, "scenarios.json")
-        scenarios = open(scenarios_path, "r")
-        # noinspection PyRedeclaration
-        SCENARIOS = json.load(scenarios)
-        scenarios.close()
-    except OSError:
-        warn(f"Could not load scenarios.json from {es.RESOURCES_ROOT}.\n"
-             " > if you need sample scenarios for swarm guidance in your code, "
-             "please refer to sample_scenario_generator.py, "
-             "otherwise, ignore this warning.")
 
     if simfile or simdirectory:
         main(threading, simdirectory, simfile, iterations, duration)
