@@ -228,7 +228,7 @@ class FileBlockData:
         self.sha256: str = crypto.sha256(self.data)
 
     # region Simulation Interface
-    def set_replication_epoch(self, epoch: int) -> int:
+    def set_replication_epoch(self, epoch: int) -> float:
         """Sets the epoch in which replication levels should be restored.
 
         This method tries to assign a new epoch, in the future, at which
