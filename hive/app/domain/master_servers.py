@@ -372,7 +372,7 @@ class SGMaster(Master):
 
     @staticmethod
     def get_next_scenario(size_key: str) -> Tuple[np.ndarray, np.ndarray]:
-        if not DEBUG:
+        if not es.DEBUG:
             raise RuntimeError(
                 "get_next_scenario can not be called outside debug envs.")
         d = SGMaster.SCENARIOS[size_key]
