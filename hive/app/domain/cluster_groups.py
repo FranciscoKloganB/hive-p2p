@@ -982,34 +982,26 @@ class SGClusterPerfect(SGCluster):
         self.corruption_chances: List[float] = [0.0, 1.0]
 
     # region Swarm guidance structure management
-    def new_desired_distribution(
-            self, member_ids: List[str], member_uptimes: List[float]
-    ) -> np.ndarray:
-        """Creates a random desired distribution.
-
-        Overrides:
-            :py:meth:`app.domain.cluster_groups.SGCluster.new_desired_distribution`
-
-        Args:
-            member_ids:
-                A list of :py:attr:`node identifiers
-                <app.domain.network_nodes.Node.id>` who are
-                :py:attr:`~Cluster.members` of the ``SGCluster``.
-            member_uptimes:
-                This method's parameter is ignored and can be ``None``.
+    def new_transition_matrix(self) -> pd.DataFrame:
+        """Creates a new transition matrix that is likely to be a Markov Matrix.
 
         Returns:
-            :py:class:`~np:numpy.ndarray`:
-                A list of floats with which represent how the files should be
-                distributed among network nodes in the long-run.
+            :py:class:`~pd:pandas.DataFrame`:
+                The labeled matrix that has the fastests mixing rate from all
+                the pondered strategies.
         """
-        u_ = mm.new_vector(len(member_ids))
-        self.v_ = pd.DataFrame(data=u_, index=member_ids)
-        self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
-        self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        node_ids = [node.id for node in self.members.values()]
+
+        a, v_ = SGMaster.get_next_scenario(str(self.original_size))
+
+        self.v_ = pd.DataFrame(data=u_, index=node_ids)
+        self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=node_ids)
+        self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=node_ids)
         self._timer = 0
 
-        return u_
+        t = self.select_fastest_topology(a, v_)
+
+        return pd.DataFrame(t, index=node_ids, columns=node_ids)
     # endregion
 
     # region Simulation steps
@@ -1042,16 +1034,17 @@ class SGClusterPerfect(SGCluster):
     # endregion
 
     # region Helpers
-    """
     def select_fastest_topology(
             self, a: np.ndarray, v_: np.ndarray) -> np.ndarray:
+        if es.OPTIMIZE:
+            return super().select_fastest_topology(a, v_)
+
         fastest_matrix, _ = mm.new_mh_transition_matrix(a, v_)
         size = fastest_matrix.shape[0]
         for j in range(size):
             fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
-    """
     # endregion
 
 
