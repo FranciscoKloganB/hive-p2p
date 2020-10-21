@@ -872,12 +872,12 @@
 <span class="sd">            queries and matrix calculations. For simplicity of implementation</span>
 <span class="sd">            each cluster only manages one file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">out_degrees</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># columns</span>
         <span class="n">in_degrees</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># rows</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
             <span class="n">nid</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span>
-            <span class="n">nodes_degrees</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">in_degrees</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">out_degrees</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">nodes_degrees</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">in_degrees</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span><span class="si">}</span><span class="s2">i#o</span><span class="si">{</span><span class="n">out_degrees</span><span class="p">[</span><span class="n">nid</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">transition_vector</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">nid</span><span class="p">]</span>
             <span class="n">node</span><span class="o">.</span><span class="n">set_file_routing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">transition_vector</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_matrices_degrees</span><span class="p">(</span><span class="n">nodes_degrees</span><span class="p">)</span></div>
@@ -896,18 +896,15 @@
 <span class="sd">        ``SGCluster`` will change, thus, more opportunities to perform a</span>
 <span class="sd">        correct swarm guidance behavior will be possible.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">tries</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">tries</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">result</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
         <span class="k">while</span> <span class="n">tries</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating new transition matrix... try #</span><span class="si">{</span><span class="n">tries</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating new transition matrix... try #</span><span class="si">{</span><span class="n">tries</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="n">tries</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_transition_matrix</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">broadcast_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
                 <span class="k">break</span>
-            <span class="n">tries</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="c1"># Only tries to generate a valid matrix up to three times,</span>
-        <span class="c1"># then resumes with the last generated matrix even if it never</span>
-        <span class="c1"># converges.</span>
+        <span class="c1"># Only tries to create a valid matrix up to five times before proceeding</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">broadcast_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
 
     <span class="c1"># noinspection PyIncorrectDocstring</span>
