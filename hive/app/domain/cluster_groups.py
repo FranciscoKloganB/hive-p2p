@@ -762,12 +762,12 @@ class SGCluster(Cluster):
             queries and matrix calculations. For simplicity of implementation
             each cluster only manages one file.
         """
-        nodes_degrees: Dict[str, float] = {}
+        nodes_degrees: Dict[str, str] = {}
         out_degrees: pd.Series = m.apply(np.count_nonzero, axis=0)  # columns
         in_degrees: pd.Series = m.apply(np.count_nonzero, axis=1)  # rows
         for node in self.members.values():
             nid = node.id
-            nodes_degrees[nid] = float(f"{in_degrees[nid]}.{out_degrees[nid]}")
+            nodes_degrees[nid] = f"{in_degrees[nid]}i#o{out_degrees[nid]}"
             transition_vector: pd.DataFrame = m.loc[:, nid]
             node.set_file_routing(self.file.name, transition_vector)
         self.file.logger.log_matrices_degrees(nodes_degrees)

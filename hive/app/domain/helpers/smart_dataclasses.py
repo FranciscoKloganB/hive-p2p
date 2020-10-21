@@ -483,7 +483,7 @@ class LoggingData:
         self.delay_replication: List[float] = [0.0] * max_epochs_plus_one
         self.delay_suspects_detection: Dict[str, int] = {}
         self.initial_spread = ""
-        self.matrices_nodes_degrees: List[Dict[str, float]] = []
+        self.matrices_nodes_degrees: List[Dict[str, str]] = []
         self.off_node_count: List[int] = [0] * max_epochs
         self.topologies_goal_achieved: List[bool] = []
         self.topologies_goal_distance: List[float] = []
@@ -570,7 +570,7 @@ class LoggingData:
         self.topologies_goal_achieved.append(achieved_goal)
         self.topologies_goal_distance.append(distance_magnitude)
 
-    def log_matrices_degrees(self, nodes_degrees: Dict[str, float]):
+    def log_matrices_degrees(self, nodes_degrees: Dict[str, str]):
         """Logs the degree of all nodes in a Markov Matrix overlay, at the
         time of its creation, before any faults on the overlay occurs.
 
@@ -578,7 +578,7 @@ class LoggingData:
             nodes_degrees:
                 A dictionary mapping the :py:attr:`node identifiers
                 <app.domain.network_nodes.Node.id>` to their ``in-degree``
-                and ``out-degree`` concatenated as a float.
+                and ``out-degree`` seperated by the delimiter ``i#o``.
         """
         self.matrices_nodes_degrees.append(nodes_degrees)
 
