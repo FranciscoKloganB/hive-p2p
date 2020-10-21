@@ -814,6 +814,19 @@ groups of <a class="reference internal" href="app.domain.html#app.domain.network
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt id="app.domain.helpers.matrices.new_vector">
+<code class="sig-name descname">new_vector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/matrices.html#new_vector"><span class="viewcode-link">[source]</span></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-app.domain.helpers.smart_dataclasses">
 <span id="app-domain-helpers-smart-dataclasses"></span><h2>app.domain.helpers.smart_dataclasses</h2>
@@ -821,14 +834,14 @@ groups of <a class="reference internal" href="app.domain.html#app.domain.network
 encapsulating attribute and method behaviour.</p>
 <dl class="py class">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData">
-<em class="property">class </em><code class="sig-name descname">FileBlockData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData"><span class="viewcode-link">[source]</span></a></dt>
+<em class="property">class </em><code class="sig-name descname">FileBlockData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Wrapping class for the contents of a file block.</p>
 <p>Among other responsabilities <cite>FileBlockData</cite> helps managing simulation
 parameters, e.g., replica control such or file block integrity.</p>
 <dl class="py attribute">
-<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.hive_id">
-<code class="sig-name descname">hive_id</code></dt>
+<dt id="app.domain.helpers.smart_dataclasses.FileBlockData.cluster_id">
+<code class="sig-name descname">cluster_id</code></dt>
 <dd><p>Unique identifier of the cluster that manages the file block.</p>
 </dd></dl>
 
@@ -882,12 +895,12 @@ Until a loss occurs and after a loss is recovered,
 
 <dl class="py method">
 <dt id="app.domain.helpers.smart_dataclasses.FileBlockData.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">hive_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cluster_id</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/smart_dataclasses.html#FileBlockData.__init__"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Creates an instance of <cite>FileBlockData</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>hive_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Unique identifier of the cluster that manages the file block.</p></li>
+<li><p><strong>cluster_id</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Unique identifier of the cluster that manages the file block.</p></li>
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the file the file block belongs to.</p></li>
 <li><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number that uniquely identifies the file block.</p></li>
 <li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#bytes" title="(in Python v3.7)"><em>bytes</em></a>) – Actual file block data as a sequence of bytes.</p></li>

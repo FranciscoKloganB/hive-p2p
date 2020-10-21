@@ -150,10 +150,10 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">environment_settings</span> <span class="k">as</span> <span class="nn">es</span>
 
 <span class="kn">from</span> <span class="nn">domain.helpers.matlab_utils</span> <span class="kn">import</span> <span class="n">MatlabEngineContainer</span>
-<span class="kn">from</span> <span class="nn">environment_settings</span> <span class="kn">import</span> <span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="n">SHARED_ROOT</span><span class="p">,</span> \
-    <span class="n">MASTER_SERVERS</span>
+
 
 <span class="n">__err_message__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Invalid arguments. You must specify -f fname or -d, e.g.:</span><span class="se">\n</span><span class="s2">&quot;</span>
                    <span class="s2">&quot;    $ python hive_simulation.py -f simfilename.json</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -167,14 +167,10 @@
 <div class="viewcode-block" id="__makedirs__"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__makedirs__">[docs]</a><span class="k">def</span> <span class="nf">__makedirs__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Helper method that reates required simulation working directories if</span>
 <span class="sd">    they do not exist.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SHARED_ROOT</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">SHARED_ROOT</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">OUTFILE_ROOT</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">OUTFILE_ROOT</span><span class="p">)</span></div>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SHARED_ROOT</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">RESOURCES_ROOT</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="__can_exec_simfile__"><a class="viewcode-back" href="../../app.html#app.hive_simulation.__can_exec_simfile__">[docs]</a><span class="k">def</span> <span class="nf">__can_exec_simfile__</span><span class="p">(</span><span class="n">sname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -187,7 +183,7 @@
 <span class="sd">            :py:const:`~app.environment_settings.SIMULATION_ROOT` will be</span>
 <span class="sd">            checked.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">spath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">sname</span><span class="p">)</span>
+    <span class="n">spath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">sname</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">spath</span><span class="p">):</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Specified simulation file does not exist in SIMULATION_ROOT.&quot;</span><span class="p">)</span></div>
 
@@ -204,7 +200,7 @@
 <span class="sd">            The number of discrete time steps the simulation lasts.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">master_server</span> <span class="o">=</span> <span class="n">class_name_to_obj</span><span class="p">(</span>
-        <span class="n">MASTER_SERVERS</span><span class="p">,</span>
+        <span class="n">es</span><span class="o">.</span><span class="n">MASTER_SERVERS</span><span class="p">,</span>
         <span class="n">master_class</span><span class="p">,</span>
         <span class="p">[</span><span class="n">sname</span><span class="p">,</span> <span class="n">sid</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">cluster_class</span><span class="p">,</span> <span class="n">node_class</span><span class="p">]</span>
     <span class="p">)</span>
@@ -237,7 +233,8 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">threads_count</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sdir</span><span class="p">:</span>
-            <span class="n">snames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">)</span>
+            <span class="n">snames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;scenarios&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SIMULATION_ROOT</span><span class="p">)))</span>
             <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">snames</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                     <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">__start_simulation__</span><span class="p">,</span> <span class="n">sn</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
@@ -267,7 +264,8 @@
 <span class="sd">            lasts.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">sdir</span><span class="p">:</span>
-        <span class="n">snames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">)</span>
+        <span class="n">snames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;scenarios&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">es</span><span class="o">.</span><span class="n">SIMULATION_ROOT</span><span class="p">)))</span>
         <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">snames</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">iters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">__start_simulation__</span><span class="p">(</span><span class="n">sn</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">epochs</span><span class="p">)</span>
@@ -331,14 +329,12 @@
     <span class="n">cluster_class</span> <span class="o">=</span> <span class="s2">&quot;SGClusterExt&quot;</span>
     <span class="n">node_class</span> <span class="o">=</span> <span class="s2">&quot;SGNodeExt&quot;</span>
 
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">short_opts</span> <span class="o">=</span> <span class="s2">&quot;df:i:t:e:m:c:n:&quot;</span>
-        <span class="n">long_opts</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s2">&quot;directory&quot;</span><span class="p">,</span> <span class="s2">&quot;file=&quot;</span><span class="p">,</span> <span class="s2">&quot;iters=&quot;</span><span class="p">,</span> <span class="s2">&quot;threading=&quot;</span><span class="p">,</span> <span class="s2">&quot;epochs=&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;master_server=&quot;</span><span class="p">,</span> <span class="s2">&quot;cluster_group=&quot;</span><span class="p">,</span> <span class="s2">&quot;network_node=&quot;</span>
-        <span class="p">]</span>
-        <span class="n">options</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">getopt</span><span class="o">.</span><span class="n">getopt</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">short_opts</span><span class="p">,</span> <span class="n">long_opts</span><span class="p">)</span>
+    <span class="n">short_opts</span> <span class="o">=</span> <span class="s2">&quot;df:i:t:e:m:c:n:&quot;</span>
+    <span class="n">long_opts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;directory&quot;</span><span class="p">,</span> <span class="s2">&quot;file=&quot;</span><span class="p">,</span> <span class="s2">&quot;iters=&quot;</span><span class="p">,</span> <span class="s2">&quot;threading=&quot;</span><span class="p">,</span> <span class="s2">&quot;epochs=&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;master_server=&quot;</span><span class="p">,</span> <span class="s2">&quot;cluster_group=&quot;</span><span class="p">,</span> <span class="s2">&quot;network_node=&quot;</span><span class="p">]</span>
 
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">options</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">getopt</span><span class="o">.</span><span class="n">getopt</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">short_opts</span><span class="p">,</span> <span class="n">long_opts</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">options</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="s2">&quot;--threading&quot;</span><span class="p">):</span>
                 <span class="n">threading</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>

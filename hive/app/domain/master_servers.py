@@ -370,7 +370,8 @@ class SGMaster(Master):
             scenarios.close()
         super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
 
-    def get_next_scenario(self, size_key: str) -> Tuple[np.ndarray, np.ndarray]:
+    @staticmethod
+    def get_next_scenario(size_key: str) -> Tuple[np.ndarray, np.ndarray]:
         if not DEBUG:
             raise RuntimeError(
                 "get_next_scenario can not be called outside debug envs.")

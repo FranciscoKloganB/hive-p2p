@@ -232,7 +232,7 @@
         <span class="n">extras</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;cluster_type&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
             <span class="s2">&quot;simfile_name&quot;</span><span class="p">:</span> <span class="n">origin</span><span class="p">,</span>
-            <span class="s2">&quot;hive_id&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;cluster_id&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
             <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;blocks_size&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">BLOCKS_SIZE</span><span class="p">,</span>
             <span class="s2">&quot;blocks_count&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">BLOCKS_COUNT</span><span class="p">,</span>
@@ -289,7 +289,7 @@
 <span class="sd">    parameters, e.g., replica control such or file block integrity.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        hive_id:</span>
+<span class="sd">        cluster_id:</span>
 <span class="sd">            Unique identifier of the cluster that manages the file block.</span>
 <span class="sd">        name:</span>
 <span class="sd">            The name of the file the file block belongs to.</span>
@@ -314,12 +314,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="FileBlockData.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">hive_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">cluster_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates an instance of `FileBlockData`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            hive_id:</span>
+<span class="sd">            cluster_id:</span>
 <span class="sd">                Unique identifier of the cluster that manages the file block.</span>
 <span class="sd">            name:</span>
 <span class="sd">                The name of the file the file block belongs to.</span>
@@ -328,7 +328,7 @@
 <span class="sd">            data:</span>
 <span class="sd">                Actual file block data as a sequence of bytes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hive_id</span> <span class="o">=</span> <span class="n">hive_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_id</span> <span class="o">=</span> <span class="n">cluster_id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">number</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_#_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>

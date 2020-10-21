@@ -159,8 +159,7 @@
 <span class="sd">    The execution of the main method results in a JSON file outputed to</span>
 <span class="sd">    :py:const:`~app.environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">MIXING_RATE_SAMPLE_ROOT</span><span class="p">):</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">MIXING_RATE_SAMPLE_ROOT</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">MIXING_RATE_SAMPLE_ROOT</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
 
@@ -197,7 +196,7 @@
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span>
-    <span class="n">network_sizes</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">network_sizes</span><span class="p">:</span> <span class="n">Tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
     <span class="n">module</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="s2">&quot;domain.helpers.matrices&quot;</span>
     <span class="n">functions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;new_mh_transition_matrix&quot;</span><span class="p">,</span>

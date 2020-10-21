@@ -146,7 +146,7 @@
 <span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">truncate_float_value</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 
-<span class="n">DEBUG</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">DEBUG</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="sd">&quot;&quot;&quot;Indicates if some debug related actions or prints to the terminal should </span>
 <span class="sd">be performed.&quot;&quot;&quot;</span>
 
@@ -305,8 +305,10 @@
 <span class="sd">:py:mod:`app.hive_simulation` are located.&quot;&quot;&quot;</span>
 
 <span class="n">OUTFILE_ROOT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="s1">&#39;outfiles&#39;</span><span class="p">)</span>
-<span class="sd">&quot;&quot;&quot;Path to the folder where simulation output files are located will be </span>
-<span class="sd">stored.&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;Path to the folder where simulation output files are located.&quot;&quot;&quot;</span>
+
+<span class="n">RESOURCES_ROOT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="s1">&#39;resources&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Path to the folder where miscellaneous files are located.&quot;&quot;&quot;</span>
 
 <span class="n">MIXING_RATE_SAMPLE_ROOT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="s1">&#39;mixing_rate_samples&#39;</span><span class="p">)</span>
 
