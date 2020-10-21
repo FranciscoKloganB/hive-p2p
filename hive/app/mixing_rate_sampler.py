@@ -86,7 +86,7 @@ def main():
 
 if __name__ == "__main__":
     samples: int = 30
-    network_sizes: Tuple[int] = (8, 16)
+    network_sizes: Tuple = (8, 16)
     module: Any = "domain.helpers.matrices"
     functions: List[str] = [
         "new_mh_transition_matrix",
