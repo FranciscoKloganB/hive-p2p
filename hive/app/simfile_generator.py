@@ -232,28 +232,23 @@ def _init_persisting_dict() -> Dict[str, Any]:
         "~/cluster/app/static/shared/shared_backups"
     )
 
-    add_file: bool = True
-    while add_file:
-        file_name = _input_filename(
-            "Name the file (with extension) you wish to simulate persistence of: ")
+    file_name = _input_filename(
+        "Name the file (with extension) you wish to simulate persistence of: ")
 
-        options_message = ("\nSelect how files blocks are spread across "
-                           "clusters at the start of the simulation: {\n"
-                           "   u: uniform distribution among network nodes,\n"
-                           "   i: ideal distribution, e.g., near a steady-state vector, \n"
-                           "   a: all replicas given to N different nodes,\n"
-                           "   o: each network node receives one random replica\n"
-                           "}: ")
-        options_list = ["u", "U", "i", "I", "a", "A", "o", "O"]
-        option_choice = _input_character_option(options_message, options_list)
+    options_message = ("\nSelect how files blocks are spread across "
+                       "clusters at the start of the simulation: {\n"
+                       "   u: uniform distribution among network nodes,\n"
+                       "   i: ideal distribution, e.g., near a steady-state vector, \n"
+                       "   a: all replicas given to N different nodes,\n"
+                       "   o: each network node receives one random replica\n"
+                       "}: ")
+    options_list = ["u", "U", "i", "I", "a", "A", "o", "O"]
+    option_choice = _input_character_option(options_message, options_list)
 
-        persisting[file_name] = {}
-        persisting[file_name]["spread"] = option_choice.lower()
-        persisting[file_name]["cluster_size"] = _input_bounded_integer(
-            "\nNumber of nodes that should be sharing the next file: ")
-
-        add_file = _in_yes_no(
-            "\nSimulate persistence of another file in simulation?")
+    persisting[file_name] = {}
+    persisting[file_name]["spread"] = option_choice.lower()
+    persisting[file_name]["cluster_size"] = _input_bounded_integer(
+        "\nNumber of nodes that should be sharing the next file: ")
 
     return persisting
 # endregion
