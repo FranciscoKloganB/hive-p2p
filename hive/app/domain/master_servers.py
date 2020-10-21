@@ -335,49 +335,6 @@ class Master:
 
 
 class SGMaster(Master):
-    SCENARIOS: Dict[str, Dict[str, List]] = {}
-
-    def __init__(self,
-                 simfile_name: str,
-                 sid: int,
-                 epochs: int,
-                 cluster_class: str,
-                 node_class: str) -> None:
-        """Instantiates an Master object.
-
-        Args:
-            simfile_name:
-                A path to the simulation file to be run by the simulator.
-            sid:
-                Identifier that generates unique output file names,
-                thus guaranteeing that different simulation instances do not
-                overwrite previous out files.
-            epochs:
-                The number of discrete time steps the simulation lasts.
-            cluster_class:
-                The name of the class used to instantiate cluster group
-                instances through reflection. See :py:mod:`cluster groups module
-                <app.domain.cluster_groups>`.
-            node_class:
-                The name of the class used to instantiate network node
-                instances through reflection. See :py:mod:`network nodes module
-                <app.domain.network_nodes>`.
-        """
-        if es.DEBUG:
-            scenarios_path = os.path.join(es.RESOURCES_ROOT, "scenarios.json")
-            scenarios = open(scenarios_path, "r")
-            SGMaster.SCENARIOS = json.load(scenarios)
-            scenarios.close()
-        super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
-
-    @staticmethod
-    def get_next_scenario(size_key: str) -> Tuple[np.ndarray, np.ndarray]:
-        if not es.DEBUG:
-            raise RuntimeError(
-                "get_next_scenario can not be called outside debug envs.")
-        d = SGMaster.SCENARIOS[size_key]
-        return np.ndarray(d["matrices"].pop()), np.ndarray(d["vectors"].pop())
-
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
 
