@@ -57,15 +57,10 @@ from utils.convertions import class_name_to_obj
 def __makedirs__() -> None:
     """Helper method that reates required simulation working directories if
     they do not exist."""
-    if not os.path.exists(SHARED_ROOT):
-        os.makedirs(SHARED_ROOT)
-
-    if not os.path.exists(SIMULATION_ROOT):
-        os.makedirs(SIMULATION_ROOT)
-
-    if not os.path.exists(OUTFILE_ROOT):
-        os.makedirs(OUTFILE_ROOT)
-
+    os.makedirs(SHARED_ROOT, exist_ok=True)
+    os.makedirs(SIMULATION_ROOT, exist_ok=True)
+    os.makedirs(OUTFILE_ROOT, exist_ok=True)
+    os.makedirs(RESOURCES_ROOT, exist_ok=True)
 
 def __can_exec_simfile__(sname: str) -> None:
     """Asserts if simulation can proceed with user specified file.

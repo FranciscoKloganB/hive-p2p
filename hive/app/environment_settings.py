@@ -195,8 +195,10 @@ SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 :py:mod:`app.hive_simulation` are located."""
 
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
-"""Path to the folder where simulation output files are located will be 
-stored."""
+"""Path to the folder where simulation output files are located."""
+
+RESOURCES_ROOT: str = os.path.join(os.getcwd(), 'static', 'resources')
+"""Path to the folder where miscellaneous files are located."""
 
 MIXING_RATE_SAMPLE_ROOT: str = os.path.join(OUTFILE_ROOT, 'mixing_rate_samples')
 
