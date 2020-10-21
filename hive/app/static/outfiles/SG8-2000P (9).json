@@ -3856,7 +3856,7 @@
         "",
         ""
     ],
-    "cluster_type": "HiveClusterPerfect",
+    "cluster_type": "SGClusterPerfect",
     "convergence_set": [],
     "convergence_sets": [
         [
@@ -4819,7 +4819,7 @@
     ],
     "delay_suspects_detection": {},
     "file_name": "FBZ_0134.NEF",
-    "hive_id": "9d0dd562-9671-4e74-9903-fdb647f0c138",
+    "cluster_id": "9d0dd562-9671-4e74-9903-fdb647f0c138",
     "initial_spread": "a",
     "largest_convergence_window": 224,
     "matrices_nodes_degrees": [
