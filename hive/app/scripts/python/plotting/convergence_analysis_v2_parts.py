@@ -50,9 +50,10 @@ def __save_figure__(figname: str, figext: str = "png") -> None:
     plt.savefig(fname, bbox_inches="tight", format=figext)
 
 
-def __create_boxplot__(
-        data_dict: Dict[str, Any], suptitle: str, xlabel: str, ylabel: str, figname: str, figext: str = "png", savefig: bool = True
-) -> Tuple[Any, Any]:
+def __create_boxplot__(data_dict: Dict[str, Any],
+                       suptitle: str, xlabel: str, ylabel: str,
+                       figname: str, figext: str = "png",
+                       savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
     ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
     ax.set_xticklabels(data_dict.keys())
@@ -62,18 +63,18 @@ def __create_boxplot__(
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     if savefig:
-        plt.savefig(f"{plots_directory}/{figname}.{figext}",
-                    format=figext, bbox_inches="tight")
+        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
     return fig, ax
 
 
-def __create_double_boxplot__(
-        left_data, right_data,
-        suptitle: str, xlabel: str, ylabel: str, figname: str, figext: str = "png",
-        left_color: Optional[str] = None, right_color: Optional[str] = None,
-        left_label: Optional[str] = None, right_label: Optional[str] = None,
-        savefig: bool = True
-) -> Tuple[Any, Any]:
+def __create_double_boxplot__(left_data, right_data,
+                              suptitle: str, xlabel: str, ylabel: str,
+                              figname: str, figext: str = "png",
+                              left_color: Optional[str] = None,
+                              right_color: Optional[str] = None,
+                              left_label: Optional[str] = None,
+                              right_label: Optional[str] = None,
+                              savefig: bool = True) -> Tuple[Any, Any]:
 
     fig, ax = plt.subplots()
     bpl = plt.boxplot(left_data, sym='', whis=0.75, widths=0.7, notch=True, positions=np.array(range(len(left_data))) * 2.0 - 0.4)
@@ -83,12 +84,12 @@ def __create_double_boxplot__(
         __set_box_color__(bpl, "#55A868")
         if left_label:
             plt.plot([], c="#55A868", label=left_label)
-            plt.legend(loc="best", prop=cfg.fp_axis_legend)
+            plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
     if right_color:
         __set_box_color__(bpr, "#C44E52")
         if right_label:
             plt.plot([], c="#C44E52", label=right_label)
-            plt.legend(loc="best", prop=cfg.fp_axis_legend)
+            plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
 
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
     plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
@@ -97,8 +98,7 @@ def __create_double_boxplot__(
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     if savefig:
-        plt.savefig(f"{plots_directory}/{figname}.{figext}",
-                    format=figext, bbox_inches="tight")
+        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
     return fig, ax
 # endregion
 
@@ -234,21 +234,37 @@ def barchart_instantaneous_convergence_vs_progress(
     bar_locations = np.asarray(epoch_buckets)
     bar_width = bucket_size * 0.25
 
+    __create_barchart__(
+        data_dict, bar_locations, bar_width, bucket_size,
+        suptitle="convergence observations as simulations' progress",
+        xlabel="simulations' progress (%)", ylabel=r"c$_{t}$ count",
+        figname=figname)
+
+
+def __create_barchart__(data_dict: Dict[str, Any],
+                        bar_locations: np.ndarray, bar_width: float,
+                        bucket_size: float,
+                        suptitle: str, xlabel: str, ylabel: str,
+                        figname: str, figext: str = "png",
+                        savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
-    plt.suptitle("convergence observations as simulations' progress", fontproperties=cfg.fp_title)
-    plt.xlabel("simulations' progress (%)", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.ylabel(r"c$_{t}$ count", labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size*0.8)
-    plt.ylim(0, 100)
+    plt.suptitle(suptitle, fontproperties=cfg.fp_title)
+    plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+    plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
-    ax.set_xticks(epoch_buckets)
+    plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * 0.8)
+    ax.set_xticks(bar_locations)
     for i in range(len(source_keys)):
         key = source_keys[i]
         epoch_vals = data_dict[key]
         ax.bar(bar_locations + (bar_width * i) - 0.5 * bar_width, epoch_vals, width=bar_width)
-    ax.legend([f"{x} parts" for x in source_keys], prop=cfg.fp_axis_legend)
-    __save_figure__(figname, image_ext)
+    ax.legend([str(x) for x in source_keys], frameon=False, loc="best", prop=cfg.fp_axis_legend)
+
+    if savefig:
+        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
+
+    return fig, ax
 
 
 def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
@@ -278,9 +294,7 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
             textprops={'color': 'white', 'weight': 'bold'}
         )
         ax.set_xlabel(f"{src_key} parts", fontproperties=cfg.fp_axis_legend)
-    plt.legend(labels=wedge_labels, ncol=s, frameon=False,
-               loc="best", bbox_to_anchor=(0.5, -0.2),
-               prop=cfg.fp_axis_legend)
+    plt.legend(labels=wedge_labels, ncol=s, frameon=False, loc="best", bbox_to_anchor=(0.5, -0.2), prop=cfg.fp_axis_legend)
     __save_figure__(figname, image_ext)
 
 
@@ -355,7 +369,7 @@ if __name__ == "__main__":
     source_patterns = ["SG8-1000P", "SG8-Opt"]
     # noinspection PyRedeclaration
     sources_files, source_keys = setup_sources(source_patterns)
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_parts")
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_opt")
     boxplot_first_convergence(figname="fc_opt")
     piechart_avg_convergence_achieved(figname="avgc_pie_opt")
     boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
