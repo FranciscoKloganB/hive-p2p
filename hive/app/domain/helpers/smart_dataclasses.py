@@ -122,7 +122,7 @@ class FileData:
         extras: Dict[str, Any] = {
             "cluster_type": cluster.__class__.__name__,
             "simfile_name": origin,
-            "hive_id": cluster.id,
+            "cluster_id": cluster.id,
             "file_name": self.name,
             "blocks_size": es.BLOCKS_SIZE,
             "blocks_count": es.BLOCKS_COUNT,
@@ -179,7 +179,7 @@ class FileBlockData:
     parameters, e.g., replica control such or file block integrity.
 
     Attributes:
-        hive_id:
+        cluster_id:
             Unique identifier of the cluster that manages the file block.
         name:
             The name of the file the file block belongs to.
@@ -204,12 +204,12 @@ class FileBlockData:
     """
 
     def __init__(
-            self, hive_id: str, name: str, number: int, data: bytes
+            self, cluster_id: str, name: str, number: int, data: bytes
     ) -> None:
         """Creates an instance of `FileBlockData`.
 
         Args:
-            hive_id:
+            cluster_id:
                 Unique identifier of the cluster that manages the file block.
             name:
                 The name of the file the file block belongs to.
@@ -218,7 +218,7 @@ class FileBlockData:
             data:
                 Actual file block data as a sequence of bytes.
         """
-        self.hive_id = hive_id
+        self.cluster_id = cluster_id
         self.name: str = name
         self.number: int = number
         self.id: str = name + "_#_" + str(number)
