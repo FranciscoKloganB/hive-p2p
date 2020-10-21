@@ -1003,9 +1003,7 @@ class SGClusterPerfect(SGCluster):
                 A list of floats with which represent how the files should be
                 distributed among network nodes in the long-run.
         """
-        u_ = np.random.random_sample(len(member_ids))
-        u_ /= np.sum(u_)
-
+        u_ = mm.new_vector(len(member_ids))
         self.v_ = pd.DataFrame(data=u_, index=member_ids)
         self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
         self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
