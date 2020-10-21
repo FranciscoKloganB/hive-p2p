@@ -36,7 +36,7 @@ def __set_box_color__(bp: Any, color: str) -> None:
 
 
 def __save_figure__(figname: str, figext: str = "png") -> None:
-    fname = f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{figext}"
+    fname = f"{plots_directory}/{figname}.{figext}"
     plt.savefig(fname, bbox_inches="tight", format=figext)
 
 
@@ -52,7 +52,7 @@ def __create_boxplot__(
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     if savefig:
-        plt.savefig(f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{figext}",
+        plt.savefig(f"{plots_directory}/{figname}.{figext}",
                     format=figext, bbox_inches="tight")
     return fig, ax
 
@@ -87,7 +87,7 @@ def __create_double_boxplot__(
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     if savefig:
-        plt.savefig(f"{plots_directory}/{figname}-{ns}_O{opt}_Pde{pde}_Pml{pml}.{figext}",
+        plt.savefig(f"{plots_directory}/{figname}.{figext}",
                     format=figext, bbox_inches="tight")
     return fig, ax
 # endregion
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     # endregion
 
     # Q1. Quantas mensagens passam na rede por epoch?
-    boxplot_bandwidth()
+    boxplot_bandwidth(figname="bw_parts")
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
     barchart_instantaneous_convergence_vs_progress(bucket_size=5)
     # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
@@ -357,6 +357,7 @@ if __name__ == "__main__":
     boxplot_percent_time_instantaneous_convergence()
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     source_patterns = ["SG8-1000P", "SG8-Opt"]
+    # noinspection PyRedeclaration
     sources_files, source_keys = setup_sources(source_patterns)
     boxplot_bandwidth()
     boxplot_first_convergence()
