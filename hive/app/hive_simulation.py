@@ -57,7 +57,6 @@ SCENARIOS: Dict[str, Dict[str, List]] = {}
 def get_next_scenario(k: str) -> Tuple[np.ndarray, np.ndarray]:
     if not es.DEBUG:
         warn("get_next_scenario should not be called outside debug envs.")
-    global SCENARIOS
     return SCENARIOS[k]["matrices"].pop(), np.ndarray(SCENARIOS[k]["vectors"].pop())
 # endregion
 
@@ -269,7 +268,6 @@ if __name__ == "__main__":
                  "inconsistent values.")
 
     try:
-        global SCENARIOS
         scenarios_path = os.path.join(es.RESOURCES_ROOT, "scenarios.json")
         scenarios = open(scenarios_path, "r")
         # noinspection PyRedeclaration
