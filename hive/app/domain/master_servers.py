@@ -370,6 +370,13 @@ class SGMaster(Master):
             scenarios.close()
         super().__init__(simfile_name, sid, epochs, cluster_class, node_class)
 
+    def get_next_scenario(self, size_key: str) -> Tuple[np.ndarray, np.ndarray]:
+        if not DEBUG:
+            raise RuntimeError(
+                "get_next_scenario can not be called outside debug envs.")
+        d = SGMaster.SCENARIOS[size_key]
+        return np.ndarray(d["vectors"].pop()), np.ndarray(d["matrices"].pop())
+
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
 
