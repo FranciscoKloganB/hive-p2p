@@ -40,10 +40,10 @@ from concurrent.futures.thread import ThreadPoolExecutor
 from typing import Optional
 
 import numpy
+import environment_settings as es
 
 from domain.helpers.matlab_utils import MatlabEngineContainer
-from environment_settings import SIMULATION_ROOT, OUTFILE_ROOT, SHARED_ROOT, \
-    MASTER_SERVERS
+
 
 __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
@@ -57,10 +57,11 @@ from utils.convertions import class_name_to_obj
 def __makedirs__() -> None:
     """Helper method that reates required simulation working directories if
     they do not exist."""
-    os.makedirs(SHARED_ROOT, exist_ok=True)
-    os.makedirs(SIMULATION_ROOT, exist_ok=True)
-    os.makedirs(OUTFILE_ROOT, exist_ok=True)
-    os.makedirs(RESOURCES_ROOT, exist_ok=True)
+    os.makedirs(es.SHARED_ROOT, exist_ok=True)
+    os.makedirs(es.SIMULATION_ROOT, exist_ok=True)
+    os.makedirs(es.OUTFILE_ROOT, exist_ok=True)
+    os.makedirs(es.RESOURCES_ROOT, exist_ok=True)
+
 
 def __can_exec_simfile__(sname: str) -> None:
     """Asserts if simulation can proceed with user specified file.
@@ -72,7 +73,7 @@ def __can_exec_simfile__(sname: str) -> None:
             :py:const:`~app.environment_settings.SIMULATION_ROOT` will be
             checked.
     """
-    spath = os.path.join(SIMULATION_ROOT, sname)
+    spath = os.path.join(es.SIMULATION_ROOT, sname)
     if not os.path.exists(spath):
         sys.exit("Specified simulation file does not exist in SIMULATION_ROOT.")
 
@@ -89,7 +90,7 @@ def __start_simulation__(sname: str, sid: int, epochs: int) -> None:
             The number of discrete time steps the simulation lasts.
     """
     master_server = class_name_to_obj(
-        MASTER_SERVERS,
+        es.MASTER_SERVERS,
         master_class,
         [sname, sid, epochs, cluster_class, node_class]
     )
@@ -123,7 +124,7 @@ def _parallel_main(threads_count: int,
     with ThreadPoolExecutor(max_workers=threads_count) as executor:
         if sdir:
             snames = list(filter(
-                lambda x: "scenarios" not in x, os.listdir(SIMULATION_ROOT)))
+                lambda x: "scenarios" not in x, os.listdir(es.SIMULATION_ROOT)))
             for sn in snames:
                 for i in range(1, iters + 1):
                     executor.submit(__start_simulation__, sn, i, epochs)
@@ -154,7 +155,7 @@ def _single_main(
     """
     if sdir:
         snames = list(filter(
-            lambda x: "scenarios" not in x, os.listdir(SIMULATION_ROOT)))
+            lambda x: "scenarios" not in x, os.listdir(es.SIMULATION_ROOT)))
         for sn in snames:
             for i in range(1, iters + 1):
                 __start_simulation__(sn, i, epochs)
