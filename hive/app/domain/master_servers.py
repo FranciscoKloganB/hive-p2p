@@ -376,7 +376,7 @@ class SGMaster(Master):
             raise RuntimeError(
                 "get_next_scenario can not be called outside debug envs.")
         d = SGMaster.SCENARIOS[size_key]
-        return np.ndarray(d["vectors"].pop()), np.ndarray(d["matrices"].pop())
+        return np.ndarray(d["matrices"].pop()), np.ndarray(d["vectors"].pop())
 
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
