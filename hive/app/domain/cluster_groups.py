@@ -794,6 +794,7 @@ class SGCluster(Cluster):
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
                 break
+            print(" [x] Invalid matrix.")
         # Only tries to create a valid matrix up to five times before proceeding
         self.broadcast_transition_matrix(result)
 
