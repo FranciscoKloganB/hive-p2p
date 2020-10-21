@@ -50,7 +50,7 @@ Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
 """
 
 
-def set_block_size(n: int) -> None:
+def set_blocks_size(n: int) -> None:
     """Changes BLOCKS_SIZE constant value at run time to the given n bytes."""
     global BLOCKS_SIZE
     BLOCKS_SIZE = n
