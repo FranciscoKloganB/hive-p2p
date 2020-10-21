@@ -904,6 +904,7 @@
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_transition_matrix</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">):</span>
                 <span class="k">break</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; [x] Invalid matrix.&quot;</span><span class="p">)</span>
         <span class="c1"># Only tries to create a valid matrix up to five times before proceeding</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">broadcast_transition_matrix</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
 

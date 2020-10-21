@@ -234,7 +234,8 @@
             <span class="s2">&quot;simfile_name&quot;</span><span class="p">:</span> <span class="n">origin</span><span class="p">,</span>
             <span class="s2">&quot;hive_id&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
             <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;read_size&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">READ_SIZE</span><span class="p">,</span>
+            <span class="s2">&quot;blocks_size&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">BLOCKS_SIZE</span><span class="p">,</span>
+            <span class="s2">&quot;blocks_count&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">BLOCKS_COUNT</span><span class="p">,</span>
             <span class="s2">&quot;critical_size_threshold&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">critical_size</span><span class="p">,</span>
             <span class="s2">&quot;sufficient_size_threshold&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sufficient_size</span><span class="p">,</span>
             <span class="s2">&quot;original_size&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span>
@@ -337,7 +338,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">crypto</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation Interface</span>
-<div class="viewcode-block" id="FileBlockData.set_replication_epoch"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="FileBlockData.set_replication_epoch"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sets the epoch in which replication levels should be restored.</span>
 
 <span class="sd">        This method tries to assign a new epoch, in the future, at which</span>

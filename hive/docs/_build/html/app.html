@@ -200,6 +200,34 @@ errors, at an epoch basis.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt id="app.environment_settings.set_blocks_count">
+<code class="sig-name descname">set_blocks_count</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/environment_settings.html#set_blocks_count"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Changes NUMBER_PARTS constant value at run time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.environment_settings.set_blocks_size">
+<code class="sig-name descname">set_blocks_size</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/environment_settings.html#set_blocks_size"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Changes BLOCKS_SIZE constant value at run time to the given n bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="app.environment_settings.set_loss_chance">
 <code class="sig-name descname">set_loss_chance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">v</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/environment_settings.html#set_loss_chance"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Changes LOSS_CHANCE constant value at run time.</p>
@@ -239,6 +267,24 @@ distributions to be considered equal and thus marking the epoch as convergent.</
 <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.equal_distributions" title="app.domain.cluster_groups.SGCluster.equal_distributions"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.SGCluster.equal_distributions()</span></code></a> along
 with a relative tolerance that is the minimum value in
 <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_"><code class="xref py py-attr docutils literal notranslate"><span class="pre">v_</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="app.environment_settings.BLOCKS_COUNT">
+<code class="sig-name descname">BLOCKS_COUNT</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 333</em></dt>
+<dd><p>Defines into how many
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a> instances a file
+is divided into. Either use this or <a class="reference internal" href="#app.environment_settings.BLOCKS_SIZE" title="app.environment_settings.BLOCKS_SIZE"><code class="xref py py-const docutils literal notranslate"><span class="pre">BLOCKS_SIZE</span></code></a> but not both.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="app.environment_settings.BLOCKS_SIZE">
+<code class="sig-name descname">BLOCKS_SIZE</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 131072</em></dt>
+<dd><p>Defines the raw size of each file block before it’s wrapped in a
+<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a> instance
+object.</p>
+<p>Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
+1MB = 1048576B; 20MB = 20971520B }.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -320,16 +366,6 @@ With the default value of 21600 each epoch would represent two minutes. See
 <code class="sig-name descname">OUTFILE_ROOT</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a></em><em class="property"> = 'C:\\GitHub\\hive-msc-thesis\\hive\\docs\\static\\outfiles'</em></dt>
 <dd><p>Path to the folder where simulation output files are located will be
 stored.</p>
-</dd></dl>
-
-<dl class="py data">
-<dt id="app.environment_settings.READ_SIZE">
-<code class="sig-name descname">READ_SIZE</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 131072</em></dt>
-<dd><p>Defines the raw size of each file block before it’s wrapped in a
-<a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a> instance
-object.</p>
-<p>Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
-1MB = 1048576B; 20MB = 20971520B }.</p>
 </dd></dl>
 
 <dl class="py data">
