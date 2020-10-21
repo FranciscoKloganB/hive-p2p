@@ -15,6 +15,20 @@ import _matplotlib_configs as cfg
 
 
 # region Helpers
+def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]]:
+    sources_files = {k: [] for k in source_patterns}
+    for filename in dirfiles:
+        for key in sources_files:
+            if key in filename:
+                sources_files[key].append(filename)
+                break
+
+    # remove '-' and 'P' delimiters that avoid incorrect missmapping of sources
+    # sources_files = {k[1:-1]: v for k, v in sources_files.items()}
+    source_keys = list(sources_files)
+    return sources_files, source_keys
+
+
 def __set_box_color__(bp: Any, color: str) -> None:
     """Changes the colors of a boxplot.
 
@@ -270,20 +284,6 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
     __save_figure__(figname, image_ext)
 
 
-def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]]:
-    sources_files = {k: [] for k in source_patterns}
-    for filename in dirfiles:
-        for key in sources_files:
-            if key in filename:
-                sources_files[key].append(filename)
-                break
-
-    # remove '-' and 'P' delimiters that avoid incorrect missmapping of sources
-    # sources_files = {k[1:-1]: v for k, v in sources_files.items()}
-    source_keys = list(sources_files)
-    return sources_files, source_keys
-
-
 if __name__ == "__main__":
     # region args processing
     ns = 8
@@ -343,20 +343,21 @@ if __name__ == "__main__":
     # Q1. Quantas mensagens passam na rede por epoch?
     boxplot_bandwidth(figname="bw_parts")
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5)
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_parts")
     # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
-    boxplot_first_convergence()
+    boxplot_first_convergence(figname="fc_parts")
     # Q4. A média dos vectores de distribuição é proxima ao objetivo?
-    piechart_avg_convergence_achieved()
-    boxplot_avg_convergence_magnitude_distance()
+    piechart_avg_convergence_achieved(figname="avgc_pie_parts")
+    boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_parts")
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
-    boxplot_percent_time_instantaneous_convergence()
+    boxplot_percent_time_instantaneous_convergence(figname="tic_parts")
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     source_patterns = ["SG8-1000P", "SG8-Opt"]
     # noinspection PyRedeclaration
     sources_files, source_keys = setup_sources(source_patterns)
-    boxplot_bandwidth()
-    boxplot_first_convergence()
-    boxplot_avg_convergence_magnitude_distance()
-    boxplot_percent_time_instantaneous_convergence()
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_parts")
+    boxplot_first_convergence(figname="fc_opt")
+    piechart_avg_convergence_achieved(figname="avgc_pie_opt")
+    boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
+    boxplot_percent_time_instantaneous_convergence(figname="tic_opt")
     # TODO: alter source file dicts, subtitle and recall functions with diff params
