@@ -127,7 +127,8 @@ def _parallel_main(threads_count: int,
     """
     with ThreadPoolExecutor(max_workers=threads_count) as executor:
         if sdir:
-            snames = os.listdir(SIMULATION_ROOT)
+            snames = list(filter(
+                lambda x: "scenarios" not in x, os.listdir(SIMULATION_ROOT)))
             for sn in snames:
                 for i in range(1, iters + 1):
                     executor.submit(__start_simulation__, sn, i, epochs)
@@ -157,7 +158,8 @@ def _single_main(
             lasts.
     """
     if sdir:
-        snames = os.listdir(SIMULATION_ROOT)
+        snames = list(filter(
+            lambda x: "scenarios" not in x, os.listdir(SIMULATION_ROOT)))
         for sn in snames:
             for i in range(1, iters + 1):
                 __start_simulation__(sn, i, epochs)
