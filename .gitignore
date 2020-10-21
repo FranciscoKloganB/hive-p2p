@@ -365,3 +365,4 @@ octave-workspace
 hive/app/static/outfiles/FTB_4376.out
 hive/app/static/outfiles/powerglove.out
 *.pyc
+*.png
