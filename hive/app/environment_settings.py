@@ -58,7 +58,7 @@ def set_blocks_size(n: int) -> None:
     BLOCKS_SIZE = n
 
 
-BLOCKS_COUNT: int = 33
+BLOCKS_COUNT: int = 333
 """Defines into how many 
 :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instances a file
 is divided into. Either use this or :py:const:`BLOCKS_SIZE` but not both."""
