@@ -140,7 +140,7 @@ class Master:
                 cluster = self._new_cluster_group(cluster_class, size, fname)
 
                 filesize = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
-                es.set_blocks_size(int(filesize / es.BLOCKS_COUNT))
+                es.set_blocks_size(math.floor(filesize / es.BLOCKS_COUNT))
                 fblocks[fname] = self._split_files(fname, cluster, es.BLOCKS_SIZE)
 
                 # fblocks[fname] = self._split_files(fname, cluster, es.READ_SIZE)
@@ -417,7 +417,7 @@ class HDFSMaster(Master):
 
                 filesize = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
                 es.set_blocks_size(1 * 1024 * 1024)
-                es.set_blocks_count(int(filesize / es.BLOCKS_SIZE))
+                es.set_blocks_count(math.ceil(filesize / es.BLOCKS_SIZE))
                 fblocks[fname] = self._split_files(fname, cluster, es.BLOCKS_SIZE)
 
             # Distribute files before starting simulation
