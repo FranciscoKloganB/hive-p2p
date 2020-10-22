@@ -930,13 +930,13 @@ class SGCluster(Cluster):
 
     def _normalize_avg_(self):
         self.avg_ /= self._timer
-        self.avg_ /= np.sum(self.avg_)
-
-        distance = np.abs(self.v_.subtract(self.avg_))
+        distance = np.abs(self.v_.subtract(self.avg_ / np.sum(self.avg_)))
         magnitude = np.sqrt(distance).sum(axis=0).item()
 
-        atol = np.clip(1 / self.original_size, 0.0, es.ATOL).item()
-        goaled = np.allclose(self.avg_, self.v_, rtol=es.RTOL, atol=atol)
+        ptotal = es.BLOCKS_COUNT * es.REPLICATION_LEVEL
+        target = self.v_.multiply(ptotal)
+        atol = np.clip(1 / self.original_size, 0.0, es.ATOL).item() * ptotal
+        goaled = np.allclose(self.avg_, target, rtol=es.RTOL, atol=atol)
 
         self.file.logger.log_topology_goal_performance(goaled, magnitude)
 
