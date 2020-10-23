@@ -51,6 +51,18 @@ app.simfile\_generator
 .. automodule:: app.simfile_generator
    :members:
 
+app.sample\_scenario\_fixer
+-------------------------
+
+.. automodule:: sample_scenario_fixer
+   :members:
+
+app.sample\_scenario\_generator
+----------------------
+
+.. automodule:: app.sample_scenario_generator
+   :members:
+
 app.type\_hints
 ---------------
 
