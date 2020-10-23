@@ -36,7 +36,7 @@ from typing import List
 from utils.convertions import truncate_float_value
 import numpy
 
-OPTIMIZE: bool = True
+OPTIMIZE: bool = False
 
 DEBUG: bool = True
 """Indicates if some debug related actions or prints to the terminal should 

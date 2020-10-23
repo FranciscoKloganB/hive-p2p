@@ -126,6 +126,11 @@
 
 <span class="sd">    $ python hive_simulation.py -d --iters=1 --threading=12</span>
 
+<span class="sd">Warning:</span>
+<span class="sd">    Python&#39;s :py:class:`~py:concurrent.futures.ThreadPoolExecutor`</span>
+<span class="sd">    conceals/supresses any uncaught exceptions, i.e., simulations may fail to</span>
+<span class="sd">    execute or log items properly and no debug information will be provided</span>
+
 <span class="sd">If you don&#39;t have a simulation file yet, run the following instead::</span>
 
 <span class="sd">    $ python simfile_generator.py --file=filename.json</span>
