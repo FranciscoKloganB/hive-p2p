@@ -367,3 +367,4 @@ hive/app/static/outfiles/powerglove.out
 *.pyc
 *.png
 hive/app/sample_scenario_fixer.py
+hive/docs/make_docs.py
