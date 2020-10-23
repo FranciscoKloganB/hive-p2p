@@ -53,7 +53,7 @@ Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
 
 
 def set_blocks_size(n: int) -> None:
-    """Changes BLOCKS_SIZE constant value at run time to the given n bytes."""
+    """Changes :py:const:`BLOCKS_SIZE` constant value at run time to the given n bytes."""
     global BLOCKS_SIZE
     BLOCKS_SIZE = n
 
@@ -65,7 +65,7 @@ is divided into. Either use this or :py:const:`BLOCKS_SIZE` but not both."""
 
 
 def set_blocks_count(n: int) -> None:
-    """Changes NUMBER_PARTS constant value at run time."""
+    """Changes :py:const:`BLOCKS_COUNT` constant value at run time."""
     global BLOCKS_COUNT
     BLOCKS_COUNT = n
 
@@ -92,7 +92,7 @@ REPLICATION_LEVEL: int = 3
 
 
 def set_replication_level(n: int) -> None:
-    """Changes REPLICATION_LEVEL constant value at run time."""
+    """Changes :py:const:`REPLICATION_LEVEL` constant value at run time."""
     global REPLICATION_LEVEL
     REPLICATION_LEVEL = n
 
@@ -115,7 +115,7 @@ COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 
 
 def set_loss_chance(v: float) -> None:
-    """Changes LOSS_CHANCE constant value at run time."""
+    """Changes :py:const:`LOSS_CHANCE` constant value at run time."""
     global LOSS_CHANCE
     global DELIVER_CHANCE
     global COMMUNICATION_CHANCES
