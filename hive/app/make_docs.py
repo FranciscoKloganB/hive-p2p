@@ -31,7 +31,7 @@ def remove_local_user_paths():
 
 if __name__ == "__main__":
     # generate docs
-    os.system("cd ..\\docs && make html")
+    os.system("cd ../docs && make html && cd ..")
     # fix documents
     remove_local_user_paths()
     # save on remote
