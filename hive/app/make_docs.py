@@ -13,23 +13,20 @@ db = r"\\"
 
 def remove_local_user_paths():
     token = f"{db}hive{db}"
-    app_html_file = open(app_html_path, encoding="utf-8")
-    soup = bs4.BeautifulSoup(app_html_file.read(), "html.parser")
-    elements = soup.find_all("em", class_="property")
-    for tag in elements:
-        tag_text = tag.get_text()
-        if token in tag_text:
-            i = tag_text.find("'") + 1
-            j = tag_text.find(token) + 2
-            # exclude everything between the apostrophe and target token, discarding the first two backlashes
-            tag_text = f"{tag_text[0:i]}{tag_text[j:]}".replace(db, "/")
-            tag.string.replace_with(tag_text)
-            print(tag)
-    app_html_file.close()
-
-    html = soup.prettify("utf-8")
-    with open(app_html_path, "wb") as f:
-        f.write(html)
+    with open(app_html_path, "rb+") as f:
+        soup = bs4.BeautifulSoup(f, "html.parser")
+        elements = soup.find_all("em", class_="property")
+        for tag in elements:
+            tag_text = tag.get_text()
+            if token in tag_text:
+                i = tag_text.find("'") + 1
+                j = tag_text.find(token) + 2
+                # exclude everything between the apostrophe and "hive"
+                tag_text = f"{tag_text[0:i]}{tag_text[j:]}".replace(db, "/")
+                tag.string.replace_with(tag_text)
+        f.seek(0)
+        f.write(soup.prettify("utf-8"))
+        f.truncate()
 
 
 if __name__ == "__main__":
