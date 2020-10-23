@@ -18,9 +18,8 @@ working threads. For example::
 
 Warning:
     Python's :py:class:`~py:concurrent.futures.ThreadPoolExecutor`
-    conceals/supresses
-    any uncaught exceptions, i.e., simulations may fail to execute or log items
-    properly and no debug information will be provided
+    conceals/supresses any uncaught exceptions, i.e., simulations may fail to
+    execute or log items properly and no debug information will be provided
 
 If you don't have a simulation file yet, run the following instead::
 

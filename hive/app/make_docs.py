@@ -36,6 +36,6 @@ if __name__ == "__main__":
     # fix documents
     remove_local_user_paths()
     # save on remote
-    os.system('git add * && git commit -m "refresh docs" && git push')
+    os.system('git add ../docs/* && git commit -m "refresh docs" && git push')
     # update website
     os.system('firebase deploy')
