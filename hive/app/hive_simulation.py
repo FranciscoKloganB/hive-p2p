@@ -17,8 +17,8 @@ working threads. For example::
     $ python hive_simulation.py -d --iters=1 --threading=12
 
 Warning:
-     Be aware that python's
-    :py:class:`~py:concurrent.futures.ThreadPoolExecutor` conceals/suprresses
+    Python's :py:class:`~py:concurrent.futures.ThreadPoolExecutor`
+    conceals/supresses
     any uncaught exceptions, i.e., simulations may fail to execute or log items
     properly and no debug information will be provided
 
