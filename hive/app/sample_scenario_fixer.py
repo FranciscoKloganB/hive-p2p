@@ -1,3 +1,20 @@
+"""Excludes all  <topologies, equilibrium> pairs in the ``scenarios.json`` file
+that are not synthetizable by our implementation of
+:py:meth:`Metropolis Hastings
+<app.domain.helpers.matrices._metropolis_hastings>`. Such JSON file is created
+using the script :py:mod:`sample_scenario_generator`.
+
+To execute this file run the following command::
+
+    $ python sample_scenario_generator.py
+
+Note:
+    Thhis script expects to fix a file named "scenarios.json" under the
+    :py:const:`~app.environment_settings.RESOURCES_ROOT` directory. If you wish
+    to modify this behavior you need to customize the script to accept one
+    additional argument which indicates the name of the file to be fixed.
+"""
+
 import os
 import sys
 import json

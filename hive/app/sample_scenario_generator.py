@@ -4,7 +4,7 @@ algorithms. There is a small chance that generated pairs can not be solved by
 heuristic Markov chain generating algorithms such as our implementation of
 :py:meth:`Metropolis Hastings
 <app.domain.helpers.matrices._metropolis_hastings>`. To ensure that algorithm
-can be used over the generated pairs, run :py:mod:`sample_scenario_generator`,
+can be used over the generated pairs, run :py:mod:`sample_scenario_fixer`,
 which removes all invalid entries from the generated json file.
 
 To execute this file run the following command (both arguments are optional)::
