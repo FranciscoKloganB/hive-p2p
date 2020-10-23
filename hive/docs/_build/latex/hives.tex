@@ -7395,6 +7395,97 @@ The next string label in the sequence.
 
 
 
+\section{app.sample\_scenario\_fixer}
+\label{\detokenize{app:module-sample_scenario_fixer}}\label{\detokenize{app:app-sample-scenario-fixer}}\index{module@\spxentry{module}!sample\_scenario\_fixer@\spxentry{sample\_scenario\_fixer}}\index{sample\_scenario\_fixer@\spxentry{sample\_scenario\_fixer}!module@\spxentry{module}}
+Excludes all  \textless{}topologies, equilibrium\textgreater{} pairs in the \sphinxcode{\sphinxupquote{scenarios.json}} file
+that are not synthetizable by our implementation of
+{\hyperref[\detokenize{app.domain.helpers:app.domain.helpers.matrices._metropolis_hastings}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{Metropolis Hastings}}}}}. Such JSON file is created
+using the script \sphinxcode{\sphinxupquote{sample\_scenario\_generator}}.
+
+To execute this file run the following command:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYGZdl{} python sample\PYGZus{}scenario\PYGZus{}generator.py
+\end{sphinxVerbatim}
+
+\begin{sphinxadmonition}{note}{Note:}
+This script expects to fix a file named “scenarios.json” under the
+{\hyperref[\detokenize{app:app.environment_settings.RESOURCES_ROOT}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{RESOURCES\_ROOT}}}}} directory. If you wish
+to modify this behavior you need to customize the script to accept one
+additional argument which indicates the name of the file to be fixed.
+\end{sphinxadmonition}
+\index{\_\_select\_fastest\_topology\_\_() (in module sample\_scenario\_fixer)@\spxentry{\_\_select\_fastest\_topology\_\_()}\spxextra{in module sample\_scenario\_fixer}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app:sample_scenario_fixer.__select_fastest_topology__}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{\_\_select\_fastest\_topology\_\_}}}{\emph{\DUrole{n}{a}}, \emph{\DUrole{n}{v\_}}}{}
+Emulates Swarm Guidance Clusters’ fastest topology selection for MH algorithms.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{a}} (\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{\sphinxstyleliteralemphasis{\sphinxupquote{numpy.ndarray}}}) \textendash{} 
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{v\_}} (\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{\sphinxstyleliteralemphasis{\sphinxupquote{numpy.ndarray}}}) \textendash{} 
+
+\end{itemize}
+
+\item[{Return type}] \leavevmode
+\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{numpy.ndarray}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{\_\_validate\_mc\_\_() (in module sample\_scenario\_fixer)@\spxentry{\_\_validate\_mc\_\_()}\spxextra{in module sample\_scenario\_fixer}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app:sample_scenario_fixer.__validate_mc__}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{\_\_validate\_mc\_\_}}}{\emph{\DUrole{n}{m}}, \emph{\DUrole{n}{v\_}}}{}
+Asserts if the inputed Markov Matrix that converges to the desired equilibrium.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{m}} (\sphinxstyleliteralemphasis{\sphinxupquote{pandas.core.frame.DataFrame}}) \textendash{} 
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{v\_}} (\sphinxstyleliteralemphasis{\sphinxupquote{pandas.core.frame.DataFrame}}) \textendash{} 
+
+\end{itemize}
+
+\item[{Return type}] \leavevmode
+\sphinxhref{https://docs.python.org/3.7/library/functions.html\#bool}{bool}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+
+
+\section{app.sample\_scenario\_generator}
+\label{\detokenize{app:module-app.sample_scenario_generator}}\label{\detokenize{app:app-sample-scenario-generator}}\index{module@\spxentry{module}!app.sample\_scenario\_generator@\spxentry{app.sample\_scenario\_generator}}\index{app.sample\_scenario\_generator@\spxentry{app.sample\_scenario\_generator}!module@\spxentry{module}}
+Creates an arbrirary number of symmetric connected topologies and equilibrium
+vectors that can be read during simulations for one to one comparison between
+algorithms. There is a small chance that generated pairs can not be solved by
+heuristic Markov chain generating algorithms such as our implementation of
+{\hyperref[\detokenize{app.domain.helpers:app.domain.helpers.matrices._metropolis_hastings}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{Metropolis Hastings}}}}}. To ensure that algorithm
+can be used over the generated pairs, run {\hyperref[\detokenize{app:module-sample_scenario_fixer}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{sample\_scenario\_fixer}}}}},
+which removes all invalid entries from the generated json file.
+
+To execute this file run the following command (both arguments are optional):
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYGZdl{} python sample\PYGZus{}scenario\PYGZus{}generator.py \PYGZhy{}\PYGZhy{}samples=1000 \PYGZhy{}\PYGZhy{}network\PYGZus{}sizes=8,16,32
+\end{sphinxVerbatim}
+
+\begin{sphinxadmonition}{note}{Note:}
+The output of this script is a file named “scenarios.json” under the
+{\hyperref[\detokenize{app:app.environment_settings.RESOURCES_ROOT}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{RESOURCES\_ROOT}}}}} directory. If you wish
+to modify this behavior you need to customize the script to accept one
+additional argument which than saves the file under a different name. You
+also need to ensure that all other uses of “scenarios.json” are changed
+accordingly.
+\end{sphinxadmonition}
+
+
 \section{app.type\_hints}
 \label{\detokenize{app:module-app.type_hints}}\label{\detokenize{app:app-type-hints}}\index{module@\spxentry{module}!app.type\_hints@\spxentry{app.type\_hints}}\index{app.type\_hints@\spxentry{app.type\_hints}!module@\spxentry{module}}\index{ClusterDict (in module app.type\_hints)@\spxentry{ClusterDict}\spxextra{in module app.type\_hints}}
 
@@ -7506,12 +7597,16 @@ and as a result of some of the best or most well\sphinxhyphen{}known simulators 
 \item\relax\sphinxstyleindexentry{app.environment\_settings}\sphinxstyleindexpageref{app:\detokenize{module-app.environment_settings}}
 \item\relax\sphinxstyleindexentry{app.hive\_simulation}\sphinxstyleindexpageref{app:\detokenize{module-app.hive_simulation}}
 \item\relax\sphinxstyleindexentry{app.mixing\_rate\_sampler}\sphinxstyleindexpageref{app:\detokenize{module-app.mixing_rate_sampler}}
+\item\relax\sphinxstyleindexentry{app.sample\_scenario\_generator}\sphinxstyleindexpageref{app:\detokenize{module-app.sample_scenario_generator}}
 \item\relax\sphinxstyleindexentry{app.simfile\_generator}\sphinxstyleindexpageref{app:\detokenize{module-app.simfile_generator}}
 \item\relax\sphinxstyleindexentry{app.type\_hints}\sphinxstyleindexpageref{app:\detokenize{module-app.type_hints}}
 \item\relax\sphinxstyleindexentry{app.utils}\sphinxstyleindexpageref{app.utils:\detokenize{module-app.utils}}
 \item\relax\sphinxstyleindexentry{app.utils.convertions}\sphinxstyleindexpageref{app.utils:\detokenize{module-app.utils.convertions}}
 \item\relax\sphinxstyleindexentry{app.utils.crypto}\sphinxstyleindexpageref{app.utils:\detokenize{module-app.utils.crypto}}
 \item\relax\sphinxstyleindexentry{app.utils.randoms}\sphinxstyleindexpageref{app.utils:\detokenize{module-app.utils.randoms}}
+\indexspace
+\bigletter{s}
+\item\relax\sphinxstyleindexentry{sample\_scenario\_fixer}\sphinxstyleindexpageref{app:\detokenize{module-sample_scenario_fixer}}
 \end{sphinxtheindex}
 
 \renewcommand{\indexname}{Index}
