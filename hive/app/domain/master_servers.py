@@ -416,7 +416,7 @@ class HDFSMaster(Master):
                 cluster = self._new_cluster_group(cluster_class, size, fname)
 
                 filesize = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
-                es.set_blocks_size(1 * 1024 * 1024)
+                es.set_blocks_size(1 * 1024 * 1024)  # 1MB blocks.
                 es.set_blocks_count(math.ceil(filesize / es.BLOCKS_SIZE))
                 fblocks[fname] = self._split_files(fname, cluster, es.BLOCKS_SIZE)
 
