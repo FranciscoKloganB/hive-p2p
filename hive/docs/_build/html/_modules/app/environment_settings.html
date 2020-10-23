@@ -146,11 +146,13 @@
 <span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">truncate_float_value</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 
+<span class="n">OPTIMIZE</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+
 <span class="n">DEBUG</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="sd">&quot;&quot;&quot;Indicates if some debug related actions or prints to the terminal should </span>
 <span class="sd">be performed.&quot;&quot;&quot;</span>
 
-<span class="n">BLOCKS_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">131072</span>
+<span class="n">BLOCKS_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
 <span class="sd">&quot;&quot;&quot;Defines the raw size of each file block before it&#39;s wrapped in a </span>
 <span class="sd">:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instance </span>
 <span class="sd">object. </span>

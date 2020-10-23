@@ -1762,32 +1762,6 @@ was responsible for, otherwise <code class="docutils literal notranslate"><span 
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.SGClusterPerfect.new_desired_distribution">
-<code class="sig-name descname">new_desired_distribution</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">member_ids</span></em>, <em class="sig-param"><span class="n">member_uptimes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#SGClusterPerfect.new_desired_distribution"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Creates a random desired distribution.</p>
-<dl class="simple">
-<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.SGCluster.new_desired_distribution" title="app.domain.cluster_groups.SGCluster.new_desired_distribution"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.SGCluster.new_desired_distribution()</span></code></a></p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>member_ids</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – A list of <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> who are
-<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> of the <code class="docutils literal notranslate"><span class="pre">SGCluster</span></code>.</p></li>
-<li><p><strong>member_uptimes</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>]</em>) – This method’s parameter is ignored and can be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of floats with which represent how the files should be
-distributed among network nodes in the long-run.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="app.domain.cluster_groups.SGClusterPerfect.new_transition_matrix">
 <code class="sig-name descname">new_transition_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#SGClusterPerfect.new_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Creates a new transition matrix that is likely to be a Markov Matrix.</p>
@@ -1818,6 +1792,31 @@ epoch. See
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.SGClusterPerfect.select_fastest_topology">
+<code class="sig-name descname">select_fastest_topology</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#SGClusterPerfect.select_fastest_topology"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Creates multiple transition matrices and selects the fastest.</p>
+<p>The fastest of the created transition matrices corresponds to the one
+with a faster mixing rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – An adjacency matrix that represents the network topology.</p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – A desired distribution vector that defines the returned
+matrix steady state property.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A transition matrix that is likely to be a markov matrix whose
+steady state is <code class="docutils literal notranslate"><span class="pre">v_</span></code>, but is not yet validated. See
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">_validate_transition_matrix()</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2238,30 +2237,6 @@ See <a class="reference internal" href="#module-app.domain.network_nodes" title=
 <em class="property">class </em><code class="sig-name descname">SGMaster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#SGMaster"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#app.domain.master_servers.Master" title="app.domain.master_servers.Master"><code class="xref py py-class docutils literal notranslate"><span class="pre">app.domain.master_servers.Master</span></code></a></p>
 <dl class="py method">
-<dt id="app.domain.master_servers.SGMaster.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simfile_name</span></em>, <em class="sig-param"><span class="n">sid</span></em>, <em class="sig-param"><span class="n">epochs</span></em>, <em class="sig-param"><span class="n">cluster_class</span></em>, <em class="sig-param"><span class="n">node_class</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#SGMaster.__init__"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Instantiates an Master object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>simfile_name</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – A path to the simulation file to be run by the simulator.</p></li>
-<li><p><strong>sid</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Identifier that generates unique output file names,
-thus guaranteeing that different simulation instances do not
-overwrite previous out files.</p></li>
-<li><p><strong>epochs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The number of discrete time steps the simulation lasts.</p></li>
-<li><p><strong>cluster_class</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the class used to instantiate cluster group
-instances through reflection. See <a class="reference internal" href="#module-app.domain.cluster_groups" title="app.domain.cluster_groups"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cluster</span> <span class="pre">groups</span> <span class="pre">module</span></code></a>.</p></li>
-<li><p><strong>node_class</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the class used to instantiate network node
-instances through reflection. See <a class="reference internal" href="#module-app.domain.network_nodes" title="app.domain.network_nodes"><code class="xref py py-mod docutils literal notranslate"><span class="pre">network</span> <span class="pre">nodes</span> <span class="pre">module</span></code></a>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="app.domain.master_servers.SGMaster.get_cloud_reference">
 <code class="sig-name descname">get_cloud_reference</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#SGMaster.get_cloud_reference"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Use to obtain a reference to 3rd party cloud storage provider</p>
@@ -2282,24 +2257,6 @@ are responsible for persisting.</p>
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py method">
-<dt id="app.domain.master_servers.SGMaster.get_next_scenario">
-<em class="property">static </em><code class="sig-name descname">get_next_scenario</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size_key</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/master_servers.html#SGMaster.get_next_scenario"><span class="viewcode-link">[source]</span></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>size_key</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Tuple[np.ndarray, np.ndarray]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="app.domain.master_servers.SGMaster.SCENARIOS">
-<code class="sig-name descname">SCENARIOS</code><em class="property">: Dict<span class="p">[</span><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a><span class="p">, </span>Dict<span class="p">[</span><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">str</a><span class="p">, </span>List<span class="p">]</span><span class="p">]</span></em><em class="property"> = {}</em></dt>
-<dd></dd></dl>
 
 </dd></dl>
 

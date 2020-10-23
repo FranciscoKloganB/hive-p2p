@@ -123,6 +123,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">type_hints</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="kn">import</span> <span class="nn">hive_simulation</span> <span class="k">as</span> <span class="nn">hs</span>
 <span class="kn">import</span> <span class="nn">environment_settings</span> <span class="k">as</span> <span class="nn">es</span>
 <span class="kn">import</span> <span class="nn">domain.master_servers</span> <span class="k">as</span> <span class="nn">ms</span>
 <span class="kn">import</span> <span class="nn">domain.helpers.enums</span> <span class="k">as</span> <span class="nn">e</span>
@@ -1039,13 +1040,13 @@
 
 <div class="viewcode-block" id="SGCluster._normalize_avg_"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.SGCluster._normalize_avg_">[docs]</a>    <span class="k">def</span> <span class="nf">_normalize_avg_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">)</span>
-
-        <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">))</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">)))</span>
         <span class="n">magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
-        <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">es</span><span class="o">.</span><span class="n">ATOL</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-        <span class="n">goaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span>
+        <span class="n">ptotal</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">BLOCKS_COUNT</span> <span class="o">*</span> <span class="n">es</span><span class="o">.</span><span class="n">REPLICATION_LEVEL</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ptotal</span><span class="p">)</span>
+        <span class="n">atol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">es</span><span class="o">.</span><span class="n">ATOL</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">*</span> <span class="n">ptotal</span>
+        <span class="n">goaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">avg_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">es</span><span class="o">.</span><span class="n">RTOL</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_topology_goal_performance</span><span class="p">(</span><span class="n">goaled</span><span class="p">,</span> <span class="n">magnitude</span><span class="p">)</span></div>
 
@@ -1088,8 +1089,8 @@
                  <span class="n">sim_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">origin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">master</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">members</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
-        <span class="c1"># es.set_loss_chance(0.0)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corruption_chances</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+        <span class="n">es</span><span class="o">.</span><span class="n">set_loss_chance</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span></div>
 
     <span class="c1"># region Swarm guidance structure management</span>
 <div class="viewcode-block" id="SGClusterPerfect.new_transition_matrix"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.SGClusterPerfect.new_transition_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">new_transition_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
@@ -1100,49 +1101,18 @@
 <span class="sd">                The labeled matrix that has the fastests mixing rate from all</span>
 <span class="sd">                the pondered strategies.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">node_uptimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">node_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">node_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
 
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">members</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">node_uptimes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">uptime</span><span class="p">)</span>
-            <span class="n">node_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">v_</span> <span class="o">=</span> <span class="n">hs</span><span class="o">.</span><span class="n">get_next_scenario</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_size</span><span class="p">))</span>
 
-        <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_ids</span><span class="p">)</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">new_symmetric_connected_matrix</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">v_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_desired_distribution</span><span class="p">(</span><span class="n">node_ids</span><span class="p">,</span> <span class="n">node_uptimes</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">v_</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">node_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">node_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">node_ids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_fastest_topology</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">node_ids</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">node_ids</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="SGClusterPerfect.new_desired_distribution"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.SGClusterPerfect.new_desired_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">new_desired_distribution</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">member_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">member_uptimes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Creates a random desired distribution.</span>
-
-<span class="sd">        Overrides:</span>
-<span class="sd">            :py:meth:`app.domain.cluster_groups.SGCluster.new_desired_distribution`</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            member_ids:</span>
-<span class="sd">                A list of :py:attr:`node identifiers</span>
-<span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` who are</span>
-<span class="sd">                :py:attr:`~Cluster.members` of the ``SGCluster``.</span>
-<span class="sd">            member_uptimes:</span>
-<span class="sd">                This method&#39;s parameter is ignored and can be ``None``.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            :py:class:`~np:numpy.ndarray`:</span>
-<span class="sd">                A list of floats with which represent how the files should be</span>
-<span class="sd">                distributed among network nodes in the long-run.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">u_</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">new_vector</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">member_ids</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">v_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">u_</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cv_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">avg_</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v_</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">member_ids</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="k">return</span> <span class="n">u_</span></div>
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Simulation steps</span>
@@ -1175,16 +1145,17 @@
     <span class="c1"># endregion</span>
 
     <span class="c1"># region Helpers</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    def select_fastest_topology(</span>
-<span class="sd">            self, a: np.ndarray, v_: np.ndarray) -&gt; np.ndarray:</span>
-<span class="sd">        fastest_matrix, _ = mm.new_mh_transition_matrix(a, v_)</span>
-<span class="sd">        size = fastest_matrix.shape[0]</span>
-<span class="sd">        for j in range(size):</span>
-<span class="sd">            fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])</span>
-<span class="sd">            fastest_matrix[:, j] /= fastest_matrix[:, j].sum()</span>
-<span class="sd">        return fastest_matrix</span>
-<span class="sd">    &quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="SGClusterPerfect.select_fastest_topology"><a class="viewcode-back" href="../../../app.domain.html#app.domain.cluster_groups.SGClusterPerfect.select_fastest_topology">[docs]</a>    <span class="k">def</span> <span class="nf">select_fastest_topology</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">es</span><span class="o">.</span><span class="n">OPTIMIZE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">select_fastest_topology</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_</span><span class="p">)</span>
+
+        <span class="n">fastest_matrix</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">new_mh_transition_matrix</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_</span><span class="p">)</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">fastest_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+            <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/=</span> <span class="n">fastest_matrix</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">fastest_matrix</span></div></div>
     <span class="c1"># endregion</span>
 
 

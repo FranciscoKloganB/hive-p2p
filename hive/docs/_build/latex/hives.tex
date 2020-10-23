@@ -74,7 +74,7 @@
 
 
 \title{Hives}
-\date{Oct 08, 2020}
+\date{Oct 23, 2020}
 \release{1.6.0rc1}
 \author{Francisco Barros}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -1386,6 +1386,20 @@ groups of {\hyperref[\detokenize{app.domain:app.domain.network_nodes.Node}]{\sph
 
 \end{fulllineitems}
 
+\index{new\_vector() (in module app.domain.helpers.matrices)@\spxentry{new\_vector()}\spxextra{in module app.domain.helpers.matrices}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app.domain.helpers:app.domain.helpers.matrices.new_vector}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{new\_vector}}}{\emph{\DUrole{n}{size}}}{}~\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{size}} (\sphinxhref{https://docs.python.org/3.7/library/functions.html\#int}{\sphinxstyleliteralemphasis{\sphinxupquote{int}}}) \textendash{} 
+
+\item[{Return type}] \leavevmode
+\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{numpy.ndarray}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
 
 
 \subparagraph{app.domain.helpers.smart\_dataclasses}
@@ -1395,17 +1409,17 @@ encapsulating attribute and method behaviour.
 \index{FileBlockData (class in app.domain.helpers.smart\_dataclasses)@\spxentry{FileBlockData}\spxextra{class in app.domain.helpers.smart\_dataclasses}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxbfcode{\sphinxupquote{FileBlockData}}}{\emph{\DUrole{n}{hive\_id}}, \emph{\DUrole{n}{name}}, \emph{\DUrole{n}{number}}, \emph{\DUrole{n}{data}}}{}
+\phantomsection\label{\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class }}\sphinxbfcode{\sphinxupquote{FileBlockData}}}{\emph{\DUrole{n}{cluster\_id}}, \emph{\DUrole{n}{name}}, \emph{\DUrole{n}{number}}, \emph{\DUrole{n}{data}}}{}
 Bases: \sphinxhref{https://docs.python.org/3.7/library/functions.html\#object}{\sphinxcode{\sphinxupquote{object}}}
 
 Wrapping class for the contents of a file block.
 
 Among other responsabilities \sphinxtitleref{FileBlockData} helps managing simulation
 parameters, e.g., replica control such or file block integrity.
-\index{hive\_id (FileBlockData attribute)@\spxentry{hive\_id}\spxextra{FileBlockData attribute}}
+\index{cluster\_id (FileBlockData attribute)@\spxentry{cluster\_id}\spxextra{FileBlockData attribute}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData.hive_id}}\pysigline{\sphinxbfcode{\sphinxupquote{hive\_id}}}
+\phantomsection\label{\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData.cluster_id}}\pysigline{\sphinxbfcode{\sphinxupquote{cluster\_id}}}
 Unique identifier of the cluster that manages the file block.
 
 \end{fulllineitems}
@@ -1475,12 +1489,12 @@ The hash value of data resulting from a SHA256 digest.
 \index{\_\_init\_\_() (FileBlockData method)@\spxentry{\_\_init\_\_()}\spxextra{FileBlockData method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData.__init__}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{\_\_init\_\_}}}{\emph{\DUrole{n}{hive\_id}}, \emph{\DUrole{n}{name}}, \emph{\DUrole{n}{number}}, \emph{\DUrole{n}{data}}}{}
+\phantomsection\label{\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData.__init__}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{\_\_init\_\_}}}{\emph{\DUrole{n}{cluster\_id}}, \emph{\DUrole{n}{name}}, \emph{\DUrole{n}{number}}, \emph{\DUrole{n}{data}}}{}
 Creates an instance of \sphinxtitleref{FileBlockData}.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{hive\_id}} (\sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{\sphinxstyleliteralemphasis{\sphinxupquote{str}}}) \textendash{} Unique identifier of the cluster that manages the file block.
+\sphinxstyleliteralstrong{\sphinxupquote{cluster\_id}} (\sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{\sphinxstyleliteralemphasis{\sphinxupquote{str}}}) \textendash{} Unique identifier of the cluster that manages the file block.
 
 \item {} 
 \sphinxstyleliteralstrong{\sphinxupquote{name}} (\sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{\sphinxstyleliteralemphasis{\sphinxupquote{str}}}) \textendash{} The name of the file the file block belongs to.
@@ -1580,7 +1594,7 @@ can be used to log, for example, the average recovery
 delay\_replication in a simulation.
 
 \item[{Return type}] \leavevmode
-\sphinxhref{https://docs.python.org/3.7/library/functions.html\#int}{int}
+\sphinxhref{https://docs.python.org/3.7/library/functions.html\#float}{float}
 
 \end{description}\end{quote}
 
@@ -2356,8 +2370,8 @@ Logs the degree of all nodes in a Markov Matrix overlay, at the
 time of its creation, before any faults on the overlay occurs.
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
-\sphinxstyleliteralstrong{\sphinxupquote{nodes\_degrees}} (\sphinxstyleliteralemphasis{\sphinxupquote{Dict}}\sphinxstyleliteralemphasis{\sphinxupquote{{[}}}\sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{\sphinxstyleliteralemphasis{\sphinxupquote{str}}}\sphinxstyleliteralemphasis{\sphinxupquote{, }}\sphinxhref{https://docs.python.org/3.7/library/functions.html\#float}{\sphinxstyleliteralemphasis{\sphinxupquote{float}}}\sphinxstyleliteralemphasis{\sphinxupquote{{]}}}) \textendash{} A dictionary mapping the {\hyperref[\detokenize{app.domain:app.domain.network_nodes.Node.id}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{node identifiers}}}}} to their \sphinxcode{\sphinxupquote{in\sphinxhyphen{}degree}}
-and \sphinxcode{\sphinxupquote{out\sphinxhyphen{}degree}} concatenated as a float.
+\sphinxstyleliteralstrong{\sphinxupquote{nodes\_degrees}} (\sphinxstyleliteralemphasis{\sphinxupquote{Dict}}\sphinxstyleliteralemphasis{\sphinxupquote{{[}}}\sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{\sphinxstyleliteralemphasis{\sphinxupquote{str}}}\sphinxstyleliteralemphasis{\sphinxupquote{, }}\sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{\sphinxstyleliteralemphasis{\sphinxupquote{str}}}\sphinxstyleliteralemphasis{\sphinxupquote{{]}}}) \textendash{} A dictionary mapping the {\hyperref[\detokenize{app.domain:app.domain.network_nodes.Node.id}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{node identifiers}}}}} to their \sphinxcode{\sphinxupquote{in\sphinxhyphen{}degree}}
+and \sphinxcode{\sphinxupquote{out\sphinxhyphen{}degree}} seperated by the delimiter \sphinxcode{\sphinxupquote{i\#o}}.
 
 \end{description}\end{quote}
 
@@ -4437,33 +4451,18 @@ was responsible for, otherwise \sphinxcode{\sphinxupquote{True}}.
 
 \end{fulllineitems}
 
-\index{new\_desired\_distribution() (SGClusterPerfect method)@\spxentry{new\_desired\_distribution()}\spxextra{SGClusterPerfect method}}
+\index{new\_transition\_matrix() (SGClusterPerfect method)@\spxentry{new\_transition\_matrix()}\spxextra{SGClusterPerfect method}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{app.domain:app.domain.cluster_groups.SGClusterPerfect.new_desired_distribution}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{new\_desired\_distribution}}}{\emph{\DUrole{n}{member\_ids}}, \emph{\DUrole{n}{member\_uptimes}}}{}
-Creates a random desired distribution.
-\begin{description}
-\item[{Overrides:}] \leavevmode
-{\hyperref[\detokenize{app.domain:app.domain.cluster_groups.SGCluster.new_desired_distribution}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{app.domain.cluster\_groups.SGCluster.new\_desired\_distribution()}}}}}
-
-\end{description}
+\phantomsection\label{\detokenize{app.domain:app.domain.cluster_groups.SGClusterPerfect.new_transition_matrix}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{new\_transition\_matrix}}}{}{}
+Creates a new transition matrix that is likely to be a Markov Matrix.
 \begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode\begin{itemize}
-\item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{member\_ids}} (\sphinxstyleliteralemphasis{\sphinxupquote{List}}\sphinxstyleliteralemphasis{\sphinxupquote{{[}}}\sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{\sphinxstyleliteralemphasis{\sphinxupquote{str}}}\sphinxstyleliteralemphasis{\sphinxupquote{{]}}}) \textendash{} A list of {\hyperref[\detokenize{app.domain:app.domain.network_nodes.Node.id}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{node identifiers}}}}} who are
-{\hyperref[\detokenize{app.domain:app.domain.cluster_groups.Cluster.members}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{members}}}}} of the \sphinxcode{\sphinxupquote{SGCluster}}.
-
-\item {} 
-\sphinxstyleliteralstrong{\sphinxupquote{member\_uptimes}} (\sphinxstyleliteralemphasis{\sphinxupquote{List}}\sphinxstyleliteralemphasis{\sphinxupquote{{[}}}\sphinxhref{https://docs.python.org/3.7/library/functions.html\#float}{\sphinxstyleliteralemphasis{\sphinxupquote{float}}}\sphinxstyleliteralemphasis{\sphinxupquote{{]}}}) \textendash{} This method’s parameter is ignored and can be \sphinxcode{\sphinxupquote{None}}.
-
-\end{itemize}
-
 \item[{Returns}] \leavevmode
-A list of floats with which represent how the files should be
-distributed among network nodes in the long\sphinxhyphen{}run.
+The labeled matrix that has the fastests mixing rate from all
+the pondered strategies.
 
 \item[{Return type}] \leavevmode
-\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{\sphinxcode{\sphinxupquote{ndarray}}}
+\sphinxhref{https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html\#pandas.DataFrame}{\sphinxcode{\sphinxupquote{DataFrame}}}
 
 \end{description}\end{quote}
 
@@ -4487,6 +4486,37 @@ epoch. See
 
 \item[{Return type}] \leavevmode
 List{[}{\hyperref[\detokenize{app:app.type_hints.NodeType}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{NodeType}}}}}{]}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{select\_fastest\_topology() (SGClusterPerfect method)@\spxentry{select\_fastest\_topology()}\spxextra{SGClusterPerfect method}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app.domain:app.domain.cluster_groups.SGClusterPerfect.select_fastest_topology}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{select\_fastest\_topology}}}{\emph{\DUrole{n}{a}}, \emph{\DUrole{n}{v\_}}}{}
+Creates multiple transition matrices and selects the fastest.
+
+The fastest of the created transition matrices corresponds to the one
+with a faster mixing rate.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{a}} (\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{\sphinxcode{\sphinxupquote{ndarray}}}) \textendash{} An adjacency matrix that represents the network topology.
+
+\item {} 
+\sphinxstyleliteralstrong{\sphinxupquote{v\_}} (\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{\sphinxcode{\sphinxupquote{ndarray}}}) \textendash{} A desired distribution vector that defines the returned
+matrix steady state property.
+
+\end{itemize}
+
+\item[{Returns}] \leavevmode
+A transition matrix that is likely to be a markov matrix whose
+steady state is \sphinxcode{\sphinxupquote{v\_}}, but is not yet validated. See
+\sphinxcode{\sphinxupquote{\_validate\_transition\_matrix()}}.
+
+\item[{Return type}] \leavevmode
+\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{\sphinxcode{\sphinxupquote{ndarray}}}
 
 \end{description}\end{quote}
 
@@ -6583,6 +6613,38 @@ List{[}\sphinxhref{https://docs.python.org/3.7/library/functions.html\#float}{fl
 
 \end{fulllineitems}
 
+\index{set\_blocks\_count() (in module app.environment\_settings)@\spxentry{set\_blocks\_count()}\spxextra{in module app.environment\_settings}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app:app.environment_settings.set_blocks_count}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{set\_blocks\_count}}}{\emph{\DUrole{n}{n}}}{}
+Changes NUMBER\_PARTS constant value at run time.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{n}} (\sphinxhref{https://docs.python.org/3.7/library/functions.html\#int}{\sphinxstyleliteralemphasis{\sphinxupquote{int}}}) \textendash{} 
+
+\item[{Return type}] \leavevmode
+\sphinxhref{https://docs.python.org/3.7/library/constants.html\#None}{None}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{set\_blocks\_size() (in module app.environment\_settings)@\spxentry{set\_blocks\_size()}\spxextra{in module app.environment\_settings}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app:app.environment_settings.set_blocks_size}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{set\_blocks\_size}}}{\emph{\DUrole{n}{n}}}{}
+Changes BLOCKS\_SIZE constant value at run time to the given n bytes.
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{n}} (\sphinxhref{https://docs.python.org/3.7/library/functions.html\#int}{\sphinxstyleliteralemphasis{\sphinxupquote{int}}}) \textendash{} 
+
+\item[{Return type}] \leavevmode
+\sphinxhref{https://docs.python.org/3.7/library/constants.html\#None}{None}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
 \index{set\_loss\_chance() (in module app.environment\_settings)@\spxentry{set\_loss\_chance()}\spxextra{in module app.environment\_settings}}
 
 \begin{fulllineitems}
@@ -6632,10 +6694,33 @@ with a relative tolerance that is the minimum value in
 
 \end{fulllineitems}
 
+\index{BLOCKS\_COUNT (in module app.environment\_settings)@\spxentry{BLOCKS\_COUNT}\spxextra{in module app.environment\_settings}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app:app.environment_settings.BLOCKS_COUNT}}\pysigline{\sphinxbfcode{\sphinxupquote{BLOCKS\_COUNT}}\sphinxbfcode{\sphinxupquote{: \sphinxhref{https://docs.python.org/3.7/library/functions.html\#int}{int}}}\sphinxbfcode{\sphinxupquote{ = 333}}}
+Defines into how many
+{\hyperref[\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{FileBlockData}}}}} instances a file
+is divided into. Either use this or {\hyperref[\detokenize{app:app.environment_settings.BLOCKS_SIZE}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{BLOCKS\_SIZE}}}}} but not both.
+
+\end{fulllineitems}
+
+\index{BLOCKS\_SIZE (in module app.environment\_settings)@\spxentry{BLOCKS\_SIZE}\spxextra{in module app.environment\_settings}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app:app.environment_settings.BLOCKS_SIZE}}\pysigline{\sphinxbfcode{\sphinxupquote{BLOCKS\_SIZE}}\sphinxbfcode{\sphinxupquote{: \sphinxhref{https://docs.python.org/3.7/library/functions.html\#int}{int}}}\sphinxbfcode{\sphinxupquote{ = 1048576}}}
+Defines the raw size of each file block before it’s wrapped in a
+{\hyperref[\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{FileBlockData}}}}} instance
+object.
+
+Some possible values include \{ 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
+1MB = 1048576B; 20MB = 20971520B \}.
+
+\end{fulllineitems}
+
 \index{DEBUG (in module app.environment\_settings)@\spxentry{DEBUG}\spxextra{in module app.environment\_settings}}
 
 \begin{fulllineitems}
-\phantomsection\label{\detokenize{app:app.environment_settings.DEBUG}}\pysigline{\sphinxbfcode{\sphinxupquote{DEBUG}}\sphinxbfcode{\sphinxupquote{: \sphinxhref{https://docs.python.org/3.7/library/functions.html\#bool}{bool}}}\sphinxbfcode{\sphinxupquote{ = False}}}
+\phantomsection\label{\detokenize{app:app.environment_settings.DEBUG}}\pysigline{\sphinxbfcode{\sphinxupquote{DEBUG}}\sphinxbfcode{\sphinxupquote{: \sphinxhref{https://docs.python.org/3.7/library/functions.html\#bool}{bool}}}\sphinxbfcode{\sphinxupquote{ = True}}}
 Indicates if some debug related actions or prints to the terminal should
 be performed.
 
@@ -6728,21 +6813,7 @@ py
 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{app:app.environment_settings.OUTFILE_ROOT}}\pysigline{\sphinxbfcode{\sphinxupquote{OUTFILE\_ROOT}}\sphinxbfcode{\sphinxupquote{: \sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{str}}}\sphinxbfcode{\sphinxupquote{ = \textquotesingle{}C:\textbackslash{}\textbackslash{}GitHub\textbackslash{}\textbackslash{}hive\sphinxhyphen{}msc\sphinxhyphen{}thesis\textbackslash{}\textbackslash{}hive\textbackslash{}\textbackslash{}docs\textbackslash{}\textbackslash{}static\textbackslash{}\textbackslash{}outfiles\textquotesingle{}}}}
-Path to the folder where simulation output files are located will be
-stored.
-
-\end{fulllineitems}
-
-\index{READ\_SIZE (in module app.environment\_settings)@\spxentry{READ\_SIZE}\spxextra{in module app.environment\_settings}}
-
-\begin{fulllineitems}
-\phantomsection\label{\detokenize{app:app.environment_settings.READ_SIZE}}\pysigline{\sphinxbfcode{\sphinxupquote{READ\_SIZE}}\sphinxbfcode{\sphinxupquote{: \sphinxhref{https://docs.python.org/3.7/library/functions.html\#int}{int}}}\sphinxbfcode{\sphinxupquote{ = 131072}}}
-Defines the raw size of each file block before it’s wrapped in a
-{\hyperref[\detokenize{app.domain.helpers:app.domain.helpers.smart_dataclasses.FileBlockData}]{\sphinxcrossref{\sphinxcode{\sphinxupquote{FileBlockData}}}}} instance
-object.
-
-Some possible values include \{ 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
-1MB = 1048576B; 20MB = 20971520B \}.
+Path to the folder where simulation output files are located.
 
 \end{fulllineitems}
 
@@ -6751,6 +6822,14 @@ Some possible values include \{ 32KB = 32768B; 128KB = 131072B; 512KB = 524288B;
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{app:app.environment_settings.REPLICATION_LEVEL}}\pysigline{\sphinxbfcode{\sphinxupquote{REPLICATION\_LEVEL}}\sphinxbfcode{\sphinxupquote{: \sphinxhref{https://docs.python.org/3.7/library/functions.html\#int}{int}}}\sphinxbfcode{\sphinxupquote{ = 3}}}
 The amount of replicas each file block has.
+
+\end{fulllineitems}
+
+\index{RESOURCES\_ROOT (in module app.environment\_settings)@\spxentry{RESOURCES\_ROOT}\spxextra{in module app.environment\_settings}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app:app.environment_settings.RESOURCES_ROOT}}\pysigline{\sphinxbfcode{\sphinxupquote{RESOURCES\_ROOT}}\sphinxbfcode{\sphinxupquote{: \sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{str}}}\sphinxbfcode{\sphinxupquote{ = \textquotesingle{}C:\textbackslash{}\textbackslash{}GitHub\textbackslash{}\textbackslash{}hive\sphinxhyphen{}msc\sphinxhyphen{}thesis\textbackslash{}\textbackslash{}hive\textbackslash{}\textbackslash{}docs\textbackslash{}\textbackslash{}static\textbackslash{}\textbackslash{}resources\textquotesingle{}}}}
+Path to the folder where miscellaneous files are located.
 
 \end{fulllineitems}
 
@@ -6960,6 +7039,20 @@ lasts.
 
 \item[{Return type}] \leavevmode
 \sphinxhref{https://docs.python.org/3.7/library/constants.html\#None}{None}
+
+\end{description}\end{quote}
+
+\end{fulllineitems}
+
+\index{get\_next\_scenario() (in module app.hive\_simulation)@\spxentry{get\_next\_scenario()}\spxextra{in module app.hive\_simulation}}
+
+\begin{fulllineitems}
+\phantomsection\label{\detokenize{app:app.hive_simulation.get_next_scenario}}\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get\_next\_scenario}}}{\emph{\DUrole{n}{k}}}{}~\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\sphinxstyleliteralstrong{\sphinxupquote{k}} (\sphinxhref{https://docs.python.org/3.7/library/stdtypes.html\#str}{\sphinxstyleliteralemphasis{\sphinxupquote{str}}}) \textendash{} 
+
+\item[{Return type}] \leavevmode
+Tuple{[}\sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{numpy.ndarray}, \sphinxhref{https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html\#numpy.ndarray}{numpy.ndarray}{]}
 
 \end{description}\end{quote}
 

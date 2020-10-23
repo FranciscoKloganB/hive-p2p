@@ -279,7 +279,7 @@ is divided into. Either use this or <a class="reference internal" href="#app.env
 
 <dl class="py data">
 <dt id="app.environment_settings.BLOCKS_SIZE">
-<code class="sig-name descname">BLOCKS_SIZE</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 131072</em></dt>
+<code class="sig-name descname">BLOCKS_SIZE</code><em class="property">: <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">int</a></em><em class="property"> = 1048576</em></dt>
 <dd><p>Defines the raw size of each file block before it’s wrapped in a
 <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileBlockData</span></code></a> instance
 object.</p>
@@ -534,6 +534,19 @@ lasts.</p></li>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">None</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="app.hive_simulation.get_next_scenario">
+<code class="sig-name descname">get_next_scenario</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/hive_simulation.html#get_next_scenario"><span class="viewcode-link">[source]</span></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>k</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Tuple[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">numpy.ndarray</a>]</p>
 </dd>
 </dl>
 </dd></dl>
