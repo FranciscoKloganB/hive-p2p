@@ -1,3 +1,25 @@
+"""Creates an arbrirary number of symmetric connected topologies and equilibrium
+vectors that can be read during simulations for one to one comparison between
+algorithms. There is a small chance that generated pairs can not be solved by
+heuristic Markov chain generating algorithms such as our implementation of
+:py:meth:`Metropolis Hastings
+<app.domain.helpers.matrices._metropolis_hastings>`. To ensure that algorithm
+can be used over the generated pairs, run :py:mod:`sample_scenario_generator`,
+which removes all invalid entries from the generated json file.
+
+To execute this file run the following command (both arguments are optional)::
+
+    $ python sample_scenario_generator.py --samples=1000 --network_sizes=8,16,32
+
+Note:
+    The output of this script is a file named "scenarios.json" under the
+    :py:const:`~app.environment_settings.RESOURCES_ROOT` directory. If you wish
+    to modify this behavior you need to customize the script to accept one
+    additional argument which than saves the file under a different name. You
+    also need to ensure that all other uses of "scenarios.json" are changed
+    accordingly.
+"""
+
 import os
 import sys
 import ast
