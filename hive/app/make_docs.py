@@ -31,10 +31,10 @@ def remove_local_user_paths():
 
 if __name__ == "__main__":
     # generate docs
-    # os.system("cd ..\\docs && make html")
+    os.system("cd ..\\docs && make html")
     # fix documents
     remove_local_user_paths()
     # save on remote
-    # os.system("git add -f * && git commit -m 'refresh docs' && git push")
+    os.system("git add -f * && git commit -m 'refresh docs' && git push")
     # # update website
-    # os.system("firebase deploy")
+    os.system("firebase deploy")
