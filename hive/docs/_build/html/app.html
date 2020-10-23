@@ -429,6 +429,13 @@ working threads. For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python hive_simulation.py -d --iters=1 --threading=12
 </pre></div>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Be aware that python’s</p>
+<p><a class="reference external" href="https://docs.python.org/3.7/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThreadPoolExecutor</span></code></a> conceals/suprresses
+any uncaught exceptions, i.e., simulations may fail to execute or log items
+properly and no debug information will be provided</p>
+</div>
 <p>If you don’t have a simulation file yet, run the following instead:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python simfile_generator.py --file=filename.json
 </pre></div>
