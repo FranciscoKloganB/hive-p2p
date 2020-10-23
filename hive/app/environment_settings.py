@@ -42,7 +42,7 @@ DEBUG: bool = True
 """Indicates if some debug related actions or prints to the terminal should 
 be performed."""
 
-BLOCKS_SIZE: int = 131072
+BLOCKS_SIZE: int = 1 * 1024 * 1024
 """Defines the raw size of each file block before it's wrapped in a 
 :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instance 
 object. 
