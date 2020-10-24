@@ -36,9 +36,9 @@ from typing import List
 from utils.convertions import truncate_float_value
 import numpy
 
-OPTIMIZE: bool = False
+OPTIMIZE: bool = True
 
-DEBUG: bool = True
+DEBUG: bool = False
 """Indicates if some debug related actions or prints to the terminal should 
 be performed."""
 
@@ -58,7 +58,7 @@ def set_blocks_size(n: int) -> None:
     BLOCKS_SIZE = n
 
 
-BLOCKS_COUNT: int = 333
+BLOCKS_COUNT: int = 46
 """Defines into how many 
 :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instances a file
 is divided into. Either use this or :py:const:`BLOCKS_SIZE` but not both."""
