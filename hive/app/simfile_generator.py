@@ -282,10 +282,10 @@ if __name__ == "__main__":
     try:
         short_opts = "f:"
         long_opts = ["file="]
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        for options, args in options:
-            if options in ("-f", "--file"):
-                simfile_name_ = str(args).strip()
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        for arg, val in args:
+            if arg in ("-f", "--file"):
+                simfile_name_ = str(val).strip()
                 if simfile_name_:
                     main(simfile_name_)
                 else:
