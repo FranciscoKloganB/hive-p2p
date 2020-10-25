@@ -82,14 +82,15 @@ def get_next_scenario(k: str) -> Tuple[np.ndarray, np.ndarray]:
     """Function used for one-to-one testing of different swarm guidance
     configurations.
 
+    Note:
+        This method should only be used when
+        :py:const:`app.environment_settings.DEBUG` is set to True.
+
     Args:
         k:
             A string identifying the pool of matrix, vector pairs to get the
             scenario. Usually, a string representation of an integer which
             corresponds to the network size being tested.
-    Note:
-        This method should only be used when
-        :py:const:`app.environment_settings.DEBUG` is set to True.
 
     Returns:
         A topology matrix and a random equilibrium vector that can be used
