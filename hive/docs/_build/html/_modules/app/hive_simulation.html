@@ -189,6 +189,22 @@
 
 
 <div class="viewcode-block" id="get_next_scenario"><a class="viewcode-back" href="../../app.html#app.hive_simulation.get_next_scenario">[docs]</a><span class="k">def</span> <span class="nf">get_next_scenario</span><span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Function used for one-to-one testing of different swarm guidance</span>
+<span class="sd">    configurations.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        k:</span>
+<span class="sd">            A string identifying the pool of matrix, vector pairs to get the</span>
+<span class="sd">            scenario. Usually, a string representation of an integer which</span>
+<span class="sd">            corresponds to the network size being tested.</span>
+<span class="sd">    Note:</span>
+<span class="sd">        This method should only be used when</span>
+<span class="sd">        :py:const:`app.environment_settings.DEBUG` is set to True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A topology matrix and a random equilibrium vector that can be used</span>
+<span class="sd">        to generate Markov chains used for Swarm Guidance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">es</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">:</span>
         <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;get_next_scenario should not be called outside debug envs.&quot;</span><span class="p">)</span>
     <span class="n">topology</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">_scenarios</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">&quot;matrices&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
