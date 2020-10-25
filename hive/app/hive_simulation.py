@@ -241,9 +241,7 @@ if __name__ == "__main__":
                 cluster_class = str(args).strip()
             if options in ("-n", "--network_node"):
                 node_class = str(args).strip()
-    except getopt.GetoptError:
-        sys.exit(__err_message__)
-    except ValueError:
+    except (getopt.GetoptError, ValueError):
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --directory -d (void)\n"
                  "  --iterations= -i (int)\n"
@@ -257,10 +255,9 @@ if __name__ == "__main__":
                  "Another cause of error might be a simulation file with "
                  "inconsistent values.")
 
-    if not simfile or not directory:
+    if simfile is None and not directory:
         sys.exit(__err_message__)
-
-    if not directory and simfile == "":
+    elif simfile == "" and not directory:
         sys.exit("File name can not be blank. Unless directory option is True.")
 
     MatlabEngineContainer.get_instance()
