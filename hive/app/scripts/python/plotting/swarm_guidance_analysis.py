@@ -315,10 +315,10 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
     return fig, ax
 
 
-def __create_barchart_autolabeled__(data_dict: Dict[str, Any],
-                                    suptitle: str, xlabel: str, ylabel: str,
-                                    figname: str = "", figext: str = "png",
-                                    savefig: bool = True) -> Tuple[Any, Any]:
+def __create_barchart__(data_dict: Dict[str, Any],
+                        suptitle: str, xlabel: str, ylabel: str,
+                        figname: str = "", figext: str = "png",
+                        savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
     plt.xlabel(xlabel, labelpad=cfg.labels_pad,
@@ -398,10 +398,10 @@ def barchart_successful_simulations(figname: str = "SS") -> None:
         data_dict[src_key] = np.clip(count, 0, epochs)
     # endregion
 
-    __create_barchart_autolabeled__(data_dict,
-                                    suptitle="Counting successfully terminated simulations.",
-                                    xlabel="config", ylabel=r"number of durable files",
-                                    figname=figname, figext=image_ext)
+    __create_barchart__(data_dict,
+                        suptitle="Counting successfully terminated simulations.",
+                        xlabel="config", ylabel=r"number of durable files",
+                        figname=figname, figext=image_ext)
 
 
 # endregion
