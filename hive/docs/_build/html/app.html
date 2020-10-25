@@ -760,7 +760,7 @@ with a relative tolerance that is the minimum value in
           </a>
          </em>
          <em class="property">
-          = 333
+          = 46
          </em>
         </dt>
         <dd>
@@ -832,7 +832,7 @@ object.
           </a>
          </em>
          <em class="property">
-          = True
+          = False
          </em>
         </dt>
         <dd>
@@ -1259,7 +1259,7 @@ located.
        </p>
        <div class="highlight-default notranslate">
         <div class="highlight">
-         <pre><span></span>$ python hive_simulation.py --file=a_simulation_name.json --iters=30
+         <pre><span></span>$ python hive_simulation.py --file=a_simulation_name.json --iterations=30
 </pre>
         </div>
        </div>
@@ -1288,7 +1288,7 @@ working threads. For example:
        </p>
        <div class="highlight-default notranslate">
         <div class="highlight">
-         <pre><span></span>$ python hive_simulation.py -d --iters=1 --threading=12
+         <pre><span></span>$ python hive_simulation.py -d --iterations=1 --threading=2
 </pre>
         </div>
        </div>
@@ -1356,7 +1356,7 @@ execute or log items properly and no debug information will be provided
            </li>
            <li>
             <p>
-             An output file simdirectory exists with default path being:
+             An output file directory exists with default path being:
              <a class="reference internal" href="#app.environment_settings.OUTFILE_ROOT" title="app.environment_settings.OUTFILE_ROOT">
               <code class="xref py py-const docutils literal notranslate">
                <span class="pre">
@@ -1371,73 +1371,6 @@ execute or log items properly and no debug information will be provided
          </div>
         </blockquote>
        </div>
-       <dl class="py function">
-        <dt id="app.hive_simulation.__can_exec_simfile__">
-         <code class="sig-name descname">
-          __can_exec_simfile__
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           sname
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#__can_exec_simfile__">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Asserts if simulation can proceed with user specified file.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <p>
-            <strong>
-             sname
-            </strong>
-            (
-            <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-             <em>
-              str
-             </em>
-            </a>
-            ) – The name of the simulation file, including extension,
-whose existence inside
-            <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
-             <code class="xref py py-const docutils literal notranslate">
-              <span class="pre">
-               SIMULATION_ROOT
-              </span>
-             </code>
-            </a>
-            will be
-checked.
-           </p>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
-             None
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
        <dl class="py function">
         <dt id="app.hive_simulation.__makedirs__">
          <code class="sig-name descname">
@@ -1475,107 +1408,6 @@ they do not exist.
         </dd>
        </dl>
        <dl class="py function">
-        <dt id="app.hive_simulation.__start_simulation__">
-         <code class="sig-name descname">
-          __start_simulation__
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           sname
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           sid
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           epochs
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#__start_simulation__">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Helper method that orders execution of one simulation instance.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <ul class="simple">
-            <li>
-             <p>
-              <strong>
-               sname
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-               <em>
-                str
-               </em>
-              </a>
-              ) – The name of the simulation file to be executed.
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               sid
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – A sequence number that identifies the simulation execution instance.
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               epochs
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – The number of discrete time steps the simulation lasts.
-             </p>
-            </li>
-           </ul>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
-             None
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
-       <dl class="py function">
         <dt id="app.hive_simulation._parallel_main">
          <code class="sig-name descname">
           _parallel_main
@@ -1585,31 +1417,13 @@ they do not exist.
          </span>
          <em class="sig-param">
           <span class="n">
-           threads_count
+           start
           </span>
          </em>
          ,
          <em class="sig-param">
           <span class="n">
-           sdir
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           sname
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           iters
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           epochs
+           stop
           </span>
          </em>
          <span class="sig-paren">
@@ -1634,7 +1448,7 @@ they do not exist.
             <li>
              <p>
               <strong>
-               threads_count
+               start
               </strong>
               (
               <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
@@ -1642,84 +1456,13 @@ they do not exist.
                 int
                </em>
               </a>
-              ) – Number of worker threads that will consume jobs from the Task Pool.
+              ) –
              </p>
             </li>
             <li>
              <p>
               <strong>
-               sdir
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">
-               <em>
-                bool
-               </em>
-              </a>
-              ) – Indicates whether or not the program will proceed by executing
-all simulations files inside
-              <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
-               <code class="xref py py-const docutils literal notranslate">
-                <span class="pre">
-                 SIMULATION_ROOT
-                </span>
-               </code>
-              </a>
-              folder or
-if will run with the specified file
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                sname
-               </span>
-              </code>
-              .
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               sname
-              </strong>
-              (
-              <em>
-               Optional
-              </em>
-              <em>
-               [
-              </em>
-              <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-               <em>
-                str
-               </em>
-              </a>
-              <em>
-               ]
-              </em>
-              ) – The name of the simulation file to be executed or
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                None
-               </span>
-              </code>
-              if
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                sdir
-               </span>
-              </code>
-              is set to
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                True
-               </span>
-              </code>
-              .
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               iters
+               stop
               </strong>
               (
               <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
@@ -1727,22 +1470,7 @@ if will run with the specified file
                 int
                </em>
               </a>
-              ) – How many times each simulation file is executed.
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               epochs
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – Number of discrete time steps (epochs) each executed simulation
-lasts.
+              ) –
              </p>
             </li>
            </ul>
@@ -1770,25 +1498,13 @@ lasts.
          </span>
          <em class="sig-param">
           <span class="n">
-           sdir
+           start
           </span>
          </em>
          ,
          <em class="sig-param">
           <span class="n">
-           sname
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           iters
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           epochs
+           stop
           </span>
          </em>
          <span class="sig-paren">
@@ -1813,78 +1529,102 @@ lasts.
             <li>
              <p>
               <strong>
-               sdir
+               start
               </strong>
               (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">
+              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
                <em>
-                bool
+                int
                </em>
               </a>
-              ) – Indicates whether or not the program will proceed by executing
-all simulations files inside
-              <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
-               <code class="xref py py-const docutils literal notranslate">
-                <span class="pre">
-                 SIMULATION_ROOT
-                </span>
-               </code>
-              </a>
-              folder or
-if will run with the specified file
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                sname
-               </span>
-              </code>
-              .
+              ) –
              </p>
             </li>
             <li>
              <p>
               <strong>
-               sname
+               stop
               </strong>
               (
-              <em>
-               Optional
-              </em>
-              <em>
-               [
-              </em>
+              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
+               <em>
+                int
+               </em>
+              </a>
+              ) –
+             </p>
+            </li>
+           </ul>
+          </dd>
+          <dt class="field-even">
+           Return type
+          </dt>
+          <dd class="field-even">
+           <p>
+            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
+             None
+            </a>
+           </p>
+          </dd>
+         </dl>
+        </dd>
+       </dl>
+       <dl class="py function">
+        <dt id="app.hive_simulation._start_simulation">
+         <code class="sig-name descname">
+          _start_simulation
+         </code>
+         <span class="sig-paren">
+          (
+         </span>
+         <em class="sig-param">
+          <span class="n">
+           simfile_name
+          </span>
+         </em>
+         ,
+         <em class="sig-param">
+          <span class="n">
+           sid
+          </span>
+         </em>
+         <span class="sig-paren">
+          )
+         </span>
+         <a class="reference internal" href="_modules/app/hive_simulation.html#_start_simulation">
+          <span class="viewcode-link">
+           [source]
+          </span>
+         </a>
+        </dt>
+        <dd>
+         <p>
+          Helper method that orders execution of one simulation instance.
+         </p>
+         <dl class="field-list simple">
+          <dt class="field-odd">
+           Parameters
+          </dt>
+          <dd class="field-odd">
+           <ul class="simple">
+            <li>
+             <p>
+              <strong>
+               simfile_name
+              </strong>
+              (
               <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
                <em>
                 str
                </em>
               </a>
-              <em>
-               ]
-              </em>
-              ) – The name of the simulation file to be executed or
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                None
-               </span>
-              </code>
-              if
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                sdir
-               </span>
-              </code>
-              is set to
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                True
-               </span>
-              </code>
-              .
+              ) – The name of the simulation file to be executed.
              </p>
             </li>
             <li>
              <p>
               <strong>
-               iters
+               sid
               </strong>
               (
               <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
@@ -1892,25 +1632,77 @@ if will run with the specified file
                 int
                </em>
               </a>
-              ) – How many times each simulation file is executed.
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               epochs
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – Number of discrete time steps (epochs) each executed simulation
-lasts.
+              ) – A sequence number that identifies the simulation execution instance.
              </p>
             </li>
            </ul>
+          </dd>
+          <dt class="field-even">
+           Return type
+          </dt>
+          <dd class="field-even">
+           <p>
+            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
+             None
+            </a>
+           </p>
+          </dd>
+         </dl>
+        </dd>
+       </dl>
+       <dl class="py function">
+        <dt id="app.hive_simulation._validate_simfile">
+         <code class="sig-name descname">
+          _validate_simfile
+         </code>
+         <span class="sig-paren">
+          (
+         </span>
+         <em class="sig-param">
+          <span class="n">
+           simfile_name
+          </span>
+         </em>
+         <span class="sig-paren">
+          )
+         </span>
+         <a class="reference internal" href="_modules/app/hive_simulation.html#_validate_simfile">
+          <span class="viewcode-link">
+           [source]
+          </span>
+         </a>
+        </dt>
+        <dd>
+         <p>
+          Asserts if simulation can proceed with user specified file.
+         </p>
+         <dl class="field-list simple">
+          <dt class="field-odd">
+           Parameters
+          </dt>
+          <dd class="field-odd">
+           <p>
+            <strong>
+             simfile_name
+            </strong>
+            (
+            <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
+             <em>
+              str
+             </em>
+            </a>
+            ) – The name of the simulation file, including extension,
+whose existence inside
+            <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
+             <code class="xref py py-const docutils literal notranslate">
+              <span class="pre">
+               SIMULATION_ROOT
+              </span>
+             </code>
+            </a>
+            will be
+checked.
+           </p>
           </dd>
           <dt class="field-even">
            Return type
@@ -1980,198 +1772,6 @@ lasts.
              numpy.ndarray
             </a>
             ]
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
-       <dl class="py function">
-        <dt id="app.hive_simulation.main">
-         <code class="sig-name descname">
-          main
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           threads_count
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           sdir
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           sname
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           iters
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           epochs
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#main">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Receives user input and initializes the simulation process.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <ul class="simple">
-            <li>
-             <p>
-              <strong>
-               threads_count
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – Indicates if multiple simulation instances should run in parallel
-(default results in running the simulation in a
-single thread).
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               sdir
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">
-               <em>
-                bool
-               </em>
-              </a>
-              ) – Indicates if the user wishes to execute all simulation files
-that exist in
-              <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
-               <code class="xref py py-const docutils literal notranslate">
-                <span class="pre">
-                 SIMULATION_ROOT
-                </span>
-               </code>
-              </a>
-              or
-if he wishes to run one single simulation file, which must be
-explicitly specified in
-              <cite>
-               sname
-              </cite>
-              .
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               sname
-              </strong>
-              (
-              <em>
-               Optional
-              </em>
-              <em>
-               [
-              </em>
-              <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-               <em>
-                str
-               </em>
-              </a>
-              <em>
-               ]
-              </em>
-              ) – When
-              <cite>
-               sdir
-              </cite>
-              is set to
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                False
-               </span>
-              </code>
-              ,
-              <cite>
-               sname
-              </cite>
-              needs to be specified as a
-non blank string containing the name of the simulation file to
-be executed. The named file must exist in
-              <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
-               <code class="xref py py-const docutils literal notranslate">
-                <span class="pre">
-                 SIMULATION_ROOT
-                </span>
-               </code>
-              </a>
-              .
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               iters
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – The number of times the same simulation file should be executed.
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               epochs
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – The number of discrete time steps each iteration of each instance
-of a simulation lasts.
-             </p>
-            </li>
-           </ul>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
-             None
-            </a>
            </p>
           </dd>
          </dl>
