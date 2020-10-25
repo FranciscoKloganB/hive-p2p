@@ -278,7 +278,7 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)
-                data_dict[src_key].append(
+                data_dict[src_key].extend(
                     outdata["delay_suspects_detection"].values())
     # endregion
     fig, ax = __create_boxplot__(
@@ -429,42 +429,42 @@ if __name__ == "__main__":
     subtitle = f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%"
     # endregion
 
-    sources_files, source_keys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
-    # Q1. Quantas mensagens passam na rede por epoch?
-    boxplot_bandwidth(figname="bw_parts")
-    # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_parts")
-    # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
-    boxplot_first_convergence(figname="fc_parts")
-    # Q4. A média dos vectores de distribuição é proxima ao objetivo?
-    piechart_avg_convergence_achieved(figname="avgc_pie_parts")
-    boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_parts")
-    # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
-    boxplot_percent_time_instantaneous_convergence(figname="tic_parts")
-    # Q6. Tecnicas de optimização influenciam as questões anteriores?
-
-    sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-Opt"])
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_opt")
-    boxplot_first_convergence(figname="fc_opt")
-    piechart_avg_convergence_achieved(figname="avgc_pie_opt")
-    boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
-    boxplot_percent_time_instantaneous_convergence(figname="tic_opt")
-
-    sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
-    boxplot_first_convergence(figname="fc_networks")
-    piechart_avg_convergence_achieved(figname="avgc_pie_networks")
-    boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_networks")
-    boxplot_percent_time_instantaneous_convergence(figname="tic_networks")
-
-    sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    # Q8. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
-    boxplot_node_degree(figname="nd-networks")
-
-    sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-ML"])
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
-    boxplot_first_convergence(figname="fc_msgloss")
+    # sources_files, source_keys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
+    # # Q1. Quantas mensagens passam na rede por epoch?
+    # boxplot_bandwidth(figname="bw_parts")
+    # # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
+    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_parts")
+    # # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
+    # boxplot_first_convergence(figname="fc_parts")
+    # # Q4. A média dos vectores de distribuição é proxima ao objetivo?
+    # piechart_avg_convergence_achieved(figname="avgc_pie_parts")
+    # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_parts")
+    # # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
+    # boxplot_percent_time_instantaneous_convergence(figname="tic_parts")
+    # # Q6. Tecnicas de optimização influenciam as questões anteriores?
+    #
+    # sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-Opt"])
+    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_opt")
+    # boxplot_first_convergence(figname="fc_opt")
+    # piechart_avg_convergence_achieved(figname="avgc_pie_opt")
+    # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
+    # boxplot_percent_time_instantaneous_convergence(figname="tic_opt")
+    #
+    # sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    # # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
+    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
+    # boxplot_first_convergence(figname="fc_networks")
+    # piechart_avg_convergence_achieved(figname="avgc_pie_networks")
+    # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_networks")
+    # boxplot_percent_time_instantaneous_convergence(figname="tic_networks")
+    #
+    # sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    # # Q8. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
+    # boxplot_node_degree(figname="nd-networks")
+    #
+    # sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-ML"])
+    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
+    # boxplot_first_convergence(figname="fc_msgloss")
 
     # Q11. Quanto tempo demoramos a detetar falhas de nós com swarm guidance?t_{snr}
     sources_files, source_keys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
