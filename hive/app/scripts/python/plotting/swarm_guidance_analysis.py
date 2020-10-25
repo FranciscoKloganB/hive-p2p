@@ -520,7 +520,7 @@ if __name__ == "__main__":
     #
     sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
+    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
     # boxplot_first_convergence(figname="fc_networks")
     # piechart_avg_convergence_achieved(figname="avgc_pie_networks")
     # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_networks")
@@ -530,8 +530,8 @@ if __name__ == "__main__":
     # # Q8. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
     # boxplot_node_degree(figname="nd-networks")
     #
-    sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-ML"])
-    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
+    # sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-ML"])
+    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
     # boxplot_first_convergence(figname="fc_msgloss")
 
     # Q11. Quanto tempo demoramos a detetar falhas de nós com swarm guidance?t_{snr}
