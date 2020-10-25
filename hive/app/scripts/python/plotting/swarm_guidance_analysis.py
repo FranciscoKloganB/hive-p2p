@@ -399,7 +399,7 @@ def barchart_successful_simulations(figname: str = "SS") -> None:
     # endregion
 
     __create_barchart__(data_dict,
-                        suptitle="Counting successfully terminated simulations.",
+                        suptitle="Counting successfully terminated simulations",
                         xlabel="config", ylabel=r"number of durable files",
                         figname=figname, figext=image_ext)
 
