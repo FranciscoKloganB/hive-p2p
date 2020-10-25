@@ -66,34 +66,10 @@ def __set_box_color__(bp: Any, color: str) -> None:
 def __save_figure__(figname: str, figext: str = "png") -> None:
     fname = f"{plots_directory}/{figname}.{figext}"
     plt.savefig(fname, bbox_inches="tight", format=figext)
+# endregion
 
 
-def __create_barchart__(data_dict: Dict[str, Any],
-                        bar_locations: np.ndarray, bar_width: float,
-                        bucket_size: float,
-                        suptitle: str, xlabel: str, ylabel: str,
-                        figname: str = "", figext: str = "png",
-                        savefig: bool = True) -> Tuple[Any, Any]:
-    fig, ax = plt.subplots()
-    plt.suptitle(suptitle, fontproperties=cfg.fp_title)
-    plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
-    plt.yticks(fontsize="x-large", fontweight="semibold")
-    plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * 0.8)
-    ax.set_xticks(bar_locations)
-    for i in range(len(source_keys)):
-        key = source_keys[i]
-        epoch_vals = data_dict[key]
-        ax.bar(bar_locations + (bar_width * i) - 0.5 * bar_width, epoch_vals, width=bar_width)
-    ax.legend([str(x) for x in source_keys], frameon=False, loc="best", prop=cfg.fp_axis_legend)
-
-    if savefig:
-        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
-
-    return fig, ax
-
-
+# region Boxplots
 def __create_boxplot__(data_dict: Dict[str, Any],
                        suptitle: str, xlabel: str, ylabel: str,
                        figname: str = "", figext: str = "png",
@@ -149,10 +125,7 @@ def __create_double_boxplot__(left_data, right_data,
     if savefig:
         plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
     return fig, ax
-# endregion
 
-
-# region Boxplots
 def boxplot_bandwidth(figname: str = "BW") -> None:
     filesize = 47185920  # bytes
     # region create data dict
@@ -309,6 +282,64 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
 
 
 # region Bar charts
+def __create_grouped_barchart__(data_dict: Dict[str, Any],
+                                bar_locations: np.ndarray, bar_width: float,
+                                bucket_size: float,
+                                suptitle: str, xlabel: str, ylabel: str,
+                                figname: str = "", figext: str = "png",
+                                savefig: bool = True) -> Tuple[Any, Any]:
+    fig, ax = plt.subplots()
+    plt.suptitle(suptitle, fontproperties=cfg.fp_title)
+    plt.xlabel(xlabel, labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    plt.ylabel(ylabel, labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+    plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * 0.8)
+    ax.set_xticks(bar_locations)
+    for i in range(len(source_keys)):
+        key = source_keys[i]
+        epoch_vals = data_dict[key]
+        ax.bar(bar_locations, epoch_vals, bar_width, align="center")
+
+    ax.legend([str(x) for x in source_keys], frameon=False, loc="best",
+              prop=cfg.fp_axis_legend)
+
+    if savefig:
+        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext,
+                    bbox_inches="tight")
+
+    return fig, ax
+
+
+def __create_barchart_autolabeled__(data_dict: Dict[str, Any],
+                                    suptitle: str, xlabel: str, ylabel: str,
+                                    figname: str = "", figext: str = "png",
+                                    savefig: bool = True) -> Tuple[Any, Any]:
+    fig, ax = plt.subplots()
+    plt.suptitle(suptitle, fontproperties=cfg.fp_title)
+    plt.xlabel(xlabel, labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    plt.ylabel(ylabel, labelpad=cfg.labels_pad,
+               fontproperties=cfg.fp_axis_labels)
+    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+
+    bar_width = 0.66
+    bar_locations = np.arange(len(data_dict))
+    for value in data_dict.values():
+        r = ax.bar(bar_locations, value, bar_width, align="center", alpha=1.0)
+        __auto_label__(r, ax)
+    ax.set_xticks(bar_locations)
+    ax.set_xticklabels(data_dict.keys())
+
+    if savefig:
+        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
+
+    return fig, ax
+
+
 def barchart_instantaneous_convergence_vs_progress(
         bucket_size: int = 5, figname: str = "ICC") -> None:
     # region create buckets of 5%
@@ -340,17 +371,19 @@ def barchart_instantaneous_convergence_vs_progress(
         # endregion
     # endregion
 
-    bar_locations = epoch_buckets
-    bar_width = bucket_size * 0.25
+    bar_locations = np.arange(1, len(epoch_buckets) + 1) * bucket_size
+    bar_width = bucket_size / (len(data_dict) + 1)
 
-    __create_barchart__(
+    # bar_width = bucket_size * 0.25
+    __create_grouped_barchart__(
         data_dict, bar_locations, bar_width, bucket_size,
         suptitle="convergence observations as simulations' progress",
         xlabel="simulations' progress (%)", ylabel=r"c$_{t}$ count",
-        figname=figname)
+        figname=figname, figext=image_ext)
 
 
 def barchart_successful_simulations(figname: str = "SS") -> None:
+    # region create data dict
     data_dict = {k: 0 for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
         for filename in outfiles_view:
@@ -359,15 +392,14 @@ def barchart_successful_simulations(figname: str = "SS") -> None:
                 outdata = json.load(outfile)
                 if outdata["terminated"] == epochs:
                     data_dict[src_key] += 1
+    # endregion
 
-    bar_locations = np.asarray(data_dict.keys())
-    bar_width = 1
+    __create_barchart_autolabeled__(data_dict,
+                                    suptitle="Counting successfully terminated simulations.",
+                                    xlabel="config", ylabel=r"number of durable files",
+                                    figname=figname, figext=image_ext)
 
-    __create_barchart__(
-        data_dict, bar_locations, bar_width, bucket_size=1,
-        suptitle="Counting successfully terminated simulations.",
-        xlabel="config", ylabel=r"number of durable files",
-        figname=figname)
+
 # endregion
 
 
@@ -485,9 +517,9 @@ if __name__ == "__main__":
     # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
     # boxplot_percent_time_instantaneous_convergence(figname="tic_opt")
     #
-    # sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    # # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
-    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
+    sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
     # boxplot_first_convergence(figname="fc_networks")
     # piechart_avg_convergence_achieved(figname="avgc_pie_networks")
     # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_networks")
