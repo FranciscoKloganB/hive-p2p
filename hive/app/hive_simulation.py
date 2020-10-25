@@ -246,6 +246,7 @@ if __name__ == "__main__":
     threading = 0
     simdirectory = False
     simfile = None
+    start_iteration = 1
     iterations = 1
     duration = 480
 
@@ -253,23 +254,27 @@ if __name__ == "__main__":
     cluster_class = "SGClusterExt"
     node_class = "SGNodeExt"
 
-    short_opts = "df:i:t:e:m:c:n:"
-    long_opts = ["directory", "file=", "iters=", "threading=", "epochs=",
+    short_opts = "df:i:S:t:e:m:c:n:"
+    long_opts = ["directory", "file=",
+                 "iterations=", "start_iteration="
+                 "threading=", "epochs=",
                  "master_server=", "cluster_group=", "network_node="]
 
     try:
         options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
         for options, args in options:
-            if options in ("-t", "--threading"):
-                threading = int(str(args).strip())
             if options in ("-d", "--directory"):
                 simdirectory = True
             elif options in ("-f", "--file"):
                 simfile = str(args).strip()
                 if simfile == "":
                     sys.exit("Simulation file name can not be blank.")
-            if options in ("-i", "--iters"):
+            if options in ("-i", "--iterations"):
                 iterations = int(str(args).strip())
+            if options in ("-S", "--start_iteration"):
+                start_iteration = int(str(args).strip())
+            if options in ("-t", "--threading"):
+                threading = int(str(args).strip())
             if options in ("-e", "--epochs"):
                 duration = int(str(args).strip())
             if options in ("-m", "--master_server"):
@@ -282,14 +287,15 @@ if __name__ == "__main__":
         sys.exit(__err_message__)
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
-                 "  --iterations -i (int)\n"
-                 "  --epochs -e (int)\n"
-                 "  --threading -t (int)\n"
                  "  --directory -d (void)\n"
-                 "  --file -f (str)\n"
-                 "  --master_server -m (str)\n"
-                 "  --cluster_group -c (str)\n"
-                 "  --network_node -n (str)\n"
+                 "  --iterations= -i (int)\n"
+                 "  --start_iteration= -S (int)\n"
+                 "  --epochs= -e (int)\n"
+                 "  --threading= -t (int)\n"
+                 "  --file= -f (str)\n"
+                 "  --master_server= -m (str)\n"
+                 "  --cluster_group= -c (str)\n"
+                 "  --network_node= -n (str)\n"
                  "Another cause of error might be a simulation file with "
                  "inconsistent values.")
 
