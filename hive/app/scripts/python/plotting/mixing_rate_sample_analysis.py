@@ -224,32 +224,25 @@ if __name__ == "__main__":
     __makedirs__()
     file_name = ""
     try:
-        short_opts = "bpf:"
-        long_opts = ["boxplot", "piechart", "file="]
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        # Iterate all arguments first in search of -f option
-        for options, args in options:
-            if options in ("-f", "--file"):
-                file_name = str(args).strip()
-        file_path = os.path.join(__MIXING_RATE_HOME__, file_name)
-        file = open(file_path, "r")
-        json_obj = json.load(file)
-        file.close()
-        # If file was succesfully read, iterate (options, args) for methods.
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        for options, args in options:
-            if options in ("-b", "--boxplot"):
-                box_plot(json_obj)
-            if options in ("-p", "--piechart"):
-                pie_chart(json_obj)
+        short_opts = "f:"
+        long_opts = ["file="]
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        for arg, val in args:
+            if arg in ("-f", "--file"):
+                file_name = str(val).strip()
     except getopt.GetoptError:
-        sys.exit(
-            "Usage: python mixing_rate_sampler.py -s 1000 -f a_matrix_generator")
-    except json.JSONDecodeError:
-        sys.exit("Specified file exists, but seems to be an invalid JSON.")
+        sys.exit("Usage: python mixing_rate_sampler.py -f a_matrix_generator")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --file -f (str)\n")
+
+    try:
+        filepath = os.path.join(__MIXING_RATE_HOME__, file_name)
+        with open(filepath, "r") as f:
+            data = json.load(f)
+            box_plot(data)
+            pie_chart(data)
+    except json.JSONDecodeError:
+        sys.exit("Specified file exists, but seems to be an invalid JSON.")
     except FileNotFoundError:
-        sys.exit(
-            f"File '{file_name}' does not exist in '{__MIXING_RATE_HOME__}'.")
+        sys.exit(f"File '{file_name}' does not exist in '{__MIXING_RATE_HOME__}'.")
