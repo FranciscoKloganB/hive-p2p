@@ -330,11 +330,11 @@ def __create_barchart_autolabeled__(data_dict: Dict[str, Any],
 
     bar_width = 0.66
     bar_locations = np.arange(len(data_dict))
-    for value in data_dict.values():
-        r = ax.bar(bar_locations, value, bar_width, align="center", alpha=0.8)
-        __auto_label__(r, ax)
+    rects = ax.bar(
+        bar_locations, data_dict.values(), bar_width, align="center", alpha=0.8)
     ax.set_xticks(bar_locations)
     ax.set_xticklabels(data_dict.keys())
+    __auto_label__(rects, ax)
 
     if savefig:
         plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
@@ -388,12 +388,14 @@ def barchart_successful_simulations(figname: str = "SS") -> None:
     # region create data dict
     data_dict = {k: 0 for k in source_keys}
     for src_key, outfiles_view in sources_files.items():
+        count = 0
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)
                 if outdata["terminated"] == epochs:
-                    data_dict[src_key] += 1
+                    count += 1
+        data_dict[src_key] = np.clip(count, 0, epochs)
     # endregion
 
     __create_barchart_autolabeled__(data_dict,
