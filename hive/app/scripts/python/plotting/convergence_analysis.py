@@ -329,25 +329,24 @@ if __name__ == "__main__":
     long_opts = ["patterns=", "epochs=", "optimizations="]
 
     try:
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
-        for options, args in options:
-            if options in ("-p", "--patterns"):
-                patterns = str(args).strip()
-                if not patterns:
-                    sys.exit(f"Blank pattern is not a valid pattern.")
+        for arg, val in args:
+            if arg in ("-p", "--patterns"):
+                patterns = str(val).strip()
                 patterns = patterns.split(",")
-            if options in ("-e", "--epochs"):
-                epochs = int(str(args).strip())
-            if options in ("-o", "--optimizations"):
-                opt = str(args).strip()
-
+            if arg in ("-e", "--epochs"):
+                epochs = int(str(val).strip())
+            if arg in ("-o", "--optimizations"):
+                opt = str(val).strip()
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --patterns -p (comma seperated list of str)\n"
                  "  --epochs -e (int)\n"
                  "  --optimizations -o (str)\n")
 
+    if not patterns:
+        sys.exit(f"Blank --patterns (-p) is not a valid pattern.")
     # endregion
 
     # region path setup

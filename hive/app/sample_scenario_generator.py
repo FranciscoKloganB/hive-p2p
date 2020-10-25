@@ -39,12 +39,12 @@ if __name__ == "__main__":
     long_opts = ["network_sizes=", "samples="]
 
     try:
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        for options, args in options:
-            if options in ("-n", "--network_size"):
-                network_sizes = ast.literal_eval(str(args).strip())
-            if options in ("-s", "--samples"):
-                samples = int(str(args).strip())
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        for arg, val in args:
+            if arg in ("-n", "--network_size"):
+                network_sizes = ast.literal_eval(str(val).strip())
+            if arg in ("-s", "--samples"):
+                samples = int(str(val).strip())
     except getopt.GetoptError:
         sys.exit()
     except ValueError:

@@ -108,7 +108,7 @@ def cum_sum_mean(cs_avg_list, terminations):
 
 
 if __name__ == "__main__":
-    # region args processing
+    # region val processing
     patterns = []
     targets = [
         "blocks_corrupted",
@@ -130,37 +130,25 @@ if __name__ == "__main__":
                  "size=", "name=", "figure_name="]
 
     try:
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
-        for options, args in options:
-            if options in ("-p", "--patterns"):
-                patterns = str(args).strip()
+        for arg, val in args:
+            if arg in ("-p", "--patterns"):
+                patterns = str(val).strip()
                 if not patterns:
                     sys.exit(f"Blank pattern is not a valid pattern.")
                 patterns = patterns.split(",")
-            if options in ("-t", "--targets"):
-                targets = str(args).strip()
-                if not targets:
-                    sys.exit(f"Blank string is not a valid list of targets.")
+            if arg in ("-t", "--targets"):
+                targets = str(val).strip()
                 targets = targets.split(",")
-            if options in ("-e", "--epochs"):
-                epochs = int(str(args).strip())
-            if options in ("-s", "--size"):
-                skey = int(str(args).strip())
-            if options in ("-n", "--name"):
-                nkey = str(args).strip()
-            if options in ("-f", "--figure_name"):
-                figure_name = str(args).strip()
-
-        if not (epochs > 0 and skey > 0):
-            sys.exit(f"Must specify epochs (-e) and network size (-s).")
-
-        if not (nkey != "" and figure_name != ""):
-            sys.exit(f"System name (-n) must be specified for plot title completion.")
-
-        if len(targets) == 0:
-            sys.exit(f"Must specify at least one json key (-t) to analyze.")
-
+            if arg in ("-e", "--epochs"):
+                epochs = int(str(val).strip())
+            if arg in ("-s", "--size"):
+                skey = int(str(val).strip())
+            if arg in ("-n", "--name"):
+                nkey = str(val).strip()
+            if arg in ("-f", "--figure_name"):
+                figure_name = str(val).strip()
     except getopt.GetoptError:
         sys.exit("Usage: python outfile_plotter.py -f outfile.json")
     except ValueError:
@@ -171,6 +159,18 @@ if __name__ == "__main__":
                  "  --size -s (int)\n"
                  "  --name -n (str)\n"
                  "  --figure_name -f (str)\n")
+
+    if not targets:
+        sys.exit(f"Blank string is not a valid list of targets.")
+
+    if not (epochs > 0 and skey > 0):
+        sys.exit(f"Must specify epochs (-e) and network size (-s).")
+
+    if not (nkey != "" and figure_name != ""):
+        sys.exit("System name (-n) must be specified for plot title completion.")
+
+    if len(targets) == 0:
+        sys.exit(f"Must specify at least one json key (-t) to analyze.")
     # endregion
 
     # region path setup
