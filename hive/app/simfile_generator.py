@@ -232,52 +232,35 @@ def _init_persisting_dict() -> Dict[str, Any]:
         "~/cluster/app/static/shared/shared_backups"
     )
 
-    file_name = _input_filename(
-        "Name the file (with extension) you wish to simulate persistence of: ")
+    add_file: bool = True
+    while add_file:
+        file_name = _input_filename(
+            "Name the file (with extension) you wish to simulate persistence of: ")
 
-    options_message = ("\nSelect how files blocks are spread across "
-                       "clusters at the start of the simulation: {\n"
-                       "   u: uniform distribution among network nodes,\n"
-                       "   i: ideal distribution, e.g., near a steady-state vector, \n"
-                       "   a: all replicas given to N different nodes,\n"
-                       "   o: each network node receives one random replica\n"
-                       "}: ")
-    options_list = ["u", "U", "i", "I", "a", "A", "o", "O"]
-    option_choice = _input_character_option(options_message, options_list)
+        options_message = ("\nSelect how files blocks are spread across "
+                           "clusters at the start of the simulation: {\n"
+                           "   u: uniform distribution among network nodes,\n"
+                           "   i: ideal distribution, e.g., near a steady-state vector, \n"
+                           "   a: all replicas given to N different nodes,\n"
+                           "   o: each network node receives one random replica\n"
+                           "}: ")
+        options_list = ["u", "U", "i", "I", "a", "A", "o", "O"]
+        option_choice = _input_character_option(options_message, options_list)
 
-    persisting[file_name] = {}
-    persisting[file_name]["spread"] = option_choice.lower()
-    persisting[file_name]["cluster_size"] = _input_bounded_integer(
-        "\nNumber of nodes that should be sharing the next file: ")
+        persisting[file_name] = {}
+        persisting[file_name]["spread"] = option_choice.lower()
+        persisting[file_name]["cluster_size"] = _input_bounded_integer(
+            "\nNumber of nodes that should be sharing the next file: ")
+
+        add_file = _in_yes_no(
+            "\nSimulate persistence of another file in simulation?")
 
     return persisting
 # endregion
 
 
-def main(simfile_name: str) -> None:
-    """Creates a JSON file within the user's file system that is used by
-    :py:mod:`hive_simulation`.
-
-    Note:
-        The name of the created file concerns the name of the simulation file.
-        It does not concern the name or names of the files whose persistence
-        is being simulated.
-
-    Args:
-        simfile_name:
-            Name to be assigned to JSON file in the user's file system.
-    """
-    simfile_json: Dict[str, Any] = {
-        "nodes_uptime": _init_nodes_uptime(),
-        "persisting": _init_persisting_dict()
-    }
-
-    with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
-        json.dump(simfile_json, outfile, indent=4)
-
-
 if __name__ == "__main__":
-    simfile_name_: str = ""
+    simulation_file_name: str = None
 
     try:
         short_opts = "f:"
@@ -286,10 +269,16 @@ if __name__ == "__main__":
         for arg, val in args:
             if arg in ("-f", "--file"):
                 simfile_name_ = str(val).strip()
-                if simfile_name_:
-                    main(simfile_name_)
-                else:
-                    sys.exit("Invalid simulation file - blank id not allowed")
-
     except getopt.GetoptError:
         print("Usage: python simfile_generator.py --file=filename.json")
+
+    if simulation_file_name is None or simulation_file_name == "":
+        sys.exit("Invalid simulation file. Expected non-blank file name.")
+
+    simfile_json: Dict[str, Any] = {
+        "nodes_uptime": _init_nodes_uptime(),
+        "persisting": _init_persisting_dict()
+    }
+
+    with open(os.path.join(SIMULATION_ROOT, simulation_file_name), 'w') as outfile:
+        json.dump(simfile_json, outfile, indent=4)
