@@ -133,28 +133,28 @@ def _start_simulation(simfile_name: str, sid: int) -> None:
     master_server.execute_simulation()
 
 
-def _parallel_main() -> None:
+def _parallel_main(start: int, stop: int) -> None:
     """Helper method that initializes a multi-threaded simulation."""
     with ThreadPoolExecutor(max_workers=threading) as executor:
         if directory:
             for simfile_name in __list_dir__():
-                for i in range(1, iterations + 1):
+                for i in range(start, stop):
                     executor.submit(_start_simulation, simfile_name, i, epochs)
         else:
             _validate_simfile(simfile)
-            for i in range(1, iterations + 1):
+            for i in range(start, stop):
                 executor.submit(_start_simulation, simfile, i, epochs)
 
 
-def _single_main() -> None:
+def _single_main(start: int, stop: int) -> None:
     """Helper function that initializes a single-threaded simulation."""
     if directory:
         for simfile_name in __list_dir__():
-            for i in range(1, iterations + 1):
+            for i in range(start, stop):
                 _start_simulation(simfile_name, i)
     else:
         _validate_simfile(simfile)
-        for i in range(1, iterations + 1):
+        for i in range(start, stop):
             _start_simulation(simfile, i)
 # endregion
 
@@ -226,4 +226,7 @@ if __name__ == "__main__":
 
     MatlabEngineContainer.get_instance()
     threading = np.ceil(np.abs(threading)).item()
-    _single_main() if threading in (0, 1) else _parallel_main()
+
+    s = start_iteration
+    st = start_iteration + iterations + 1
+    _single_main(s, st) if threading in (0, 1) else _parallel_main(s, st)
