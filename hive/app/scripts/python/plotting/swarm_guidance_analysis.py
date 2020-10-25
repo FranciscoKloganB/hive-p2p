@@ -6,12 +6,14 @@ import json
 import os
 import sys
 from itertools import zip_longest
+from json import JSONDecodeError
 from typing import List, Tuple, Any, Dict, Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
-
+import matplotlib.pyplot as plt
 import _matplotlib_configs as cfg
+
+from _matplotlib_configs import color_palette as cp
 
 
 # region Helpers
@@ -26,8 +28,11 @@ def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]
     return sources_files, source_keys
 
 
-def __get_whole_frac__(num: float) -> Tuple[int, int]:
-    return int(num), int(str(num)[(len(str(int(num)))+1):])
+def tokenize(s: str, token: str) -> Tuple[int, int]:
+    token_index = s.index("i#o")
+    first = int(s[:token_index])
+    second = int(s[token_index + len(token):])
+    return first, second
 
 
 def __set_box_color__(bp: Any, color: str) -> None:
@@ -55,7 +60,7 @@ def __create_barchart__(data_dict: Dict[str, Any],
                         bar_locations: np.ndarray, bar_width: float,
                         bucket_size: float,
                         suptitle: str, xlabel: str, ylabel: str,
-                        figname: str, figext: str = "png",
+                        figname: str = "", figext: str = "png",
                         savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
@@ -79,7 +84,7 @@ def __create_barchart__(data_dict: Dict[str, Any],
 
 def __create_boxplot__(data_dict: Dict[str, Any],
                        suptitle: str, xlabel: str, ylabel: str,
-                       figname: str, figext: str = "png",
+                       figname: str = "", figext: str = "png",
                        savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
     ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
@@ -97,7 +102,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
 def __create_double_boxplot__(left_data, right_data,
                               suptitle: str, xlabel: str, ylabel: str,
                               labels: List[str],
-                              figname: str, figext: str = "png",
+                              figname: str = "", figext: str = "png",
                               left_color: Optional[str] = None,
                               right_color: Optional[str] = None,
                               left_label: Optional[str] = None,
@@ -145,12 +150,8 @@ def boxplot_bandwidth(figname: str = "BW") -> None:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)
-                be = outdata["blocks_existing"][0]
-                rl = outdata["replication_level"]
-                rl = 3 if rl == 1 else rl  # Hack to compensate mistake in simulationse
-                blocksize = ((filesize / be) * rl) / 1024 / 1024  # from B to KB to MB
-                c_bandwidth = np.asarray(outdata["blocks_moved"]) * blocksize
-                data_dict[src_key].extend(c_bandwidth)
+                data_dict[src_key].extend(
+                    np.asarray(outdata["blocks_moved"]) * outdata["blocks_size"])
     # endregion
 
     __create_boxplot__(
@@ -227,7 +228,7 @@ def boxplot_avg_convergence_magnitude_distance(figname: str = "MD") -> None:
 
     __create_double_boxplot__(
         psamples, nsamples,
-        left_color="#55A868", right_color="#C44E52",
+        left_color=cp[1], right_color=cp[2],
         left_label="achieved eq.", right_label="has not achieved eq.",
         suptitle="clusters' distance to the select equilibrium",
         xlabel="config", ylabel=r"c$_{dm}$ / cluster size",
@@ -247,8 +248,8 @@ def boxplot_node_degree(figname: str = "ND") -> None:
                 outdata = json.load(outfile)
                 matrices_degrees: List[Dict[str, float]] = outdata["matrices_nodes_degrees"]
                 for topology in matrices_degrees:
-                    for nodes_degree in topology.values():
-                        in_degree, out_degree = __get_whole_frac__(nodes_degree)
+                    for degrees in topology.values():
+                        in_degree, out_degree = tokenize(degrees, "i#o")
                         data_dict[src_key][0].append(in_degree)
                         data_dict[src_key][1].append(out_degree)
     # endregion
@@ -261,12 +262,33 @@ def boxplot_node_degree(figname: str = "ND") -> None:
 
     __create_double_boxplot__(
         isamples, osamples,
-        left_color="#4C72B0", right_color="#55A868",
+        left_color=cp[0], right_color=cp[1],
         left_label="in-degree", right_label="out-degree",
         suptitle="Nodes' degrees depending on the cluster's size",
         xlabel="config", ylabel="node degrees",
         labels=source_keys,
         figname=figname, figext=image_ext)
+
+
+def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
+    # region create data dict
+    data_dict = {k: [] for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                outdata = json.load(outfile)
+                data_dict[src_key].append(
+                    outdata["delay_suspects_detection"].values())
+    # endregion
+    fig, ax = __create_boxplot__(
+        data_dict,
+        suptitle="Clusters' time to evict suspect storage nodes",
+        xlabel="config", ylabel="epochs",
+        savefig=False)
+
+    plt.axhline(y=5, color=cp[0], linestyle='--')
+    plt.savefig(f"{plots_directory}/{figname}.{image_ext}", format=image_ext, bbox_inches="tight")
 
 # endregion
 
@@ -352,10 +374,6 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
 
     __save_figure__(figname, image_ext)
 # endregion
-
-
-def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
-    pass
 
 
 if __name__ == "__main__":
