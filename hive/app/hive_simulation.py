@@ -42,6 +42,8 @@ import os
 import sys
 import json
 import getopt
+import traceback
+import concurrent.futures
 
 from warnings import warn
 from typing import Dict, Tuple, List
@@ -57,6 +59,10 @@ from domain.helpers.matlab_utils import MatlabEngineContainer
 __err_message__ = ("Invalid arguments. You must specify -f fname or -d, e.g.:\n"
                    "    $ python hive_simulation.py -f simfilename.json\n"
                    "    $ python hive_simulation.py -d")
+
+__log_thread_errors__: bool = True
+"""Wether or not the script should crash if a ThreadPoolExecutor 
+fails due to an exception and if the exception traceback should be provided."""
 
 
 # region Sample Scenarios available for debug environments
@@ -134,7 +140,7 @@ def _validate_simfile(simfile_name: str) -> None:
         sys.exit(f"The simulation file does not exist in {es.SIMULATION_ROOT}.")
 
 
-def _start_simulation(simfile_name: str, sid: int) -> None:
+def _simulate(simfile_name: str, sid: int) -> None:
     """Helper method that orders execution of one simulation instance.
 
     Args:
@@ -164,14 +170,22 @@ def _parallel_main(start: int, stop: int) -> None:
             arguments.
     """
     with ThreadPoolExecutor(max_workers=threading) as executor:
+        futures = []
         if directory:
             for simfile_name in __list_dir__():
                 for i in range(start, stop):
-                    executor.submit(_start_simulation, simfile_name, i, epochs)
+                    futures.append(executor.submit(_simulate, simfile_name, i))
         else:
             _validate_simfile(simfile)
             for i in range(start, stop):
-                executor.submit(_start_simulation, simfile, i, epochs)
+                futures.append(executor.submit(_simulate, simfile, i))
+
+        if __log_thread_errors__:
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception:
+                    sys.exit(traceback.print_exc())
 
 
 def _single_main(start: int, stop: int) -> None:
@@ -190,11 +204,11 @@ def _single_main(start: int, stop: int) -> None:
     if directory:
         for simfile_name in __list_dir__():
             for i in range(start, stop):
-                _start_simulation(simfile_name, i)
+                _simulate(simfile_name, i)
     else:
         _validate_simfile(simfile)
         for i in range(start, stop):
-            _start_simulation(simfile, i)
+            _simulate(simfile, i)
 # endregion
 
 
