@@ -301,7 +301,8 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
     for i in range(len(source_keys)):
         key = source_keys[i]
         epoch_vals = data_dict[key]
-        ax.bar(bar_locations, epoch_vals, bar_width, align="center")
+        offset = (bar_width * i) - bar_width / len(source_keys)
+        ax.bar(bar_locations + offset, epoch_vals, width=bar_width, alpha=0.8)
 
     ax.legend([str(x) for x in source_keys], frameon=False, loc="best",
               prop=cfg.fp_axis_legend)
