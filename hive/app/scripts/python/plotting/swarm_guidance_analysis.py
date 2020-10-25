@@ -22,9 +22,6 @@ def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]
             if key in filename:
                 sources_files[key].append(filename)
                 break
-
-    # remove '-' and 'P' delimiters that avoid incorrect missmapping of sources
-    # sources_files = {k[1:-1]: v for k, v in sources_files.items()}
     source_keys = list(sources_files)
     return sources_files, source_keys
 
@@ -357,6 +354,10 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
 # endregion
 
 
+def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
+    pass
+
+
 if __name__ == "__main__":
     # region args processing
     ns = 8
@@ -410,8 +411,7 @@ if __name__ == "__main__":
     subtitle = f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%"
     # endregion
 
-    source_patterns = ["SG8-100P", "SG8-1000P", "SG8-2000P"]
-    sources_files, source_keys = setup_sources(source_patterns)
+    sources_files, source_keys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
     # Q1. Quantas mensagens passam na rede por epoch?
     boxplot_bandwidth(figname="bw_parts")
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
@@ -425,18 +425,14 @@ if __name__ == "__main__":
     boxplot_percent_time_instantaneous_convergence(figname="tic_parts")
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
 
-    source_patterns = ["SG8-1000P", "SG8-Opt"]
-    # noinspection PyRedeclaration
-    sources_files, source_keys = setup_sources(source_patterns)
+    sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-Opt"])
     barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_opt")
     boxplot_first_convergence(figname="fc_opt")
     piechart_avg_convergence_achieved(figname="avgc_pie_opt")
     boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
     boxplot_percent_time_instantaneous_convergence(figname="tic_opt")
 
-    source_patterns = ["SG8-Opt", "SG16-Opt", "SG32-Opt"]
-    # noinspection PyRedeclaration
-    sources_files, source_keys = setup_sources(source_patterns)
+    sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
     barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
     boxplot_first_convergence(figname="fc_networks")
@@ -444,14 +440,19 @@ if __name__ == "__main__":
     boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_networks")
     boxplot_percent_time_instantaneous_convergence(figname="tic_networks")
 
-    source_patterns = ["SG8-1000P", "SG8-Opt", "SG16-Opt", "SG32-Opt"]
-    # noinspection PyRedeclaration
-    sources_files, source_keys = setup_sources(source_patterns)
+    sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-Opt", "SG16-Opt", "SG32-Opt"])
     # Q8. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
     boxplot_node_degree(figname="nd-networks")
 
-    source_patterns = ["SG8-1000P", "SG8-ML"]
-    # noinspection PyRedeclaration
-    sources_files, source_keys = setup_sources(source_patterns)
+    sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-ML"])
     barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
     boxplot_first_convergence(figname="fc_msgloss")
+
+    # Q11. Quanto tempo demoramos a detetar falhas de nós com swarm guidance?t_{snr}
+    sources_files, source_keys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
+    boxplot_time_to_detect_off_nodes(figname="sgdbs_tsnr")
+    # Q12. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
+    # Q13. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
+    # Q14. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
+    # Q15. Dadas as condições voláteis, verificamos uma convergência média para \steadystate?
+    # Q16. Redes de diferentes tiers, tem resultados significativamente melhores?
