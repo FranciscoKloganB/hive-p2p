@@ -44,7 +44,7 @@ import json
 import getopt
 
 from warnings import warn
-from typing import Optional, Dict, Tuple, List
+from typing import Dict, Tuple, List
 from concurrent.futures.thread import ThreadPoolExecutor
 
 import numpy as np
@@ -79,6 +79,22 @@ _scenarios: Dict[str, Dict[str, List]] = __load_scenarios__()
 
 
 def get_next_scenario(k: str) -> Tuple[np.ndarray, np.ndarray]:
+    """Function used for one-to-one testing of different swarm guidance
+    configurations.
+
+    Args:
+        k:
+            A string identifying the pool of matrix, vector pairs to get the
+            scenario. Usually, a string representation of an integer which
+            corresponds to the network size being tested.
+    Note:
+        This method should only be used when
+        :py:const:`app.environment_settings.DEBUG` is set to True.
+
+    Returns:
+        A topology matrix and a random equilibrium vector that can be used
+        to generate Markov chains used for Swarm Guidance.
+    """
     if not es.DEBUG:
         warn("get_next_scenario should not be called outside debug envs.")
     topology = np.asarray(_scenarios[k]["matrices"].pop())
@@ -134,7 +150,18 @@ def _start_simulation(simfile_name: str, sid: int) -> None:
 
 
 def _parallel_main(start: int, stop: int) -> None:
-    """Helper method that initializes a multi-threaded simulation."""
+    """Helper method that initializes a multi-threaded simulation.
+
+    Args:
+        start:
+            A number that marks the first desired identifier for the
+            simulations that will execute.
+        stop:
+            A number that marks the last desired identifier for the
+            simulations that will execute. Usually a sum of ``start`` and the
+            total number of iterations specified by the user in the scripts'
+            arguments.
+    """
     with ThreadPoolExecutor(max_workers=threading) as executor:
         if directory:
             for simfile_name in __list_dir__():
@@ -147,7 +174,18 @@ def _parallel_main(start: int, stop: int) -> None:
 
 
 def _single_main(start: int, stop: int) -> None:
-    """Helper function that initializes a single-threaded simulation."""
+    """Helper function that initializes a single-threaded simulation.
+
+    Args:
+        start:
+            A number that marks the first desired identifier for the
+            simulations that will execute.
+        stop:
+            A number that marks the last desired identifier for the
+            simulations that will execute. Usually a sum of ``start`` and the
+            total number of iterations specified by the user in the scripts'
+            arguments.
+    """
     if directory:
         for simfile_name in __list_dir__():
             for i in range(start, stop):
