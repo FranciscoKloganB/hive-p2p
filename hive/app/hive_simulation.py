@@ -265,4 +265,4 @@ if __name__ == "__main__":
 
     s = start_iteration
     st = start_iteration + iterations + 1
-    _single_main(s, st) if threading in (0, 1) else _parallel_main(s, st)
+    _single_main(s, st) if threading in {0, 1} else _parallel_main(s, st)
