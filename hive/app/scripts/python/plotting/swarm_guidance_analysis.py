@@ -389,15 +389,15 @@ if __name__ == "__main__":
     long_opts = ["epochs=", "optimizations=", "image_format="]
 
     try:
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
 
-        for options, args in options:
-            if options in ("-e", "--epochs"):
-                epochs = int(str(args).strip())
-            if options in ("-o", "--optimizations"):
-                opt = str(args).strip()
-            if options in ("-i", "--image_format"):
-                image_ext = str(args).strip()
+        for arg, val in args:
+            if arg in ("-e", "--epochs"):
+                epochs = int(str(val).strip())
+            if arg in ("-o", "--optimizations"):
+                opt = str(val).strip()
+            if arg in ("-i", "--image_format"):
+                image_ext = str(val).strip()
 
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
