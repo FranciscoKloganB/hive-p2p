@@ -126,6 +126,7 @@ def __create_double_boxplot__(left_data, right_data,
         plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
     return fig, ax
 
+
 def boxplot_bandwidth(figname: str = "BW") -> None:
     filesize = 47185920  # bytes
     # region create data dict
