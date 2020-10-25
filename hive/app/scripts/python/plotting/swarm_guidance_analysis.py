@@ -330,7 +330,7 @@ def __create_barchart_autolabeled__(data_dict: Dict[str, Any],
     bar_width = 0.66
     bar_locations = np.arange(len(data_dict))
     for value in data_dict.values():
-        r = ax.bar(bar_locations, value, bar_width, align="center", alpha=1.0)
+        r = ax.bar(bar_locations, value, bar_width, align="center", alpha=0.8)
         __auto_label__(r, ax)
     ax.set_xticks(bar_locations)
     ax.set_xticklabels(data_dict.keys())
@@ -432,7 +432,8 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
             data_dict[src_key],
             startangle=90, autopct='%1.1f%%',
             labels=wedge_labels, labeldistance=None,
-            textprops={'color': 'white', 'weight': 'bold'}
+            textprops={'color': 'white', 'weight': 'bold'},
+            wedgeprops={'alpha': 0.8}
         )
         ax.set_xlabel(f"{src_key}", fontproperties=cfg.fp_axis_legend)
     if s == 2:
@@ -518,7 +519,7 @@ if __name__ == "__main__":
     # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
     # boxplot_percent_time_instantaneous_convergence(figname="tic_opt")
     #
-    sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    # sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
     # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
     # boxplot_first_convergence(figname="fc_networks")
