@@ -35,6 +35,18 @@ def tokenize(s: str, token: str) -> Tuple[int, int]:
     return first, second
 
 
+def __auto_label__(rects: Any, ax: Any) -> None:
+    """Attach a text label above each bar in *rects*, displaying its height."""
+    for rect in rects:
+        height = rect.get_height()
+        ax.annotate(f"{height}",
+                    xy=(rect.get_x() + rect.get_width() / 2, height),
+                    xytext=(0, 3),  # 3 points vertical offset
+                    textcoords="offset points",
+                    ha="center", va="bottom",
+                    fontsize="large", fontweight="semibold", color="dimgrey")
+
+
 def __set_box_color__(bp: Any, color: str) -> None:
     """Changes the colors of a boxplot.
 
@@ -277,9 +289,10 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
-                outdata = json.load(outfile)
-                data_dict[src_key].extend(
-                    outdata["delay_suspects_detection"].values())
+                outdata = json.load(outfile)["delay_suspects_detection"].values()
+                outdata = list(filter(lambda x: 0 < x < 15, outdata))  # worksaround a bug where nodes seem to have taken infinite time to be detected.
+                data_dict[src_key].extend(outdata)
+
     # endregion
     fig, ax = __create_boxplot__(
         data_dict,
@@ -287,7 +300,9 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
         xlabel="config", ylabel="epochs",
         savefig=False)
 
-    plt.axhline(y=5, color=cp[0], linestyle='--')
+    plt.ylim(0, 10.5)
+    plt.axhline(y=5, color=cp[0], linestyle='--', label=r"HDFS t$_{snr}$")
+    plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
     plt.savefig(f"{plots_directory}/{figname}.{image_ext}", format=image_ext, bbox_inches="tight")
 
 # endregion
@@ -325,13 +340,33 @@ def barchart_instantaneous_convergence_vs_progress(
         # endregion
     # endregion
 
-    bar_locations = np.asarray(epoch_buckets)
+    bar_locations = epoch_buckets
     bar_width = bucket_size * 0.25
 
     __create_barchart__(
         data_dict, bar_locations, bar_width, bucket_size,
         suptitle="convergence observations as simulations' progress",
         xlabel="simulations' progress (%)", ylabel=r"c$_{t}$ count",
+        figname=figname)
+
+
+def barchart_successful_simulations(figname: str = "SS") -> None:
+    data_dict = {k: 0 for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                outdata = json.load(outfile)
+                if outdata["terminated"] == epochs:
+                    data_dict[src_key] += 1
+
+    bar_locations = np.asarray(data_dict.keys())
+    bar_width = 1
+
+    __create_barchart__(
+        data_dict, bar_locations, bar_width, bucket_size=1,
+        suptitle="Counting successfully terminated simulations.",
+        xlabel="config", ylabel=r"number of durable files",
         figname=figname)
 # endregion
 
@@ -379,7 +414,7 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
 if __name__ == "__main__":
     # region args processing
     ns = 8
-    epochs = 0
+    epochs = 480
     pde = 0.0
     pml = 0.0
     opt = "off"
@@ -462,14 +497,17 @@ if __name__ == "__main__":
     # # Q8. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
     # boxplot_node_degree(figname="nd-networks")
     #
-    # sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-ML"])
-    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
+    sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-ML"])
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
     # boxplot_first_convergence(figname="fc_msgloss")
 
     # Q11. Quanto tempo demoramos a detetar falhas de nós com swarm guidance?t_{snr}
-    sources_files, source_keys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
-    boxplot_time_to_detect_off_nodes(figname="sgdbs_tsnr")
+    # sources_files, source_keys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    # boxplot_time_to_detect_off_nodes(figname="time_to_evict_suspects")
     # Q12. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
+    sources_files, source_keys = setup_sources(
+        ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
+    barchart_successful_simulations(figname="successfully_terminated")
     # Q13. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
     # Q14. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
     # Q15. Dadas as condições voláteis, verificamos uma convergência média para \steadystate?
