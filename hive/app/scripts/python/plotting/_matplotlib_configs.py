@@ -1,9 +1,13 @@
 import matplotlib.style
+import matplotlib.pyplot
+
 import matplotlib as mpl
 
 from matplotlib.font_manager import FontProperties
 
 mpl.style.use('seaborn-deep')
+
+color_palette = matplotlib.pyplot.style.library['seaborn-deep']
 
 title_pad = 20
 labels_pad = 15
