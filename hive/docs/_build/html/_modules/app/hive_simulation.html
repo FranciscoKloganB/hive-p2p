@@ -154,7 +154,7 @@
 <span class="kn">import</span> <span class="nn">getopt</span>
 
 <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">from</span> <span class="nn">concurrent.futures.thread</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -244,7 +244,18 @@
 
 
 <div class="viewcode-block" id="_parallel_main"><a class="viewcode-back" href="../../app.html#app.hive_simulation._parallel_main">[docs]</a><span class="k">def</span> <span class="nf">_parallel_main</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Helper method that initializes a multi-threaded simulation.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Helper method that initializes a multi-threaded simulation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        start:</span>
+<span class="sd">            A number that marks the first desired identifier for the</span>
+<span class="sd">            simulations that will execute.</span>
+<span class="sd">        stop:</span>
+<span class="sd">            A number that marks the last desired identifier for the</span>
+<span class="sd">            simulations that will execute. Usually a sum of ``start`` and the</span>
+<span class="sd">            total number of iterations specified by the user in the scripts&#39;</span>
+<span class="sd">            arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">threading</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">directory</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">simfile_name</span> <span class="ow">in</span> <span class="n">__list_dir__</span><span class="p">():</span>
@@ -257,7 +268,18 @@
 
 
 <div class="viewcode-block" id="_single_main"><a class="viewcode-back" href="../../app.html#app.hive_simulation._single_main">[docs]</a><span class="k">def</span> <span class="nf">_single_main</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Helper function that initializes a single-threaded simulation.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Helper function that initializes a single-threaded simulation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        start:</span>
+<span class="sd">            A number that marks the first desired identifier for the</span>
+<span class="sd">            simulations that will execute.</span>
+<span class="sd">        stop:</span>
+<span class="sd">            A number that marks the last desired identifier for the</span>
+<span class="sd">            simulations that will execute. Usually a sum of ``start`` and the</span>
+<span class="sd">            total number of iterations specified by the user in the scripts&#39;</span>
+<span class="sd">            arguments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">directory</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">simfile_name</span> <span class="ow">in</span> <span class="n">__list_dir__</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">):</span>
