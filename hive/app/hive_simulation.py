@@ -234,27 +234,26 @@ if __name__ == "__main__":
                  "master_server=", "cluster_group=", "network_node="]
 
     try:
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        for options, args in options:
-            if options in ("-d", "--directory"):
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        for arg, val in args:
+            if arg in ("-d", "--directory"):
                 directory = True
-            elif options in ("-f", "--file"):
-                simfile = str(args).strip()
-
-            if options in ("-i", "--iterations"):
-                iterations = int(str(args).strip())
-            if options in ("-S", "--start_iteration"):
-                start_iteration = int(str(args).strip())
-            if options in ("-e", "--epochs"):
-                epochs = int(str(args).strip())
-            if options in ("-t", "--threading"):
-                threading = int(str(args).strip())
-            if options in ("-m", "--master_server"):
-                master_class = str(args).strip()
-            if options in ("-c", "--cluster_group"):
-                cluster_class = str(args).strip()
-            if options in ("-n", "--network_node"):
-                node_class = str(args).strip()
+            elif arg in ("-f", "--file"):
+                simfile = str(val).strip()
+            if arg in ("-i", "--iterations"):
+                iterations = int(str(val).strip())
+            if arg in ("-S", "--start_iteration"):
+                start_iteration = int(str(val).strip())
+            if arg in ("-e", "--epochs"):
+                epochs = int(str(val).strip())
+            if arg in ("-t", "--threading"):
+                threading = int(str(val).strip())
+            if arg in ("-m", "--master_server"):
+                master_class = str(val).strip()
+            if arg in ("-c", "--cluster_group"):
+                cluster_class = str(val).strip()
+            if arg in ("-n", "--network_node"):
+                node_class = str(val).strip()
     except (getopt.GetoptError, ValueError):
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --directory -d (void)\n"
