@@ -264,7 +264,7 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)["delay_suspects_detection"].values()
-                # worksaround a bug where nodes seem to have taken infinite time to be detected using (0 < x < 15) 
+                # worksaround a bug where nodes seem to have taken infinite time to be detected using (0 < x < 15)
                 outdata = list(filter(lambda x: x > 0, outdata))
                 data_dict[src_key].extend(outdata)
 
