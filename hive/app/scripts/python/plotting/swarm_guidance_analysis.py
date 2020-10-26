@@ -232,7 +232,7 @@ def boxplot_node_degree(figname: str = "ND") -> None:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)
-                matrices_degrees: List[Dict[str, float]] = outdata["matrices_nodes_degrees"]
+                matrices_degrees = outdata["matrices_nodes_degrees"]
                 for topology in matrices_degrees:
                     for degrees in topology.values():
                         in_degree, out_degree = tokenize(degrees, "i#o")
@@ -279,6 +279,22 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
     plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
     plt.savefig(f"{plots_directory}/{figname}.{image_ext}", format=image_ext, bbox_inches="tight")
 
+
+def boxplot_terminations(figname: str = "T") -> None:
+    # region create data dict
+    data_dict = {k: [] for k in source_keys}
+    for src_key, outfiles_view in sources_files.items():
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                data_dict[src_key].append(json.load(outfile)["terminated"])
+    # endregion
+
+    __create_boxplot__(
+        data_dict,
+        suptitle="clusters' termination epochs",
+        xlabel="config", ylabel="epoch",
+        figname=figname, figext=image_ext)
 # endregion
 
 
@@ -539,12 +555,13 @@ if __name__ == "__main__":
     # boxplot_first_convergence(figname="fc_msgloss")
 
     # Q11. Quanto tempo demoramos a detetar falhas de nós com swarm guidance?t_{snr}
-    # sources_files, source_keys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
-    # boxplot_time_to_detect_off_nodes(figname="time_to_evict_suspects")
+    sources_files, source_keys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    boxplot_time_to_detect_off_nodes(figname="time_to_evict_suspects")
     # Q12. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
     sources_files, source_keys = setup_sources(
         ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
     barchart_successful_simulations(figname="successfully_terminated")
+    boxplot_terminations(figname="terminations_bp")
     # Q13. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
     # Q14. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
     # Q15. Dadas as condições voláteis, verificamos uma convergência média para \steadystate?
