@@ -1,10 +1,12 @@
 """
 This script collects data
 """
-import getopt
-import json
 import os
 import sys
+import json
+import math
+import getopt
+
 from itertools import zip_longest
 from json import JSONDecodeError
 from typing import List, Tuple, Any, Dict, Optional
@@ -77,7 +79,8 @@ def __create_boxplot__(data_dict: Dict[str, Any],
                        figname: str = "", figext: str = "png",
                        savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
-    ax.boxplot(data_dict.values(), flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
+    ax.boxplot(data_dict.values(), showfliers=showfliers,
+               flierprops=cfg.outlyer_shape, whis=0.75, notch=True)
     ax.set_xticklabels(data_dict.keys())
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
     plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
@@ -107,12 +110,15 @@ def __create_double_boxplot__(left_data, right_data,
         __set_box_color__(bpl, left_color)
         if left_label:
             plt.plot([], c=left_color, label=left_label)
-            plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
+
     if right_color:
         __set_box_color__(bpr, right_color)
         if right_label:
             plt.plot([], c=right_color, label=right_label)
-            plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
+
+    if left_label or right_label:
+        plt.legend(prop=cfg.fp_axis_legend, ncol=1, frameon=True,
+                   loc="center left", bbox_to_anchor=(1, 0.5))
 
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
     plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
@@ -166,7 +172,7 @@ def boxplot_first_convergence(figname: str = "FIC") -> None:
     __create_boxplot__(
         data_dict,
         suptitle="clusters' first instantaneous convergence",
-        xlabel="config", ylabel="epoch",
+        xlabel="config", ylabel="epoch", showfliers=False,
         figname=figname, figext=image_ext)
 
 
@@ -186,7 +192,7 @@ def boxplot_time_in_convergence(figname: str = "TIC") -> None:
 
     __create_boxplot__(
         data_dict,
-        suptitle="clusters' time spent in convergence",
+        suptitle="clusters' time spent in convergence", showfliers=False,
         xlabel="config", ylabel=r"sum(c$_{t}$) / termination epoch",
         figname=figname, figext=image_ext)
 
@@ -275,12 +281,12 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
     fig, ax = __create_boxplot__(
         data_dict,
         suptitle="Clusters' time to evict suspect storage nodes",
-        xlabel="config", ylabel="epochs",
+        xlabel="config", ylabel="epochs", showfliers=False,
         savefig=False)
 
-    plt.ylim(0, 15)
-    # plt.axhline(y=5, color=cp[0], linestyle='--', label=r"HDFS t$_{snr}$")
-    # plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
+    plt.axhline(y=5, color=cp[0], linestyle='--', label=r"HDFS t$_{snr}$")
+    plt.legend(prop=cfg.fp_axis_legend, frameon=True,
+               loc="center left", bbox_to_anchor=(1, 0.5))
     plt.savefig(f"{plots_directory}/{figname}.{image_ext}", format=image_ext, bbox_inches="tight")
 
 
@@ -303,10 +309,23 @@ def boxplot_terminations(figname: str = "T") -> None:
 
 
 # region Bar charts
+def __get_offsets__(nbars: int, bwidth: float = 1) -> np.ndarray:
+    lim = math.floor(nbars / 2)
+    sublocations = np.arange(-lim, lim + 1)
+    if nbars % 2 == 0:
+        hbwidth = bwidth / 2
+        sublocations = list(filter(lambda x: x != 0, sublocations))
+        sublocations = list(map(
+            lambda x: x + (hbwidth if x < 0 else -hbwidth), sublocations))
+        return np.asarray(sublocations) * bwidth
+    return sublocations * bwidth
+
+
 def __create_grouped_barchart__(data_dict: Dict[str, Any],
                                 bar_locations: np.ndarray, bar_width: float,
                                 bucket_size: float,
                                 suptitle: str, xlabel: str, ylabel: str,
+                                frameon: bool = True,
                                 figname: str = "", figext: str = "png",
                                 savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
@@ -319,14 +338,16 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
     plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * 0.8)
     # ax.set_xticks(bar_locations)
+
+    o = __get_offsets__(len(srckeys), bar_width)
     for i in range(len(srckeys)):
         key = srckeys[i]
         epoch_vals = data_dict[key]
-        offset = (bar_width * i) - bar_width / len(srckeys)
-        ax.bar(bar_locations + offset, epoch_vals, width=bar_width, alpha=0.8)
+        ax.bar(bar_locations + o[i], epoch_vals, width=bar_width, alpha=0.8)
 
     ax.legend([str(x) for x in srckeys],
-              frameon=False, loc="best", prop=cfg.fp_axis_legend)
+              frameon=frameon, prop=cfg.fp_axis_legend,
+              loc="center left", bbox_to_anchor=(1, 0.5), ncol=1)
 
     if savefig:
         __save_figure__(figname, figext)
@@ -361,7 +382,7 @@ def __create_barchart__(data_dict: Dict[str, Any],
     return fig, ax
 
 
-def barchart_instantaneous_convergence_vs_progress(
+def barchart_convergence_vs_progress(
         bucket_size: int = 5, figname: str = "ICC") -> None:
     # region create buckets of 5%
     bucket_count = int(100 / bucket_size)
@@ -459,11 +480,8 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
             wedgeprops={'alpha': 0.8}
         )
         ax.set_xlabel(f"{src_key}", fontproperties=cfg.fp_axis_legend)
-    if s == 2:
-        plt.legend(labels=wedge_labels, ncol=s, frameon=False, loc="best", bbox_to_anchor=(0.75, -0.20), prop=cfg.fp_axis_legend)
-    elif s == 3:
-        plt.legend(labels=wedge_labels, ncol=s, frameon=False, loc="best", bbox_to_anchor=(0.6, -0.20), prop=cfg.fp_axis_legend)
-
+    plt.legend(labels=wedge_labels, prop=cfg.fp_axis_legend, ncol=s,
+               frameon=True, loc="lower right", bbox_to_anchor=(0.5, -0.5))
     __save_figure__(figname, image_ext)
 # endregion
 
@@ -532,7 +550,7 @@ if __name__ == "__main__":
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
     srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
-    barchart_instantaneous_convergence_vs_progress(
+    barchart_convergence_vs_progress(
         bucket_size=5, figname="Convergence-Progress_BC_Parts")
     boxplot_first_convergence(figname="First-Convergence_BP_Parts")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
@@ -540,7 +558,7 @@ if __name__ == "__main__":
     piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
 
     srcfiles, srckeys = setup_sources(["SG8-ML", "SG8", "SG16", "SG32"])
-    barchart_instantaneous_convergence_vs_progress(
+    barchart_convergence_vs_progress(
         bucket_size=5, figname="Convergence-Progress_BC_Sizes")
     boxplot_first_convergence(figname="First-Convergence_BP-Sizes")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes")
@@ -548,7 +566,7 @@ if __name__ == "__main__":
     piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes")
 
     srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    barchart_instantaneous_convergence_vs_progress(
+    barchart_convergence_vs_progress(
         bucket_size=5, figname="Convergence-Progress_BC_Sizes-Opt")
     boxplot_first_convergence(figname="First-Convergence_BP-Sizes-Opt")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes-Opt")
