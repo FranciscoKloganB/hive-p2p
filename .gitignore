@@ -370,3 +370,4 @@ hive/app/sample_scenario_fixer.py
 hive/docs/make_docs.py
 *.pyc
 *.png
+*.png
