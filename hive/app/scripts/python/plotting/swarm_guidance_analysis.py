@@ -66,13 +66,14 @@ def __set_box_color__(bp: Any, color: str) -> None:
 def __save_figure__(figname: str, figext: str = "png") -> None:
     fname = f"{plots_directory}/{figname}.{figext}"
     plt.savefig(fname, format=figext, bbox_inches="tight")
-
+    plt.close('all')
 # endregion
 
 
 # region Boxplots
 def __create_boxplot__(data_dict: Dict[str, Any],
                        suptitle: str, xlabel: str, ylabel: str,
+                       showfliers: bool = True,
                        figname: str = "", figext: str = "png",
                        savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
@@ -81,7 +82,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
     plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     if savefig:
         __save_figure__(figname, figext)
@@ -116,11 +117,11 @@ def __create_double_boxplot__(left_data, right_data,
     plt.suptitle(suptitle, fontproperties=cfg.fp_title)
     plt.xlabel(xlabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
     plt.ylabel(ylabel, labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     label_count = len(labels)
-    plt.xticks(range(0, label_count * 2, 2), labels, rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.xticks(range(0, label_count * 2, 2), labels, rotation=45, fontsize="x-large", fontweight="semibold")
     plt.xlim(-2, label_count * 2)
 
     if savefig:
@@ -129,29 +130,30 @@ def __create_double_boxplot__(left_data, right_data,
 
 
 def boxplot_bandwidth(figname: str = "BW") -> None:
-    filesize = 47185920  # bytes
     # region create data dict
-    data_dict = {k: [] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)
+                blocks_size = outdata["blocks_size"] / 1024 / 1024  # B to MB
                 data_dict[src_key].extend(
-                    np.asarray(outdata["blocks_moved"]) * outdata["blocks_size"])
+                    np.asarray(outdata["blocks_moved"]) * blocks_size)
     # endregion
 
     __create_boxplot__(
         data_dict,
-        suptitle="clusters' bandwidth expenditure",
+        suptitle="clusters' bandwidth expenditure per epoch",
         xlabel="config", ylabel="moved blocks (MB)",
+        showfliers=False,
         figname=figname, figext=image_ext)
 
 
 def boxplot_first_convergence(figname: str = "FIC") -> None:
     # region create data dict
-    data_dict = {k: [] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
@@ -168,10 +170,10 @@ def boxplot_first_convergence(figname: str = "FIC") -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_percent_time_instantaneous_convergence(figname: str = "TIC") -> None:
+def boxplot_time_in_convergence(figname: str = "TIC") -> None:
     # region create data dict
-    data_dict = {k: [] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
@@ -189,10 +191,10 @@ def boxplot_percent_time_instantaneous_convergence(figname: str = "TIC") -> None
         figname=figname, figext=image_ext)
 
 
-def boxplot_avg_convergence_magnitude_distance(figname: str = "MD") -> None:
+def boxplot_goal_distances(figname: str = "MD") -> None:
     # region create data dict
-    data_dict = {k: [] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         psamples = []
         nsamples = []
         for filename in outfiles_view:
@@ -209,7 +211,7 @@ def boxplot_avg_convergence_magnitude_distance(figname: str = "MD") -> None:
 
     psamples = []
     nsamples = []
-    for src_key in source_keys:
+    for src_key in srckeys:
         psamples.append(data_dict[src_key][0])
         nsamples.append(data_dict[src_key][1])
 
@@ -219,7 +221,7 @@ def boxplot_avg_convergence_magnitude_distance(figname: str = "MD") -> None:
         left_label="achieved eq.", right_label="has not achieved eq.",
         suptitle="clusters' distance to the select equilibrium",
         xlabel="config", ylabel=r"c$_{dm}$ / cluster size",
-        labels=source_keys,
+        labels=srckeys,
         figname=figname, figext=image_ext)
 
 
@@ -227,8 +229,8 @@ def boxplot_node_degree(figname: str = "ND") -> None:
     """The integral part of the float value is the
     in-degree, the decimal part is the out-degree."""
     # region create data dict
-    data_dict = {k: [[], []] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [[], []] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
@@ -243,7 +245,7 @@ def boxplot_node_degree(figname: str = "ND") -> None:
 
     isamples = []
     osamples = []
-    for src_key in source_keys:
+    for src_key in srckeys:
         isamples.append(data_dict[src_key][0])
         osamples.append(data_dict[src_key][1])
 
@@ -253,14 +255,14 @@ def boxplot_node_degree(figname: str = "ND") -> None:
         left_label="in-degree", right_label="out-degree",
         suptitle="Nodes' degrees depending on the cluster's size",
         xlabel="config", ylabel="node degrees",
-        labels=source_keys,
+        labels=srckeys,
         figname=figname, figext=image_ext)
 
 
 def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
     # region create data dict
-    data_dict = {k: [] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
@@ -276,16 +278,16 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
         xlabel="config", ylabel="epochs",
         savefig=False)
 
-    plt.ylim(0, 10.5)
-    plt.axhline(y=5, color=cp[0], linestyle='--', label=r"HDFS t$_{snr}$")
-    plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
+    plt.ylim(0, 15)
+    # plt.axhline(y=5, color=cp[0], linestyle='--', label=r"HDFS t$_{snr}$")
+    # plt.legend(frameon=False, loc="best", prop=cfg.fp_axis_legend)
     plt.savefig(f"{plots_directory}/{figname}.{image_ext}", format=image_ext, bbox_inches="tight")
 
 
 def boxplot_terminations(figname: str = "T") -> None:
     # region create data dict
-    data_dict = {k: [] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
@@ -313,22 +315,21 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
                fontproperties=cfg.fp_axis_labels)
     plt.ylabel(ylabel, labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * 0.8)
-    ax.set_xticks(bar_locations)
-    for i in range(len(source_keys)):
-        key = source_keys[i]
+    # ax.set_xticks(bar_locations)
+    for i in range(len(srckeys)):
+        key = srckeys[i]
         epoch_vals = data_dict[key]
-        offset = (bar_width * i) - bar_width / len(source_keys)
+        offset = (bar_width * i) - bar_width / len(srckeys)
         ax.bar(bar_locations + offset, epoch_vals, width=bar_width, alpha=0.8)
 
-    ax.legend([str(x) for x in source_keys], frameon=False, loc="best",
-              prop=cfg.fp_axis_legend)
+    ax.legend([str(x) for x in srckeys],
+              frameon=False, loc="best", prop=cfg.fp_axis_legend)
 
     if savefig:
-        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext,
-                    bbox_inches="tight")
+        __save_figure__(figname, figext)
 
     return fig, ax
 
@@ -343,7 +344,7 @@ def __create_barchart__(data_dict: Dict[str, Any],
                fontproperties=cfg.fp_axis_labels)
     plt.ylabel(ylabel, labelpad=cfg.labels_pad,
                fontproperties=cfg.fp_axis_labels)
-    plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     bar_width = 0.66
@@ -368,8 +369,8 @@ def barchart_instantaneous_convergence_vs_progress(
     # endregion
 
     # region create data dict
-    data_dict = {k: [] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         epoch_cc = {i: 0 for i in range(1, epochs + 1)}
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
@@ -404,8 +405,8 @@ def barchart_instantaneous_convergence_vs_progress(
 
 def barchart_successful_simulations(figname: str = "SS") -> None:
     # region create data dict
-    data_dict = {k: 0 for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: 0 for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         count = 0
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
@@ -427,10 +428,10 @@ def barchart_successful_simulations(figname: str = "SS") -> None:
 
 
 # region Pie charts
-def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
+def piechart_goals_achieved(figname: str = "GA") -> None:
     # region create data dict
-    data_dict = {k: [] for k in source_keys}
-    for src_key, outfiles_view in sources_files.items():
+    data_dict = {k: [] for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
         data = [0.0, 0.0]
         for filename in outfiles_view:
             filepath = os.path.join(directory, filename)
@@ -442,14 +443,14 @@ def piechart_avg_convergence_achieved(figname: str = "GA") -> None:
         data_dict[src_key] = list(data)
     # endregion
 
-    s = len(source_keys)
+    s = len(srckeys)
     grid = (9, 3)
     wedge_labels = ["achieved eq.", "has not achieved eq."]
     fig, axes = plt.subplots(1, s, figsize=grid)
     plt.suptitle("clusters (%) achieving the selected equilibrium on average", fontproperties=cfg.fp_title, x=0.51)
     for i, ax in enumerate(axes.flatten()):
         ax.axis('equal')
-        src_key = source_keys[i]
+        src_key = srckeys[i]
         wedges, _, _ = ax.pie(
             data_dict[src_key],
             startangle=90, autopct='%1.1f%%',
@@ -520,52 +521,52 @@ if __name__ == "__main__":
     subtitle = f"Cluster size: {ns}, Opt.: {opt}, P(de): {pde}%, P(ml): {pml}%"
     # endregion
 
-    # sources_files, source_keys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
-    # # Q1. Quantas mensagens passam na rede por epoch?
-    # boxplot_bandwidth(figname="bw_parts")
-    # # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
-    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_parts")
-    # # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
-    # boxplot_first_convergence(figname="fc_parts")
-    # # Q4. A média dos vectores de distribuição é proxima ao objetivo?
-    # piechart_avg_convergence_achieved(figname="avgc_pie_parts")
-    # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_parts")
-    # # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
-    # boxplot_percent_time_instantaneous_convergence(figname="tic_parts")
-    # # Q6. Tecnicas de optimização influenciam as questões anteriores?
-    #
-    # sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-Opt"])
-    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_opt")
-    # boxplot_first_convergence(figname="fc_opt")
-    # piechart_avg_convergence_achieved(figname="avgc_pie_opt")
-    # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_opt")
-    # boxplot_percent_time_instantaneous_convergence(figname="tic_opt")
-    #
-    # sources_files, source_keys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
-    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_networks")
-    # boxplot_first_convergence(figname="fc_networks")
-    # piechart_avg_convergence_achieved(figname="avgc_pie_networks")
-    # boxplot_avg_convergence_magnitude_distance(figname="avgc_dist_networks")
-    # boxplot_percent_time_instantaneous_convergence(figname="tic_networks")
-    #
-    # sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    # # Q8. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
-    # boxplot_node_degree(figname="nd-networks")
-    #
-    # sources_files, source_keys = setup_sources(["SG8-1000P", "SG8-ML"])
-    # barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="icp_msgloss")
-    # boxplot_first_convergence(figname="fc_msgloss")
+    # Q1. Quantas mensagens passam na rede por epoch?
+    srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
+    boxplot_bandwidth(figname="bw_parts")
 
-    # Q11. Quanto tempo demoramos a detetar falhas de nós com swarm guidance?t_{snr}
-    sources_files, source_keys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
-    boxplot_time_to_detect_off_nodes(figname="time_to_evict_suspects")
-    # Q12. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
-    # Q13. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
-    sources_files, source_keys = setup_sources(
+    # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
+    # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
+    # Q4. A média dos vectores de distribuição é proxima ao objetivo?
+    # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
+    # Q6. Tecnicas de optimização influenciam as questões anteriores?
+    # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
+    srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="Convergence-Progress_BC_Parts")
+    boxplot_first_convergence(figname="First-Convergence_BP_Parts")
+    boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
+    boxplot_goal_distances(figname="Goal-Distance_BP_Parts")
+    piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
+    srcfiles, srckeys = setup_sources(["SG8-ML", "SG8", "SG16", "SG32"])
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="Convergence-Progress_BC_Sizes")
+    boxplot_first_convergence(figname="First-Convergence_BP-Sizes")
+    boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes")
+    srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    boxplot_goal_distances(figname="Goal-Distance_BP_Sizes")
+    piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes")
+    barchart_instantaneous_convergence_vs_progress(bucket_size=5, figname="Convergence-Progress_BC_Sizes-Opt")
+    boxplot_first_convergence(figname="First-Convergence_BP-Sizes-Opt")
+    boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes-Opt")
+    boxplot_goal_distances(figname="Goal-Distance_BP_Sizes-Opt")
+    piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes-Opt")
+
+    # Q11. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
+    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SG8", "SG16", "SG32"])
+    boxplot_node_degree(figname="SG-Clusters-Degree_BP")
+
+    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    # Q12. Quanto tempo demoramos a detetar falhas de nós com swarm guidance? t_{snr}
+    boxplot_time_to_detect_off_nodes(figname="SGDS-Time-to-Evict-Suspects_BP")
+    # Q13. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
+    # Q14. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
+    # Q15. Redes de diferentes tiers, tem resultados significativamente melhores?
+    srcfiles, srckeys = setup_sources(
         ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
-    barchart_successful_simulations(figname="successfully_terminated")
-    boxplot_terminations(figname="terminations_bp")
-    # Q14. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
-    # Q15. Dadas as condições voláteis, verificamos uma convergência média para \steadystate?
-    # Q16. Redes de diferentes tiers, tem resultados significativamente melhores?
+    barchart_successful_simulations(figname="SBDBS-Successful-Simulations")
+    boxplot_terminations(figname="SBDBS-HDFS-Terminations_BP")
+    # Q16. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
+    # Q17. Dadas as condições voláteis, verificamos uma convergência média para \steadystate?
+    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    piechart_goals_achieved(figname="SGDBS-Avg-Convergence_PC")
+    boxplot_goal_distances(figname="SGDBS-Goal-Distance_BP")
+    boxplot_time_in_convergence(figname="SGDBS-Time-Convergence_BP")
