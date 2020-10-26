@@ -65,7 +65,8 @@ def __set_box_color__(bp: Any, color: str) -> None:
 
 def __save_figure__(figname: str, figext: str = "png") -> None:
     fname = f"{plots_directory}/{figname}.{figext}"
-    plt.savefig(fname, bbox_inches="tight", format=figext)
+    plt.savefig(fname, format=figext, bbox_inches="tight")
+
 # endregion
 
 
@@ -83,7 +84,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     plt.xticks(rotation=75, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     if savefig:
-        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
+        __save_figure__(figname, figext)
     return fig, ax
 
 
@@ -123,7 +124,7 @@ def __create_double_boxplot__(left_data, right_data,
     plt.xlim(-2, label_count * 2)
 
     if savefig:
-        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
+        __save_figure__(figname, figext)
     return fig, ax
 
 
@@ -354,7 +355,7 @@ def __create_barchart__(data_dict: Dict[str, Any],
     __auto_label__(rects, ax)
 
     if savefig:
-        plt.savefig(f"{plots_directory}/{figname}.{figext}", format=figext, bbox_inches="tight")
+        __save_figure__(figname, figext)
 
     return fig, ax
 
@@ -418,9 +419,10 @@ def barchart_successful_simulations(figname: str = "SS") -> None:
     __create_barchart__(data_dict,
                         suptitle="Counting successfully terminated simulations",
                         xlabel="config", ylabel=r"number of durable files",
-                        figname=figname, figext=image_ext)
+                        figname=figname, figext=image_ext, savefig=False)
 
-
+    plt.ylim(0, epochs)
+    __save_figure__(figname, image_ext)
 # endregion
 
 
@@ -559,11 +561,11 @@ if __name__ == "__main__":
     sources_files, source_keys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
     boxplot_time_to_detect_off_nodes(figname="time_to_evict_suspects")
     # Q12. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
+    # Q13. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
     sources_files, source_keys = setup_sources(
         ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
     barchart_successful_simulations(figname="successfully_terminated")
     boxplot_terminations(figname="terminations_bp")
-    # Q13. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
     # Q14. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
     # Q15. Dadas as condições voláteis, verificamos uma convergência média para \steadystate?
     # Q16. Redes de diferentes tiers, tem resultados significativamente melhores?
