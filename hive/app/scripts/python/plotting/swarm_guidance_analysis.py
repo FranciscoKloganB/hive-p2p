@@ -88,7 +88,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
-    ax.boxplot(data_dict.values(), showfliers=showfliers,
+    bp = ax.boxplot(data_dict.values(), showfliers=showfliers,
                flierprops=outlyer_shape, whis=0.75, notch=True)
     ax.set_xticklabels(data_dict.keys())
     # plt.suptitle(suptitle, fontproperties=fp_title)
@@ -96,6 +96,8 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
+    plt.setp(bp['medians'], color="#000000")
+    
     if savefig:
         __save_figure__(figname, figext)
     return fig, ax
