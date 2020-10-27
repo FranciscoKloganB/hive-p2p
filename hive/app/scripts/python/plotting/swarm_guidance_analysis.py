@@ -356,7 +356,7 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
                                 bar_locations: np.ndarray, bar_width: float,
                                 bucket_size: float,
                                 suptitle: str, xlabel: str, ylabel: str,
-                                frameon: bool = True,
+                                frameon: bool = False,
                                 figname: str = "", figext: str = "png",
                                 savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
@@ -381,8 +381,8 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
         ax.bar(bar_locations + o[i], epoch_vals, width=bar_width, alpha=ax_alpha)
 
     ax.legend([str(x) for x in srckeys],
-              frameon=frameon, prop=fp_legend,
-              loc="center left", bbox_to_anchor=(1, 0.5), ncol=1)
+              frameon=frameon, prop=fp_legend, ncol=len(srckeys),
+              loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
     if savefig:
         __save_figure__(figname, figext)
