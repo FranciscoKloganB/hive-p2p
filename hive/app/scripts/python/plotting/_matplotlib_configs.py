@@ -28,14 +28,21 @@ fp_subtitle = FontProperties(
     weight='semibold'
 )
 
-fp_axis_labels = FontProperties(
+fp_tick_labels = FontProperties(
     family='sans-serif',
     style='italic',
     weight='semibold',
     size='xx-large'
 )
 
-fp_axis_legend = FontProperties(
+fp_pctick_labels = FontProperties(
+    family='sans-serif',
+    style='italic',
+    weight='semibold',
+    size='x-large'
+)
+
+fp_legend = FontProperties(
     family='sans-serif',
     style='italic',
     weight='roman',
@@ -43,6 +50,9 @@ fp_axis_legend = FontProperties(
 )
 
 outlyer_shape = {
-    # 'markerfacecolor': 'g',
-    'marker': 'D'
+    'marker': 'D',
+    'markeredgecolor': (1, 1, 1, 0),
+    'markeredgewidth': 0,
+    'markerfacecolor': color_palette[-1],
+    'alpha': ax_alpha - 0.2
 }

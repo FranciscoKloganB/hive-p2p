@@ -91,9 +91,9 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     ax.boxplot(data_dict.values(), showfliers=showfliers,
                flierprops=outlyer_shape, whis=0.75, notch=True)
     ax.set_xticklabels(data_dict.keys())
-    plt.suptitle(suptitle, fontproperties=fp_title)
-    plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
-    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
+    # plt.suptitle(suptitle, fontproperties=fp_title)
+    # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
+    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     if savefig:
@@ -137,12 +137,12 @@ def __create_double_boxplot__(left_data, right_data,
             __prop_legend__(rcolor, rlabel)
 
     if llabel or rlabel:
-        plt.legend(prop=fp_axis_legend, ncol=cols, frameon=False,
-                   loc="lower center", bbox_to_anchor=(0.5, -0.6))
+        plt.legend(prop=fp_legend, ncol=cols, frameon=False,
+                   loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
-    plt.suptitle(suptitle, fontproperties=fp_title)
-    plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
-    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
+    # plt.suptitle(suptitle, fontproperties=fp_title)
+    # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
+    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
@@ -304,10 +304,17 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
         xlabel="config", ylabel="epochs", showfliers=False,
         savefig=False)
 
-    plt.axhline(y=5, color=color_palette[0], alpha=ax_alpha - 0.2,
-                linestyle='--', label=r"HDFS t$_{snr}$")
-    plt.legend(prop=fp_axis_legend, frameon=False,
-               loc="center left", bbox_to_anchor=(1, 0.5))
+    ax.set_zorder(2)
+
+    plt.axhline(y=5, color=color_palette[-1], alpha=ax_alpha - 0.2,
+                linestyle='--', label=r"HDFS t$_{snr}$", zorder=1)
+
+    leg = plt.legend(prop=fp_legend, ncol=1, frameon=False,
+                     loc="lower center", bbox_to_anchor=(0.5, -0.5))
+
+    for legobj in leg.legendHandles:
+        legobj.set_markersize(12)
+
     __save_figure__(figname, image_ext)
 
 
@@ -325,7 +332,10 @@ def boxplot_terminations(figname: str = "T") -> None:
         data_dict,
         suptitle="clusters' termination epochs",
         xlabel="config", ylabel="epoch",
-        figname=figname, figext=image_ext)
+        figname=figname, figext=image_ext, savefig=False)
+
+    plt.yticks(np.arange(0, epochs + 1, step=80))
+    __save_figure__(figname, image_ext)
 # endregion
 
 
@@ -354,11 +364,11 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
-    plt.suptitle(suptitle, fontproperties=fp_title)
+    # plt.suptitle(suptitle, fontproperties=fp_title)
     plt.xlabel(xlabel, labelpad=labels_pad,
-               fontproperties=fp_axis_labels)
+               fontproperties=fp_tick_labels)
     plt.ylabel(ylabel, labelpad=labels_pad,
-               fontproperties=fp_axis_labels)
+               fontproperties=fp_tick_labels)
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * ax_alpha)
@@ -371,7 +381,7 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
         ax.bar(bar_locations + o[i], epoch_vals, width=bar_width, alpha=ax_alpha)
 
     ax.legend([str(x) for x in srckeys],
-              frameon=frameon, prop=fp_axis_legend,
+              frameon=frameon, prop=fp_legend,
               loc="center left", bbox_to_anchor=(1, 0.5), ncol=1)
 
     if savefig:
@@ -389,11 +399,10 @@ def __create_barchart__(data_dict: Dict[str, Any],
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
 
-    plt.suptitle(suptitle, fontproperties=fp_title)
-    plt.xlabel(xlabel, labelpad=labels_pad,
-               fontproperties=fp_axis_labels)
+    # plt.suptitle(suptitle, fontproperties=fp_title)
+    # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
     plt.ylabel(ylabel, labelpad=labels_pad,
-               fontproperties=fp_axis_labels)
+               fontproperties=fp_tick_labels)
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
@@ -448,8 +457,8 @@ def barchart_convergence_vs_progress(
     # bar_width = bucket_size * 0.25
     __create_grouped_barchart__(
         data_dict, bar_locations, bar_width, bucket_size,
-        suptitle="convergence observations as simulations' progress",
-        xlabel="simulations' progress (%)", ylabel=r"c$_{t}$ count",
+        suptitle="convergence observations as simulations progress",
+        xlabel="simulations progress (%)", ylabel=r"c$_{t}$ count",
         figname=figname, figext=image_ext)
 
 
@@ -472,7 +481,8 @@ def barchart_successful_simulations(figname: str = "SS") -> None:
                         xlabel="config", ylabel=r"number of durable files",
                         figname=figname, figext=image_ext, savefig=False)
 
-    plt.ylim(0, epochs)
+    yticks = np.arange(0, epochs + 1, step=80)
+    plt.yticks(yticks, fontsize="x-large", fontweight="semibold")
     __save_figure__(figname, image_ext)
 # endregion
 
@@ -497,7 +507,7 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
     grid = (9, 3) if s % 3 == 0 else (12, 3)
     wedge_labels = ["achieved eq.", "has not achieved eq."]
     fig, axes = plt.subplots(1, s, figsize=grid)
-    plt.suptitle("clusters (%) achieving the selected equilibrium on average", fontproperties=fp_title, x=0.51)
+    # plt.suptitle("clusters (%) achieving the selected equilibrium on average", fontproperties=fp_title, x=0.51)
     for i, ax in enumerate(axes.flatten()):
         ax.axis('equal')
         src_key = srckeys[i]
@@ -509,11 +519,11 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
             textprops={'color': 'white', 'weight': 'bold'},
             wedgeprops={'alpha': ax_alpha}
         )
-        ax.set_xlabel(f"{src_key}", fontproperties=fp_axis_legend)
+        ax.set_xlabel(f"{src_key}", fontproperties=fp_pctick_labels)
 
-    offset = (0.55, -0.5) if s % 3 == 0 else (0.0, -0.5)
+    offset = (0.6, -0.5) if s % 3 == 0 else (0.05, -0.5)
 
-    plt.legend(labels=wedge_labels, prop=fp_axis_legend, ncol=s,
+    plt.legend(labels=wedge_labels, prop=fp_legend, ncol=s,
                frameon=False, loc="lower right", bbox_to_anchor=offset)
 
     __save_figure__(figname, image_ext)

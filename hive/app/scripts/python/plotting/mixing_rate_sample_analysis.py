@@ -112,9 +112,9 @@ def __create_box_plot__(
     plt.title(f"Generating functions' SLEM on clusters of size {skey}",
               pad=cfg.title_pad, fontproperties=cfg.fp_title)
     plt.xlabel("function name abbreviation",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+               labelpad=cfg.labels_pad, fontproperties=cfg.fp_tick_labels)
     plt.ylabel("slem",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+               labelpad=cfg.labels_pad, fontproperties=cfg.fp_tick_labels)
 
     plt.xlim(-2, func_count * 2)
     plt.ylim(0.1, 1.1)
@@ -211,7 +211,7 @@ def __create_pie_chart__(
                     loc="center left",
                     bbox_to_anchor=(0.8, 0, 0, 0))
     leg.set_title("generating function",
-                  prop=cfg.fp_axis_labels)
+                  prop=cfg.fp_tick_labels)
     leg._legend_box.sep = cfg.legends_pad
     ax.axis('equal')
 

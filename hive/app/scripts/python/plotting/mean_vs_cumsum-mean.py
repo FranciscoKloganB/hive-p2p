@@ -29,10 +29,10 @@ def plot_values(tkey, global_mean, global_cs_mean, terminations):
               fontproperties=cfg.fp_title)
     plt.xlabel("epoch",
                labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               fontproperties=cfg.fp_tick_labels)
     plt.ylabel(f"avg. number of {tkey.replace('_', ' ')}",
                labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               fontproperties=cfg.fp_tick_labels)
 
     plt.xlim(0, max(termination_epochs))
 

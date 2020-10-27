@@ -192,12 +192,12 @@ def barchart_instantaneous_convergence(
 
     plt.xlabel("simulations' progress (%)",
                labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               fontproperties=cfg.fp_tick_labels)
     plt.xlim(bucket_size - bucket_size * 0.5, 100 + bucket_size*0.5)
 
     plt.ylabel(r"c$_{t}$ count",
                labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               fontproperties=cfg.fp_tick_labels)
 
     plt.ylim(0, len(outfiles_view) + 10)
 
@@ -222,7 +222,7 @@ def boxplot_first_convergence(outfiles_view):
     plt.title(subtitle, fontproperties=cfg.fp_subtitle)
     plt.xlabel("epoch",
                labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               fontproperties=cfg.fp_tick_labels)
     __save_figure__("FIC")
 
 
@@ -246,7 +246,7 @@ def boxplot_percent_time_instantaneous_convergence(outfiles_view):
     plt.ylim(0, 1)
     plt.ylabel(r"sum(c$_{t}$) / termination epoch",
                labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               fontproperties=cfg.fp_tick_labels)
     __save_figure__("TSIC")
 
 
@@ -260,7 +260,7 @@ def __boxplot_and_save__(samples, figname):
     plt.ylim(0, 1)
     plt.ylabel(r"distance magnitude / cluster size",
                labelpad=cfg.labels_pad,
-               fontproperties=cfg.fp_axis_labels)
+               fontproperties=cfg.fp_tick_labels)
     __save_figure__(figname)
 
 

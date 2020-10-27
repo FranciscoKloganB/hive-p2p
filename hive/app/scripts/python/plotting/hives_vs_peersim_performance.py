@@ -56,10 +56,10 @@ if __name__ == "__main__":
     #          pad=title_pad, fontproperties=fp_title)
 
     plt.xlabel("number of network nodes",
-               labelpad=labels_pad, fontproperties=fp_axis_labels)
+               labelpad=labels_pad, fontproperties=fp_tick_labels)
 
     plt.ylabel("time in seconds",
-               labelpad=labels_pad, fontproperties=fp_axis_labels)
+               labelpad=labels_pad, fontproperties=fp_tick_labels)
 
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
-    ax.legend(frameon=False, ncol=2, prop=fp_axis_legend,
+    ax.legend(frameon=False, ncol=2, prop=fp_legend,
               loc="lower center", bbox_to_anchor=(0.5, -0.425))
 
     figdir = os.path.abspath(os.path.join(
