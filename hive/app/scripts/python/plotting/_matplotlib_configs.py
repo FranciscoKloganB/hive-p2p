@@ -12,6 +12,7 @@ color_palette = matplotlib.pyplot.style.library['seaborn-deep']['axes.prop_cycle
 title_pad = 20
 labels_pad = 15
 legends_pad = 12
+ax_alpha = 0.8
 
 fp_title = FontProperties(
     family='sans-serif',
