@@ -146,12 +146,13 @@
 <span class="kn">from</span> <span class="nn">utils.convertions</span> <span class="kn">import</span> <span class="n">truncate_float_value</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 
+<span class="n">OPTIMIZE</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+
 <span class="n">DEBUG</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="sd">&quot;&quot;&quot;Indicates if some debug related actions or prints to the terminal should </span>
 <span class="sd">be performed.&quot;&quot;&quot;</span>
 
-
-<span class="n">READ_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">131072</span>
+<span class="n">BLOCKS_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
 <span class="sd">&quot;&quot;&quot;Defines the raw size of each file block before it&#39;s wrapped in a </span>
 <span class="sd">:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instance </span>
 <span class="sd">object. </span>
@@ -159,6 +160,25 @@
 <span class="sd">Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B; </span>
 <span class="sd">1MB = 1048576B; 20MB = 20971520B }.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="set_blocks_size"><a class="viewcode-back" href="../../app.html#app.environment_settings.set_blocks_size">[docs]</a><span class="k">def</span> <span class="nf">set_blocks_size</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Changes :py:const:`BLOCKS_SIZE` constant value at run time to the given n bytes.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">BLOCKS_SIZE</span>
+    <span class="n">BLOCKS_SIZE</span> <span class="o">=</span> <span class="n">n</span></div>
+
+
+<span class="n">BLOCKS_COUNT</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">46</span>
+<span class="sd">&quot;&quot;&quot;Defines into how many </span>
+<span class="sd">:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instances a file</span>
+<span class="sd">is divided into. Either use this or :py:const:`BLOCKS_SIZE` but not both.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="set_blocks_count"><a class="viewcode-back" href="../../app.html#app.environment_settings.set_blocks_count">[docs]</a><span class="k">def</span> <span class="nf">set_blocks_count</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Changes :py:const:`BLOCKS_COUNT` constant value at run time.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">BLOCKS_COUNT</span>
+    <span class="n">BLOCKS_COUNT</span> <span class="o">=</span> <span class="n">n</span></div>
+
 
 <span class="n">NEWSCAST_CACHE_SIZE</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="sd">&quot;&quot;&quot;The maximum amount of neighbors a :py:attr:`NewscastNode view </span>
@@ -182,7 +202,7 @@
 
 
 <div class="viewcode-block" id="set_replication_level"><a class="viewcode-back" href="../../app.html#app.environment_settings.set_replication_level">[docs]</a><span class="k">def</span> <span class="nf">set_replication_level</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Changes REPLICATION_LEVEL constant value at run time.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Changes :py:const:`REPLICATION_LEVEL` constant value at run time.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">REPLICATION_LEVEL</span>
     <span class="n">REPLICATION_LEVEL</span> <span class="o">=</span> <span class="n">n</span></div>
 
@@ -205,7 +225,7 @@
 
 
 <div class="viewcode-block" id="set_loss_chance"><a class="viewcode-back" href="../../app.html#app.environment_settings.set_loss_chance">[docs]</a><span class="k">def</span> <span class="nf">set_loss_chance</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Changes LOSS_CHANCE constant value at run time.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Changes :py:const:`LOSS_CHANCE` constant value at run time.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">LOSS_CHANCE</span>
     <span class="k">global</span> <span class="n">DELIVER_CHANCE</span>
     <span class="k">global</span> <span class="n">COMMUNICATION_CHANCES</span>
@@ -287,8 +307,10 @@
 <span class="sd">:py:mod:`app.hive_simulation` are located.&quot;&quot;&quot;</span>
 
 <span class="n">OUTFILE_ROOT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="s1">&#39;outfiles&#39;</span><span class="p">)</span>
-<span class="sd">&quot;&quot;&quot;Path to the folder where simulation output files are located will be </span>
-<span class="sd">stored.&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;Path to the folder where simulation output files are located.&quot;&quot;&quot;</span>
+
+<span class="n">RESOURCES_ROOT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="s1">&#39;resources&#39;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Path to the folder where miscellaneous files are located.&quot;&quot;&quot;</span>
 
 <span class="n">MIXING_RATE_SAMPLE_ROOT</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTFILE_ROOT</span><span class="p">,</span> <span class="s1">&#39;mixing_rate_samples&#39;</span><span class="p">)</span>
 

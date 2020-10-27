@@ -49,8 +49,7 @@ def main():
     The execution of the main method results in a JSON file outputed to
     :py:const:`~app.environment_settings.MIXING_RATE_SAMPLE_ROOT` folder.
     """
-    if not os.path.exists(MIXING_RATE_SAMPLE_ROOT):
-        os.makedirs(MIXING_RATE_SAMPLE_ROOT)
+    os.makedirs(MIXING_RATE_SAMPLE_ROOT, exist_ok=True)
 
     MatlabEngineContainer.get_instance()
 
@@ -87,7 +86,7 @@ def main():
 
 if __name__ == "__main__":
     samples: int = 30
-    network_sizes: Tuple[int] = (8, 16)
+    network_sizes: Tuple = (8, 16)
     module: Any = "domain.helpers.matrices"
     functions: List[str] = [
         "new_mh_transition_matrix",
@@ -104,20 +103,20 @@ if __name__ == "__main__":
         long_opts = ["samples=", "network_sizes=", "module=", "functions=",
                      "allow_self_loops=", "enforce_loops="]
 
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        for options, args in options:
-            if options in ("-s", "--samples"):
-                samples = int(str(args).strip()) or samples
-            if options in ("-n", "--network_sizes"):
-                network_sizes = ast.literal_eval(str(args).strip())
-            if options in ("-m", "--module"):
-                module = str(args).strip()
-            if options in ("-f", "--functions"):
-                function_names = str(args).strip().split(',')
-            if options in ("a", "--allow_self_loops"):
-                allow_sloops = int(str(args).strip()) or allow_sloops
-            if options in ("e", "--enforce_loops"):
-                enforce_sloops = int(str(args).strip()) or enforce_sloops
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        for arg, val in args:
+            if arg in ("-s", "--samples"):
+                samples = int(str(val).strip()) or samples
+            if arg in ("-n", "--network_sizes"):
+                network_sizes = ast.literal_eval(str(val).strip())
+            if arg in ("-m", "--module"):
+                module = str(val).strip()
+            if arg in ("-f", "--functions"):
+                function_names = str(val).strip().split(',')
+            if arg in ("a", "--allow_self_loops"):
+                allow_sloops = int(str(val).strip()) or allow_sloops
+            if arg in ("e", "--enforce_loops"):
+                enforce_sloops = int(str(val).strip()) or enforce_sloops
 
         module = importlib.import_module(module)
         main()

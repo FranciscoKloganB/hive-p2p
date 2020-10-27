@@ -106,15 +106,15 @@ def __create_box_plot__(
                 widths=1,
                 notch=True)
     plt.xticks(ticks=range(0, func_count * 2, 2), labels=func_labels,
-               rotation=45, fontsize="large", fontweight="semibold")
-    plt.yticks(fontsize="large", fontweight="semibold")
+               rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
 
     plt.title(f"Generating functions' SLEM on clusters of size {skey}",
               pad=cfg.title_pad, fontproperties=cfg.fp_title)
     plt.xlabel("function name abbreviation",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+               labelpad=cfg.labels_pad, fontproperties=cfg.fp_tick_labels)
     plt.ylabel("slem",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+               labelpad=cfg.labels_pad, fontproperties=cfg.fp_tick_labels)
 
     plt.xlim(-2, func_count * 2)
     plt.ylim(0.1, 1.1)
@@ -211,7 +211,7 @@ def __create_pie_chart__(
                     loc="center left",
                     bbox_to_anchor=(0.8, 0, 0, 0))
     leg.set_title("generating function",
-                  prop=cfg.fp_axis_labels)
+                  prop=cfg.fp_tick_labels)
     leg._legend_box.sep = cfg.legends_pad
     ax.axis('equal')
 
@@ -224,32 +224,25 @@ if __name__ == "__main__":
     __makedirs__()
     file_name = ""
     try:
-        short_opts = "bpf:"
-        long_opts = ["boxplot", "piechart", "file="]
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        # Iterate all arguments first in search of -f option
-        for options, args in options:
-            if options in ("-f", "--file"):
-                file_name = str(args).strip()
-        file_path = os.path.join(__MIXING_RATE_HOME__, file_name)
-        file = open(file_path, "r")
-        json_obj = json.load(file)
-        file.close()
-        # If file was succesfully read, iterate (options, args) for methods.
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        for options, args in options:
-            if options in ("-b", "--boxplot"):
-                box_plot(json_obj)
-            if options in ("-p", "--piechart"):
-                pie_chart(json_obj)
+        short_opts = "f:"
+        long_opts = ["file="]
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        for arg, val in args:
+            if arg in ("-f", "--file"):
+                file_name = str(val).strip()
     except getopt.GetoptError:
-        sys.exit(
-            "Usage: python mixing_rate_sampler.py -s 1000 -f a_matrix_generator")
-    except json.JSONDecodeError:
-        sys.exit("Specified file exists, but seems to be an invalid JSON.")
+        sys.exit("Usage: python mixing_rate_sampler.py -f a_matrix_generator")
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --file -f (str)\n")
+
+    try:
+        filepath = os.path.join(__MIXING_RATE_HOME__, file_name)
+        with open(filepath, "r") as f:
+            data = json.load(f)
+            box_plot(data)
+            pie_chart(data)
+    except json.JSONDecodeError:
+        sys.exit("Specified file exists, but seems to be an invalid JSON.")
     except FileNotFoundError:
-        sys.exit(
-            f"File '{file_name}' does not exist in '{__MIXING_RATE_HOME__}'.")
+        sys.exit(f"File '{file_name}' does not exist in '{__MIXING_RATE_HOME__}'.")

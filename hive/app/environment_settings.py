@@ -36,12 +36,13 @@ from typing import List
 from utils.convertions import truncate_float_value
 import numpy
 
+OPTIMIZE: bool = True
+
 DEBUG: bool = False
 """Indicates if some debug related actions or prints to the terminal should 
 be performed."""
 
-
-READ_SIZE: int = 131072
+BLOCKS_SIZE: int = 1 * 1024 * 1024
 """Defines the raw size of each file block before it's wrapped in a 
 :py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instance 
 object. 
@@ -49,6 +50,25 @@ object.
 Some possible values include { 32KB = 32768B; 128KB = 131072B; 512KB = 524288B; 
 1MB = 1048576B; 20MB = 20971520B }.
 """
+
+
+def set_blocks_size(n: int) -> None:
+    """Changes :py:const:`BLOCKS_SIZE` constant value at run time to the given n bytes."""
+    global BLOCKS_SIZE
+    BLOCKS_SIZE = n
+
+
+BLOCKS_COUNT: int = 46
+"""Defines into how many 
+:py:class:`~app.domain.helpers.smart_dataclasses.FileBlockData` instances a file
+is divided into. Either use this or :py:const:`BLOCKS_SIZE` but not both."""
+
+
+def set_blocks_count(n: int) -> None:
+    """Changes :py:const:`BLOCKS_COUNT` constant value at run time."""
+    global BLOCKS_COUNT
+    BLOCKS_COUNT = n
+
 
 NEWSCAST_CACHE_SIZE: int = 20
 """The maximum amount of neighbors a :py:attr:`NewscastNode view 
@@ -72,7 +92,7 @@ REPLICATION_LEVEL: int = 3
 
 
 def set_replication_level(n: int) -> None:
-    """Changes REPLICATION_LEVEL constant value at run time."""
+    """Changes :py:const:`REPLICATION_LEVEL` constant value at run time."""
     global REPLICATION_LEVEL
     REPLICATION_LEVEL = n
 
@@ -95,7 +115,7 @@ COMMUNICATION_CHANCES = [LOSS_CHANCE, DELIVER_CHANCE]
 
 
 def set_loss_chance(v: float) -> None:
-    """Changes LOSS_CHANCE constant value at run time."""
+    """Changes :py:const:`LOSS_CHANCE` constant value at run time."""
     global LOSS_CHANCE
     global DELIVER_CHANCE
     global COMMUNICATION_CHANCES
@@ -177,8 +197,10 @@ SIMULATION_ROOT: str = os.path.join(os.getcwd(), 'static', 'simfiles')
 :py:mod:`app.hive_simulation` are located."""
 
 OUTFILE_ROOT: str = os.path.join(os.getcwd(), 'static', 'outfiles')
-"""Path to the folder where simulation output files are located will be 
-stored."""
+"""Path to the folder where simulation output files are located."""
+
+RESOURCES_ROOT: str = os.path.join(os.getcwd(), 'static', 'resources')
+"""Path to the folder where miscellaneous files are located."""
 
 MIXING_RATE_SAMPLE_ROOT: str = os.path.join(OUTFILE_ROOT, 'mixing_rate_samples')
 

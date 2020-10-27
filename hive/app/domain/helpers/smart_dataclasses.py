@@ -122,12 +122,13 @@ class FileData:
         extras: Dict[str, Any] = {
             "cluster_type": cluster.__class__.__name__,
             "simfile_name": origin,
-            "hive_id": cluster.id,
+            "cluster_id": cluster.id,
             "file_name": self.name,
-            "read_size": es.READ_SIZE,
+            "blocks_size": es.BLOCKS_SIZE,
+            "blocks_count": es.BLOCKS_COUNT,
             "critical_size_threshold": cluster.critical_size,
             "sufficient_size_threshold": cluster.sufficient_size,
-            "original_hive_size": cluster.original_size,
+            "original_size": cluster.original_size,
             "redundant_size": cluster.redundant_size,
             "max_epochs": ms.Master.MAX_EPOCHS,
             "min_replication_delay": es.MIN_REPLICATION_DELAY,
@@ -178,7 +179,7 @@ class FileBlockData:
     parameters, e.g., replica control such or file block integrity.
 
     Attributes:
-        hive_id:
+        cluster_id:
             Unique identifier of the cluster that manages the file block.
         name:
             The name of the file the file block belongs to.
@@ -203,12 +204,12 @@ class FileBlockData:
     """
 
     def __init__(
-            self, hive_id: str, name: str, number: int, data: bytes
+            self, cluster_id: str, name: str, number: int, data: bytes
     ) -> None:
         """Creates an instance of `FileBlockData`.
 
         Args:
-            hive_id:
+            cluster_id:
                 Unique identifier of the cluster that manages the file block.
             name:
                 The name of the file the file block belongs to.
@@ -217,7 +218,7 @@ class FileBlockData:
             data:
                 Actual file block data as a sequence of bytes.
         """
-        self.hive_id = hive_id
+        self.cluster_id = cluster_id
         self.name: str = name
         self.number: int = number
         self.id: str = name + "_#_" + str(number)
@@ -227,7 +228,7 @@ class FileBlockData:
         self.sha256: str = crypto.sha256(self.data)
 
     # region Simulation Interface
-    def set_replication_epoch(self, epoch: int) -> int:
+    def set_replication_epoch(self, epoch: int) -> float:
         """Sets the epoch in which replication levels should be restored.
 
         This method tries to assign a new epoch, in the future, at which
@@ -483,7 +484,7 @@ class LoggingData:
         self.delay_replication: List[float] = [0.0] * max_epochs_plus_one
         self.delay_suspects_detection: Dict[str, int] = {}
         self.initial_spread = ""
-        self.matrices_nodes_degrees: List[Dict[str, float]] = []
+        self.matrices_nodes_degrees: List[Dict[str, str]] = []
         self.off_node_count: List[int] = [0] * max_epochs
         self.topologies_goal_achieved: List[bool] = []
         self.topologies_goal_distance: List[float] = []
@@ -570,7 +571,7 @@ class LoggingData:
         self.topologies_goal_achieved.append(achieved_goal)
         self.topologies_goal_distance.append(distance_magnitude)
 
-    def log_matrices_degrees(self, nodes_degrees: Dict[str, float]):
+    def log_matrices_degrees(self, nodes_degrees: Dict[str, str]):
         """Logs the degree of all nodes in a Markov Matrix overlay, at the
         time of its creation, before any faults on the overlay occurs.
 
@@ -578,7 +579,7 @@ class LoggingData:
             nodes_degrees:
                 A dictionary mapping the :py:attr:`node identifiers
                 <app.domain.network_nodes.Node.id>` to their ``in-degree``
-                and ``out-degree`` concatenated as a float.
+                and ``out-degree`` seperated by the delimiter ``i#o``.
         """
         self.matrices_nodes_degrees.append(nodes_degrees)
 

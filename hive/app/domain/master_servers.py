@@ -139,9 +139,9 @@ class Master:
                 size = d[fname]['cluster_size']
                 cluster = self._new_cluster_group(cluster_class, size, fname)
 
-                file_size = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
-                read_size = int(file_size / 333)
-                fblocks[fname] = self._split_files(fname, cluster, read_size)
+                filesize = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
+                es.set_blocks_size(math.floor(filesize / es.BLOCKS_COUNT))
+                fblocks[fname] = self._split_files(fname, cluster, es.BLOCKS_SIZE)
 
                 # fblocks[fname] = self._split_files(fname, cluster, es.READ_SIZE)
                 
@@ -335,7 +335,6 @@ class Master:
 
 
 class SGMaster(Master):
-    # region Master API
     def get_cloud_reference(self) -> str:
         """Use to obtain a reference to 3rd party cloud storage provider
 
@@ -415,7 +414,11 @@ class HDFSMaster(Master):
                 fspreads[fname] = spread_strategy
                 size = d[fname]['cluster_size']
                 cluster = self._new_cluster_group(cluster_class, size, fname)
-                fblocks[fname] = self._split_files(fname, cluster, 1048576)
+
+                filesize = os.path.getsize(os.path.join(es.SHARED_ROOT, fname))
+                es.set_blocks_size(1 * 1024 * 1024)  # 1MB blocks.
+                es.set_blocks_count(math.ceil(filesize / es.BLOCKS_SIZE))
+                fblocks[fname] = self._split_files(fname, cluster, es.BLOCKS_SIZE)
 
             # Distribute files before starting simulation
             for cluster in self.cluster_groups.values():

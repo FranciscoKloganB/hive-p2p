@@ -365,3 +365,9 @@ octave-workspace
 hive/app/static/outfiles/FTB_4376.out
 hive/app/static/outfiles/powerglove.out
 *.pyc
+*.png
+hive/app/sample_scenario_fixer.py
+hive/docs/make_docs.py
+*.pyc
+*.png
+*.png
