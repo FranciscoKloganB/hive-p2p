@@ -344,10 +344,9 @@ def __get_offsets__(nbars: int, bwidth: float = 1) -> np.ndarray:
     lim = math.floor(nbars / 2)
     sublocations = np.arange(-lim, lim + 1)
     if nbars % 2 == 0:
-        hbwidth = bwidth / 2
         sublocations = list(filter(lambda x: x != 0, sublocations))
         sublocations = list(map(
-            lambda x: x + (hbwidth if x < 0 else -hbwidth), sublocations))
+            lambda x: x + (0.5 if x < 0 else -0.5), sublocations))
         return np.asarray(sublocations) * bwidth
     return sublocations * bwidth
 
@@ -437,7 +436,8 @@ def barchart_convergence_vs_progress(
                 outdata = json.load(outfile)
                 sets = outdata["convergence_sets"]
                 for s in sets:
-                    epoch_cc[e] += len(s)
+                    for e in s:
+                        epoch_cc[e] += 1
         # region create buckets of 5% and allocate the buuckets' values
         epoch_vals = [0] * bucket_count
         for i in range(bucket_count):
