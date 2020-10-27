@@ -97,7 +97,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.setp(bp['medians'], color="#000000")
-    
+
     if savefig:
         __save_figure__(figname, figext)
     return fig, ax
