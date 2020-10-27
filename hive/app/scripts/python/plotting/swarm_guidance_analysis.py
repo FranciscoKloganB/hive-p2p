@@ -19,14 +19,15 @@ from _matplotlib_configs import *
 
 # region Helpers
 def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]]:
-    sources_files = {k: [] for k in source_patterns}
+    kdict = {k: [] for k in source_patterns}
     for filename in dirfiles:
-        for key in sources_files:
-            if key in filename:
-                sources_files[key].append(filename)
+        for k in kdict:
+            if k in filename:
+                kdict[k].append(filename)
                 break
-    source_keys = list(sources_files)
-    return sources_files, source_keys
+    kdict = {k.replace("#", "") if "#" in k else k: v for k, v in kdict.items()}
+    klist = list(kdict)
+    return kdict, klist
 
 
 def tokenize(s: str, token: str) -> Tuple[int, int]:
@@ -309,13 +310,12 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
     ax.set_zorder(2)
 
     plt.axhline(y=5, color=color_palette[-1], alpha=ax_alpha - 0.2,
-                linestyle='--', label=r"HDFS t$_{snr}$", zorder=1)
+                linestyle='-', label=r"HDFS t$_{snr}$", zorder=1)
 
     leg = plt.legend(prop=fp_legend, ncol=1, frameon=False,
                      loc="lower center", bbox_to_anchor=(0.5, -0.5))
-
     for legobj in leg.legendHandles:
-        legobj.set_markersize(12)
+        legobj.set_linewidth(10)
 
     __save_figure__(figname, image_ext)
 
@@ -566,9 +566,6 @@ if __name__ == "__main__":
     dirfiles = list(filter(lambda f: f.endswith(".json"), os.listdir(directory)))
 
     # Q1. Quantas mensagens passam na rede por epoch?
-    srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
-    boxplot_bandwidth(figname="bw_parts")
-
     # Q2. Existem mais conjuntos de convergencia perto do fim da simulação?
     # Q3. Quanto tempo é preciso até observar a primeira convergencia na rede?
     # Q4. A média dos vectores de distribuição é proxima ao objetivo?
@@ -576,13 +573,14 @@ if __name__ == "__main__":
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
     srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
+    boxplot_bandwidth(figname="bw_parts")
     barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
     boxplot_first_convergence(figname="First-Convergence_BP_Parts")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
     boxplot_goal_distances(figname="Goal-Distance_BP_Parts")
     piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
 
-    srcfiles, srckeys = setup_sources(["SG8-ML", "SG8", "SG16", "SG32"])
+    srcfiles, srckeys = setup_sources(["SG8-ML", "SG8#", "SG16", "SG32"])
     barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes")
     boxplot_first_convergence(figname="First-Convergence_BP-Sizes")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes")
