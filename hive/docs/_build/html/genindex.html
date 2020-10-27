@@ -133,8 +133,6 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="app.html#app.hive_simulation.__can_exec_simfile__">__can_exec_simfile__() (in module app.hive_simulation)</a>
-</li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.__init__">__init__() (Cluster method)</a>
 
       <ul>
@@ -177,9 +175,11 @@
       </ul></li>
       <li><a href="app.html#app.hive_simulation.__makedirs__">__makedirs__() (in module app.hive_simulation)</a>
 </li>
-      <li><a href="app.html#app.hive_simulation.__start_simulation__">__start_simulation__() (in module app.hive_simulation)</a>
+      <li><a href="app.html#sample_scenario_fixer.__select_fastest_topology__">__select_fastest_topology__() (in module sample_scenario_fixer)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.__str__">__str__() (FileBlockData method)</a>
+</li>
+      <li><a href="app.html#sample_scenario_fixer.__validate_mc__">__validate_mc__() (in module sample_scenario_fixer)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices._adjency_matrix_sdp_optimization">_adjency_matrix_sdp_optimization() (in module app.domain.helpers.matrices)</a>
 </li>
@@ -203,10 +203,10 @@
 </li>
       <li><a href="app.html#app.simfile_generator._init_persisting_dict">_init_persisting_dict() (in module app.simfile_generator)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.html#app.simfile_generator._input_bounded_float">_input_bounded_float() (in module app.simfile_generator)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.html#app.simfile_generator._input_bounded_integer">_input_bounded_integer() (in module app.simfile_generator)</a>
 </li>
       <li><a href="app.html#app.simfile_generator._input_character_option">_input_character_option() (in module app.simfile_generator)</a>
@@ -271,6 +271,8 @@
         <li><a href="app.domain.html#app.domain.cluster_groups.NewscastCluster._setup_epoch">(NewscastCluster method)</a>
 </li>
       </ul></li>
+      <li><a href="app.html#app.hive_simulation._simulate">_simulate() (in module app.hive_simulation)</a>
+</li>
       <li><a href="app.html#app.hive_simulation._single_main">_single_main() (in module app.hive_simulation)</a>
 </li>
       <li><a href="app.html#app.mixing_rate_sampler._SizeResultsDict">_SizeResultsDict (in module app.mixing_rate_sampler)</a>
@@ -278,6 +280,8 @@
       <li><a href="app.domain.html#app.domain.master_servers.Master._split_files">_split_files() (Master method)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.SGCluster._timer">_timer (SGCluster attribute)</a>
+</li>
+      <li><a href="app.html#app.hive_simulation._validate_simfile">_validate_simfile() (in module app.hive_simulation)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.SGCluster._validate_transition_matrix">_validate_transition_matrix() (SGCluster method)</a>
 </li>
@@ -396,6 +400,13 @@
 </li>
       </ul></li>
       <li>
+    app.sample_scenario_generator
+
+      <ul>
+        <li><a href="app.html#module-app.sample_scenario_generator">module</a>
+</li>
+      </ul></li>
+      <li>
     app.simfile_generator
 
       <ul>
@@ -455,6 +466,8 @@
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.blocks_corrupted">blocks_corrupted (LoggingData attribute)</a>
 </li>
+      <li><a href="app.html#app.environment_settings.BLOCKS_COUNT">BLOCKS_COUNT (in module app.environment_settings)</a>
+</li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.blocks_existing">blocks_existing (LoggingData attribute)</a>
 </li>
   </ul></td>
@@ -462,6 +475,8 @@
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.blocks_lost">blocks_lost (LoggingData attribute)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.blocks_moved">blocks_moved (LoggingData attribute)</a>
+</li>
+      <li><a href="app.html#app.environment_settings.BLOCKS_SIZE">BLOCKS_SIZE (in module app.environment_settings)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.SGCluster.broadcast_transition_matrix">broadcast_transition_matrix() (SGCluster method)</a>
 </li>
@@ -483,6 +498,8 @@
 </li>
       <li><a href="app.domain.html#app.domain.master_servers.Master.cluster_groups">cluster_groups (Master attribute)</a>
 </li>
+      <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.cluster_id">cluster_id (FileBlockData attribute)</a>
+</li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.cluster_size_am">cluster_size_am (LoggingData attribute)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.cluster_size_bm">cluster_size_bm (LoggingData attribute)</a>
@@ -495,10 +512,10 @@
 </li>
       <li><a href="app.domain.html#app.domain.network_nodes.SGNode.clusters">clusters (SGNode attribute)</a>
 </li>
-      <li><a href="app.html#app.type_hints.ClusterType">ClusterType (in module app.type_hints)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="app.html#app.type_hints.ClusterType">ClusterType (in module app.type_hints)</a>
+</li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.complain">complain() (Cluster method)</a>
 
       <ul>
@@ -647,6 +664,8 @@
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices.get_mixing_rate">get_mixing_rate() (in module app.domain.helpers.matrices)</a>
 </li>
+      <li><a href="app.html#app.hive_simulation.get_next_scenario">get_next_scenario() (in module app.hive_simulation)</a>
+</li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.get_node">get_node() (Cluster method)</a>
 
       <ul>
@@ -663,11 +682,9 @@
 </li>
       <li><a href="app.domain.html#app.domain.master_servers.HDFSMaster">HDFSMaster (class in app.domain.master_servers)</a>
 </li>
-      <li><a href="app.domain.html#app.domain.network_nodes.HDFSNode">HDFSNode (class in app.domain.network_nodes)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.hive_id">hive_id (FileBlockData attribute)</a>
+      <li><a href="app.domain.html#app.domain.network_nodes.HDFSNode">HDFSNode (class in app.domain.network_nodes)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.enums.HttpCodes">HttpCodes (class in app.domain.helpers.enums)</a>
 </li>
@@ -761,14 +778,8 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="app.html#app.hive_simulation.main">main() (in module app.hive_simulation)</a>
-
-      <ul>
-        <li><a href="app.html#app.mixing_rate_sampler.main">(in module app.mixing_rate_sampler)</a>
+      <li><a href="app.html#app.mixing_rate_sampler.main">main() (in module app.mixing_rate_sampler)</a>
 </li>
-        <li><a href="app.html#app.simfile_generator.main">(in module app.simfile_generator)</a>
-</li>
-      </ul></li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.maintain">maintain() (Cluster method)</a>
 
       <ul>
@@ -815,12 +826,12 @@
         <li><a href="app.domain.html#app.domain.cluster_groups.SGCluster.membership_maintenance">(SGCluster method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.html#app.environment_settings.MIN_CONVERGENCE_THRESHOLD">MIN_CONVERGENCE_THRESHOLD (in module app.environment_settings)</a>
 </li>
       <li><a href="app.html#app.environment_settings.MIN_REPLICATION_DELAY">MIN_REPLICATION_DELAY (in module app.environment_settings)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
@@ -853,6 +864,8 @@
 </li>
         <li><a href="app.html#module-app.mixing_rate_sampler">app.mixing_rate_sampler</a>
 </li>
+        <li><a href="app.html#module-app.sample_scenario_generator">app.sample_scenario_generator</a>
+</li>
         <li><a href="app.html#module-app.simfile_generator">app.simfile_generator</a>
 </li>
         <li><a href="app.html#module-app.type_hints">app.type_hints</a>
@@ -864,6 +877,8 @@
         <li><a href="app.utils.html#module-app.utils.crypto">app.utils.crypto</a>
 </li>
         <li><a href="app.utils.html#module-app.utils.randoms">app.utils.randoms</a>
+</li>
+        <li><a href="app.html#module-sample_scenario_fixer">sample_scenario_fixer</a>
 </li>
       </ul></li>
       <li><a href="app.html#app.environment_settings.MONTH_EPOCHS">MONTH_EPOCHS (in module app.environment_settings)</a>
@@ -883,11 +898,7 @@
       <li><a href="app.domain.html#app.domain.master_servers.Master.network_nodes">network_nodes (Master attribute)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.SGCluster.new_desired_distribution">new_desired_distribution() (SGCluster method)</a>
-
-      <ul>
-        <li><a href="app.domain.html#app.domain.cluster_groups.SGClusterPerfect.new_desired_distribution">(SGClusterPerfect method)</a>
 </li>
-      </ul></li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices.new_go_transition_matrix">new_go_transition_matrix() (in module app.domain.helpers.matrices)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices.new_mgo_transition_matrix">new_mgo_transition_matrix() (in module app.domain.helpers.matrices)</a>
@@ -901,6 +912,12 @@
       <li><a href="app.domain.helpers.html#app.domain.helpers.matrices.new_symmetric_matrix">new_symmetric_matrix() (in module app.domain.helpers.matrices)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.SGCluster.new_transition_matrix">new_transition_matrix() (SGCluster method)</a>
+
+      <ul>
+        <li><a href="app.domain.html#app.domain.cluster_groups.SGClusterPerfect.new_transition_matrix">(SGClusterPerfect method)</a>
+</li>
+      </ul></li>
+      <li><a href="app.domain.helpers.html#app.domain.helpers.matrices.new_vector">new_vector() (in module app.domain.helpers.matrices)</a>
 </li>
       <li><a href="app.html#app.environment_settings.NEWSCAST_CACHE_SIZE">NEWSCAST_CACHE_SIZE (in module app.environment_settings)</a>
 </li>
@@ -974,8 +991,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.utils.html#app.utils.randoms.random_index">random_index() (in module app.utils.randoms)</a>
 </li>
-      <li><a href="app.html#app.environment_settings.READ_SIZE">READ_SIZE (in module app.environment_settings)</a>
-</li>
       <li><a href="app.domain.html#app.domain.network_nodes.Node.receive_part">receive_part() (Node method)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.redundant_size">redundant_size (Cluster attribute)</a>
@@ -990,8 +1005,6 @@
 </li>
       <li><a href="app.html#app.type_hints.ReplicasDict">ReplicasDict (in module app.type_hints)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.domain.html#app.domain.network_nodes.HDFSNode.replicate_part">replicate_part() (HDFSNode method)</a>
 
       <ul>
@@ -1002,9 +1015,13 @@
         <li><a href="app.domain.html#app.domain.network_nodes.SGNode.replicate_part">(SGNode method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.replication_epoch">replication_epoch (FileBlockData attribute)</a>
 </li>
       <li><a href="app.html#app.environment_settings.REPLICATION_LEVEL">REPLICATION_LEVEL (in module app.environment_settings)</a>
+</li>
+      <li><a href="app.html#app.environment_settings.RESOURCES_ROOT">RESOURCES_ROOT (in module app.environment_settings)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.Cluster.route_part">route_part() (Cluster method)</a>
 </li>
@@ -1020,15 +1037,30 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    sample_scenario_fixer
+
+      <ul>
+        <li><a href="app.html#module-sample_scenario_fixer">module</a>
+</li>
+      </ul></li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.save_sets_and_reset">save_sets_and_reset() (LoggingData method)</a>
 </li>
       <li><a href="app.domain.html#app.domain.network_nodes.SGNode.select_destination">select_destination() (SGNode method)</a>
 </li>
       <li><a href="app.domain.html#app.domain.cluster_groups.SGCluster.select_fastest_topology">select_fastest_topology() (SGCluster method)</a>
+
+      <ul>
+        <li><a href="app.domain.html#app.domain.cluster_groups.SGClusterPerfect.select_fastest_topology">(SGClusterPerfect method)</a>
 </li>
+      </ul></li>
       <li><a href="app.domain.html#app.domain.network_nodes.Node.send_part">send_part() (Node method)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.enums.HttpCodes.SERVER_DOWN">SERVER_DOWN (HttpCodes attribute)</a>
+</li>
+      <li><a href="app.html#app.environment_settings.set_blocks_count">set_blocks_count() (in module app.environment_settings)</a>
+</li>
+      <li><a href="app.html#app.environment_settings.set_blocks_size">set_blocks_size() (in module app.environment_settings)</a>
 </li>
       <li><a href="app.domain.html#app.domain.network_nodes.SGNode.set_file_routing">set_file_routing() (SGNode method)</a>
 </li>
@@ -1052,12 +1084,12 @@
 </li>
       <li><a href="app.domain.html#app.domain.network_nodes.SGNode">SGNode (class in app.domain.network_nodes)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.domain.html#app.domain.network_nodes.SGNodeExt">SGNodeExt (class in app.domain.network_nodes)</a>
 </li>
       <li><a href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.sha256">sha256 (FileBlockData attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="app.utils.html#app.utils.crypto.sha256">sha256() (in module app.utils.crypto)</a>
 </li>
       <li><a href="app.html#app.environment_settings.SHARED_ROOT">SHARED_ROOT (in module app.environment_settings)</a>

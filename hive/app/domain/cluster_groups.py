@@ -13,6 +13,7 @@ from tabulate import tabulate
 import numpy as np
 import pandas as pd
 import type_hints as th
+import hive_simulation as hs
 import environment_settings as es
 import domain.master_servers as ms
 import domain.helpers.enums as e
@@ -762,12 +763,12 @@ class SGCluster(Cluster):
             queries and matrix calculations. For simplicity of implementation
             each cluster only manages one file.
         """
-        nodes_degrees: Dict[str, float] = {}
+        nodes_degrees: Dict[str, str] = {}
         out_degrees: pd.Series = m.apply(np.count_nonzero, axis=0)  # columns
         in_degrees: pd.Series = m.apply(np.count_nonzero, axis=1)  # rows
         for node in self.members.values():
             nid = node.id
-            nodes_degrees[nid] = float(f"{in_degrees[nid]}.{out_degrees[nid]}")
+            nodes_degrees[nid] = f"{in_degrees[nid]}i#o{out_degrees[nid]}"
             transition_vector: pd.DataFrame = m.loc[:, nid]
             node.set_file_routing(self.file.name, transition_vector)
         self.file.logger.log_matrices_degrees(nodes_degrees)
@@ -786,18 +787,16 @@ class SGCluster(Cluster):
         ``SGCluster`` will change, thus, more opportunities to perform a
         correct swarm guidance behavior will be possible.
         """
-        tries = 1
+        tries = 0
         result: pd.DataFrame = pd.DataFrame()
         while tries <= 5:
-            print(f"Creating new transition matrix... try #{tries}.")
+            print(f"Creating new transition matrix... try #{tries + 1}.")
+            tries += 1
             result = self.new_transition_matrix()
             if self._validate_transition_matrix(result, self.v_):
-                self.broadcast_transition_matrix(result)
                 break
-            tries += 1
-        # Only tries to generate a valid matrix up to three times,
-        # then resumes with the last generated matrix even if it never
-        # converges.
+            print(" [x] Invalid matrix.")
+        # Only tries to create a valid matrix up to five times before proceeding
         self.broadcast_transition_matrix(result)
 
     # noinspection PyIncorrectDocstring
@@ -931,13 +930,13 @@ class SGCluster(Cluster):
 
     def _normalize_avg_(self):
         self.avg_ /= self._timer
-        self.avg_ /= np.sum(self.avg_)
-
-        distance = np.abs(self.v_.subtract(self.avg_))
+        distance = np.abs(self.v_.subtract(self.avg_ / np.sum(self.avg_)))
         magnitude = np.sqrt(distance).sum(axis=0).item()
 
-        atol = np.clip(1 / self.original_size, 0.0, es.ATOL).item()
-        goaled = np.allclose(self.avg_, self.v_, rtol=es.RTOL, atol=atol)
+        ptotal = es.BLOCKS_COUNT * es.REPLICATION_LEVEL
+        target = self.v_.multiply(ptotal)
+        atol = np.clip(1 / self.original_size, 0.0, es.ATOL).item() * ptotal
+        goaled = np.allclose(self.avg_, target, rtol=es.RTOL, atol=atol)
 
         self.file.logger.log_topology_goal_performance(goaled, magnitude)
 
@@ -980,40 +979,30 @@ class SGClusterPerfect(SGCluster):
                  sim_id: int = 0,
                  origin: str = "") -> None:
         super().__init__(master, file_name, members, sim_id, origin)
-        # es.set_loss_chance(0.0)
         self.corruption_chances: List[float] = [0.0, 1.0]
+        es.set_loss_chance(0.0)
 
     # region Swarm guidance structure management
-    def new_desired_distribution(
-            self, member_ids: List[str], member_uptimes: List[float]
-    ) -> np.ndarray:
-        """Creates a random desired distribution.
-
-        Overrides:
-            :py:meth:`app.domain.cluster_groups.SGCluster.new_desired_distribution`
-
-        Args:
-            member_ids:
-                A list of :py:attr:`node identifiers
-                <app.domain.network_nodes.Node.id>` who are
-                :py:attr:`~Cluster.members` of the ``SGCluster``.
-            member_uptimes:
-                This method's parameter is ignored and can be ``None``.
+    def new_transition_matrix(self) -> pd.DataFrame:
+        """Creates a new transition matrix that is likely to be a Markov Matrix.
 
         Returns:
-            :py:class:`~np:numpy.ndarray`:
-                A list of floats with which represent how the files should be
-                distributed among network nodes in the long-run.
+            :py:class:`~pd:pandas.DataFrame`:
+                The labeled matrix that has the fastests mixing rate from all
+                the pondered strategies.
         """
-        u_ = np.random.random_sample(len(member_ids))
-        u_ /= np.sum(u_)
+        node_ids = [node.id for node in self.members.values()]
 
-        self.v_ = pd.DataFrame(data=u_, index=member_ids)
-        self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
-        self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=member_ids)
+        a, v_ = hs.get_next_scenario(str(self.original_size))
+
+        self.v_ = pd.DataFrame(data=v_, index=node_ids)
+        self.cv_ = pd.DataFrame(data=[0] * len(self.v_), index=node_ids)
+        self.avg_ = pd.DataFrame(data=[0] * len(self.v_), index=node_ids)
         self._timer = 0
 
-        return u_
+        t = self.select_fastest_topology(a, v_)
+
+        return pd.DataFrame(t, index=node_ids, columns=node_ids)
     # endregion
 
     # region Simulation steps
@@ -1046,16 +1035,17 @@ class SGClusterPerfect(SGCluster):
     # endregion
 
     # region Helpers
-    """
     def select_fastest_topology(
             self, a: np.ndarray, v_: np.ndarray) -> np.ndarray:
+        if es.OPTIMIZE:
+            return super().select_fastest_topology(a, v_)
+
         fastest_matrix, _ = mm.new_mh_transition_matrix(a, v_)
         size = fastest_matrix.shape[0]
         for j in range(size):
             fastest_matrix[:, j] = np.absolute(fastest_matrix[:, j])
             fastest_matrix[:, j] /= fastest_matrix[:, j].sum()
         return fastest_matrix
-    """
     # endregion
 
 

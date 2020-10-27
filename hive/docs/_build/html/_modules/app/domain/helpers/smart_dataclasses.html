@@ -232,12 +232,13 @@
         <span class="n">extras</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;cluster_type&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
             <span class="s2">&quot;simfile_name&quot;</span><span class="p">:</span> <span class="n">origin</span><span class="p">,</span>
-            <span class="s2">&quot;hive_id&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;cluster_id&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
             <span class="s2">&quot;file_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;read_size&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">READ_SIZE</span><span class="p">,</span>
+            <span class="s2">&quot;blocks_size&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">BLOCKS_SIZE</span><span class="p">,</span>
+            <span class="s2">&quot;blocks_count&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">BLOCKS_COUNT</span><span class="p">,</span>
             <span class="s2">&quot;critical_size_threshold&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">critical_size</span><span class="p">,</span>
             <span class="s2">&quot;sufficient_size_threshold&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sufficient_size</span><span class="p">,</span>
-            <span class="s2">&quot;original_hive_size&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span>
+            <span class="s2">&quot;original_size&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">original_size</span><span class="p">,</span>
             <span class="s2">&quot;redundant_size&quot;</span><span class="p">:</span> <span class="n">cluster</span><span class="o">.</span><span class="n">redundant_size</span><span class="p">,</span>
             <span class="s2">&quot;max_epochs&quot;</span><span class="p">:</span> <span class="n">ms</span><span class="o">.</span><span class="n">Master</span><span class="o">.</span><span class="n">MAX_EPOCHS</span><span class="p">,</span>
             <span class="s2">&quot;min_replication_delay&quot;</span><span class="p">:</span> <span class="n">es</span><span class="o">.</span><span class="n">MIN_REPLICATION_DELAY</span><span class="p">,</span>
@@ -288,7 +289,7 @@
 <span class="sd">    parameters, e.g., replica control such or file block integrity.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        hive_id:</span>
+<span class="sd">        cluster_id:</span>
 <span class="sd">            Unique identifier of the cluster that manages the file block.</span>
 <span class="sd">        name:</span>
 <span class="sd">            The name of the file the file block belongs to.</span>
@@ -313,12 +314,12 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="FileBlockData.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">hive_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">cluster_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Creates an instance of `FileBlockData`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            hive_id:</span>
+<span class="sd">            cluster_id:</span>
 <span class="sd">                Unique identifier of the cluster that manages the file block.</span>
 <span class="sd">            name:</span>
 <span class="sd">                The name of the file the file block belongs to.</span>
@@ -327,7 +328,7 @@
 <span class="sd">            data:</span>
 <span class="sd">                Actual file block data as a sequence of bytes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hive_id</span> <span class="o">=</span> <span class="n">hive_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cluster_id</span> <span class="o">=</span> <span class="n">cluster_id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">number</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_#_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
@@ -337,7 +338,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sha256</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">crypto</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
 
     <span class="c1"># region Simulation Interface</span>
-<div class="viewcode-block" id="FileBlockData.set_replication_epoch"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<div class="viewcode-block" id="FileBlockData.set_replication_epoch"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData.set_replication_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">set_replication_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sets the epoch in which replication levels should be restored.</span>
 
 <span class="sd">        This method tries to assign a new epoch, in the future, at which</span>
@@ -593,7 +594,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">delay_replication</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs_plus_one</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delay_suspects_detection</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initial_spread</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">matrices_nodes_degrees</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">matrices_nodes_degrees</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">off_node_count</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_epochs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topologies_goal_achieved</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topologies_goal_distance</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -680,7 +681,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">topologies_goal_achieved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">achieved_goal</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topologies_goal_distance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">distance_magnitude</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LoggingData.log_matrices_degrees"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">[docs]</a>    <span class="k">def</span> <span class="nf">log_matrices_degrees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+<div class="viewcode-block" id="LoggingData.log_matrices_degrees"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.log_matrices_degrees">[docs]</a>    <span class="k">def</span> <span class="nf">log_matrices_degrees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes_degrees</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
         <span class="sd">&quot;&quot;&quot;Logs the degree of all nodes in a Markov Matrix overlay, at the</span>
 <span class="sd">        time of its creation, before any faults on the overlay occurs.</span>
 
@@ -688,7 +689,7 @@
 <span class="sd">            nodes_degrees:</span>
 <span class="sd">                A dictionary mapping the :py:attr:`node identifiers</span>
 <span class="sd">                &lt;app.domain.network_nodes.Node.id&gt;` to their ``in-degree``</span>
-<span class="sd">                and ``out-degree`` concatenated as a float.</span>
+<span class="sd">                and ``out-degree`` seperated by the delimiter ``i#o``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">matrices_nodes_degrees</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nodes_degrees</span><span class="p">)</span></div>
 

@@ -259,42 +259,26 @@ def _init_persisting_dict() -> Dict[str, Any]:
 # endregion
 
 
-def main(simfile_name: str) -> None:
-    """Creates a JSON file within the user's file system that is used by
-    :py:mod:`hive_simulation`.
+if __name__ == "__main__":
+    simulation_file_name: str = None
 
-    Note:
-        The name of the created file concerns the name of the simulation file.
-        It does not concern the name or names of the files whose persistence
-        is being simulated.
+    try:
+        short_opts = "f:"
+        long_opts = ["file="]
+        args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
+        for arg, val in args:
+            if arg in ("-f", "--file"):
+                simfile_name_ = str(val).strip()
+    except getopt.GetoptError:
+        print("Usage: python simfile_generator.py --file=filename.json")
 
-    Args:
-        simfile_name:
-            Name to be assigned to JSON file in the user's file system.
-    """
+    if simulation_file_name is None or simulation_file_name == "":
+        sys.exit("Invalid simulation file. Expected non-blank file name.")
+
     simfile_json: Dict[str, Any] = {
         "nodes_uptime": _init_nodes_uptime(),
         "persisting": _init_persisting_dict()
     }
 
-    with open(os.path.join(SIMULATION_ROOT, simfile_name), 'w') as outfile:
+    with open(os.path.join(SIMULATION_ROOT, simulation_file_name), 'w') as outfile:
         json.dump(simfile_json, outfile, indent=4)
-
-
-if __name__ == "__main__":
-    simfile_name_: str = ""
-
-    try:
-        short_opts = "f:"
-        long_opts = ["file="]
-        options, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-        for options, args in options:
-            if options in ("-f", "--file"):
-                simfile_name_ = str(args).strip()
-                if simfile_name_:
-                    main(simfile_name_)
-                else:
-                    sys.exit("Invalid simulation file - blank id not allowed")
-
-    except getopt.GetoptError:
-        print("Usage: python simfile_generator.py --file=filename.json")

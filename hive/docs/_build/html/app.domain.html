@@ -84,6 +84,8 @@
 <li class="toctree-l2"><a class="reference internal" href="app.html#module-app.hive_simulation">app.hive_simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app.html#module-app.mixing_rate_sampler">app.mixing_rate_sampler</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app.html#module-app.simfile_generator">app.simfile_generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app.html#module-sample_scenario_fixer">app.sample_scenario_fixer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="app.html#module-app.sample_scenario_generator">app.sample_scenario_generator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="app.html#module-app.type_hints">app.type_hints</a></li>
 </ul>
 </li>
@@ -1762,27 +1764,16 @@ was responsible for, otherwise <code class="docutils literal notranslate"><span 
 </dd></dl>
 
 <dl class="py method">
-<dt id="app.domain.cluster_groups.SGClusterPerfect.new_desired_distribution">
-<code class="sig-name descname">new_desired_distribution</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">member_ids</span></em>, <em class="sig-param"><span class="n">member_uptimes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#SGClusterPerfect.new_desired_distribution"><span class="viewcode-link">[source]</span></a></dt>
-<dd><p>Creates a random desired distribution.</p>
-<dl class="simple">
-<dt>Overrides:</dt><dd><p><a class="reference internal" href="#app.domain.cluster_groups.SGCluster.new_desired_distribution" title="app.domain.cluster_groups.SGCluster.new_desired_distribution"><code class="xref py py-meth docutils literal notranslate"><span class="pre">app.domain.cluster_groups.SGCluster.new_desired_distribution()</span></code></a></p>
-</dd>
-</dl>
+<dt id="app.domain.cluster_groups.SGClusterPerfect.new_transition_matrix">
+<code class="sig-name descname">new_transition_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#SGClusterPerfect.new_transition_matrix"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Creates a new transition matrix that is likely to be a Markov Matrix.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>member_ids</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>]</em>) – A list of <a class="reference internal" href="#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">node</span> <span class="pre">identifiers</span></code></a> who are
-<a class="reference internal" href="#app.domain.cluster_groups.Cluster.members" title="app.domain.cluster_groups.Cluster.members"><code class="xref py py-attr docutils literal notranslate"><span class="pre">members</span></code></a> of the <code class="docutils literal notranslate"><span class="pre">SGCluster</span></code>.</p></li>
-<li><p><strong>member_uptimes</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>]</em>) – This method’s parameter is ignored and can be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
-</ul>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The labeled matrix that has the fastests mixing rate from all
+the pondered strategies.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of floats with which represent how the files should be
-distributed among network nodes in the long-run.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.1.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1803,6 +1794,31 @@ epoch. See
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>List[<a class="reference internal" href="app.html#app.type_hints.NodeType" title="app.type_hints.NodeType"><code class="xref py py-class docutils literal notranslate"><span class="pre">NodeType</span></code></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="app.domain.cluster_groups.SGClusterPerfect.select_fastest_topology">
+<code class="sig-name descname">select_fastest_topology</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">v_</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/cluster_groups.html#SGClusterPerfect.select_fastest_topology"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Creates multiple transition matrices and selects the fastest.</p>
+<p>The fastest of the created transition matrices corresponds to the one
+with a faster mixing rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – An adjacency matrix that represents the network topology.</p></li>
+<li><p><strong>v_</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – A desired distribution vector that defines the returned
+matrix steady state property.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A transition matrix that is likely to be a markov matrix whose
+steady state is <code class="docutils literal notranslate"><span class="pre">v_</span></code>, but is not yet validated. See
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">_validate_transition_matrix()</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>

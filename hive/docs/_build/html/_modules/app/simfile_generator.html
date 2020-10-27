@@ -369,45 +369,29 @@
 <span class="c1"># endregion</span>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../app.html#app.simfile_generator.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">simfile_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Creates a JSON file within the user&#39;s file system that is used by</span>
-<span class="sd">    :py:mod:`hive_simulation`.</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">simulation_file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="sd">    Note:</span>
-<span class="sd">        The name of the created file concerns the name of the simulation file.</span>
-<span class="sd">        It does not concern the name or names of the files whose persistence</span>
-<span class="sd">        is being simulated.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">short_opts</span> <span class="o">=</span> <span class="s2">&quot;f:&quot;</span>
+        <span class="n">long_opts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;file=&quot;</span><span class="p">]</span>
+        <span class="n">args</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="n">getopt</span><span class="o">.</span><span class="n">getopt</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">short_opts</span><span class="p">,</span> <span class="n">long_opts</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;--file&quot;</span><span class="p">):</span>
+                <span class="n">simfile_name_</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">getopt</span><span class="o">.</span><span class="n">GetoptError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Usage: python simfile_generator.py --file=filename.json&quot;</span><span class="p">)</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        simfile_name:</span>
-<span class="sd">            Name to be assigned to JSON file in the user&#39;s file system.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">simulation_file_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">simulation_file_name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Invalid simulation file. Expected non-blank file name.&quot;</span><span class="p">)</span>
+
     <span class="n">simfile_json</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;nodes_uptime&quot;</span><span class="p">:</span> <span class="n">_init_nodes_uptime</span><span class="p">(),</span>
         <span class="s2">&quot;persisting&quot;</span><span class="p">:</span> <span class="n">_init_persisting_dict</span><span class="p">()</span>
     <span class="p">}</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">simfile_name</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
-        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">simfile_json</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">simfile_name_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">short_opts</span> <span class="o">=</span> <span class="s2">&quot;f:&quot;</span>
-        <span class="n">long_opts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;file=&quot;</span><span class="p">]</span>
-        <span class="n">options</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">getopt</span><span class="o">.</span><span class="n">getopt</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">short_opts</span><span class="p">,</span> <span class="n">long_opts</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">options</span><span class="p">,</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">options</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="s2">&quot;--file&quot;</span><span class="p">):</span>
-                <span class="n">simfile_name_</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">simfile_name_</span><span class="p">:</span>
-                    <span class="n">main</span><span class="p">(</span><span class="n">simfile_name_</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Invalid simulation file - blank id not allowed&quot;</span><span class="p">)</span>
-
-    <span class="k">except</span> <span class="n">getopt</span><span class="o">.</span><span class="n">GetoptError</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Usage: python simfile_generator.py --file=filename.json&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SIMULATION_ROOT</span><span class="p">,</span> <span class="n">simulation_file_name</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">simfile_json</span><span class="p">,</span> <span class="n">outfile</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 
             </div>

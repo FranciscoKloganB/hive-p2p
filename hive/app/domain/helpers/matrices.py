@@ -446,6 +446,12 @@ def get_mixing_rate(m: np.ndarray) -> float:
     return mixing_rate.item()
 
 
+def new_vector(size: int) -> np.ndarray:
+    u_ = np.random.random_sample(size)
+    u_ /= np.sum(u_)
+    return u_
+
+
 def new_symmetric_matrix(
         size: int, allow_sloops: bool = True, force_sloops: bool = True
 ) -> np.ndarray:
