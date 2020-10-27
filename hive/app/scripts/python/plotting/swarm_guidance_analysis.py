@@ -421,7 +421,7 @@ def __create_barchart__(data_dict: Dict[str, Any],
 
 
 def barchart_convergence_vs_progress(
-        bucket_size: int = 5, figname: str = "ICC") -> None:
+        bucket_size: int = 10, figname: str = "ICC") -> None:
     # region create buckets of 5%
     bucket_count = int(100 / bucket_size)
     epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
@@ -437,8 +437,7 @@ def barchart_convergence_vs_progress(
                 outdata = json.load(outfile)
                 sets = outdata["convergence_sets"]
                 for s in sets:
-                    for e in s:
-                        epoch_cc[e] += 1
+                    epoch_cc[e] += len(s)
         # region create buckets of 5% and allocate the buuckets' values
         epoch_vals = [0] * bucket_count
         for i in range(bucket_count):
@@ -575,24 +574,21 @@ if __name__ == "__main__":
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
     srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
-    barchart_convergence_vs_progress(
-        bucket_size=5, figname="Convergence-Progress_BC_Parts")
+    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
     boxplot_first_convergence(figname="First-Convergence_BP_Parts")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
     boxplot_goal_distances(figname="Goal-Distance_BP_Parts")
     piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
 
     srcfiles, srckeys = setup_sources(["SG8-ML", "SG8", "SG16", "SG32"])
-    barchart_convergence_vs_progress(
-        bucket_size=5, figname="Convergence-Progress_BC_Sizes")
+    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes")
     boxplot_first_convergence(figname="First-Convergence_BP-Sizes")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes")
     boxplot_goal_distances(figname="Goal-Distance_BP_Sizes")
     piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes")
 
     srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    barchart_convergence_vs_progress(
-        bucket_size=5, figname="Convergence-Progress_BC_Sizes-Opt")
+    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes-Opt")
     boxplot_first_convergence(figname="First-Convergence_BP-Sizes-Opt")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes-Opt")
     boxplot_goal_distances(figname="Goal-Distance_BP_Sizes-Opt")
