@@ -573,7 +573,7 @@ if __name__ == "__main__":
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
     srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
-    boxplot_bandwidth(figname="bw_parts")
+    boxplot_bandwidth(figname="Bandwidth-Consumption")
     barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
     boxplot_first_convergence(figname="First-Convergence_BP_Parts")
     boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
