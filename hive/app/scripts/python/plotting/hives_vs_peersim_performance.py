@@ -10,7 +10,7 @@ import os
 import numpy
 
 import matplotlib.pyplot as plt
-import _matplotlib_configs as cfg
+from _matplotlib_configs import *
 
 
 def autolabel(rects):
@@ -39,30 +39,29 @@ if __name__ == "__main__":
     width = 0.35  # the width of the bars
 
     fig, ax = plt.subplots()
+
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+
     rects1 = ax.bar(x - width/2, peersim_times, width, label="PeerSim")
     rects2 = ax.bar(x + width/2, hives_times, width, label="Hives")
 
-    # Add some text for labels, title and custom x-axis tick labels, etc.
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels)
-    ax.legend()
-
     # Use supertitle as title and title as subtitle
     # plt.suptitle("Simulators' performance comparison, Hives vs. PeerSim",
-    #              fontproperties=cfg.fp_title,
+    #              fontproperties=fp_title,
     #              x=0.56, y=0.999)
     # plt.title("30 cycles of Newscast Shuffling and AverageFunction aggregation",
-    #           fontproperties=cfg.fp_subtitle)
-    plt.title("Simulators' performance comparison, Hives vs. PeerSim",
-              pad=cfg.title_pad, fontproperties=cfg.fp_title)
+    #           fontproperties=fp_subtitle)
+    # plt.title("Simulators' performance comparison, Hives vs. PeerSim",
+    #          pad=title_pad, fontproperties=fp_title)
 
     plt.xlabel("number of network nodes",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+               labelpad=labels_pad, fontproperties=fp_axis_labels)
 
     plt.ylabel("time in seconds",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_axis_labels)
+               labelpad=labels_pad, fontproperties=fp_axis_labels)
 
-    plt.xticks(fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     autolabel(rects1)
@@ -70,10 +69,15 @@ if __name__ == "__main__":
 
     plt.ylim(0, 250)
 
-    fig.tight_layout()
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend(frameon=False, ncol=2, prop=fp_axis_legend,
+              loc="lower center", bbox_to_anchor=(0.5, -0.425))
 
     figdir = os.path.abspath(os.path.join(
         os.getcwd(), '..', '..', '..', 'static', 'outfiles', 'simulation_plots')
     )
     figname = f"{figdir}/simulators_execution_times.pdf"
+
     plt.savefig(figname, bbox_inches="tight", format="pdf")
