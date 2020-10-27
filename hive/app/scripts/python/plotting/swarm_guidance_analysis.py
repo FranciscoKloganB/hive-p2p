@@ -465,7 +465,7 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
     # endregion
 
     s = len(srckeys)
-    grid = (9, 3)
+    grid = (9, 3) if s % 3 == 0 else (12, 3)
     wedge_labels = ["achieved eq.", "has not achieved eq."]
     fig, axes = plt.subplots(1, s, figsize=grid)
     plt.suptitle("clusters (%) achieving the selected equilibrium on average", fontproperties=cfg.fp_title, x=0.51)
@@ -480,8 +480,14 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
             wedgeprops={'alpha': 0.8}
         )
         ax.set_xlabel(f"{src_key}", fontproperties=cfg.fp_axis_legend)
-    plt.legend(labels=wedge_labels, prop=cfg.fp_axis_legend, ncol=s,
-               frameon=True, loc="lower right", bbox_to_anchor=(0.5, -0.5))
+
+    if s % 3 == 0:
+        plt.legend(labels=wedge_labels, prop=cfg.fp_axis_legend, ncol=s,
+                   frameon=True, loc="lower right", bbox_to_anchor=(0.55, -0.5))
+    else:
+        plt.legend(labels=wedge_labels, prop=cfg.fp_axis_legend, ncol=s,
+                   frameon=True, loc="lower right", bbox_to_anchor=(0.0, -0.5))
+
     __save_figure__(figname, image_ext)
 # endregion
 
