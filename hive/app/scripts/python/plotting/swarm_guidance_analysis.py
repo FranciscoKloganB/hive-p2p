@@ -111,6 +111,63 @@ def __create_double_boxplot__(left_data, right_data,
     return fig, ax
 
 
+def __create_grouped_boxplot__(datasets: List[List[Any]],
+                               dcolors: List[Optional[str]],
+                               dlabels: List[Optional[str]],
+                               xticks_labels: List[str], ylabel: str,
+                               figname: str = "", figext: str = "png",
+                               savefig: bool = True) -> Tuple[Any, Any]:
+    """Creates a figure where each tick has one or more boxplots.
+
+    Args:
+        datasets:
+            A list containing lists with the boxplot data. For example, if the
+            figure is supposed to have one boxplot per tick than, datasets
+            argument would look like ``[[a1, b1, c1]]``, if it is supposed to
+            have two boxplots per tick than it would be something like
+            ``[[a1, b1, c1], [a2, b2, c2]]`` and so on, where ``a1`` is the
+            left-most boxplot of the left-most tick and ``cn`` is the right-most
+            boxplot of the right-most tick. In this case both examples have
+            three ticks, if a ``d`` entry existed, there would four ticks
+            instead.
+        dcolors:
+            The colors used to paint each boxplot or a List of Nones.
+        dlabels:
+            The description that gives meaning to the colors.
+        xticks_labels:
+            A description that differentiates each tick from the next.
+    """
+    fig, ax = plt.subplots()
+
+    switch_tr_spine_visibility(ax)
+
+    colors = 0
+    for i in range(len(datasets)):
+        i_data = datasets[i]
+        bp = plt.boxplot(i_data, showfliers=True, notch=True,
+                         whis=0.75, widths=0.7, patch_artist=True,
+                         positions=np.array(range(len(i_data))) * 2.0 - 0.4)
+        colors += try_coloring(bp, dcolors[i], dlabels[i])
+
+    if colors > 0:
+        plt.legend(prop=fp_legend, ncol=colors, frameon=False,
+                   loc="lower center", bbox_to_anchor=(0.5, -0.5))
+
+    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+
+    label_count = len(xticks_labels)
+    plt.xticks(range(0, label_count * 2, 2), xticks_labels, rotation=45,
+               fontsize="x-large", fontweight="semibold")
+    plt.xlim(-2, label_count * 2)
+
+    if savefig:
+        save_figure(figname, figext, plots_directory)
+
+    return fig, ax
+
+
 def boxplot_bandwidth(figname: str = "BW") -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
@@ -197,14 +254,13 @@ def boxplot_goal_distances(figname: str = "MD") -> None:
         psamples.append(data_dict[src_key][0])
         nsamples.append(data_dict[src_key][1])
 
-    __create_double_boxplot__(
-        psamples, nsamples,
-        lcolor=color_palette[1], rcolor=color_palette[2],
-        llabel="achieved eq.", rlabel="has not achieved eq.",
-        suptitle="clusters' distance to the select equilibrium",
-        xlabel="config", ylabel=r"c$_{dm}$ / cluster size",
-        labels=srckeys,
-        figname=figname, figext=image_ext)
+    __create_grouped_boxplot__(
+        datasets=[psamples, nsamples],
+        dcolors=[color_palette[1], color_palette[2]],
+        dlabels=["achieved eq.", "has not achieved eq."],
+        xticks_labels=srckeys,
+        ylabel=r"c$_{dm}$ / cluster size",
+        figname=f"{figname}2", figext=image_ext)
 
 
 def boxplot_node_degree(figname: str = "ND") -> None:
