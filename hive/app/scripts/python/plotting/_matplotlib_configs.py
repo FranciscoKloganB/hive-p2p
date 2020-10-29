@@ -1,7 +1,10 @@
+from typing import Any, Optional
+
 import matplotlib.style
 import matplotlib.pyplot
 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 from matplotlib.font_manager import FontProperties
 
@@ -56,3 +59,63 @@ outlyer_shape = {
     'markerfacecolor': color_palette[-1],
     'alpha': ax_alpha - 0.2
 }
+
+
+def __set_box_color__(bp: Any, color: str) -> None:
+    """Changes the color of a boxplot.
+
+    The coloring is a filler and the alpha is set to 0.8. Whiskers, means and
+    caps will always be painted black.
+    
+    Args:
+        bp:
+            The boxplot object to be modified.
+        color:
+            A hexadecimal color string or RGBA color tuple to paint the
+            boxplot with.
+    """
+    for patch in bp['boxes']:
+        patch.set_facecolor(color)
+        patch.set_alpha(ax_alpha)
+    plt.setp(bp['whiskers'], color="#000000")
+    plt.setp(bp['caps'], color="#000000")
+    plt.setp(bp['medians'], color="#000000")
+
+
+def __prop_legend__(color: str, label: str, lw: int = 10) -> None:
+    """Gives a color a description by using a proxy handler.
+
+    Args:
+        color:
+            The color to paint the boxplot with or None.
+        label:
+            A string describing the data the color represents or None. If color
+            is not set this argument is ignored.
+        lw:
+            How big, in height, the color line will be in plt.legend().
+    """
+
+    plt.plot([], c=color, label=label, markersize=5, linewidth=lw)
+
+
+def __try_coloring__(bp: Any, color: Optional[str], label: Optional[str]) -> int:
+    """Tries to color a boxplot. If operation was successful.
+
+    Args:
+        bp:
+            A boxplot object that may or may not be modified.
+        color:
+            The color to paint the boxplot with or None.
+        label:
+            A string describing the data the color represents or None. If color
+            is not set this argument is ignored.
+
+    Returns:
+        ``1`` if color was applied to the boxplot otherwise ``0``.
+    """
+    if color is not None:
+        __set_box_color__(bp, color)
+        if label is not None:
+            __prop_legend__(color, label)
+        return 1
+    return 0
