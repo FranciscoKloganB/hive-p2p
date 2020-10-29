@@ -8,7 +8,6 @@ import math
 import getopt
 
 from itertools import zip_longest
-from json import JSONDecodeError
 from typing import List, Tuple, Any, Dict, Optional
 
 import numpy as np
@@ -90,7 +89,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     ax.spines['top'].set_visible(False)
 
     bp = ax.boxplot(data_dict.values(), showfliers=showfliers,
-               flierprops=outlyer_shape, whis=0.75, notch=True)
+                    flierprops=outlyer_shape, whis=0.75, notch=True)
     ax.set_xticklabels(data_dict.keys())
     # plt.suptitle(suptitle, fontproperties=fp_title)
     # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
