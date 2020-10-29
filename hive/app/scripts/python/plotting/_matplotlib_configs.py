@@ -61,12 +61,12 @@ outlyer_shape = {
 }
 
 
-def __set_box_color__(bp: Any, color: str) -> None:
+def set_boxplot_color(bp: Any, color: str) -> None:
     """Changes the color of a boxplot.
 
     The coloring is a filler and the alpha is set to 0.8. Whiskers, means and
     caps will always be painted black.
-    
+
     Args:
         bp:
             The boxplot object to be modified.
@@ -82,7 +82,7 @@ def __set_box_color__(bp: Any, color: str) -> None:
     plt.setp(bp['medians'], color="#000000")
 
 
-def __prop_legend__(color: str, label: str, lw: int = 10) -> None:
+def prop_legend(color: str, label: str, lw: int = 10) -> None:
     """Gives a color a description by using a proxy handler.
 
     Args:
@@ -98,7 +98,7 @@ def __prop_legend__(color: str, label: str, lw: int = 10) -> None:
     plt.plot([], c=color, label=label, markersize=5, linewidth=lw)
 
 
-def __try_coloring__(bp: Any, color: Optional[str], label: Optional[str]) -> int:
+def try_coloring(bp: Any, color: Optional[str], label: Optional[str]) -> int:
     """Tries to color a boxplot. If operation was successful.
 
     Args:
@@ -114,8 +114,8 @@ def __try_coloring__(bp: Any, color: Optional[str], label: Optional[str]) -> int
         ``1`` if color was applied to the boxplot otherwise ``0``.
     """
     if color is not None:
-        __set_box_color__(bp, color)
+        set_boxplot_color(bp, color)
         if label is not None:
-            __prop_legend__(color, label)
+            prop_legend(color, label)
         return 1
     return 0
