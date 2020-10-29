@@ -121,7 +121,7 @@ def try_coloring(bp: Any, color: Optional[str], label: Optional[str]) -> int:
     return 0
 
 
-def hide_top_right_spines(ax: Any) -> None:
+def switch_tr_spine_visibility(ax: Any, set_visible: bool = False) -> None:
     """Hides the top and the right most delimiters of a figures' axes."""
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(set_visible)
+    ax.spines['top'].set_visible(set_visible)

@@ -67,7 +67,7 @@ def __create_double_boxplot__(datasets,
 
     fig, ax = plt.subplots()
 
-    hide_top_right_spines(ax)
+    switch_tr_spine_visibility(ax)
 
     colors = 0
     for i in range(datasets):
