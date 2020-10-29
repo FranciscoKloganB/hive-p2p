@@ -5,12 +5,11 @@ import json
 import math
 import os
 import sys
-from typing import OrderedDict, List, Any, Dict
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-import _matplotlib_configs as cfg
+from _matplotlib_configs import *
+from typing import OrderedDict, List, Any, Dict, Optional, Tuple
 
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
@@ -41,22 +40,6 @@ def __shorten_labels__(labels: List[str]) -> List[str]:
             text = text.replace(word, "")
         labels[i] = text
     return labels
-
-
-def __set_box_color__(bp: Any, color: str) -> None:
-    """Changes the colors of a boxplot.
-
-    Args:
-        bp:
-            The boxplot reference object to be modified.
-        color:
-            A string specifying the color to apply to the boxplot in
-            hexadecimal RBG.
-    """
-    plt.setp(bp['boxes'], color=color)
-    plt.setp(bp['whiskers'], color=color)
-    plt.setp(bp['caps'], color=color)
-    plt.setp(bp['medians'], color=color)
 # endregion
 
 
@@ -73,6 +56,44 @@ def box_plot(json: _ResultsDict) -> None:
         # Hack to get sample count, i.e., the length of the List[float]
         sample_count = len(next(iter(func_dict.values())))
         __create_box_plot__(size_key, sample_count, func_dict)
+
+
+def __create_double_boxplot__(datasets,
+                              dcolors: List[Optional[str]],
+                              dlabels: List[Optional[str]],
+                              xticks_labels: List[str], ylabel: str,
+                              figname: str = "", figext: str = "png",
+                              savefig: bool = True) -> Tuple[Any, Any]:
+
+    fig, ax = plt.subplots()
+
+    hide_top_right_spines(ax)
+
+    colors = 0
+    for i in range(datasets):
+        i_data = datasets[i]
+        bp = plt.boxplot(i_data, showfliers=True, notch=True,
+                         whis=0.75, widths=0.7, patch_artist=True,
+                         positions=np.array(range(len(i_data))) * 2.0 - 0.4)
+        colors += try_coloring(bp, dcolors[i], dlabels[i])
+        
+    if colors > 0:
+        plt.legend(prop=fp_legend, ncol=colors, frameon=False,
+                   loc="lower center", bbox_to_anchor=(0.5, -0.5))
+
+    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+
+    label_count = len(xticks_labels)
+    plt.xticks(range(0, label_count * 2, 2), xticks_labels, rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.xlim(-2, label_count * 2)
+
+    if savefig:
+        fname = f"{__MIXING_RATE_PLOTS_HOME__}/{figname}.{figext}"
+        plt.savefig(fname, format=figext, bbox_inches="tight")
+        
+    return fig, ax
 
 
 def __create_box_plot__(
@@ -110,11 +131,11 @@ def __create_box_plot__(
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     plt.title(f"Generating functions' SLEM on clusters of size {skey}",
-              pad=cfg.title_pad, fontproperties=cfg.fp_title)
+              pad=title_pad, fontproperties=fp_title)
     plt.xlabel("function name abbreviation",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_tick_labels)
+               labelpad=labels_pad, fontproperties=fp_tick_labels)
     plt.ylabel("slem",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_tick_labels)
+               labelpad=labels_pad, fontproperties=fp_tick_labels)
 
     plt.xlim(-2, func_count * 2)
     plt.ylim(0.1, 1.1)
@@ -190,8 +211,8 @@ def __create_pie_chart__(
 
     plt.title(f"Generating functions' selection frequency for networks of size {skey}",
               x=0.57, y=1,
-              pad=cfg.title_pad,
-              fontproperties=cfg.fp_title)
+              pad=title_pad,
+              fontproperties=fp_title)
 
     wedges, texts, autotexts = ax.pie(
         wins,
@@ -211,8 +232,8 @@ def __create_pie_chart__(
                     loc="center left",
                     bbox_to_anchor=(0.8, 0, 0, 0))
     leg.set_title("generating function",
-                  prop=cfg.fp_tick_labels)
-    leg._legend_box.sep = cfg.legends_pad
+                  prop=fp_tick_labels)
+    leg._legend_box.sep = legends_pad
     ax.axis('equal')
 
     figname = f"{__MIXING_RATE_PLOTS_HOME__}/mr_s{skey}pc.pdf"

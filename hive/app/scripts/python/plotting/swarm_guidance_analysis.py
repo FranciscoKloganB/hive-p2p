@@ -62,8 +62,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
                        savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
 
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    hide_top_right_spines(ax)
 
     bp = ax.boxplot(data_dict.values(), showfliers=showfliers,
                     flierprops=outlyer_shape, whis=0.75, notch=True)
@@ -92,8 +91,7 @@ def __create_double_boxplot__(left_data, right_data,
 
     fig, ax = plt.subplots()
 
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    hide_top_right_spines(ax)
 
     bpl = plt.boxplot(left_data, showfliers=False, notch=True,
                       whis=0.75, widths=0.7, patch_artist=True,
@@ -325,8 +323,7 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
                                 savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
 
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    hide_top_right_spines(ax)
 
     # plt.suptitle(suptitle, fontproperties=fp_title)
     plt.xlabel(xlabel, labelpad=labels_pad,
@@ -360,8 +357,7 @@ def __create_barchart__(data_dict: Dict[str, Any],
                         savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
 
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    hide_top_right_spines(ax)
 
     # plt.suptitle(suptitle, fontproperties=fp_title)
     # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)

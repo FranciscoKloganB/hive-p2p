@@ -119,3 +119,9 @@ def try_coloring(bp: Any, color: Optional[str], label: Optional[str]) -> int:
             prop_legend(color, label)
         return 1
     return 0
+
+
+def hide_top_right_spines(ax: Any) -> None:
+    """Hides the top and the right most delimiters of a figures' axes."""
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
