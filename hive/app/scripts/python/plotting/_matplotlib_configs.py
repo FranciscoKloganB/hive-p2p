@@ -1,3 +1,4 @@
+import os
 from typing import Any, Optional
 
 import matplotlib.style
@@ -125,3 +126,23 @@ def switch_tr_spine_visibility(ax: Any, set_visible: bool = False) -> None:
     """Hides the top and the right most delimiters of a figures' axes."""
     ax.spines['right'].set_visible(set_visible)
     ax.spines['top'].set_visible(set_visible)
+
+
+def save_figure(
+        figname: str, figext: str = "png", figdir: Optional[str] = None
+) -> None:
+    """Saves a figure and closes all open figures.
+
+    Args:
+        figname:
+            A name for the figure.
+        figext:
+            The extension the figure will be saved with.
+        figdir:
+            The root dir where the figure will be saved. If this argument is
+            None the current working directory is used.
+    """
+    filepath = os.getcwd() if figdir is None else figdir
+    filepath = os.path.join(filepath, f"{figname}.{figext}")
+    plt.savefig(filepath, format=figext, bbox_inches="tight")
+    plt.close('all')
