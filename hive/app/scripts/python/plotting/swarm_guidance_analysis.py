@@ -3,13 +3,11 @@ This script collects data
 """
 import sys
 import json
-import math
 import getopt
 
 from itertools import zip_longest
 from typing import List, Tuple, Dict
 
-import numpy as np
 
 from _matplotlib_configs import *
 
@@ -71,50 +69,11 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     return fig, ax
 
 
-def __create_double_boxplot__(left_data, right_data,
-                              suptitle: str, xlabel: str, ylabel: str,
-                              labels: List[str],
-                              figname: str = "", figext: str = "png",
-                              lcolor: Optional[str] = None,
-                              rcolor: Optional[str] = None,
-                              llabel: Optional[str] = None,
-                              rlabel: Optional[str] = None,
-                              savefig: bool = True) -> Tuple[Any, Any]:
-
-    fig, ax = plt.subplots()
-
-    switch_tr_spine_visibility(ax)
-
-    bpl = plt.boxplot(left_data, showfliers=False, notch=True,
-                      whis=0.75, widths=0.7, patch_artist=True,
-                      positions=np.array(range(len(left_data))) * 2.0 - 0.4)
-    bpr = plt.boxplot(right_data, showfliers=False, notch=True,
-                      whis=0.75, widths=0.7, patch_artist=True,
-                      positions=np.array(range(len(right_data))) * 2.0 + 0.4)
-
-    colors = try_coloring(bpl, lcolor, llabel)
-    colors += try_coloring(bpr, rcolor, rlabel)
-    if colors > 0:
-        plt.legend(prop=fp_legend, ncol=colors, frameon=False,
-                   loc="lower center", bbox_to_anchor=(0.5, -0.5))
-
-    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
-    plt.yticks(fontsize="x-large", fontweight="semibold")
-
-    label_count = len(labels)
-    plt.xticks(range(0, label_count * 2, 2), labels, rotation=45, fontsize="x-large", fontweight="semibold")
-    plt.xlim(-2, label_count * 2)
-
-    if savefig:
-        save_figure(figname, figext, plots_directory)
-    return fig, ax
-
-
 def __create_grouped_boxplot__(datasets: List[List[Any]],
                                dcolors: List[Optional[str]],
                                dlabels: List[Optional[str]],
                                xticks_labels: List[str], ylabel: str,
+                               showfliers: bool = True,
                                figname: str = "", figext: str = "png",
                                savefig: bool = True) -> Tuple[Any, Any]:
     """Creates a figure where each tick has one or more boxplots.
@@ -142,25 +101,32 @@ def __create_grouped_boxplot__(datasets: List[List[Any]],
     switch_tr_spine_visibility(ax)
 
     colors = 0
-    for i in range(len(datasets)):
+    xtick_count = len(datasets)
+    offsets = get_boxplot_offsets(xtick_count, spacing=0.4)
+    for i in range(xtick_count):
         i_data = datasets[i]
-        bp = plt.boxplot(i_data, showfliers=True, notch=True,
-                         whis=0.75, widths=0.7, patch_artist=True,
-                         positions=np.array(range(len(i_data))) * 2.0 - 0.4)
+        bp = plt.boxplot(i_data, whis=0.75, widths=0.7,
+                         notch=True, patch_artist=True,
+                         showfliers=True, flierprops=outlyer_shape,
+                         positions=np.array(range(len(i_data))) * 2.0 + offsets[i])
         colors += try_coloring(bp, dcolors[i], dlabels[i])
 
     if colors > 0:
         plt.legend(prop=fp_legend, ncol=colors, frameon=False,
                    loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
-    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    # Update xtick_count because xticks_labels and datasets may have different
+    # lengths, depending on user input and we do not want the function to crash
+    # if this was what the user intended to do.
+    xtick_count = len(xticks_labels)
+    xtick_positions = range(0, xtick_count * 2, 2)
+    plt.xticks(xtick_positions, xticks_labels, rotation=45,
+               fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
-    label_count = len(xticks_labels)
-    plt.xticks(range(0, label_count * 2, 2), xticks_labels, rotation=45,
-               fontsize="x-large", fontweight="semibold")
-    plt.xlim(-2, label_count * 2)
+    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+
+    plt.xlim(-2, xtick_count * 2)
 
     if savefig:
         save_figure(figname, figext, plots_directory)
@@ -260,7 +226,7 @@ def boxplot_goal_distances(figname: str = "MD") -> None:
         dlabels=["achieved eq.", "has not achieved eq."],
         xticks_labels=srckeys,
         ylabel=r"c$_{dm}$ / cluster size",
-        figname=f"{figname}2", figext=image_ext)
+        figname=figname, figext=image_ext)
 
 
 def boxplot_node_degree(figname: str = "ND") -> None:
@@ -287,13 +253,12 @@ def boxplot_node_degree(figname: str = "ND") -> None:
         isamples.append(data_dict[src_key][0])
         osamples.append(data_dict[src_key][1])
 
-    __create_double_boxplot__(
-        isamples, osamples,
-        lcolor=color_palette[0], rcolor=color_palette[1],
-        llabel="in-degree", rlabel="out-degree",
-        suptitle="Nodes' degrees depending on the cluster's size",
-        xlabel="config", ylabel="node degrees",
-        labels=srckeys,
+    __create_grouped_boxplot__(
+        datasets=[isamples, osamples],
+        dcolors=[color_palette[1], color_palette[2]],
+        dlabels=["in-degree", "out-degree"],
+        xticks_labels=srckeys,
+        ylabel="node degrees",
         figname=figname, figext=image_ext)
 
 
@@ -351,17 +316,6 @@ def boxplot_terminations(figname: str = "T") -> None:
 
 
 # region Bar charts
-def __get_offsets__(nbars: int, bwidth: float = 1) -> np.ndarray:
-    lim = math.floor(nbars / 2)
-    sublocations = np.arange(-lim, lim + 1)
-    if nbars % 2 == 0:
-        sublocations = list(filter(lambda x: x != 0, sublocations))
-        sublocations = list(map(
-            lambda x: x + (0.5 if x < 0 else -0.5), sublocations))
-        return np.asarray(sublocations) * bwidth
-    return sublocations * bwidth
-
-
 def __create_grouped_barchart__(data_dict: Dict[str, Any],
                                 bar_locations: np.ndarray, bar_width: float,
                                 bucket_size: float,
@@ -382,7 +336,7 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
     plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * ax_alpha)
     # ax.set_xticks(bar_locations)
 
-    o = __get_offsets__(len(srckeys), bar_width)
+    o = get_barchart_offsets(len(srckeys), bar_width)
     for i in range(len(srckeys)):
         key = srckeys[i]
         epoch_vals = data_dict[key]

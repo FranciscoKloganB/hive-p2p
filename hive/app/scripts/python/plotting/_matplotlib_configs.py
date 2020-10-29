@@ -1,13 +1,15 @@
 import os
-from typing import Any, Optional
+import math
+
+import numpy as np
 
 import matplotlib.style
 import matplotlib.pyplot
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from matplotlib.font_manager import FontProperties
+from typing import Any, Optional
 
 mpl.style.use('seaborn-deep')
 
@@ -146,3 +148,38 @@ def save_figure(
     filepath = os.path.join(filepath, f"{figname}.{figext}")
     plt.savefig(filepath, format=figext, bbox_inches="tight")
     plt.close('all')
+
+
+# region Offsets
+def get_barchart_offsets(nbars: int, bwidth: float = 1) -> np.ndarray:
+    lim = math.floor(nbars / 2)
+    sublocations = np.arange(-lim, lim + 1)
+    if nbars % 2 == 0:
+        sublocations = list(filter(lambda x: x != 0, sublocations))
+        sublocations = list(map(
+            lambda x: x + (0.5 if x < 0 else -0.5), sublocations))
+        return np.asarray(sublocations) * bwidth
+    return sublocations * bwidth
+
+
+def get_boxplot_offsets(nbars: int, spacing: float = 0.4) -> np.ndarray:
+    """Generates a array containing the offsets for a tick's boxplots.
+
+    Args:
+        nbars:
+            The number of boxplots the tick contains.
+        spacing:
+            The space between the boxplots in each tick. Be aware that depending
+            on the number of ticks containing boxplots, if the spacing is too
+            big, boxplots from a tick may overlap with the ones from the next
+            tick.
+
+    Returns:
+        An offset array.
+    """
+    lim = math.floor(nbars / 2)
+    sublocations = np.arange(-lim, lim + 1)
+    if nbars % 2 == 0:
+        sublocations = np.asarray(list(filter(lambda x: x != 0, sublocations)))
+    return spacing * sublocations
+# endregion
