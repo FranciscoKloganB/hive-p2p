@@ -8,10 +8,9 @@ import math
 import getopt
 
 from itertools import zip_longest
-from typing import List, Tuple, Any, Dict, Optional
+from typing import List, Tuple, Dict
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from _matplotlib_configs import *
 
@@ -46,37 +45,6 @@ def __auto_label__(rects: Any, ax: Any) -> None:
                     textcoords="offset points",
                     ha="center", va="bottom",
                     fontsize="large", fontweight="semibold", color="dimgrey")
-
-
-def __set_box_color__(bp: Any, color: str) -> None:
-    """Changes the colors of a boxplot.
-
-    Args:
-        bp:
-            The boxplot reference object to be modified.
-        color:
-            A string specifying the color to apply to the boxplot in
-            hexadecimal RBG.
-    """
-    for patch in bp['boxes']:
-        patch.set_facecolor(color)
-        patch.set_alpha(ax_alpha)
-    plt.setp(bp['whiskers'], color="#000000")
-    plt.setp(bp['caps'], color="#000000")
-    plt.setp(bp['medians'], color="#000000")
-
-
-def __prop_legend__(color: str, label: str, lw: int = 10) -> None:
-    plt.plot([], c=color, label=label, markersize=5, linewidth=lw)
-
-
-def __try_coloring__(boxplot: Any, color: str, label: str) -> int:
-    if color is not None:
-        __set_box_color__(boxplot, color)
-        if label is not None:
-            __prop_legend__(color, label)
-        return 1
-    return 0
 
 
 def __save_figure__(figname: str, figext: str = "png") -> None:
@@ -134,8 +102,8 @@ def __create_double_boxplot__(left_data, right_data,
                       whis=0.75, widths=0.7, patch_artist=True,
                       positions=np.array(range(len(right_data))) * 2.0 + 0.4)
 
-    colors = __try_coloring__(bpl, lcolor, llabel)
-    colors += __try_coloring__(bpr, rcolor, rlabel)
+    colors = try_coloring(bpl, lcolor, llabel)
+    colors += try_coloring(bpr, rcolor, rlabel)
     if colors > 0:
         plt.legend(prop=fp_legend, ncol=colors, frameon=False,
                    loc="lower center", bbox_to_anchor=(0.5, -0.5))
