@@ -70,6 +70,15 @@ def __prop_legend__(color: str, label: str, lw: int = 10) -> None:
     plt.plot([], c=color, label=label, markersize=5, linewidth=lw)
 
 
+def __try_coloring__(boxplot: Any, color: str, label: str) -> int:
+    if color is not None:
+        __set_box_color__(boxplot, color)
+        if label is not None:
+            __prop_legend__(color, label)
+        return 1
+    return 0
+
+
 def __save_figure__(figname: str, figext: str = "png") -> None:
     fname = f"{plots_directory}/{figname}.{figext}"
     plt.savefig(fname, format=figext, bbox_inches="tight")
@@ -125,25 +134,12 @@ def __create_double_boxplot__(left_data, right_data,
                       whis=0.75, widths=0.7, patch_artist=True,
                       positions=np.array(range(len(right_data))) * 2.0 + 0.4)
 
-    cols = 0
-    if lcolor:
-        cols += 1
-        __set_box_color__(bpl, lcolor)
-        if llabel:
-            __prop_legend__(lcolor, llabel)
-
-    if rcolor:
-        cols += 1
-        __set_box_color__(bpr, rcolor)
-        if rlabel:
-            __prop_legend__(rcolor, rlabel)
-
-    if llabel or rlabel:
-        plt.legend(prop=fp_legend, ncol=cols, frameon=False,
+    colors = __try_coloring__(bpl, lcolor, llabel)
+    colors += __try_coloring__(bpr, rcolor, rlabel)
+    if colors > 0:
+        plt.legend(prop=fp_legend, ncol=colors, frameon=False,
                    loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
-    # plt.suptitle(suptitle, fontproperties=fp_title)
-    # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
     plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
