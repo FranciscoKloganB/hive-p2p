@@ -54,8 +54,7 @@ def box_plot(json: _ResultsDict) -> None:
     """
     for size_key, func_dict in json.items():
         # Hack to get sample count, i.e., the length of the List[float]
-        sample_count = len(next(iter(func_dict.values())))
-        __create_box_plot__(size_key, sample_count, func_dict)
+        __create_box_plot__(size_key, func_dict)
 
 
 def __create_double_boxplot__(datasets,
@@ -90,14 +89,13 @@ def __create_double_boxplot__(datasets,
     plt.xlim(-2, label_count * 2)
 
     if savefig:
-        fname = f"{__MIXING_RATE_PLOTS_HOME__}/{figname}.{figext}"
-        plt.savefig(fname, format=figext, bbox_inches="tight")
+        save_figure(figname, figext, __MIXING_RATE_PLOTS_HOME__)
         
     return fig, ax
 
 
 def __create_box_plot__(
-        skey: str, slen: int, func_samples: _SizeResultsDict) -> None:
+        skey: str, func_samples: _SizeResultsDict) -> None:
     """Uses matplotlib.pyplot.pie_chart to create a pie chart.
 
     Args:
@@ -105,8 +103,6 @@ def __create_box_plot__(
             The key representing the size of the matrices upon which the
             various functions were tested, i.e., if the matrices were of
             shape (8, 8), `skey` should be "8".
-        slen:
-            How many times each function was sampled for matrices of size `skey`.
         func_samples:
             A collection mapping a function names to their respective mixing
             rate samples, for matrices with size `skey`.
@@ -114,11 +110,6 @@ def __create_box_plot__(
     func_count = len(func_samples)
     func_labels = __shorten_labels__([*func_samples])
     samples = [*func_samples.values()]
-
-    outlyer_shape = {
-        # 'markerfacecolor': 'g',
-        'marker': 'D'
-    }
 
     plt.figure()
     plt.boxplot(samples,
@@ -130,13 +121,8 @@ def __create_box_plot__(
                rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
-    plt.title(f"Generating functions' SLEM on clusters of size {skey}",
-              pad=title_pad, fontproperties=fp_title)
-    plt.xlabel("function name abbreviation",
-               labelpad=labels_pad, fontproperties=fp_tick_labels)
-    plt.ylabel("slem",
-               labelpad=labels_pad, fontproperties=fp_tick_labels)
-
+    plt.xlabel("method name abbreviation", labelpad=labels_pad, fontproperties=fp_tick_labels)
+    plt.ylabel("slem", labelpad=labels_pad, fontproperties=fp_tick_labels)
     plt.xlim(-2, func_count * 2)
     plt.ylim(0.1, 1.1)
 
