@@ -87,7 +87,7 @@ def __create_grouped_boxplot__(datasets: List[List[Any]],
                    loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
     xtick_count = len(xticks_labels)
-    xtick_positions = range(0, xtick_count * boxplots_per_tick, 2)
+    xtick_positions = range(0, xtick_count * boxplots_per_tick, boxplots_per_tick)
     plt.xticks(xtick_positions, xticks_labels, rotation=45,
                fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
