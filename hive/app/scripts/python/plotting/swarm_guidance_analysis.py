@@ -48,21 +48,27 @@ def __auto_label__(rects: Any, ax: Any) -> None:
 
 # region Boxplots
 def __create_boxplot__(data_dict: Dict[str, Any],
-                       suptitle: str, xlabel: str, ylabel: str,
+                       dcolor: Optional[str] = None,
+                       dlabel: Optional[str] = None,
+                       suptitle: Optional[str] = None,
+                       xlabel: Optional[str] = None,
+                       ylabel: Optional[str] = None,
                        showfliers: bool = True,
                        figname: str = "", figext: str = "png",
                        savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
     switch_tr_spine_visibility(ax)
 
-    bp = ax.boxplot(data_dict.values(), showfliers=showfliers,
-                    flierprops=outlyer_shape, whis=0.75, notch=True)
+    bp = plt.boxplot(data_dict.values(), whis=0.75,
+                     notch=True, patch_artist=True,
+                     showfliers=showfliers, flierprops=outlyer_shape)
+    try_coloring(bp, dcolor or color_palette[0], dlabel)
+
     ax.set_xticklabels(data_dict.keys())
 
     plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
-    plt.setp(bp['medians'], color="#000000")
 
     if savefig:
         save_figure(figname, figext, plots_directory)
@@ -279,16 +285,18 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
     # endregion
     fig, ax = __create_boxplot__(
         data_dict,
+        dcolor=color_palette[0],
+        dlabel=r"SGDBS t$_{snr}$",
         suptitle="Clusters' time to evict suspect storage nodes",
-        xlabel="config", ylabel="epochs", showfliers=False,
+        ylabel="epochs", showfliers=False,
         savefig=False)
 
     ax.set_zorder(2)
 
     plt.axhline(y=5, color=color_palette[-1], alpha=ax_alpha - 0.2,
-                linestyle='-', label=r"HDFS t$_{snr}$", zorder=1)
+                linestyle='-', label=r"HDFS Constant t$_{snr}$", zorder=1)
 
-    leg = plt.legend(prop=fp_legend, ncol=1, frameon=False,
+    leg = plt.legend(prop=fp_legend, ncol=2, frameon=False,
                      loc="lower center", bbox_to_anchor=(0.5, -0.5))
     for legobj in leg.legendHandles:
         legobj.set_linewidth(10)
