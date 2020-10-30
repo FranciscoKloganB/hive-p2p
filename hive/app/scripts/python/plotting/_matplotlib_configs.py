@@ -101,7 +101,9 @@ def prop_legend(color: str, label: str, lw: int = 10) -> None:
     plt.plot([], c=color, label=label, markersize=5, linewidth=lw)
 
 
-def try_coloring(bp: Any, color: Optional[str], label: Optional[str]) -> int:
+def try_coloring(
+        bp: Any, color: Optional[str] = None, label: Optional[str] = None
+) -> int:
     """Tries to color a boxplot. If operation was successful.
 
     Args:
