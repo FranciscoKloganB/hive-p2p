@@ -72,7 +72,9 @@ def __create_boxplot__(data_dict: Dict[str, Any],
 def __create_grouped_boxplot__(datasets: List[List[Any]],
                                dcolors: List[Optional[str]],
                                dlabels: List[Optional[str]],
-                               xticks_labels: List[str], ylabel: str,
+                               xticks_labels: List[str],
+                               xlabel: Optional[str] = None,
+                               ylabel: Optional[str] = None,
                                showfliers: bool = True,
                                figname: str = "", figext: str = "png",
                                savefig: bool = True) -> Tuple[Any, Any]:
@@ -101,32 +103,32 @@ def __create_grouped_boxplot__(datasets: List[List[Any]],
     switch_tr_spine_visibility(ax)
 
     colors = 0
-    xtick_count = len(datasets)
-    offsets = get_boxplot_offsets(xtick_count, spacing=0.4)
-    for i in range(xtick_count):
+    boxplots_per_tick = len(datasets)
+    offsets = get_boxplot_offsets(boxplots_per_tick, spacing=0.4)
+    for i in range(boxplots_per_tick):
         i_data = datasets[i]
         bp = plt.boxplot(i_data, whis=0.75, widths=0.7,
                          notch=True, patch_artist=True,
                          showfliers=True, flierprops=outlyer_shape,
-                         positions=np.array(range(len(i_data))) * 2.0 + offsets[i])
+                         positions=np.array(range(len(i_data))) * boxplots_per_tick + offsets[i])
         colors += try_coloring(bp, dcolors[i], dlabels[i])
 
     if colors > 0:
         plt.legend(prop=fp_legend, ncol=colors, frameon=False,
                    loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
-    # Update xtick_count because xticks_labels and datasets may have different
-    # lengths, depending on user input and we do not want the function to crash
-    # if this was what the user intended to do.
     xtick_count = len(xticks_labels)
-    xtick_positions = range(0, xtick_count * 2, 2)
+    xtick_positions = range(0, xtick_count * boxplots_per_tick, 2)
     plt.xticks(xtick_positions, xticks_labels, rotation=45,
                fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
-    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    if xlabel is not None:
+        plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    if ylabel is not None:
+        plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
 
-    plt.xlim(-2, xtick_count * 2)
+    plt.xlim(-boxplots_per_tick, xtick_count * boxplots_per_tick)
 
     if savefig:
         save_figure(figname, figext, plots_directory)
