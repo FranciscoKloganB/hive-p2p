@@ -126,18 +126,18 @@ def __create_grouped_boxplot__(datasets: List[List[Any]],
         plt.legend(prop=fp_legend, ncol=colors, frameon=False,
                    loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
-    xtick_count = len(xticks_labels)
-    xtick_positions = range(0, xtick_count * boxplots_per_tick, boxplots_per_tick)
-    plt.xticks(xtick_positions, xticks_labels, rotation=xtick_rotation,
-               fontsize="x-large", fontweight="semibold")
-    plt.yticks(fontsize="x-large", fontweight="semibold")
-
     if xlabel is not None:
         plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
     if ylabel is not None:
         plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
 
+    xtick_count = len(xticks_labels)
+    xtick_positions = range(0, xtick_count * boxplots_per_tick, boxplots_per_tick)
+
     plt.xlim(-boxplots_per_tick, xtick_count * boxplots_per_tick)
+    plt.xticks(xtick_positions, xticks_labels, rotation=xtick_rotation,
+               fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
 
     if savefig:
         save_figure(figname, figext, plots_directory)
@@ -333,9 +333,12 @@ def boxplot_terminations(figname: str) -> None:
 
 # region Bar charts
 def __create_grouped_barchart__(data_dict: Dict[str, Any],
-                                bar_locations: np.ndarray, bar_width: float,
+                                bar_locations: np.ndarray,
+                                bar_width: float,
                                 bucket_size: float,
-                                suptitle: str, xlabel: str, ylabel: str,
+                                suptitle: Optional[str] = None,
+                                xlabel: Optional[str] = None,
+                                ylabel: Optional[str] = None,
                                 frameon: bool = False,
                                 figname: str = "", figext: str = "png",
                                 savefig: bool = True) -> Tuple[Any, Any]:
@@ -343,14 +346,23 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
 
     switch_tr_spine_visibility(ax)
 
-    plt.xlabel(xlabel, labelpad=labels_pad,
-               fontproperties=fp_tick_labels)
-    plt.ylabel(ylabel, labelpad=labels_pad,
-               fontproperties=fp_tick_labels)
+    if suptitle is not None:
+        plt.suptitle(suptitle, labelpad=title_pad, fontproperties=fp_title)
+    if xlabel is not None:
+        plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    if ylabel is not None:
+        plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+
+    # xtick_count = len(xticks_labels)
+    # xtick_positions = range(0, xtick_count * boxplots_per_tick, boxplots_per_tick)
+    #
+    # plt.xlim(-boxplots_per_tick, xtick_count * boxplots_per_tick)
+    # plt.xticks(xtick_positions, xticks_labels, rotation=xtick_rotation,
+    #            fontsize="x-large", fontweight="semibold")
+
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * ax_alpha)
-    # ax.set_xticks(bar_locations)
 
     o = get_barchart_offsets(len(srckeys), bar_width)
     for i in range(len(srckeys)):
@@ -436,12 +448,9 @@ def barchart_convergence_vs_progress(figname: str, bucket_size: int = 10) -> Non
     bar_locations = np.arange(1, len(epoch_buckets) + 1) * bucket_size
     bar_width = bucket_size / (len(data_dict) + 1)
 
-    # bar_width = bucket_size * 0.25
     __create_grouped_barchart__(
         data_dict, bar_locations, bar_width, bucket_size,
-        suptitle="convergence observations as simulations progress",
-        xlabel="simulations progress (%)", ylabel=r"c$_{t}$ count",
-        figname=figname, figext=image_ext)
+        ylabel=r"c$_{t}$ count", figname=figname, figext=image_ext)
 
 
 def barchart_successful_simulations(figname: str) -> None:
@@ -630,13 +639,14 @@ if __name__ == "__main__":
     # boxplot_goal_distances(figname="SGDBS-Goal-Distance_BP")
     # boxplot_time_in_convergence(figname="SGDBS-Time-Convergence_BP")
 
+    # region ---- IMPROVED READABILITY PLOTS SECTION BELOW ----
     srcfiles, srckeys = setup_sources([
         "SG8-100P", "SG8-1000P", "SG8-2000P",
         "SG8-ML", "SG8#", "SG16#", "SG32#",
         "SG8-Opt", "SG16-Opt", "SG32-Opt"
     ])
-
-    boxplot_first_convergence("First-Convergence_BP", xtick_rotation=90)
-    boxplot_time_in_convergence("Time-in-Convergence_BP", xtick_rotation=90)
-    boxplot_goal_distances("Goal-Distance_BP", xtick_rotation=90)
-    barchart_goals_achieved("Goals-Achieved_PC", xtick_rotation=90)
+    # boxplot_first_convergence("First-Convergence_BP", xtick_rotation=90)
+    # boxplot_time_in_convergence("Time-in-Convergence_BP", xtick_rotation=90)
+    # boxplot_goal_distances("Goal-Distance_BP", xtick_rotation=90)
+    # barchart_goals_achieved("Goals-Achieved_PC", xtick_rotation=90)
+    # endregion
