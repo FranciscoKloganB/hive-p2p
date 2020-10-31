@@ -369,16 +369,24 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
 
 
 def __create_barchart__(data_dict: Dict[str, Any],
-                        suptitle: str, xlabel: str, ylabel: str,
+                        suptitle: Optional[str] = None,
+                        xlabel: Optional[str] = None,
+                        ylabel: Optional[str] = None,
+                        xtick_rotation: int = 45,
                         figname: str = "", figext: str = "png",
                         savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
 
     switch_tr_spine_visibility(ax)
 
-    plt.ylabel(ylabel, labelpad=labels_pad,
-               fontproperties=fp_tick_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    if suptitle is not None:
+        plt.suptitle(suptitle, labelpad=title_pad, fontproperties=fp_title)
+    if xlabel is not None:
+        plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    if ylabel is not None:
+        plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+
+    plt.xticks(rotation=xtick_rotation, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     bar_width = 0.66
@@ -451,8 +459,7 @@ def barchart_successful_simulations(figname: str) -> None:
     # endregion
 
     __create_barchart__(data_dict,
-                        suptitle="Counting successfully terminated simulations",
-                        xlabel="config", ylabel=r"number of durable files",
+                        ylabel=r"number of durable files",
                         figname=figname, figext=image_ext, savefig=False)
 
     yticks = np.arange(0, epochs + 1, step=80)
@@ -477,13 +484,18 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
         data_dict[src_key] = list(data)
     # endregion
 
-    s = len(srckeys)
-    grid = (9, 3) if s % 3 == 0 else (12, 3)
     wedge_labels = ["achieved eq.", "has not achieved eq."]
 
-    fig, axes = plt.subplots(1, s, figsize=grid)
+    s = len(srckeys)
+    rows = math.ceil(s/4)
+    cols = 4
+    entry_size = (9 * rows, 3 * cols) if s % 3 == 0 else (12 * rows, 3 * cols)
+
+    fig, axes = plt.subplots(rows, cols, figsize=entry_size)  # figsize=entry_size
 
     for i, ax in enumerate(axes.flatten()):
+        if i >= len(srckeys):
+            break
         ax.axis('equal')
         src_key = srckeys[i]
         wedges, _, _ = ax.pie(
@@ -503,6 +515,33 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
 
     save_figure(figname, image_ext, plots_directory)
 # endregion
+
+
+def barchart_goals_achieved(figname: str, xtick_rotation: int = 45) -> None:
+    # region create data dict
+    data_dict = {k: 0 for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
+        s = 0
+        t = 0
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                classifications = json.load(outfile)["topologies_goal_achieved"]
+                for result in classifications:
+                    t += 1
+                    if result is True:
+                        s += 1
+        data_dict[src_key] = math.floor(s/t * 100) if t > 0 else 0
+    # endregion
+
+    __create_barchart__(data_dict,
+                        ylabel=r"clusters (%)",
+                        xtick_rotation=xtick_rotation,
+                        figname=figname, figext=image_ext, savefig=False)
+
+    yticks = np.arange(0, 119, step=20)
+    plt.yticks(yticks, fontsize="x-large", fontweight="semibold")
+    save_figure(figname, image_ext, plots_directory)
 
 
 if __name__ == "__main__":
@@ -596,6 +635,8 @@ if __name__ == "__main__":
         "SG8-ML", "SG8#", "SG16#", "SG32#",
         "SG8-Opt", "SG16-Opt", "SG32-Opt"
     ])
-    boxplot_first_convergence(figname="First-Convergence_BP", xtick_rotation=90)
-    boxplot_goal_distances(figname="Goal-Distance_BP", xtick_rotation=90)
-    boxplot_time_in_convergence(figname="Time-in-Convergence_BP", xtick_rotation=90)
+
+    boxplot_first_convergence("First-Convergence_BP", xtick_rotation=90)
+    boxplot_time_in_convergence("Time-in-Convergence_BP", xtick_rotation=90)
+    boxplot_goal_distances("Goal-Distance_BP", xtick_rotation=90)
+    barchart_goals_achieved("Goals-Achieved_PC", xtick_rotation=90)
