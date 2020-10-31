@@ -54,6 +54,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
                        suptitle: Optional[str] = None,
                        xlabel: Optional[str] = None,
                        ylabel: Optional[str] = None,
+                       xtick_rotation: int = 45,
                        showfliers: bool = True,
                        figname: str = "", figext: str = "png",
                        savefig: bool = True) -> Tuple[Any, Any]:
@@ -68,7 +69,7 @@ def __create_boxplot__(data_dict: Dict[str, Any],
     ax.set_xticklabels(data_dict.keys())
 
     plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=xtick_rotation, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     if savefig:
@@ -164,7 +165,7 @@ def boxplot_bandwidth(figname: str = "BW") -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_first_convergence(figname: str = "FIC") -> None:
+def boxplot_first_convergence(figname: str = "FIC", xtick_rotation: int = 45) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -181,6 +182,7 @@ def boxplot_first_convergence(figname: str = "FIC") -> None:
         data_dict,
         suptitle="clusters' first instantaneous convergence",
         xlabel="config", ylabel="epoch", showfliers=False,
+        xtick_rotation=xtick_rotation,
         figname=figname, figext=image_ext)
 
 
@@ -592,4 +594,4 @@ if __name__ == "__main__":
         "SG8-ML",
         "SG8#", "SG8-Opt", "SG16#", "SG16-Opt", "SG32#", "SG32-Opt"
     ])
-    boxplot_first_convergence(figname="First-Convergence_BP")
+    boxplot_first_convergence(figname="First-Convergence_BP", xtick_rotation=90)

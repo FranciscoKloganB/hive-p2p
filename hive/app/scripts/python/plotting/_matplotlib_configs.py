@@ -153,8 +153,8 @@ def save_figure(figname: str,
         plt.savefig(f"{filestem}.{figext}", format=figext, bbox_inches="tight")
     else:
         for ext in figext:
-            time.sleep(1)  # sleep avoids Ttinker exception due to multisaves.
             plt.savefig(f"{filestem}.{ext}", format=ext, bbox_inches="tight")
+            time.sleep(1)  # sleep avoids Ttinker exception due to multisaves.
     plt.close('all')
 
 
