@@ -9,7 +9,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from matplotlib.font_manager import FontProperties
-from typing import Any, Optional
+from typing import Any, Optional, Union, Set
 
 mpl.style.use('seaborn-deep')
 
@@ -132,23 +132,27 @@ def switch_tr_spine_visibility(ax: Any, set_visible: bool = False) -> None:
     ax.spines['top'].set_visible(set_visible)
 
 
-def save_figure(
-        figname: str, figext: str = "png", figdir: Optional[str] = None
-) -> None:
+def save_figure(figname: str,
+                figext: Union[str, Set[str]] = "png",
+                figdir: Optional[str] = None) -> None:
     """Saves a figure and closes all open figures.
 
     Args:
         figname:
             A name for the figure.
         figext:
-            The extension the figure will be saved with.
+            The extension or extensions the figure will be saved with.
         figdir:
             The root dir where the figure will be saved. If this argument is
             None the current working directory is used.
     """
-    filepath = os.getcwd() if figdir is None else figdir
-    filepath = os.path.join(filepath, f"{figname}.{figext}")
-    plt.savefig(filepath, format=figext, bbox_inches="tight")
+    rootdir = os.getcwd() if figdir is None else figdir
+    filestem = os.path.join(rootdir, f"{figname}")
+    if isinstance(figext, str):
+        plt.savefig(f"{filestem}.{figext}", format=figext, bbox_inches="tight")
+    else:
+        for ext in figext:
+            plt.savefig(f"{filestem}.{ext}", format=ext, bbox_inches="tight")
     plt.close('all')
 
 
