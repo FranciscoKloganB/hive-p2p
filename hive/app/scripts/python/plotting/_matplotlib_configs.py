@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from typing import Any, Optional, Union, Set
 
-PLOT_DEBUG = True
+PLOT_DEBUG = False
 
 mpl.style.use('seaborn-deep')
 
