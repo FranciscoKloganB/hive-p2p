@@ -236,7 +236,7 @@ def boxplot_goal_distances(figname: str, xtick_rotation: int = 45) -> None:
     __create_grouped_boxplot__(
         datasets=[psamples, nsamples],
         dcolors=[color_palette[1], color_palette[2]],
-        dlabels=["achieved eq.", "has not achieved eq."],
+        dlabels=["eq. achieved", "eq. not achieved."],
         xticks_labels=srckeys,
         xtick_rotation=xtick_rotation,
         ylabel=r"c$_{dm}$ / cluster size",
@@ -493,7 +493,7 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
         data_dict[src_key] = list(data)
     # endregion
 
-    wedge_labels = ["achieved eq.", "has not achieved eq."]
+    wedge_labels = ["eq. achieved", "eq. not achievied"]
 
     s = len(srckeys)
     rows = math.ceil(s/4)
@@ -594,23 +594,23 @@ if __name__ == "__main__":
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
-    # srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
+    srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
     # boxplot_bandwidth(figname="Bandwidth-Consumption")
-    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
+    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
     # boxplot_first_convergence(figname="First-Convergence_BP_Parts")
     # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
     # boxplot_goal_distances(figname="Goal-Distance_BP_Parts")
     # piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
 
-    # srcfiles, srckeys = setup_sources(["SG8-ML", "SG8#", "SG16#", "SG32#"])
-    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes")
+    srcfiles, srckeys = setup_sources(["SG8-ML", "SG8#", "SG16#", "SG32#"])
+    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes")
     # boxplot_first_convergence(figname="First-Convergence_BP-Sizes")
     # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes")
     # boxplot_goal_distances(figname="Goal-Distance_BP_Sizes")
     # piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes")
 
-    # srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes-Opt")
+    srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes-Opt")
     # boxplot_first_convergence(figname="First-Convergence_BP-Sizes-Opt")
     # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes-Opt")
     # boxplot_goal_distances(figname="Goal-Distance_BP_Sizes-Opt")
