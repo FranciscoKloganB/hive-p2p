@@ -1,6 +1,7 @@
 """
 This script collects data
 """
+import ast
 import sys
 import json
 import getopt
@@ -503,7 +504,7 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
 if __name__ == "__main__":
     # region args processing
     epochs = 480
-    image_ext = "pdf"
+    image_ext = {"pdf", "png"}
 
     short_opts = "e:i:"
     long_opts = ["epochs=", "image_format="]
@@ -514,12 +515,12 @@ if __name__ == "__main__":
             if arg in ("-e", "--epochs"):
                 epochs = int(str(val).strip())
             if arg in ("-i", "--image_format"):
-                image_ext = str(val).strip()
+                image_ext = ast.literal_eval(str(val).strip())
 
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --epochs -e (int)\n"
-                 "  --optimizations -o (str)\n")
+                 "  --image_format -i (str or set of str), e.g., {'pdf','png'}\n")
     # endregion
 
     # region path setup
@@ -588,7 +589,7 @@ if __name__ == "__main__":
 
     srcfiles, srckeys = setup_sources([
         "SG8-100P", "SG8-1000P", "SG8-2000P",
-        "SG8-ML", "SG8#", "SG16#", "SG32#",
-        "SG8-Opt", "SG16-Opt", "SG32-Opt"
+        "SG8-ML",
+        "SG8#", "SG8-Opt", "SG16#", "SG16-Opt", "SG32#", "SG32-Opt"
     ])
-    boxplot_node_degree(figname="Node-Degrees_BP_SG")
+    boxplot_first_convergence(figname="First-Convergence_BP")
