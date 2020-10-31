@@ -187,7 +187,7 @@ def boxplot_first_convergence(figname: str, xtick_rotation: int = 45) -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_time_in_convergence(figname: str) -> None:
+def boxplot_time_in_convergence(figname: str, xtick_rotation: int = 45) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -204,7 +204,8 @@ def boxplot_time_in_convergence(figname: str) -> None:
     __create_boxplot__(
         data_dict,
         suptitle="clusters' time spent in convergence", showfliers=False,
-        xlabel="config", ylabel=r"sum(c$_{t}$) / termination epoch",
+        xtick_rotation=xtick_rotation,
+        ylabel=r"sum(c$_{t}$) / termination epoch",
         figname=figname, figext=image_ext)
 
 
@@ -592,8 +593,9 @@ if __name__ == "__main__":
 
     srcfiles, srckeys = setup_sources([
         "SG8-100P", "SG8-1000P", "SG8-2000P",
-        "SG8-ML",
-        "SG8#", "SG8-Opt", "SG16#", "SG16-Opt", "SG32#", "SG32-Opt"
+        "SG8-ML", "SG8#", "SG16#", "SG32#",
+        "SG8-Opt", "SG16-Opt", "SG32-Opt"
     ])
-    # boxplot_first_convergence(figname="First-Convergence_BP", xtick_rotation=90)
+    boxplot_first_convergence(figname="First-Convergence_BP", xtick_rotation=90)
     boxplot_goal_distances(figname="Goal-Distance_BP", xtick_rotation=90)
+    boxplot_time_in_convergence(figname="Time-in-Convergence_BP", xtick_rotation=90)
