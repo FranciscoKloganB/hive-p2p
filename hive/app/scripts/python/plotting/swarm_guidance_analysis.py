@@ -83,6 +83,7 @@ def __create_grouped_boxplot__(datasets: List[List[Any]],
                                xticks_labels: List[str],
                                xlabel: Optional[str] = None,
                                ylabel: Optional[str] = None,
+                               xtick_rotation: int = 45,
                                showfliers: bool = True,
                                figname: str = "", figext: str = "png",
                                savefig: bool = True) -> Tuple[Any, Any]:
@@ -127,7 +128,7 @@ def __create_grouped_boxplot__(datasets: List[List[Any]],
 
     xtick_count = len(xticks_labels)
     xtick_positions = range(0, xtick_count * boxplots_per_tick, boxplots_per_tick)
-    plt.xticks(xtick_positions, xticks_labels, rotation=45,
+    plt.xticks(xtick_positions, xticks_labels, rotation=xtick_rotation,
                fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
@@ -144,7 +145,7 @@ def __create_grouped_boxplot__(datasets: List[List[Any]],
     return fig, ax
 
 
-def boxplot_bandwidth(figname: str = "BW") -> None:
+def boxplot_bandwidth(figname: str) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -165,7 +166,7 @@ def boxplot_bandwidth(figname: str = "BW") -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_first_convergence(figname: str = "FIC", xtick_rotation: int = 45) -> None:
+def boxplot_first_convergence(figname: str, xtick_rotation: int = 45) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -186,7 +187,7 @@ def boxplot_first_convergence(figname: str = "FIC", xtick_rotation: int = 45) ->
         figname=figname, figext=image_ext)
 
 
-def boxplot_time_in_convergence(figname: str = "TIC") -> None:
+def boxplot_time_in_convergence(figname: str) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -207,7 +208,7 @@ def boxplot_time_in_convergence(figname: str = "TIC") -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_goal_distances(figname: str = "MD") -> None:
+def boxplot_goal_distances(figname: str, xtick_rotation: int = 45) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -236,11 +237,12 @@ def boxplot_goal_distances(figname: str = "MD") -> None:
         dcolors=[color_palette[1], color_palette[2]],
         dlabels=["achieved eq.", "has not achieved eq."],
         xticks_labels=srckeys,
+        xtick_rotation=xtick_rotation,
         ylabel=r"c$_{dm}$ / cluster size",
         figname=figname, figext=image_ext)
 
 
-def boxplot_node_degree(figname: str = "ND") -> None:
+def boxplot_node_degree(figname: str) -> None:
     """The integral part of the float value is the
     in-degree, the decimal part is the out-degree."""
     # region create data dict
@@ -273,7 +275,7 @@ def boxplot_node_degree(figname: str = "ND") -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
+def boxplot_time_to_detect_off_nodes(figname: str) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -307,7 +309,7 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
     save_figure(figname, image_ext, plots_directory)
 
 
-def boxplot_terminations(figname: str = "T") -> None:
+def boxplot_terminations(figname: str) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -392,8 +394,7 @@ def __create_barchart__(data_dict: Dict[str, Any],
     return fig, ax
 
 
-def barchart_convergence_vs_progress(
-        bucket_size: int = 10, figname: str = "ICC") -> None:
+def barchart_convergence_vs_progress(figname: str, bucket_size: int = 10) -> None:
     # region create buckets of 5%
     bucket_count = int(100 / bucket_size)
     epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
@@ -434,7 +435,7 @@ def barchart_convergence_vs_progress(
         figname=figname, figext=image_ext)
 
 
-def barchart_successful_simulations(figname: str = "SS") -> None:
+def barchart_successful_simulations(figname: str) -> None:
     # region create data dict
     data_dict = {k: 0 for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -594,4 +595,5 @@ if __name__ == "__main__":
         "SG8-ML",
         "SG8#", "SG8-Opt", "SG16#", "SG16-Opt", "SG32#", "SG32-Opt"
     ])
-    boxplot_first_convergence(figname="First-Convergence_BP", xtick_rotation=90)
+    # boxplot_first_convergence(figname="First-Convergence_BP", xtick_rotation=90)
+    boxplot_goal_distances(figname="Goal-Distance_BP", xtick_rotation=90)
