@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from typing import Any, Optional, Union, Set
 
+PLOT_DEBUG = True
+
 mpl.style.use('seaborn-deep')
 
 color_palette = matplotlib.pyplot.style.library['seaborn-deep']['axes.prop_cycle'].by_key()['color']
@@ -147,8 +149,14 @@ def save_figure(figname: str,
             The root dir where the figure will be saved. If this argument is
             None the current working directory is used.
     """
+    if PLOT_DEBUG:
+        plt.show()
+        plt.close('all')
+        return
+
     rootdir = os.getcwd() if figdir is None else figdir
     filestem = os.path.join(rootdir, f"{figname}")
+
     if isinstance(figext, str):
         plt.savefig(f"{filestem}.{figext}", format=figext, bbox_inches="tight")
     else:
