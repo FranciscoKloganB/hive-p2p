@@ -321,13 +321,10 @@ def boxplot_terminations(figname: str) -> None:
                 data_dict[src_key].append(json.load(outfile)["terminated"])
     # endregion
 
-    __create_boxplot__(
-        data_dict,
-        suptitle="clusters' termination epochs",
-        xlabel="config", ylabel="epoch",
-        figname=figname, figext=image_ext, savefig=False)
+    __create_boxplot__(data_dict, ylabel="epoch",
+                       figname=figname, figext=image_ext, savefig=False)
 
-    plt.yticks(np.arange(0, epochs + 1, step=80))
+    plt.yticks(np.arange(0, 480 + 1, step=80))
     save_figure(figname, image_ext, plots_directory)
 # endregion
 
@@ -472,7 +469,7 @@ def barchart_successful_simulations(figname: str) -> None:
                         ylabel=r"number of durable files",
                         figname=figname, figext=image_ext, savefig=False)
 
-    yticks = np.arange(0, epochs + 1, step=80)
+    yticks = np.arange(0, 501, step=100)
     plt.yticks(yticks, fontsize="x-large", fontweight="semibold")
     save_figure(figname, image_ext, plots_directory)
 # endregion
@@ -628,9 +625,9 @@ if __name__ == "__main__":
     # Q13. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
     # Q14. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
     # Q15. Redes de diferentes tiers, tem resultados significativamente melhores?
-    # srcfiles, srckeys = setup_sources(
-    #     ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
-    # barchart_successful_simulations(figname="Successful-Simulations_SBDBS-HDFS")
+    srcfiles, srckeys = setup_sources(
+        ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
+    barchart_successful_simulations(figname="Successful-Simulations_SGDBS-HDFS")
     # boxplot_terminations(figname="Terminations_BP_SGDBS-HDFS")
 
     # Q16. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
@@ -655,6 +652,6 @@ if __name__ == "__main__":
     # srcfiles, srckeys = setup_sources(["SGDBS", "SG8#", "SG16#", "SG32#"])
     # boxplot_node_degree("Nodes-Degrees_BP_SGDBS")
 
-    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    # srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
     # barchart_goals_achieved("Goals-Achieved_BC_SGDBS")
-    boxplot_goal_distances("Goal-Distance_BP_SGDBS")
+    # boxplot_goal_distances("Goal-Distance_BP_SGDBS")
