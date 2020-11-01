@@ -595,23 +595,23 @@ if __name__ == "__main__":
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
-    srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
+    # srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
     # boxplot_bandwidth(figname="Bandwidth-Consumption")
-    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
+    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
     # boxplot_first_convergence(figname="First-Convergence_BP_Parts")
     # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
     # boxplot_goal_distances(figname="Goal-Distance_BP_Parts")
     # piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
 
-    srcfiles, srckeys = setup_sources(["SG8-ML", "SG8#", "SG16#", "SG32#"])
-    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes")
+    # srcfiles, srckeys = setup_sources(["SG8-ML", "SG8#", "SG16#", "SG32#"])
+    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes")
     # boxplot_first_convergence(figname="First-Convergence_BP-Sizes")
     # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes")
     # boxplot_goal_distances(figname="Goal-Distance_BP_Sizes")
     # piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes")
 
-    srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes-Opt")
+    # srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes-Opt")
     # boxplot_first_convergence(figname="First-Convergence_BP-Sizes-Opt")
     # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes-Opt")
     # boxplot_goal_distances(figname="Goal-Distance_BP_Sizes-Opt")
@@ -622,8 +622,8 @@ if __name__ == "__main__":
     # boxplot_node_degree(figname="Node-Degrees_BP_SG")
 
     # Q12. Quanto tempo demoramos a detetar falhas de nós com swarm guidance? t_{snr}
-    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
-    boxplot_time_to_detect_off_nodes(figname="Time-to-Evict-Suspects_BP_SGDBS")
+    # srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    # boxplot_time_to_detect_off_nodes(figname="Time-to-Evict-Suspects_BP_SGDBS")
 
     # Q13. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
     # Q14. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
@@ -649,8 +649,12 @@ if __name__ == "__main__":
     # boxplot_first_convergence("First-Convergence_BP", xtick_rotation=90)
     # boxplot_time_in_convergence("Time-in-Convergence_BP", xtick_rotation=90)
     # boxplot_goal_distances("Goal-Distance_BP", xtick_rotation=90)
-    # barchart_goals_achieved("Goals-Achieved_PC", xtick_rotation=90)
+    # barchart_goals_achieved("Goals-Achieved_BC", xtick_rotation=90)
     # endregion
 
     # srcfiles, srckeys = setup_sources(["SGDBS", "SG8#", "SG16#", "SG32#"])
-    # boxplot_node_degree("Nodes-Degree-SGDBS")
+    # boxplot_node_degree("Nodes-Degrees_BP_SGDBS")
+
+    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    # barchart_goals_achieved("Goals-Achieved_BC_SGDBS")
+    boxplot_goal_distances("Goal-Distance_BP_SGDBS")
