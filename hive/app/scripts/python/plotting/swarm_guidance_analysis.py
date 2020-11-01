@@ -243,7 +243,7 @@ def boxplot_goal_distances(figname: str, xtick_rotation: int = 45) -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_node_degree(figname: str) -> None:
+def boxplot_node_degree(figname: str, xtick_rotation: int = 45) -> None:
     """The integral part of the float value is the
     in-degree, the decimal part is the out-degree."""
     # region create data dict
@@ -271,7 +271,7 @@ def boxplot_node_degree(figname: str) -> None:
         datasets=[isamples, osamples],
         dcolors=[color_palette[1], color_palette[2]],
         dlabels=["in-degree", "out-degree"],
-        xticks_labels=srckeys,
+        xticks_labels=srckeys, xtick_rotation=xtick_rotation,
         ylabel="node degrees",
         figname=figname, figext=image_ext)
 
@@ -284,7 +284,8 @@ def boxplot_time_to_detect_off_nodes(figname: str) -> None:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)["delay_suspects_detection"].values()
-                # worksaround a bug where nodes seem to have taken infinite time to be detected using (0 < x < 15)
+                # worksaround a bug where nodes seem to have taken infinite time to be detected using (0 < x < 45)
+                # outdata = list(filter(lambda x: 0 < x < 45, outdata))
                 outdata = list(filter(lambda x: x > 0, outdata))
                 data_dict[src_key].extend(outdata)
 
@@ -294,7 +295,7 @@ def boxplot_time_to_detect_off_nodes(figname: str) -> None:
         dcolor=color_palette[0],
         dlabel=r"SGDBS t$_{snr}$",
         suptitle="Clusters' time to evict suspect storage nodes",
-        ylabel="epochs", showfliers=False,
+        ylabel="epochs", showfliers=True,
         savefig=False)
 
     ax.set_zorder(2)
@@ -621,8 +622,8 @@ if __name__ == "__main__":
     # boxplot_node_degree(figname="Node-Degrees_BP_SG")
 
     # Q12. Quanto tempo demoramos a detetar falhas de nós com swarm guidance? t_{snr}
-    # srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
-    # boxplot_time_to_detect_off_nodes(figname="Time-to-Evict-Suspects_BP_SGDBS")
+    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    boxplot_time_to_detect_off_nodes(figname="Time-to-Evict-Suspects_BP_SGDBS")
 
     # Q13. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
     # Q14. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
@@ -640,13 +641,16 @@ if __name__ == "__main__":
     # boxplot_time_in_convergence(figname="SGDBS-Time-Convergence_BP")
 
     # region ---- IMPROVED READABILITY PLOTS SECTION BELOW ----
-    srcfiles, srckeys = setup_sources([
-        "SG8-100P", "SG8-1000P", "SG8-2000P",
-        "SG8-ML", "SG8#", "SG16#", "SG32#",
-        "SG8-Opt", "SG16-Opt", "SG32-Opt"
-    ])
+    # srcfiles, srckeys = setup_sources([
+    #     "SG8-100P", "SG8-1000P", "SG8-2000P",
+    #     "SG8-ML", "SG8#", "SG16#", "SG32#",
+    #     "SG8-Opt", "SG16-Opt", "SG32-Opt"
+    # ])
     # boxplot_first_convergence("First-Convergence_BP", xtick_rotation=90)
     # boxplot_time_in_convergence("Time-in-Convergence_BP", xtick_rotation=90)
     # boxplot_goal_distances("Goal-Distance_BP", xtick_rotation=90)
     # barchart_goals_achieved("Goals-Achieved_PC", xtick_rotation=90)
     # endregion
+
+    # srcfiles, srckeys = setup_sources(["SGDBS", "SG8#", "SG16#", "SG32#"])
+    # boxplot_node_degree("Nodes-Degree-SGDBS")
