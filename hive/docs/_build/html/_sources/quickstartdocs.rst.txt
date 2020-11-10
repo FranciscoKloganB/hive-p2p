@@ -31,7 +31,7 @@ Installation - Part I
 3. Set a Python environment variable at:
 
 |
-   - ``$ hivessimulator/app``
+   - ``$ hive/app``
 
 4. We recommended using JetBrains' IDEs, but you can skip this step:
 
