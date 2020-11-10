@@ -26,7 +26,7 @@ Installation - Part I
 2. Clone our repository at:
 
 |
-   - https://github.com/FranciscoKloganB/hive-msc-thesis
+   - https://github.com/FranciscoKloganB/hivessimulator
 
 3. We recommended using JetBrains' IDEs, but you can skip this step:
 
