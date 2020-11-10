@@ -28,12 +28,17 @@ Installation - Part I
 |
    - https://github.com/FranciscoKloganB/hivessimulator
 
-3. We recommended using JetBrains' IDEs, but you can skip this step:
+3. Set a Python environment variable at:
+
+|
+   - ``hivessimulator/app``
+
+4. We recommended using JetBrains' IDEs, but you can skip this step:
 
 |
    - https://www.jetbrains.com/pycharm/download
 
-4. Create a virtual environment of your choosing, two example guides are
+5. Create a virtual environment of your choosing, two example guides are
 linked below:
 
 |
@@ -41,13 +46,13 @@ linked below:
 |
    - https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html
 
-5. Navigate to ``hive`` folder located at the root of your recently cloned
+6. Navigate to ``hive`` folder located at the root of your recently cloned
 project:
 
 |
    - ``$ cd hive``
 
-6. Install project dependencies by opening your terminal and inserting the
+7. Install project dependencies by opening your terminal and inserting the
 command:
 
 |
