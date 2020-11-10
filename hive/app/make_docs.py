@@ -30,11 +30,27 @@ def remove_local_user_paths():
         f.truncate()
 
 
+def replace_docs_with_app():
+    token = 'hive/docs/static'
+    with open(app_html_path, 'rb+') as f:
+        soup = bs4.BeautifulSoup(f, 'html.parser')
+        elements = soup.find_all('em', class_='property')
+        for tag in elements:
+            tag_text = tag.get_text()
+            if token in tag_text:
+                tag_text = tag_text.replace('docs', 'app')
+                tag.string.replace_with(tag_text)
+        f.seek(0)
+        f.write(soup.prettify('utf-8'))
+        f.truncate()
+
+
 if __name__ == "__main__":
     # generate docs
     os.system('cd ../docs && make html')
     # fix documents
     remove_local_user_paths()
+    replace_docs_with_app()
     # save on remote
     os.system('git add ../docs/* && git commit -m "refresh docs" && git push')
     # update website
