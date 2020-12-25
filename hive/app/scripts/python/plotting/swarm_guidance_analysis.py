@@ -592,10 +592,12 @@ if __name__ == "__main__":
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
-    # srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
+    srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P",
+                                       "SG8-ML", "SG8#", "SG16#", "SG32#",
+                                       "SG8-Opt", "SG16-Opt", "SG32-Opt"])
     # boxplot_bandwidth(figname="Bandwidth-Consumption")
     # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
-    # boxplot_first_convergence(figname="First-Convergence_BP_Parts")
+    boxplot_first_convergence(figname="First-Convergence_BP_Parts")
     # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
     # boxplot_goal_distances(figname="Goal-Distance_BP_Parts")
     # piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
@@ -625,9 +627,9 @@ if __name__ == "__main__":
     # Q13. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
     # Q14. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
     # Q15. Redes de diferentes tiers, tem resultados significativamente melhores?
-    srcfiles, srckeys = setup_sources(
-        ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
-    barchart_successful_simulations(figname="Successful-Simulations_SGDBS-HDFS")
+    # srcfiles, srckeys = setup_sources(
+    #    ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
+    # barchart_successful_simulations(figname="Successful-Simulations_SGDBS-HDFS")
     # boxplot_terminations(figname="Terminations_BP_SGDBS-HDFS")
 
     # Q16. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
