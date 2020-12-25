@@ -371,3 +371,4 @@ hive/docs/make_docs.py
 *.pyc
 *.png
 *.png
+*.pdf

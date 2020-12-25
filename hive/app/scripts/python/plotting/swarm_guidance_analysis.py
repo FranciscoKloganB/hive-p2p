@@ -1,24 +1,21 @@
 """
 This script collects data
 """
-import os
+import ast
 import sys
 import json
-import math
 import getopt
 
 from itertools import zip_longest
-from json import JSONDecodeError
-from typing import List, Tuple, Any, Dict, Optional
+from typing import List, Tuple, Dict
 
-import numpy as np
-import matplotlib.pyplot as plt
 
 from _matplotlib_configs import *
 
 
 # region Helpers
-def setup_sources(source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]]:
+def setup_sources(
+        source_patterns: List[str]) -> Tuple[Dict[str, Any], List[str]]:
     kdict = {k: [] for k in source_patterns}
     for filename in dirfiles:
         for k in kdict:
@@ -47,118 +44,108 @@ def __auto_label__(rects: Any, ax: Any) -> None:
                     textcoords="offset points",
                     ha="center", va="bottom",
                     fontsize="large", fontweight="semibold", color="dimgrey")
-
-
-def __set_box_color__(bp: Any, color: str) -> None:
-    """Changes the colors of a boxplot.
-
-    Args:
-        bp:
-            The boxplot reference object to be modified.
-        color:
-            A string specifying the color to apply to the boxplot in
-            hexadecimal RBG.
-    """
-    for patch in bp['boxes']:
-        patch.set_facecolor(color)
-        patch.set_alpha(ax_alpha)
-    plt.setp(bp['whiskers'], color="#000000")
-    plt.setp(bp['caps'], color="#000000")
-    plt.setp(bp['medians'], color="#000000")
-
-
-def __prop_legend__(color: str, label: str, lw: int = 10) -> None:
-    plt.plot([], c=color, label=label, markersize=5, linewidth=lw)
-
-
-def __save_figure__(figname: str, figext: str = "png") -> None:
-    fname = f"{plots_directory}/{figname}.{figext}"
-    plt.savefig(fname, format=figext, bbox_inches="tight")
-    plt.close('all')
 # endregion
 
 
 # region Boxplots
 def __create_boxplot__(data_dict: Dict[str, Any],
-                       suptitle: str, xlabel: str, ylabel: str,
+                       dcolor: Optional[str] = None,
+                       dlabel: Optional[str] = None,
+                       suptitle: Optional[str] = None,
+                       xlabel: Optional[str] = None,
+                       ylabel: Optional[str] = None,
+                       xtick_rotation: int = 45,
                        showfliers: bool = True,
                        figname: str = "", figext: str = "png",
                        savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
+    switch_tr_spine_visibility(ax)
 
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    bp = plt.boxplot(data_dict.values(), whis=0.75,
+                     notch=True, patch_artist=True,
+                     showfliers=showfliers, flierprops=outlyer_shape)
+    try_coloring(bp, dcolor or color_palette[0], dlabel)
 
-    bp = ax.boxplot(data_dict.values(), showfliers=showfliers,
-               flierprops=outlyer_shape, whis=0.75, notch=True)
     ax.set_xticklabels(data_dict.keys())
-    # plt.suptitle(suptitle, fontproperties=fp_title)
-    # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
+
     plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    plt.xticks(rotation=xtick_rotation, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
-    plt.setp(bp['medians'], color="#000000")
 
     if savefig:
-        __save_figure__(figname, figext)
+        save_figure(figname, figext, plots_directory)
     return fig, ax
 
 
-def __create_double_boxplot__(left_data, right_data,
-                              suptitle: str, xlabel: str, ylabel: str,
-                              labels: List[str],
-                              figname: str = "", figext: str = "png",
-                              lcolor: Optional[str] = None,
-                              rcolor: Optional[str] = None,
-                              llabel: Optional[str] = None,
-                              rlabel: Optional[str] = None,
-                              savefig: bool = True) -> Tuple[Any, Any]:
+def __create_grouped_boxplot__(datasets: List[List[Any]],
+                               dcolors: List[Optional[str]],
+                               dlabels: List[Optional[str]],
+                               xticks_labels: List[str],
+                               xlabel: Optional[str] = None,
+                               ylabel: Optional[str] = None,
+                               xtick_rotation: int = 45,
+                               showfliers: bool = True,
+                               figname: str = "", figext: str = "png",
+                               savefig: bool = True) -> Tuple[Any, Any]:
+    """Creates a figure where each tick has one or more boxplots.
 
+    Args:
+        datasets:
+            A list containing lists with the boxplot data. For example, if the
+            figure is supposed to have one boxplot per tick than, datasets
+            argument would look like ``[[a1, b1, c1]]``, if it is supposed to
+            have two boxplots per tick than it would be something like
+            ``[[a1, b1, c1], [a2, b2, c2]]`` and so on, where ``a1`` is the
+            left-most boxplot of the left-most tick and ``cn`` is the right-most
+            boxplot of the right-most tick. In this case both examples have
+            three ticks, if a ``d`` entry existed, there would four ticks
+            instead.
+        dcolors:
+            The colors used to paint each boxplot or a List of Nones.
+        dlabels:
+            The description that gives meaning to the colors.
+        xticks_labels:
+            A description that differentiates each tick from the next.
+    """
     fig, ax = plt.subplots()
 
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    switch_tr_spine_visibility(ax)
 
-    bpl = plt.boxplot(left_data, showfliers=False, notch=True,
-                      whis=0.75, widths=0.7, patch_artist=True,
-                      positions=np.array(range(len(left_data))) * 2.0 - 0.4)
-    bpr = plt.boxplot(right_data, showfliers=False, notch=True,
-                      whis=0.75, widths=0.7, patch_artist=True,
-                      positions=np.array(range(len(right_data))) * 2.0 + 0.4)
+    colors = 0
+    boxplots_per_tick = len(datasets)
+    offsets = get_boxplot_offsets(boxplots_per_tick, spacing=0.4)
+    for i in range(boxplots_per_tick):
+        i_data = datasets[i]
+        bp = plt.boxplot(i_data, whis=0.75, widths=0.7,
+                         notch=True, patch_artist=True,
+                         showfliers=True, flierprops=outlyer_shape,
+                         positions=np.array(range(len(i_data))) * boxplots_per_tick + offsets[i])
+        colors += try_coloring(bp, dcolors[i], dlabels[i])
 
-    cols = 0
-    if lcolor:
-        cols += 1
-        __set_box_color__(bpl, lcolor)
-        if llabel:
-            __prop_legend__(lcolor, llabel)
-
-    if rcolor:
-        cols += 1
-        __set_box_color__(bpr, rcolor)
-        if rlabel:
-            __prop_legend__(rcolor, rlabel)
-
-    if llabel or rlabel:
-        plt.legend(prop=fp_legend, ncol=cols, frameon=False,
+    if colors > 0:
+        plt.legend(prop=fp_legend, ncol=colors, frameon=False,
                    loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
-    # plt.suptitle(suptitle, fontproperties=fp_title)
-    # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
-    plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    if xlabel is not None:
+        plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    if ylabel is not None:
+        plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+
+    xtick_count = len(xticks_labels)
+    xtick_positions = range(0, xtick_count * boxplots_per_tick, boxplots_per_tick)
+
+    plt.xlim(-boxplots_per_tick, xtick_count * boxplots_per_tick)
+    plt.xticks(xtick_positions, xticks_labels, rotation=xtick_rotation,
+               fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
-    label_count = len(labels)
-    plt.xticks(range(0, label_count * 2, 2), labels, rotation=45, fontsize="x-large", fontweight="semibold")
-    plt.xlim(-2, label_count * 2)
-
     if savefig:
-        __save_figure__(figname, figext)
+        save_figure(figname, figext, plots_directory)
+
     return fig, ax
 
 
-def boxplot_bandwidth(figname: str = "BW") -> None:
+def boxplot_bandwidth(figname: str) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -179,7 +166,7 @@ def boxplot_bandwidth(figname: str = "BW") -> None:
         figname=figname, figext=image_ext)
 
 
-def boxplot_first_convergence(figname: str = "FIC") -> None:
+def boxplot_first_convergence(figname: str, xtick_rotation: int = 45) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -196,10 +183,11 @@ def boxplot_first_convergence(figname: str = "FIC") -> None:
         data_dict,
         suptitle="clusters' first instantaneous convergence",
         xlabel="config", ylabel="epoch", showfliers=False,
+        xtick_rotation=xtick_rotation,
         figname=figname, figext=image_ext)
 
 
-def boxplot_time_in_convergence(figname: str = "TIC") -> None:
+def boxplot_time_in_convergence(figname: str, xtick_rotation: int = 45) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -216,11 +204,12 @@ def boxplot_time_in_convergence(figname: str = "TIC") -> None:
     __create_boxplot__(
         data_dict,
         suptitle="clusters' time spent in convergence", showfliers=False,
-        xlabel="config", ylabel=r"sum(c$_{t}$) / termination epoch",
+        xtick_rotation=xtick_rotation,
+        ylabel=r"sum(c$_{t}$) / termination epoch",
         figname=figname, figext=image_ext)
 
 
-def boxplot_goal_distances(figname: str = "MD") -> None:
+def boxplot_goal_distances(figname: str, xtick_rotation: int = 45) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -244,17 +233,17 @@ def boxplot_goal_distances(figname: str = "MD") -> None:
         psamples.append(data_dict[src_key][0])
         nsamples.append(data_dict[src_key][1])
 
-    __create_double_boxplot__(
-        psamples, nsamples,
-        lcolor=color_palette[1], rcolor=color_palette[2],
-        llabel="achieved eq.", rlabel="has not achieved eq.",
-        suptitle="clusters' distance to the select equilibrium",
-        xlabel="config", ylabel=r"c$_{dm}$ / cluster size",
-        labels=srckeys,
+    __create_grouped_boxplot__(
+        datasets=[psamples, nsamples],
+        dcolors=[color_palette[1], color_palette[2]],
+        dlabels=["eq. achieved", "eq. not achieved."],
+        xticks_labels=srckeys,
+        xtick_rotation=xtick_rotation,
+        ylabel=r"c$_{dm}$ / cluster size",
         figname=figname, figext=image_ext)
 
 
-def boxplot_node_degree(figname: str = "ND") -> None:
+def boxplot_node_degree(figname: str, xtick_rotation: int = 45) -> None:
     """The integral part of the float value is the
     in-degree, the decimal part is the out-degree."""
     # region create data dict
@@ -278,17 +267,16 @@ def boxplot_node_degree(figname: str = "ND") -> None:
         isamples.append(data_dict[src_key][0])
         osamples.append(data_dict[src_key][1])
 
-    __create_double_boxplot__(
-        isamples, osamples,
-        lcolor=color_palette[0], rcolor=color_palette[1],
-        llabel="in-degree", rlabel="out-degree",
-        suptitle="Nodes' degrees depending on the cluster's size",
-        xlabel="config", ylabel="node degrees",
-        labels=srckeys,
+    __create_grouped_boxplot__(
+        datasets=[isamples, osamples],
+        dcolors=[color_palette[1], color_palette[2]],
+        dlabels=["in-degree", "out-degree"],
+        xticks_labels=srckeys, xtick_rotation=xtick_rotation,
+        ylabel="node degrees",
         figname=figname, figext=image_ext)
 
 
-def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
+def boxplot_time_to_detect_off_nodes(figname: str) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -296,31 +284,34 @@ def boxplot_time_to_detect_off_nodes(figname: str = "TSNR") -> None:
             filepath = os.path.join(directory, filename)
             with open(filepath) as outfile:
                 outdata = json.load(outfile)["delay_suspects_detection"].values()
-                # worksaround a bug where nodes seem to have taken infinite time to be detected using (0 < x < 15)
+                # worksaround a bug where nodes seem to have taken infinite time to be detected using (0 < x < 45)
+                # outdata = list(filter(lambda x: 0 < x < 45, outdata))
                 outdata = list(filter(lambda x: x > 0, outdata))
                 data_dict[src_key].extend(outdata)
 
     # endregion
     fig, ax = __create_boxplot__(
         data_dict,
+        dcolor=color_palette[0],
+        dlabel=r"SGDBS t$_{snr}$",
         suptitle="Clusters' time to evict suspect storage nodes",
-        xlabel="config", ylabel="epochs", showfliers=False,
+        ylabel="epochs", showfliers=True,
         savefig=False)
 
     ax.set_zorder(2)
 
     plt.axhline(y=5, color=color_palette[-1], alpha=ax_alpha - 0.2,
-                linestyle='-', label=r"HDFS t$_{snr}$", zorder=1)
+                linestyle='-', label=r"HDFS Constant t$_{snr}$", zorder=1)
 
-    leg = plt.legend(prop=fp_legend, ncol=1, frameon=False,
+    leg = plt.legend(prop=fp_legend, ncol=2, frameon=False,
                      loc="lower center", bbox_to_anchor=(0.5, -0.5))
     for legobj in leg.legendHandles:
         legobj.set_linewidth(10)
 
-    __save_figure__(figname, image_ext)
+    save_figure(figname, image_ext, plots_directory)
 
 
-def boxplot_terminations(figname: str = "T") -> None:
+def boxplot_terminations(figname: str) -> None:
     # region create data dict
     data_dict = {k: [] for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -330,52 +321,48 @@ def boxplot_terminations(figname: str = "T") -> None:
                 data_dict[src_key].append(json.load(outfile)["terminated"])
     # endregion
 
-    __create_boxplot__(
-        data_dict,
-        suptitle="clusters' termination epochs",
-        xlabel="config", ylabel="epoch",
-        figname=figname, figext=image_ext, savefig=False)
+    __create_boxplot__(data_dict, ylabel="epoch",
+                       figname=figname, figext=image_ext, savefig=False)
 
-    plt.yticks(np.arange(0, epochs + 1, step=80))
-    __save_figure__(figname, image_ext)
+    plt.yticks(np.arange(0, 480 + 1, step=80))
+    save_figure(figname, image_ext, plots_directory)
 # endregion
 
 
 # region Bar charts
-def __get_offsets__(nbars: int, bwidth: float = 1) -> np.ndarray:
-    lim = math.floor(nbars / 2)
-    sublocations = np.arange(-lim, lim + 1)
-    if nbars % 2 == 0:
-        sublocations = list(filter(lambda x: x != 0, sublocations))
-        sublocations = list(map(
-            lambda x: x + (0.5 if x < 0 else -0.5), sublocations))
-        return np.asarray(sublocations) * bwidth
-    return sublocations * bwidth
-
-
 def __create_grouped_barchart__(data_dict: Dict[str, Any],
-                                bar_locations: np.ndarray, bar_width: float,
+                                bar_locations: np.ndarray,
+                                bar_width: float,
                                 bucket_size: float,
-                                suptitle: str, xlabel: str, ylabel: str,
+                                suptitle: Optional[str] = None,
+                                xlabel: Optional[str] = None,
+                                ylabel: Optional[str] = None,
                                 frameon: bool = False,
                                 figname: str = "", figext: str = "png",
                                 savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
 
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    switch_tr_spine_visibility(ax)
 
-    # plt.suptitle(suptitle, fontproperties=fp_title)
-    plt.xlabel(xlabel, labelpad=labels_pad,
-               fontproperties=fp_tick_labels)
-    plt.ylabel(ylabel, labelpad=labels_pad,
-               fontproperties=fp_tick_labels)
+    if suptitle is not None:
+        plt.suptitle(suptitle, labelpad=title_pad, fontproperties=fp_title)
+    if xlabel is not None:
+        plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    if ylabel is not None:
+        plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+
+    # xtick_count = len(xticks_labels)
+    # xtick_positions = range(0, xtick_count * boxplots_per_tick, boxplots_per_tick)
+    #
+    # plt.xlim(-boxplots_per_tick, xtick_count * boxplots_per_tick)
+    # plt.xticks(xtick_positions, xticks_labels, rotation=xtick_rotation,
+    #            fontsize="x-large", fontweight="semibold")
+
     plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
     plt.xlim(bucket_size - bucket_size * 0.75, 100 + bucket_size * ax_alpha)
-    # ax.set_xticks(bar_locations)
 
-    o = __get_offsets__(len(srckeys), bar_width)
+    o = get_barchart_offsets(len(srckeys), bar_width)
     for i in range(len(srckeys)):
         key = srckeys[i]
         epoch_vals = data_dict[key]
@@ -386,25 +373,30 @@ def __create_grouped_barchart__(data_dict: Dict[str, Any],
               loc="lower center", bbox_to_anchor=(0.5, -0.5))
 
     if savefig:
-        __save_figure__(figname, figext)
+        save_figure(figname, figext, plots_directory)
 
     return fig, ax
 
 
 def __create_barchart__(data_dict: Dict[str, Any],
-                        suptitle: str, xlabel: str, ylabel: str,
+                        suptitle: Optional[str] = None,
+                        xlabel: Optional[str] = None,
+                        ylabel: Optional[str] = None,
+                        xtick_rotation: int = 45,
                         figname: str = "", figext: str = "png",
                         savefig: bool = True) -> Tuple[Any, Any]:
     fig, ax = plt.subplots()
 
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
+    switch_tr_spine_visibility(ax)
 
-    # plt.suptitle(suptitle, fontproperties=fp_title)
-    # plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_axis_labels)
-    plt.ylabel(ylabel, labelpad=labels_pad,
-               fontproperties=fp_tick_labels)
-    plt.xticks(rotation=45, fontsize="x-large", fontweight="semibold")
+    if suptitle is not None:
+        plt.suptitle(suptitle, labelpad=title_pad, fontproperties=fp_title)
+    if xlabel is not None:
+        plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    if ylabel is not None:
+        plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+
+    plt.xticks(rotation=xtick_rotation, fontsize="x-large", fontweight="semibold")
     plt.yticks(fontsize="x-large", fontweight="semibold")
 
     bar_width = 0.66
@@ -416,13 +408,12 @@ def __create_barchart__(data_dict: Dict[str, Any],
     __auto_label__(rects, ax)
 
     if savefig:
-        __save_figure__(figname, figext)
+        save_figure(figname, figext, plots_directory)
 
     return fig, ax
 
 
-def barchart_convergence_vs_progress(
-        bucket_size: int = 10, figname: str = "ICC") -> None:
+def barchart_convergence_vs_progress(figname: str, bucket_size: int = 10) -> None:
     # region create buckets of 5%
     bucket_count = int(100 / bucket_size)
     epoch_buckets = [i * bucket_size for i in range(1, bucket_count + 1)]
@@ -455,15 +446,12 @@ def barchart_convergence_vs_progress(
     bar_locations = np.arange(1, len(epoch_buckets) + 1) * bucket_size
     bar_width = bucket_size / (len(data_dict) + 1)
 
-    # bar_width = bucket_size * 0.25
     __create_grouped_barchart__(
         data_dict, bar_locations, bar_width, bucket_size,
-        suptitle="convergence observations as simulations progress",
-        xlabel="simulations progress (%)", ylabel=r"c$_{t}$ count",
-        figname=figname, figext=image_ext)
+        ylabel=r"c$_{t}$ count", figname=figname, figext=image_ext)
 
 
-def barchart_successful_simulations(figname: str = "SS") -> None:
+def barchart_successful_simulations(figname: str) -> None:
     # region create data dict
     data_dict = {k: 0 for k in srckeys}
     for src_key, outfiles_view in srcfiles.items():
@@ -478,13 +466,12 @@ def barchart_successful_simulations(figname: str = "SS") -> None:
     # endregion
 
     __create_barchart__(data_dict,
-                        suptitle="Counting successfully terminated simulations",
-                        xlabel="config", ylabel=r"number of durable files",
+                        ylabel=r"number of durable files",
                         figname=figname, figext=image_ext, savefig=False)
 
-    yticks = np.arange(0, epochs + 1, step=80)
+    yticks = np.arange(0, 501, step=100)
     plt.yticks(yticks, fontsize="x-large", fontweight="semibold")
-    __save_figure__(figname, image_ext)
+    save_figure(figname, image_ext, plots_directory)
 # endregion
 
 
@@ -504,12 +491,18 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
         data_dict[src_key] = list(data)
     # endregion
 
+    wedge_labels = ["eq. achieved", "eq. not achievied"]
+
     s = len(srckeys)
-    grid = (9, 3) if s % 3 == 0 else (12, 3)
-    wedge_labels = ["achieved eq.", "has not achieved eq."]
-    fig, axes = plt.subplots(1, s, figsize=grid)
-    # plt.suptitle("clusters (%) achieving the selected equilibrium on average", fontproperties=fp_title, x=0.51)
+    rows = math.ceil(s/4)
+    cols = 4
+    entry_size = (9 * rows, 3 * cols) if s % 3 == 0 else (12 * rows, 3 * cols)
+
+    fig, axes = plt.subplots(rows, cols, figsize=entry_size)  # figsize=entry_size
+
     for i, ax in enumerate(axes.flatten()):
+        if i >= len(srckeys):
+            break
         ax.axis('equal')
         src_key = srckeys[i]
         wedges, _, _ = ax.pie(
@@ -527,14 +520,41 @@ def piechart_goals_achieved(figname: str = "GA") -> None:
     plt.legend(labels=wedge_labels, prop=fp_legend, ncol=s,
                frameon=False, loc="lower right", bbox_to_anchor=offset)
 
-    __save_figure__(figname, image_ext)
+    save_figure(figname, image_ext, plots_directory)
 # endregion
+
+
+def barchart_goals_achieved(figname: str, xtick_rotation: int = 45) -> None:
+    # region create data dict
+    data_dict = {k: 0 for k in srckeys}
+    for src_key, outfiles_view in srcfiles.items():
+        s = 0
+        t = 0
+        for filename in outfiles_view:
+            filepath = os.path.join(directory, filename)
+            with open(filepath) as outfile:
+                classifications = json.load(outfile)["topologies_goal_achieved"]
+                for result in classifications:
+                    t += 1
+                    if result is True:
+                        s += 1
+        data_dict[src_key] = math.floor(s/t * 100) if t > 0 else 0
+    # endregion
+
+    __create_barchart__(data_dict,
+                        ylabel=r"clusters (%)",
+                        xtick_rotation=xtick_rotation,
+                        figname=figname, figext=image_ext, savefig=False)
+
+    yticks = np.arange(0, 119, step=20)
+    plt.yticks(yticks, fontsize="x-large", fontweight="semibold")
+    save_figure(figname, image_ext, plots_directory)
 
 
 if __name__ == "__main__":
     # region args processing
     epochs = 480
-    image_ext = "pdf"
+    image_ext = {"pdf", "png"}
 
     short_opts = "e:i:"
     long_opts = ["epochs=", "image_format="]
@@ -545,12 +565,12 @@ if __name__ == "__main__":
             if arg in ("-e", "--epochs"):
                 epochs = int(str(val).strip())
             if arg in ("-i", "--image_format"):
-                image_ext = str(val).strip()
+                image_ext = ast.literal_eval(str(val).strip())
 
     except ValueError:
         sys.exit("Execution arguments should have the following data types:\n"
                  "  --epochs -e (int)\n"
-                 "  --optimizations -o (str)\n")
+                 "  --image_format -i (str or set of str), e.g., {'pdf','png'}\n")
     # endregion
 
     # region path setup
@@ -572,45 +592,68 @@ if __name__ == "__main__":
     # Q5. Quantas partes são suficientes para um Swarm Guidance  satisfatório?
     # Q6. Tecnicas de optimização influenciam as questões anteriores?
     # Q7. A performance melhora para redes de maior dimensão? (8 vs. 12  vs. 16)
-    srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P"])
-    boxplot_bandwidth(figname="Bandwidth-Consumption")
-    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
+    srcfiles, srckeys = setup_sources(["SG8-100P", "SG8-1000P", "SG8-2000P",
+                                       "SG8-ML", "SG8#", "SG16#", "SG32#",
+                                       "SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    # boxplot_bandwidth(figname="Bandwidth-Consumption")
+    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Parts")
     boxplot_first_convergence(figname="First-Convergence_BP_Parts")
-    boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
-    boxplot_goal_distances(figname="Goal-Distance_BP_Parts")
-    piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
+    # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Parts")
+    # boxplot_goal_distances(figname="Goal-Distance_BP_Parts")
+    # piechart_goals_achieved(figname="Goals-Achieved_PC_Parts")
 
-    srcfiles, srckeys = setup_sources(["SG8-ML", "SG8#", "SG16", "SG32"])
-    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes")
-    boxplot_first_convergence(figname="First-Convergence_BP-Sizes")
-    boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes")
-    boxplot_goal_distances(figname="Goal-Distance_BP_Sizes")
-    piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes")
+    # srcfiles, srckeys = setup_sources(["SG8-ML", "SG8#", "SG16#", "SG32#"])
+    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes")
+    # boxplot_first_convergence(figname="First-Convergence_BP-Sizes")
+    # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes")
+    # boxplot_goal_distances(figname="Goal-Distance_BP_Sizes")
+    # piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes")
 
-    srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
-    barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes-Opt")
-    boxplot_first_convergence(figname="First-Convergence_BP-Sizes-Opt")
-    boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes-Opt")
-    boxplot_goal_distances(figname="Goal-Distance_BP_Sizes-Opt")
-    piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes-Opt")
+    # srcfiles, srckeys = setup_sources(["SG8-Opt", "SG16-Opt", "SG32-Opt"])
+    # barchart_convergence_vs_progress(figname="Convergence-Progress_BC_Sizes-Opt")
+    # boxplot_first_convergence(figname="First-Convergence_BP-Sizes-Opt")
+    # boxplot_time_in_convergence(figname="Time-in-Convergence_BP_Sizes-Opt")
+    # boxplot_goal_distances(figname="Goal-Distance_BP_Sizes-Opt")
+    # piechart_goals_achieved(figname="Goals-Achieved_PC_Sizes-Opt")
 
     # Q11. Qual é o out-degree e in-degree cada rede? Deviam ser usadas constraints?
-    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SG8", "SG16", "SG32"])
-    boxplot_node_degree(figname="Node-Degrees_BP_SG")
+    # srcfiles, srckeys = setup_sources(["SGDBS-T1", "SG8#", "SG16#", "SG32#"])
+    # boxplot_node_degree(figname="Node-Degrees_BP_SG")
 
-    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
     # Q12. Quanto tempo demoramos a detetar falhas de nós com swarm guidance? t_{snr}
-    boxplot_time_to_detect_off_nodes(figname="Time-to-Evict-Suspects_BP_SGDBS")
+    # srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    # boxplot_time_to_detect_off_nodes(figname="Time-to-Evict-Suspects_BP_SGDBS")
+
     # Q13. Os ficheiros sobrevivem mais vezes que no Hadoop Distributed File System?
     # Q14. Se não sobrevivem, quantos epochs sobrevivem com a implementação actual?
     # Q15. Redes de diferentes tiers, tem resultados significativamente melhores?
-    srcfiles, srckeys = setup_sources(
-        ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
-    barchart_successful_simulations(figname="Successful-Simulations_SBDBS-HDFS")
-    boxplot_terminations(figname="Terminations_BP_SGDBS-HDFS")
+    # srcfiles, srckeys = setup_sources(
+    #    ["SGDBS-T1", "SGDBS-T2", "SGDBS-T3", "HDFS-T1", "HDFS-T2", "HDFS-T3"])
+    # barchart_successful_simulations(figname="Successful-Simulations_SGDBS-HDFS")
+    # boxplot_terminations(figname="Terminations_BP_SGDBS-HDFS")
+
     # Q16. Dadas as condições voláteis, qual o impacto na quantidade de convergências instantaneas?
     # Q17. Dadas as condições voláteis, verificamos uma convergência média para \steadystate?
-    srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
-    piechart_goals_achieved(figname="SGDBS-Avg-Convergence_PC")
-    boxplot_goal_distances(figname="SGDBS-Goal-Distance_BP")
-    boxplot_time_in_convergence(figname="SGDBS-Time-Convergence_BP")
+    # srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    # piechart_goals_achieved(figname="SGDBS-Avg-Convergence_PC")
+    # boxplot_goal_distances(figname="SGDBS-Goal-Distance_BP")
+    # boxplot_time_in_convergence(figname="SGDBS-Time-Convergence_BP")
+
+    # region ---- IMPROVED READABILITY PLOTS SECTION BELOW ----
+    # srcfiles, srckeys = setup_sources([
+    #     "SG8-100P", "SG8-1000P", "SG8-2000P",
+    #     "SG8-ML", "SG8#", "SG16#", "SG32#",
+    #     "SG8-Opt", "SG16-Opt", "SG32-Opt"
+    # ])
+    # boxplot_first_convergence("First-Convergence_BP", xtick_rotation=90)
+    # boxplot_time_in_convergence("Time-in-Convergence_BP", xtick_rotation=90)
+    # boxplot_goal_distances("Goal-Distance_BP", xtick_rotation=90)
+    # barchart_goals_achieved("Goals-Achieved_BC", xtick_rotation=90)
+    # endregion
+
+    # srcfiles, srckeys = setup_sources(["SGDBS", "SG8#", "SG16#", "SG32#"])
+    # boxplot_node_degree("Nodes-Degrees_BP_SGDBS")
+
+    # srcfiles, srckeys = setup_sources(["SGDBS-T1", "SGDBS-T2", "SGDBS-T3"])
+    # barchart_goals_achieved("Goals-Achieved_BC_SGDBS")
+    # boxplot_goal_distances("Goal-Distance_BP_SGDBS")

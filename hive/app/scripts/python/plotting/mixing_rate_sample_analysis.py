@@ -2,15 +2,10 @@ from __future__ import annotations
 
 import getopt
 import json
-import math
-import os
 import sys
-from typing import OrderedDict, List, Any, Dict
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-import _matplotlib_configs as cfg
+from _matplotlib_configs import *
+from typing import OrderedDict, List, Any, Dict, Optional, Tuple
 
 _SizeResultsDict: OrderedDict[str, List[float]]
 _ResultsDict: OrderedDict[str, _SizeResultsDict]
@@ -43,84 +38,126 @@ def __shorten_labels__(labels: List[str]) -> List[str]:
     return labels
 
 
-def __set_box_color__(bp: Any, color: str) -> None:
-    """Changes the colors of a boxplot.
+def __create_grouped_boxplot__(datasets: List[List[Any]],
+                               dcolors: List[Optional[str]],
+                               dlabels: List[Optional[str]],
+                               xticks_labels: List[str],
+                               xlabel: Optional[str] = None,
+                               ylabel: Optional[str] = None,
+                               showfliers: bool = True,
+                               figname: str = "", figext: str = "png",
+                               savefig: bool = True) -> Tuple[Any, Any]:
+    """Creates a figure where each tick has one or more boxplots.
 
     Args:
-        bp:
-            The boxplot reference object to be modified.
-        color:
-            A string specifying the color to apply to the boxplot in
-            hexadecimal RBG.
+        datasets:
+            A list containing lists with the boxplot data. For example, if the
+            figure is supposed to have one boxplot per tick than, datasets
+            argument would look like ``[[a1, b1, c1]]``, if it is supposed to
+            have two boxplots per tick than it would be something like
+            ``[[a1, b1, c1], [a2, b2, c2]]`` and so on, where ``a1`` is the
+            left-most boxplot of the left-most tick and ``cn`` is the right-most
+            boxplot of the right-most tick. In this case both examples have
+            three ticks, if a ``d`` entry existed, there would four ticks
+            instead.
+        dcolors:
+            The colors used to paint each boxplot or a List of Nones.
+        dlabels:
+            The description that gives meaning to the colors.
+        xticks_labels:
+            A description that differentiates each tick from the next.
     """
-    plt.setp(bp['boxes'], color=color)
-    plt.setp(bp['whiskers'], color=color)
-    plt.setp(bp['caps'], color=color)
-    plt.setp(bp['medians'], color=color)
+    fig, ax = plt.subplots()
+
+    switch_tr_spine_visibility(ax)
+
+    colors = 0
+    boxplots_per_tick = len(datasets)
+    offsets = get_boxplot_offsets(boxplots_per_tick, spacing=0.8)
+    for i in range(boxplots_per_tick):
+        i_data = datasets[i]
+        bp = plt.boxplot(i_data, whis=0.75, widths=0.7,
+                         notch=True, patch_artist=True,
+                         showfliers=True, flierprops=outlyer_shape,
+                         positions=np.array(range(len(i_data))) * boxplots_per_tick + offsets[i])
+        colors += try_coloring(bp, dcolors[i], dlabels[i])
+
+    if colors > 0:
+        plt.legend(prop=fp_legend, ncol=colors, frameon=False,
+                   loc="lower center", bbox_to_anchor=(0.5, -0.5))
+
+    xtick_count = len(xticks_labels)
+    xtick_positions = range(0, xtick_count * boxplots_per_tick, boxplots_per_tick)
+    plt.xticks(xtick_positions, xticks_labels, rotation=45,
+               fontsize="x-large", fontweight="semibold")
+    plt.yticks(fontsize="x-large", fontweight="semibold")
+
+    if xlabel is not None:
+        plt.xlabel(xlabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+    if ylabel is not None:
+        plt.ylabel(ylabel, labelpad=labels_pad, fontproperties=fp_tick_labels)
+
+    plt.xlim(-boxplots_per_tick, xtick_count * boxplots_per_tick)
+
+    if savefig:
+        save_figure(figname, figext, __MIXING_RATE_PLOTS_HOME__)
+
+    return fig, ax
 # endregion
 
 
 # region Box Plots
-def box_plot(json: _ResultsDict) -> None:
+def box_plot(data_dict: _ResultsDict) -> None:
     """Creates a Box Plots that show the minimum, maximum, Q1, Q2, Q3 and IQR
     as well as outlyer mixing rate values of several markov matrix generating
     functions.
 
     Args:
-        json: A readable json object.
+        data_dict: A readable json object.
+
+    Example:
+        A data_dict looks like the following::
+
+            {
+                "8": {
+                    "go": [float, float, float],
+                    "mh": [float, float, float],
+                    "sdp-mh": [float, float, float]
+                }
+            }
     """
-    for size_key, func_dict in json.items():
-        # Hack to get sample count, i.e., the length of the List[float]
-        sample_count = len(next(iter(func_dict.values())))
-        __create_box_plot__(size_key, sample_count, func_dict)
+    # Find all possible functions in data_dict.
+    func_keys = set()
+    for func_slem_dict in data_dict.values():
+        func_keys.update(func_slem_dict)
+    # Now generate the datasets.
+    # Ensure network size and function keys are always visited in same order.
+    _whitelist = {'8', '16', '32'}  # , '24', '12'}
+    size_keys = sorted(list(filter(lambda s: s in _whitelist, data_dict)), key=lambda s: int(s))
+    func_keys = sorted(list(func_keys))
 
+    # For each function, add it's performance for the size.
+    datasets = [None] * len(func_keys)
+    for i in range(len(func_keys)):
+        func_data = []
+        for s in size_keys:
+            func_data.append(data_dict[s][func_keys[i]])
+        datasets[i] = func_data
 
-def __create_box_plot__(
-        skey: str, slen: int, func_samples: _SizeResultsDict) -> None:
-    """Uses matplotlib.pyplot.pie_chart to create a pie chart.
+    colors = []
+    required_colors = len(func_keys)
+    available_colors = len(color_palette)
+    colors = color_palette * math.ceil(required_colors / available_colors)
+    colors = colors[:required_colors]
 
-    Args:
-        skey:
-            The key representing the size of the matrices upon which the
-            various functions were tested, i.e., if the matrices were of
-            shape (8, 8), `skey` should be "8".
-        slen:
-            How many times each function was sampled for matrices of size `skey`.
-        func_samples:
-            A collection mapping a function names to their respective mixing
-            rate samples, for matrices with size `skey`.
-    """
-    func_count = len(func_samples)
-    func_labels = __shorten_labels__([*func_samples])
-    samples = [*func_samples.values()]
-
-    outlyer_shape = {
-        # 'markerfacecolor': 'g',
-        'marker': 'D'
-    }
-
-    plt.figure()
-    plt.boxplot(samples,
-                positions=np.array(range(func_count)) * 2.0,
-                flierprops=outlyer_shape,
-                widths=1,
-                notch=True)
-    plt.xticks(ticks=range(0, func_count * 2, 2), labels=func_labels,
-               rotation=45, fontsize="x-large", fontweight="semibold")
-    plt.yticks(fontsize="x-large", fontweight="semibold")
-
-    plt.title(f"Generating functions' SLEM on clusters of size {skey}",
-              pad=cfg.title_pad, fontproperties=cfg.fp_title)
-    plt.xlabel("function name abbreviation",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_tick_labels)
-    plt.ylabel("slem",
-               labelpad=cfg.labels_pad, fontproperties=cfg.fp_tick_labels)
-
-    plt.xlim(-2, func_count * 2)
-    plt.ylim(0.1, 1.1)
-
-    figname = f"{__MIXING_RATE_PLOTS_HOME__}/mr_s{skey}bp.pdf"
-    plt.savefig(figname, bbox_inches="tight", format="pdf")
+    __create_grouped_boxplot__(
+        datasets=datasets,
+        dcolors=colors,
+        dlabels=func_keys,
+        xticks_labels=size_keys,
+        xlabel="Cluster group size",
+        ylabel="SLEM",
+        figname="Mixing-Rate_BP", figext="png")
 # endregion
 
 
@@ -190,8 +227,8 @@ def __create_pie_chart__(
 
     plt.title(f"Generating functions' selection frequency for networks of size {skey}",
               x=0.57, y=1,
-              pad=cfg.title_pad,
-              fontproperties=cfg.fp_title)
+              pad=title_pad,
+              fontproperties=fp_title)
 
     wedges, texts, autotexts = ax.pie(
         wins,
@@ -211,8 +248,8 @@ def __create_pie_chart__(
                     loc="center left",
                     bbox_to_anchor=(0.8, 0, 0, 0))
     leg.set_title("generating function",
-                  prop=cfg.fp_tick_labels)
-    leg._legend_box.sep = cfg.legends_pad
+                  prop=fp_tick_labels)
+    leg._legend_box.sep = legends_pad
     ax.axis('equal')
 
     figname = f"{__MIXING_RATE_PLOTS_HOME__}/mr_s{skey}pc.pdf"
@@ -241,7 +278,7 @@ if __name__ == "__main__":
         with open(filepath, "r") as f:
             data = json.load(f)
             box_plot(data)
-            pie_chart(data)
+            # pie_chart(data)
     except json.JSONDecodeError:
         sys.exit("Specified file exists, but seems to be an invalid JSON.")
     except FileNotFoundError:
