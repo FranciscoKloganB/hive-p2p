@@ -64,6 +64,8 @@ intersphinx_mapping = {
 autodoc_typehints = "description"  # signature, description, none
 autoclass_content = "class"  # class, init, both
 
+autodoc_mock_imports = ["matlab", "matlab.engine"]
+
 autodoc_default_options = {
     "members": True,
     "member-order": "groupwise",  # alphabetical, groupwise, bysource
