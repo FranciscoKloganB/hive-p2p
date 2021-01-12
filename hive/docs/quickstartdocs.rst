@@ -26,25 +26,25 @@ Installation - Part I
 2. Clone our repository at:
 
 |
-   - https://github.com/FranciscoKloganB/hivessimulator
+   - https://github.com/FranciscoKloganB/hive-msc-thesis
 
-3. Set a Python environment variable at:
-
-|
-   - ``$ hive/app``
-
-4. We recommended using JetBrains' IDEs, but you can skip this step:
+3. We recommended using JetBrains' IDEs, but you can skip this step:
 
 |
    - https://www.jetbrains.com/pycharm/download
 
-5. Create a virtual environment of your choosing, two example guides are
+4. Create a virtual environment of your choosing, two example guides are
 linked below:
 
 |
    - https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 |
    - https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html
+
+5. Make sure pip and setuptools are installed and working, official guide below:
+
+|
+   - https://packaging.python.org/tutorials/installing-packages/
 
 6. Navigate to ``hive`` folder located at the root of your recently cloned
 project:
@@ -53,8 +53,10 @@ project:
    - ``$ cd hive``
 
 7. Install project dependencies by opening your terminal and inserting the
-command:
+commands:
 
+|
+   - ``$ pip install numpy``
 |
    - ``$ pip install -r requirements.txt``
 
