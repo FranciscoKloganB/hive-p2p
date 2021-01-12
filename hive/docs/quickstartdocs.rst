@@ -46,13 +46,27 @@ linked below:
 |
    - https://packaging.python.org/tutorials/installing-packages/
 
-6. Navigate to ``hive`` folder located at the root of your recently cloned
+6. This step is applicable only if you desire the possibility to call MatLab
+(requires valid license and installation) code from within the Hives simulator.
+More details are given in the link below. In short you want to install the MatLab
+package, which is not available in open-source repositories. This requires you
+to navigate to the folder where MatLab is currently installed and running their
+engine setup.
+
+|
+   - ``$ cd matlabroot/extern/engines/python``
+|
+   - ``$ python setup.py install``
+|
+   - https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html
+
+7. Navigate to ``hive`` folder located at the root of your recently cloned
 project:
 
 |
    - ``$ cd hive``
 
-7. Install project dependencies by opening your terminal and inserting the
+8. Install project dependencies by opening your terminal and inserting the
 commands:
 
 |
