@@ -2,6 +2,16 @@
 and represent domain specific errors."""
 
 
+class MatlabEngineContainerError(Exception):
+    """Raised an AttributeError or EngineError is found in matlab container
+    modules."""
+    def __init__(self, value=""):
+        self.value = value
+
+    def __str__(self):
+        return self.value
+
+
 class DistributionShapeError(Exception):
     """Raised when a vector shape is expected to match a matrix's column or
     row shape and does not."""
