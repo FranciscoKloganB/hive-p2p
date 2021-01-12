@@ -57,6 +57,7 @@ commands:
 
 |
    - ``$ pip install numpy``
+|
    - ``$ pip install -r requirements.txt``
 
 The previous steps complete the setup of your Hives project. If you have or
