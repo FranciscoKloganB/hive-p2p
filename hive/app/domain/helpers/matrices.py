@@ -11,7 +11,6 @@ from typing import Tuple, Optional
 
 import cvxpy as cvx
 import numpy as np
-from matlab.engine import EngineError
 from mosek import MosekException
 from scipy.sparse.csgraph import connected_components
 
@@ -162,6 +161,9 @@ def new_mgo_transition_matrix(
         respective mixing rate.
     """
     matlab_container = MatlabEngineContainer.get_instance()
+    if matlab_container is None:
+        return None, float('inf')
+
     try:
         result = matlab_container.matrix_global_opt(a, v_)
         if result:
@@ -169,9 +171,7 @@ def new_mgo_transition_matrix(
             return t, get_mixing_rate(t)
         else:
             return None, float('inf')
-    except (EngineError, AttributeError):
-        # EngineError deals with invalid license or unfeasible problems,
-        # AttributeError deals MatlabEngineContainer.eng with None value.
+    except MatlabEngineContainerError:
         return None, float('inf')
 # endregion
 
