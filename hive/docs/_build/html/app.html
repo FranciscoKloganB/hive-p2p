@@ -85,12 +85,12 @@
          </a>
         </li>
         <li class="toctree-l2">
-         <a class="reference internal" href="#module-app.hive_simulation">
+         <a class="reference internal" href="#app-hive-simulation">
           app.hive_simulation
          </a>
         </li>
         <li class="toctree-l2">
-         <a class="reference internal" href="#module-app.mixing_rate_sampler">
+         <a class="reference internal" href="#app-mixing-rate-sampler">
           app.mixing_rate_sampler
          </a>
         </li>
@@ -100,17 +100,17 @@
          </a>
         </li>
         <li class="toctree-l2">
-         <a class="reference internal" href="#module-sample_scenario_fixer">
+         <a class="reference internal" href="#app-sample-scenario-fixer">
           app.sample_scenario_fixer
          </a>
         </li>
         <li class="toctree-l2">
-         <a class="reference internal" href="#module-app.sample_scenario_generator">
+         <a class="reference internal" href="#app-sample-scenario-generator">
           app.sample_scenario_generator
          </a>
         </li>
         <li class="toctree-l2">
-         <a class="reference internal" href="#module-app.type_hints">
+         <a class="reference internal" href="#app-type-hints">
           app.type_hints
          </a>
         </li>
@@ -197,37 +197,31 @@ through out the simulation’s lifetime including initialization and execution.
         </p>
         <p>
          To configure the amount of available
-         <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node">
-          <code class="xref py py-class docutils literal notranslate">
-           <span class="pre">
-            Network
-           </span>
-           <span class="pre">
-            Nodes
-           </span>
-          </code>
-         </a>
+         <code class="xref py py-class docutils literal notranslate">
+          <span class="pre">
+           Network
+          </span>
+          <span class="pre">
+           Nodes
+          </span>
+         </code>
          system,
 the initial size of a file
-         <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster" title="app.domain.cluster_groups.Cluster">
-          <code class="xref py py-class docutils literal notranslate">
-           <span class="pre">
-            Cluster
-           </span>
-           <span class="pre">
-            Group
-           </span>
-          </code>
-         </a>
+         <code class="xref py py-class docutils literal notranslate">
+          <span class="pre">
+           Cluster
+          </span>
+          <span class="pre">
+           Group
+          </span>
+         </code>
          that
 work on the durability of a file, the way files are
-         <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.Cluster.spread_files" title="app.domain.cluster_groups.Cluster.spread_files">
-          <code class="xref py py-meth docutils literal notranslate">
-           <span class="pre">
-            distributed
-           </span>
-          </code>
-         </a>
+         <code class="xref py py-meth docutils literal notranslate">
+          <span class="pre">
+           distributed
+          </span>
+         </code>
          among the clusters’ nodes at the start of a simulation and, the actual
 name of the file whose persistence is being simulated, you should create
 a simulation file using this
@@ -307,16 +301,14 @@ variables such as
          <p>
           Defines the probability of a file block being corrupted while stored
 at the disk of a
-          <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node" title="app.domain.network_nodes.Node">
-           <code class="xref py py-class docutils literal notranslate">
-            <span class="pre">
-             network
-            </span>
-            <span class="pre">
-             node
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-class docutils literal notranslate">
+           <span class="pre">
+            network
+           </span>
+           <span class="pre">
+            node
+           </span>
+          </code>
           .
          </p>
          <div class="admonition note">
@@ -335,13 +327,11 @@ the current implementation follows this formula:
            <div>
             <p>
              (
-             <a class="reference internal" href="app.domain.html#app.domain.master_servers.Master.MAX_EPOCHS" title="app.domain.master_servers.Master.MAX_EPOCHS">
-              <code class="xref py py-const docutils literal notranslate">
-               <span class="pre">
-                MAX_EPOCHS
-               </span>
-              </code>
-             </a>
+             <code class="xref py py-const docutils literal notranslate">
+              <span class="pre">
+               MAX_EPOCHS
+              </span>
+             </code>
              /
              <a class="reference internal" href="#app.environment_settings.MONTH_EPOCHS" title="app.environment_settings.MONTH_EPOCHS">
               <code class="xref py py-const docutils literal notranslate">
@@ -707,43 +697,35 @@ errors, at an epoch basis.
          <p>
           Defines the maximum amount of absolute positive or negative deviation that a
 current distribution
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.cv_" title="app.domain.cluster_groups.SGCluster.cv_">
-           <code class="xref py py-attr docutils literal notranslate">
-            <span class="pre">
-             cv_
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-attr docutils literal notranslate">
+           <span class="pre">
+            cv_
+           </span>
+          </code>
           can
 have from the desired steady state
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_">
-           <code class="xref py py-attr docutils literal notranslate">
-            <span class="pre">
-             v_
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-attr docutils literal notranslate">
+           <span class="pre">
+            v_
+           </span>
+          </code>
           , in order for the
 distributions to be considered equal and thus marking the epoch as convergent.
          </p>
          <p>
           This constant will be used by
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.equal_distributions" title="app.domain.cluster_groups.SGCluster.equal_distributions">
-           <code class="xref py py-meth docutils literal notranslate">
-            <span class="pre">
-             app.domain.cluster_groups.SGCluster.equal_distributions()
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-meth docutils literal notranslate">
+           <span class="pre">
+            app.domain.cluster_groups.SGCluster.equal_distributions()
+           </span>
+          </code>
           along
 with a relative tolerance that is the minimum value in
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_">
-           <code class="xref py py-attr docutils literal notranslate">
-            <span class="pre">
-             v_
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-attr docutils literal notranslate">
+           <span class="pre">
+            v_
+           </span>
+          </code>
           .
          </p>
         </dd>
@@ -766,13 +748,11 @@ with a relative tolerance that is the minimum value in
         <dd>
          <p>
           Defines into how many
-          <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData">
-           <code class="xref py py-class docutils literal notranslate">
-            <span class="pre">
-             FileBlockData
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-class docutils literal notranslate">
+           <span class="pre">
+            FileBlockData
+           </span>
+          </code>
           instances a file
 is divided into. Either use this or
           <a class="reference internal" href="#app.environment_settings.BLOCKS_SIZE" title="app.environment_settings.BLOCKS_SIZE">
@@ -804,13 +784,11 @@ is divided into. Either use this or
         <dd>
          <p>
           Defines the raw size of each file block before it’s wrapped in a
-          <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.FileBlockData" title="app.domain.helpers.smart_dataclasses.FileBlockData">
-           <code class="xref py py-class docutils literal notranslate">
-            <span class="pre">
-             FileBlockData
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-class docutils literal notranslate">
+           <span class="pre">
+            FileBlockData
+           </span>
+          </code>
           instance
 object.
          </p>
@@ -904,13 +882,11 @@ due to network link problems, in the simulation environment.
         <dd>
          <p>
           Path the folder where matlab scripts are located. Used by
-          <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">
-           <code class="xref py py-class docutils literal notranslate">
-            <span class="pre">
-             MatlabEngineContainer
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-class docutils literal notranslate">
+           <span class="pre">
+            MatlabEngineContainer
+           </span>
+          </code>
          </p>
         </dd>
        </dl>
@@ -954,22 +930,18 @@ be regenerated after their are lost.
         <dd>
          <p>
           The number of consecutive epoch time steps that a
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster" title="app.domain.cluster_groups.SGCluster">
-           <code class="xref py py-class docutils literal notranslate">
-            <span class="pre">
-             SGCluster
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-class docutils literal notranslate">
+           <span class="pre">
+            SGCluster
+           </span>
+          </code>
           must converge before epochs
 start being marked with verified convergence in
-          <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.smart_dataclasses.LoggingData.convergence_set" title="app.domain.helpers.smart_dataclasses.LoggingData.convergence_set">
-           <code class="xref py py-attr docutils literal notranslate">
-            <span class="pre">
-             app.domain.helpers.smart_dataclasses.LoggingData.convergence_set
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-attr docutils literal notranslate">
+           <span class="pre">
+            app.domain.helpers.smart_dataclasses.LoggingData.convergence_set
+           </span>
+          </code>
           .
          </p>
         </dd>
@@ -1152,43 +1124,35 @@ With the default value of 21600 each epoch would represent two minutes. See
          <p>
           Defines the maximum amount of relative positive or negative deviation that a
 current distribution
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.cv_" title="app.domain.cluster_groups.SGCluster.cv_">
-           <code class="xref py py-attr docutils literal notranslate">
-            <span class="pre">
-             cv_
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-attr docutils literal notranslate">
+           <span class="pre">
+            cv_
+           </span>
+          </code>
           can
 have from the desired steady state
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_">
-           <code class="xref py py-attr docutils literal notranslate">
-            <span class="pre">
-             v_
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-attr docutils literal notranslate">
+           <span class="pre">
+            v_
+           </span>
+          </code>
           , in order for the
 distributions to be considered equal and thus marking the epoch as convergent.
          </p>
          <p>
           This constant will be used by
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.equal_distributions" title="app.domain.cluster_groups.SGCluster.equal_distributions">
-           <code class="xref py py-meth docutils literal notranslate">
-            <span class="pre">
-             app.domain.cluster_groups.SGCluster.equal_distributions()
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-meth docutils literal notranslate">
+           <span class="pre">
+            app.domain.cluster_groups.SGCluster.equal_distributions()
+           </span>
+          </code>
           along
 with a relative tolerance that is the minimum value in
-          <a class="reference internal" href="app.domain.html#app.domain.cluster_groups.SGCluster.v_" title="app.domain.cluster_groups.SGCluster.v_">
-           <code class="xref py py-attr docutils literal notranslate">
-            <span class="pre">
-             v_
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-attr docutils literal notranslate">
+           <span class="pre">
+            v_
+           </span>
+          </code>
           .
          </p>
         </dd>
@@ -1233,746 +1197,25 @@ located.
         <dd>
          <p>
           Path to the folder where simulation files to be executed by
-          <a class="reference internal" href="#module-app.hive_simulation" title="app.hive_simulation">
-           <code class="xref py py-mod docutils literal notranslate">
-            <span class="pre">
-             app.hive_simulation
-            </span>
-           </code>
-          </a>
+          <code class="xref py py-mod docutils literal notranslate">
+           <span class="pre">
+            app.hive_simulation
+           </span>
+          </code>
           are located.
          </p>
         </dd>
        </dl>
       </div>
-      <div class="section" id="module-app.hive_simulation">
-       <span id="app-hive-simulation">
-       </span>
+      <div class="section" id="app-hive-simulation">
        <h2>
         app.hive_simulation
        </h2>
-       <p>
-        This scripts’s functions are used to start simulations.
-       </p>
-       <p>
-        You can start a simulation by executing the following command:
-       </p>
-       <div class="highlight-default notranslate">
-        <div class="highlight">
-         <pre><span></span>$ python hive_simulation.py --file=a_simulation_name.json --iterations=30
-</pre>
-        </div>
-       </div>
-       <p>
-        You can also execute all simulation file that exist in
-        <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
-         <code class="xref py py-const docutils literal notranslate">
-          <span class="pre">
-           SIMULATION_ROOT
-          </span>
-         </code>
-        </a>
-        by instead executing:
-       </p>
-       <div class="highlight-default notranslate">
-        <div class="highlight">
-         <pre><span></span>$ python hive_simulation.py -d -i 24
-</pre>
-        </div>
-       </div>
-       <p>
-        If you wish to execute multiple simulations in parallel (to save time) you
-can use the -t or –threading flag in either of the previously specified
-commands. The threading flag expects an integer that specifies the max
-working threads. For example:
-       </p>
-       <div class="highlight-default notranslate">
-        <div class="highlight">
-         <pre><span></span>$ python hive_simulation.py -d --iterations=1 --threading=2
-</pre>
-        </div>
-       </div>
-       <div class="admonition warning">
-        <p class="admonition-title">
-         Warning
-        </p>
-        <p>
-         Python’s
-         <a class="reference external" href="https://docs.python.org/3.7/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor" title="(in Python v3.7)">
-          <code class="xref py py-class docutils literal notranslate">
-           <span class="pre">
-            ThreadPoolExecutor
-           </span>
-          </code>
-         </a>
-         conceals/supresses any uncaught exceptions, i.e., simulations may fail to
-execute or log items properly and no debug information will be provided
-        </p>
-       </div>
-       <p>
-        If you don’t have a simulation file yet, run the following instead:
-       </p>
-       <div class="highlight-default notranslate">
-        <div class="highlight">
-         <pre><span></span>$ python simfile_generator.py --file=filename.json
-</pre>
-        </div>
-       </div>
-       <div class="admonition note">
-        <p class="admonition-title">
-         Note
-        </p>
-        <p>
-         For the simulation to run without errors you must ensure that:
-        </p>
-        <blockquote>
-         <div>
-          <ol class="arabic simple">
-           <li>
-            <p>
-             The specified simulation files exist in
-             <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
-              <code class="xref py py-const docutils literal notranslate">
-               <span class="pre">
-                SIMULATION_ROOT
-               </span>
-              </code>
-             </a>
-             .
-            </p>
-           </li>
-           <li>
-            <p>
-             Any file used by the simulation, e.g., a picture or a .pptx         document is accessible in
-             <a class="reference internal" href="#app.environment_settings.SHARED_ROOT" title="app.environment_settings.SHARED_ROOT">
-              <code class="xref py py-const docutils literal notranslate">
-               <span class="pre">
-                SHARED_ROOT
-               </span>
-              </code>
-             </a>
-             .
-            </p>
-           </li>
-           <li>
-            <p>
-             An output file directory exists with default path being:
-             <a class="reference internal" href="#app.environment_settings.OUTFILE_ROOT" title="app.environment_settings.OUTFILE_ROOT">
-              <code class="xref py py-const docutils literal notranslate">
-               <span class="pre">
-                OUTFILE_ROOT
-               </span>
-              </code>
-             </a>
-             .
-            </p>
-           </li>
-          </ol>
-         </div>
-        </blockquote>
-       </div>
-       <dl class="py function">
-        <dt id="app.hive_simulation.__makedirs__">
-         <code class="sig-name descname">
-          __makedirs__
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#__makedirs__">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Helper method that reates required simulation working directories if
-they do not exist.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Return type
-          </dt>
-          <dd class="field-odd">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
-             None
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
-       <dl class="py function">
-        <dt id="app.hive_simulation._parallel_main">
-         <code class="sig-name descname">
-          _parallel_main
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           start
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           stop
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#_parallel_main">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Helper method that initializes a multi-threaded simulation.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <ul class="simple">
-            <li>
-             <p>
-              <strong>
-               start
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – A number that marks the first desired identifier for the
-simulations that will execute.
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               stop
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – A number that marks the last desired identifier for the
-simulations that will execute. Usually a sum of
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                start
-               </span>
-              </code>
-              and the
-total number of iterations specified by the user in the scripts’
-arguments.
-             </p>
-            </li>
-           </ul>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
-             None
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
-       <dl class="py function">
-        <dt id="app.hive_simulation._simulate">
-         <code class="sig-name descname">
-          _simulate
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           simfile_name
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           sid
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#_simulate">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Helper method that orders execution of one simulation instance.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <ul class="simple">
-            <li>
-             <p>
-              <strong>
-               simfile_name
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-               <em>
-                str
-               </em>
-              </a>
-              ) – The name of the simulation file to be executed.
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               sid
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – A sequence number that identifies the simulation execution instance.
-             </p>
-            </li>
-           </ul>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
-             None
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
-       <dl class="py function">
-        <dt id="app.hive_simulation._single_main">
-         <code class="sig-name descname">
-          _single_main
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           start
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           stop
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#_single_main">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Helper function that initializes a single-threaded simulation.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <ul class="simple">
-            <li>
-             <p>
-              <strong>
-               start
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – A number that marks the first desired identifier for the
-simulations that will execute.
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               stop
-              </strong>
-              (
-              <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-               <em>
-                int
-               </em>
-              </a>
-              ) – A number that marks the last desired identifier for the
-simulations that will execute. Usually a sum of
-              <code class="docutils literal notranslate">
-               <span class="pre">
-                start
-               </span>
-              </code>
-              and the
-total number of iterations specified by the user in the scripts’
-arguments.
-             </p>
-            </li>
-           </ul>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
-             None
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
-       <dl class="py function">
-        <dt id="app.hive_simulation._validate_simfile">
-         <code class="sig-name descname">
-          _validate_simfile
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           simfile_name
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#_validate_simfile">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Asserts if simulation can proceed with user specified file.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <p>
-            <strong>
-             simfile_name
-            </strong>
-            (
-            <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-             <em>
-              str
-             </em>
-            </a>
-            ) – The name of the simulation file, including extension,
-whose existence inside
-            <a class="reference internal" href="#app.environment_settings.SIMULATION_ROOT" title="app.environment_settings.SIMULATION_ROOT">
-             <code class="xref py py-const docutils literal notranslate">
-              <span class="pre">
-               SIMULATION_ROOT
-              </span>
-             </code>
-            </a>
-            will be
-checked.
-           </p>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/constants.html#None" title="(in Python v3.7)">
-             None
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
-       <dl class="py function">
-        <dt id="app.hive_simulation.get_next_scenario">
-         <code class="sig-name descname">
-          get_next_scenario
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           k
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/hive_simulation.html#get_next_scenario">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Function used for one-to-one testing of different swarm guidance
-configurations.
-         </p>
-         <div class="admonition note">
-          <p class="admonition-title">
-           Note
-          </p>
-          <p>
-           This method should only be used when
-           <a class="reference internal" href="#app.environment_settings.DEBUG" title="app.environment_settings.DEBUG">
-            <code class="xref py py-const docutils literal notranslate">
-             <span class="pre">
-              app.environment_settings.DEBUG
-             </span>
-            </code>
-           </a>
-           is set to True.
-          </p>
-         </div>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <p>
-            <strong>
-             k
-            </strong>
-            (
-            <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-             <em>
-              str
-             </em>
-            </a>
-            ) – A string identifying the pool of matrix, vector pairs to get the
-scenario. Usually, a string representation of an integer which
-corresponds to the network size being tested.
-           </p>
-          </dd>
-          <dt class="field-even">
-           Returns
-          </dt>
-          <dd class="field-even">
-           <p>
-            A topology matrix and a random equilibrium vector that can be used
-to generate Markov chains used for Swarm Guidance.
-           </p>
-          </dd>
-          <dt class="field-odd">
-           Return type
-          </dt>
-          <dd class="field-odd">
-           <p>
-            Tuple[
-            <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">
-             numpy.ndarray
-            </a>
-            ,
-            <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">
-             numpy.ndarray
-            </a>
-            ]
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
       </div>
-      <div class="section" id="module-app.mixing_rate_sampler">
-       <span id="app-mixing-rate-sampler">
-       </span>
+      <div class="section" id="app-mixing-rate-sampler">
        <h2>
         app.mixing_rate_sampler
        </h2>
-       <p>
-        This is a non-essential module used for convex optimization prototyping.
-       </p>
-       <p>
-        This functionality tests and compares the mixing rate of various
-markov matrices.
-       </p>
-       <p>
-        You can start a test by executing the following command:
-       </p>
-       <div class="highlight-default notranslate">
-        <div class="highlight">
-         <pre><span></span>$ python mixing_rate_sampler.py --samples=1000
-</pre>
-        </div>
-       </div>
-       <p>
-        You can also specify the names of the functions used to generate markov
-matrices like so:
-       </p>
-       <div class="highlight-default notranslate">
-        <div class="highlight">
-         <pre><span></span>$ python mixing_rate_sampler.py -s 10 -f afunc,anotherfunc,yetanotherfunc
-</pre>
-        </div>
-       </div>
-       <div class="admonition note">
-        <p class="admonition-title">
-         Note
-        </p>
-        <p>
-         Default functions set { “new_mh_transition_matrix”,
-“new_sdp_mh_transition_matrix”, “new_go_transition_matrix”,
-“new_mgo_transition_matrix” }
-        </p>
-       </div>
-       <dl class="py function">
-        <dt id="app.mixing_rate_sampler.main">
-         <code class="sig-name descname">
-          main
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/app/mixing_rate_sampler.html#main">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Compares the mixing rate of the markov matrices generated by all
-specified
-          <cite>
-           functions
-          </cite>
-          ,
-          <cite>
-           samples
-          </cite>
-          times.
-         </p>
-         <p>
-          The execution of the main method results in a JSON file outputed to
-          <code class="xref py py-const docutils literal notranslate">
-           <span class="pre">
-            MIXING_RATE_SAMPLE_ROOT
-           </span>
-          </code>
-          folder.
-         </p>
-        </dd>
-       </dl>
-       <dl class="py data">
-        <dt id="app.mixing_rate_sampler._ResultsDict">
-         <code class="sig-name descname">
-          _ResultsDict
-         </code>
-         <em class="property">
-          : OrderedDict
-          <span class="p">
-           [
-          </span>
-          <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-           str
-          </a>
-          <span class="p">
-           ,
-          </span>
-          <a class="reference internal" href="#app.mixing_rate_sampler._SizeResultsDict" title="app.mixing_rate_sampler._SizeResultsDict">
-           _SizeResultsDict
-          </a>
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
-       <dl class="py data">
-        <dt id="app.mixing_rate_sampler._SizeResultsDict">
-         <code class="sig-name descname">
-          _SizeResultsDict
-         </code>
-         <em class="property">
-          : OrderedDict
-          <span class="p">
-           [
-          </span>
-          <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-           str
-          </a>
-          <span class="p">
-           ,
-          </span>
-          List
-          <span class="p">
-           [
-          </span>
-          <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">
-           float
-          </a>
-          <span class="p">
-           ]
-          </span>
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
       </div>
       <div class="section" id="module-app.simfile_generator">
        <span id="app-simfile-generator">
@@ -2122,27 +1365,23 @@ used to simulate persistance must be inside
           <dd class="field-odd">
            <p>
             A dictionary where keys are
-            <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node.id" title="app.domain.network_nodes.Node.id">
-             <code class="xref py py-attr docutils literal notranslate">
-              <span class="pre">
-               network
-              </span>
-              <span class="pre">
-               node
-              </span>
-              <span class="pre">
-               identifiers
-              </span>
-             </code>
-            </a>
+            <code class="xref py py-attr docutils literal notranslate">
+             <span class="pre">
+              network
+             </span>
+             <span class="pre">
+              node
+             </span>
+             <span class="pre">
+              identifiers
+             </span>
+            </code>
             and values are their respective uptimes
-            <a class="reference internal" href="app.domain.html#app.domain.network_nodes.Node.uptime" title="app.domain.network_nodes.Node.uptime">
-             <code class="xref py py-attr docutils literal notranslate">
-              <span class="pre">
-               uptime
-              </span>
-             </code>
-            </a>
+            <code class="xref py py-attr docutils literal notranslate">
+             <span class="pre">
+              uptime
+             </span>
+            </code>
             values.
            </p>
           </dd>
@@ -2746,500 +1985,20 @@ method
         </dd>
        </dl>
       </div>
-      <div class="section" id="module-sample_scenario_fixer">
-       <span id="app-sample-scenario-fixer">
-       </span>
+      <div class="section" id="app-sample-scenario-fixer">
        <h2>
         app.sample_scenario_fixer
        </h2>
-       <p>
-        Excludes all  &lt;topologies, equilibrium&gt; pairs in the
-        <code class="docutils literal notranslate">
-         <span class="pre">
-          scenarios.json
-         </span>
-        </code>
-        file
-that are not synthetizable by our implementation of
-        <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.matrices._metropolis_hastings" title="app.domain.helpers.matrices._metropolis_hastings">
-         <code class="xref py py-meth docutils literal notranslate">
-          <span class="pre">
-           Metropolis
-          </span>
-          <span class="pre">
-           Hastings
-          </span>
-         </code>
-        </a>
-        . Such JSON file is created
-using the script
-        <code class="xref py py-mod docutils literal notranslate">
-         <span class="pre">
-          sample_scenario_generator
-         </span>
-        </code>
-        .
-       </p>
-       <p>
-        To execute this file run the following command:
-       </p>
-       <div class="highlight-default notranslate">
-        <div class="highlight">
-         <pre><span></span>$ python sample_scenario_generator.py
-</pre>
-        </div>
-       </div>
-       <div class="admonition note">
-        <p class="admonition-title">
-         Note
-        </p>
-        <p>
-         This script expects to fix a file named “scenarios.json” under the
-         <a class="reference internal" href="#app.environment_settings.RESOURCES_ROOT" title="app.environment_settings.RESOURCES_ROOT">
-          <code class="xref py py-const docutils literal notranslate">
-           <span class="pre">
-            RESOURCES_ROOT
-           </span>
-          </code>
-         </a>
-         directory. If you wish
-to modify this behavior you need to customize the script to accept one
-additional argument which indicates the name of the file to be fixed.
-        </p>
-       </div>
-       <dl class="py function">
-        <dt id="sample_scenario_fixer.__select_fastest_topology__">
-         <code class="sig-name descname">
-          __select_fastest_topology__
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           a
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           v_
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/sample_scenario_fixer.html#__select_fastest_topology__">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Emulates Swarm Guidance Clusters’ fastest topology selection for MH algorithms.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <ul class="simple">
-            <li>
-             <p>
-              <strong>
-               a
-              </strong>
-              (
-              <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">
-               <em>
-                numpy.ndarray
-               </em>
-              </a>
-              ) –
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               v_
-              </strong>
-              (
-              <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">
-               <em>
-                numpy.ndarray
-               </em>
-              </a>
-              ) –
-             </p>
-            </li>
-           </ul>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)">
-             numpy.ndarray
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
-       <dl class="py function">
-        <dt id="sample_scenario_fixer.__validate_mc__">
-         <code class="sig-name descname">
-          __validate_mc__
-         </code>
-         <span class="sig-paren">
-          (
-         </span>
-         <em class="sig-param">
-          <span class="n">
-           m
-          </span>
-         </em>
-         ,
-         <em class="sig-param">
-          <span class="n">
-           v_
-          </span>
-         </em>
-         <span class="sig-paren">
-          )
-         </span>
-         <a class="reference internal" href="_modules/sample_scenario_fixer.html#__validate_mc__">
-          <span class="viewcode-link">
-           [source]
-          </span>
-         </a>
-        </dt>
-        <dd>
-         <p>
-          Asserts if the inputed Markov Matrix that converges to the desired equilibrium.
-         </p>
-         <dl class="field-list simple">
-          <dt class="field-odd">
-           Parameters
-          </dt>
-          <dd class="field-odd">
-           <ul class="simple">
-            <li>
-             <p>
-              <strong>
-               m
-              </strong>
-              (
-              <em>
-               pandas.core.frame.DataFrame
-              </em>
-              ) –
-             </p>
-            </li>
-            <li>
-             <p>
-              <strong>
-               v_
-              </strong>
-              (
-              <em>
-               pandas.core.frame.DataFrame
-              </em>
-              ) –
-             </p>
-            </li>
-           </ul>
-          </dd>
-          <dt class="field-even">
-           Return type
-          </dt>
-          <dd class="field-even">
-           <p>
-            <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)">
-             bool
-            </a>
-           </p>
-          </dd>
-         </dl>
-        </dd>
-       </dl>
       </div>
-      <div class="section" id="module-app.sample_scenario_generator">
-       <span id="app-sample-scenario-generator">
-       </span>
+      <div class="section" id="app-sample-scenario-generator">
        <h2>
         app.sample_scenario_generator
        </h2>
-       <p>
-        Creates an arbrirary number of symmetric connected topologies and equilibrium
-vectors that can be read during simulations for one to one comparison between
-algorithms. There is a small chance that generated pairs can not be solved by
-heuristic Markov chain generating algorithms such as our implementation of
-        <a class="reference internal" href="app.domain.helpers.html#app.domain.helpers.matrices._metropolis_hastings" title="app.domain.helpers.matrices._metropolis_hastings">
-         <code class="xref py py-meth docutils literal notranslate">
-          <span class="pre">
-           Metropolis
-          </span>
-          <span class="pre">
-           Hastings
-          </span>
-         </code>
-        </a>
-        . To ensure that algorithm
-can be used over the generated pairs, run
-        <a class="reference internal" href="#module-sample_scenario_fixer" title="sample_scenario_fixer">
-         <code class="xref py py-mod docutils literal notranslate">
-          <span class="pre">
-           sample_scenario_fixer
-          </span>
-         </code>
-        </a>
-        ,
-which removes all invalid entries from the generated json file.
-       </p>
-       <p>
-        To execute this file run the following command (both arguments are optional):
-       </p>
-       <div class="highlight-default notranslate">
-        <div class="highlight">
-         <pre><span></span>$ python sample_scenario_generator.py --samples=1000 --network_sizes=8,16,32
-</pre>
-        </div>
-       </div>
-       <div class="admonition note">
-        <p class="admonition-title">
-         Note
-        </p>
-        <p>
-         The output of this script is a file named “scenarios.json” under the
-         <a class="reference internal" href="#app.environment_settings.RESOURCES_ROOT" title="app.environment_settings.RESOURCES_ROOT">
-          <code class="xref py py-const docutils literal notranslate">
-           <span class="pre">
-            RESOURCES_ROOT
-           </span>
-          </code>
-         </a>
-         directory. If you wish
-to modify this behavior you need to customize the script to accept one
-additional argument which than saves the file under a different name. You
-also need to ensure that all other uses of “scenarios.json” are changed
-accordingly.
-        </p>
-       </div>
       </div>
-      <div class="section" id="module-app.type_hints">
-       <span id="app-type-hints">
-       </span>
+      <div class="section" id="app-type-hints">
        <h2>
         app.type_hints
        </h2>
-       <dl class="py data">
-        <dt id="app.type_hints.ClusterDict">
-         <code class="sig-name descname">
-          ClusterDict
-         </code>
-         <em class="property">
-          : Dict
-          <span class="p">
-           [
-          </span>
-          <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-           str
-          </a>
-          <span class="p">
-           ,
-          </span>
-          <a class="reference internal" href="#app.type_hints.ClusterType" title="app.type_hints.ClusterType">
-           ClusterType
-          </a>
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
-       <dl class="py data">
-        <dt id="app.type_hints.ClusterType">
-         <code class="sig-name descname">
-          ClusterType
-         </code>
-         <em class="property">
-          : Union
-          <span class="p">
-           [
-          </span>
-          cg.Cluster
-          <span class="p">
-           ,
-          </span>
-          cg.SGCluster
-          <span class="p">
-           ,
-          </span>
-          cg.SGClusterExt
-          <span class="p">
-           ,
-          </span>
-          cg.HDFSCluster
-          <span class="p">
-           ,
-          </span>
-          cg.NewscastCluster
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
-       <dl class="py data">
-        <dt id="app.type_hints.HttpResponse">
-         <code class="sig-name descname">
-          HttpResponse
-         </code>
-         <em class="property">
-          : Union
-          <span class="p">
-           [
-          </span>
-          <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-           int
-          </a>
-          <span class="p">
-           ,
-          </span>
-          e.HttpCodes
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
-       <dl class="py data">
-        <dt id="app.type_hints.MasterType">
-         <code class="sig-name descname">
-          MasterType
-         </code>
-         <em class="property">
-          : Union
-          <span class="p">
-           [
-          </span>
-          ms.Master
-          <span class="p">
-           ,
-          </span>
-          ms.SGMaster
-          <span class="p">
-           ,
-          </span>
-          ms.HDFSMaster
-          <span class="p">
-           ,
-          </span>
-          ms.NewscastMaster
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
-       <dl class="py data">
-        <dt id="app.type_hints.NodeDict">
-         <code class="sig-name descname">
-          NodeDict
-         </code>
-         <em class="property">
-          : Dict
-          <span class="p">
-           [
-          </span>
-          <a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)">
-           str
-          </a>
-          <span class="p">
-           ,
-          </span>
-          <a class="reference internal" href="#app.type_hints.NodeType" title="app.type_hints.NodeType">
-           NodeType
-          </a>
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
-       <dl class="py data">
-        <dt id="app.type_hints.NodeType">
-         <code class="sig-name descname">
-          NodeType
-         </code>
-         <em class="property">
-          : Union
-          <span class="p">
-           [
-          </span>
-          nn.Node
-          <span class="p">
-           ,
-          </span>
-          nn.SGNode
-          <span class="p">
-           ,
-          </span>
-          nn.SGNodeExt
-          <span class="p">
-           ,
-          </span>
-          nn.HDFSNode
-          <span class="p">
-           ,
-          </span>
-          nn.NewscastNode
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
-       <dl class="py data">
-        <dt id="app.type_hints.ReplicasDict">
-         <code class="sig-name descname">
-          ReplicasDict
-         </code>
-         <em class="property">
-          : Dict
-          <span class="p">
-           [
-          </span>
-          <a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)">
-           int
-          </a>
-          <span class="p">
-           ,
-          </span>
-          sd.FileBlockData
-          <span class="p">
-           ]
-          </span>
-         </em>
-        </dt>
-        <dd>
-        </dd>
-       </dl>
       </div>
      </div>
     </div>
@@ -3295,8 +2054,6 @@ accordingly.
   <script src="_static/doctools.js" type="text/javascript">
   </script>
   <script src="_static/language_data.js" type="text/javascript">
-  </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript">
   </script>
   <script src="_static/js/theme-min.js" type="text/javascript">
   </script>
