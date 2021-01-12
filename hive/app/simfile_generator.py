@@ -268,7 +268,7 @@ if __name__ == "__main__":
         args, values = getopt.getopt(sys.argv[1:], short_opts, long_opts)
         for arg, val in args:
             if arg in ("-f", "--file"):
-                simfile_name_ = str(val).strip()
+                simulation_file_name = str(val).strip()
     except getopt.GetoptError:
         print("Usage: python simfile_generator.py --file=filename.json")
 
