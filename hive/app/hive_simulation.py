@@ -74,10 +74,9 @@ def __load_scenarios__():
         scenarios = json.load(scenarios_file)
         scenarios_file.close()
     except OSError:
-        warn(f"Could not load scenarios.json from {es.RESOURCES_ROOT}.\n"
-             " > if you need sample scenarios for swarm guidance in your code, "
-             "please refer to sample_scenario_generator.py, "
-             "otherwise, ignore this warning.")
+        print(f"Could not load scenarios.json from RESOURCES_ROOT.\n"
+              " > if you need sample scenarios please refer to "
+              "sample_scenario_generator.py, otherwise, ignore this message.")
     return scenarios
 
 
@@ -277,5 +276,5 @@ if __name__ == "__main__":
     threading = np.ceil(np.abs(threading)).item()
 
     s = start_iteration
-    st = start_iteration + iterations + 1
+    st = start_iteration + iterations
     _single_main(s, st) if threading in {0, 1} else _parallel_main(s, st)
