@@ -112,6 +112,16 @@
 <span class="sd">and represent domain specific errors.&quot;&quot;&quot;</span>
 
 
+<div class="viewcode-block" id="MatlabEngineContainerError"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.exceptions.MatlabEngineContainerError">[docs]</a><span class="k">class</span> <span class="nc">MatlabEngineContainerError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised an AttributeError or EngineError is found in matlab container</span>
+<span class="sd">    modules.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MatlabEngineContainerError.__init__"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.exceptions.MatlabEngineContainerError.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div>
+
+
 <div class="viewcode-block" id="DistributionShapeError"><a class="viewcode-back" href="../../../../app.domain.helpers.html#app.domain.helpers.exceptions.DistributionShapeError">[docs]</a><span class="k">class</span> <span class="nc">DistributionShapeError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Raised when a vector shape is expected to match a matrix&#39;s column or</span>
 <span class="sd">    row shape and does not.&quot;&quot;&quot;</span>

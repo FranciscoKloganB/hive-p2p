@@ -256,6 +256,20 @@ row shape and does not.</p>
 </dd></dl>
 
 <dl class="py exception">
+<dt id="app.domain.helpers.exceptions.MatlabEngineContainerError">
+<em class="property">exception </em><code class="sig-name descname">MatlabEngineContainerError</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/exceptions.html#MatlabEngineContainerError"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#Exception" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<p>Raised an AttributeError or EngineError is found in matlab container
+modules.</p>
+<dl class="py method">
+<dt id="app.domain.helpers.exceptions.MatlabEngineContainerError.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/exceptions.html#MatlabEngineContainerError.__init__"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
 <dt id="app.domain.helpers.exceptions.MatrixError">
 <em class="property">exception </em><code class="sig-name descname">MatrixError</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/app/domain/helpers/exceptions.html#MatrixError"><span class="viewcode-link">[source]</span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#Exception" title="(in Python v3.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
@@ -337,7 +351,8 @@ otherwise a new one is created and returned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A reference to the existing <code class="docutils literal notranslate"><span class="pre">MatlabEngineContainer</span></code>
-<a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer._instance" title="app.domain.helpers.matlab_utils.MatlabEngineContainer._instance"><code class="xref py py-const docutils literal notranslate"><span class="pre">instance</span></code></a>.</p>
+<a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer._instance" title="app.domain.helpers.matlab_utils.MatlabEngineContainer._instance"><code class="xref py py-const docutils literal notranslate"><span class="pre">instance</span></code></a> or None if matlab python engine
+is not properly installed.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference internal" href="#app.domain.helpers.matlab_utils.MatlabEngineContainer" title="app.domain.helpers.matlab_utils.MatlabEngineContainer">app.domain.helpers.matlab_utils.MatlabEngineContainer</a></p>

@@ -121,7 +121,6 @@
 
 <span class="kn">import</span> <span class="nn">cvxpy</span> <span class="k">as</span> <span class="nn">cvx</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">matlab.engine</span> <span class="kn">import</span> <span class="n">EngineError</span>
 <span class="kn">from</span> <span class="nn">mosek</span> <span class="kn">import</span> <span class="n">MosekException</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse.csgraph</span> <span class="kn">import</span> <span class="n">connected_components</span>
 
@@ -272,6 +271,9 @@
 <span class="sd">        respective mixing rate.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">matlab_container</span> <span class="o">=</span> <span class="n">MatlabEngineContainer</span><span class="o">.</span><span class="n">get_instance</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">matlab_container</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+
     <span class="k">try</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">matlab_container</span><span class="o">.</span><span class="n">matrix_global_opt</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">v_</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
@@ -279,9 +281,7 @@
             <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">get_mixing_rate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
-    <span class="k">except</span> <span class="p">(</span><span class="n">EngineError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
-        <span class="c1"># EngineError deals with invalid license or unfeasible problems,</span>
-        <span class="c1"># AttributeError deals MatlabEngineContainer.eng with None value.</span>
+    <span class="k">except</span> <span class="n">MatlabEngineContainerError</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span></div>
 <span class="c1"># endregion</span>
 

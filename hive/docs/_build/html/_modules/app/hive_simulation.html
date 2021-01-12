@@ -184,10 +184,9 @@
         <span class="n">scenarios</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">scenarios_file</span><span class="p">)</span>
         <span class="n">scenarios_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-        <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not load scenarios.json from </span><span class="si">{</span><span class="n">es</span><span class="o">.</span><span class="n">RESOURCES_ROOT</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
-             <span class="s2">&quot; &gt; if you need sample scenarios for swarm guidance in your code, &quot;</span>
-             <span class="s2">&quot;please refer to sample_scenario_generator.py, &quot;</span>
-             <span class="s2">&quot;otherwise, ignore this warning.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not load scenarios.json from RESOURCES_ROOT.</span><span class="se">\n</span><span class="s2">&quot;</span>
+              <span class="s2">&quot; &gt; if you need sample scenarios please refer to &quot;</span>
+              <span class="s2">&quot;sample_scenario_generator.py, otherwise, ignore this message.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">scenarios</span>
 
 
@@ -387,7 +386,7 @@
     <span class="n">threading</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">threading</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
     <span class="n">s</span> <span class="o">=</span> <span class="n">start_iteration</span>
-    <span class="n">st</span> <span class="o">=</span> <span class="n">start_iteration</span> <span class="o">+</span> <span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="n">start_iteration</span> <span class="o">+</span> <span class="n">iterations</span>
     <span class="n">_single_main</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">st</span><span class="p">)</span> <span class="k">if</span> <span class="n">threading</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">}</span> <span class="k">else</span> <span class="n">_parallel_main</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">st</span><span class="p">)</span>
 </pre></div>
 
