@@ -156,12 +156,23 @@ linked below:</p>
 <div class="line-block">
 <div class="line">- <a class="reference external" href="https://packaging.python.org/tutorials/installing-packages/">https://packaging.python.org/tutorials/installing-packages/</a></div>
 </div>
-<p>6. Navigate to <code class="docutils literal notranslate"><span class="pre">hive</span></code> folder located at the root of your recently cloned
+<p>6. This step is applicable only if you desire the possibility to call MatLab
+(requires valid license and installation) code from within the Hives simulator.
+More details are given in the link below. In short you want to install the MatLab
+package, which is not available in open-source repositories. This requires you
+to navigate to the folder where MatLab is currently installed and running their
+engine setup.</p>
+<div class="line-block">
+<div class="line">- <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">cd</span> <span class="pre">matlabroot/extern/engines/python</span></code></div>
+<div class="line">- <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code></div>
+<div class="line">- <a class="reference external" href="https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html">https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html</a></div>
+</div>
+<p>7. Navigate to <code class="docutils literal notranslate"><span class="pre">hive</span></code> folder located at the root of your recently cloned
 project:</p>
 <div class="line-block">
 <div class="line">- <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">cd</span> <span class="pre">hive</span></code></div>
 </div>
-<p>7. Install project dependencies by opening your terminal and inserting the
+<p>8. Install project dependencies by opening your terminal and inserting the
 commands:</p>
 <div class="line-block">
 <div class="line">- <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">numpy</span></code></div>
