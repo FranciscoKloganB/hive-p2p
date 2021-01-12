@@ -1,10 +1,10 @@
-.. Hives- A P2P Stochastic Swarm Guidance Simulator documentation master file, created by
+.. Hives- A P2P networking and distributed file system simulator documentation master file, created by
    sphinx-quickstart on Wed Aug 19 12:05:24 2020.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Hives - A P2P Stochastic Swarm Guidance Simulator
-============================================================
+Welcome to Hives - A P2P networking and distributed file system simulator
+=========================================================================
 
 .. toctree::
    :maxdepth: 4
@@ -30,9 +30,11 @@ where the peers form the basis for a Distributed Backup System. Throughout this
 process, due to the lack of other viable options, the researchers wrote their
 own cycle based simulator, and the result was *Hives*.
 
-Hives is a P2P Stochastic Swarm Guidance Simulator that facilitates
-research by allowing developers to prototype P2P networks based on swarm
-guidance behaviors quickly. The simulator is written in Python_ (version 3.7.7),
+Hives is a P2P and general purpose DFS Simulator that facilitates
+research by allowing developers to prototype distributed networks quickly.
+We use the simulator to test our Stochastic Swarm Guidance algorithm
+implementation in a Distributed Backup System setting.
+The simulator is written in Python_ (version 3.7.7),
 which offers users easy access to powerful scientific libraries such as NumPy_,
 SciPy_, and Pandas_, which are not readily available in languages like Java_
 and as a result of some of the best or most well-known simulators out there.
