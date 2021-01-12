@@ -48,9 +48,10 @@ project:
    - ``$ cd hive``
 
 6. Install project dependencies by opening your terminal and inserting the
-command:
+commands:
 
 |
+   - ``$ pip install numpy``
    - ``$ pip install -r requirements.txt``
 
 The previous steps complete the setup of your Hives project. If you have or
