@@ -41,10 +41,10 @@ linked below:
 |
    - https://www.jetbrains.com/help/pycharm/creating-virtual-environment.html
 
-5. Install pip and setuptools, guides are linked below:
+5. Make sure pip and setuptools are installed and working, official guide below:
 
 |
-   - https://packaging.python.org/tutorials/installing-packages/#requirements-for-installing-packages
+   - https://packaging.python.org/tutorials/installing-packages/
 
 6. Navigate to ``hive`` folder located at the root of your recently cloned
 project:
