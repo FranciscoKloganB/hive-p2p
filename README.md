@@ -6,7 +6,7 @@ We release our program as open-source because we feel like there are few other a
 
 This project does not focus on time efficiency. It supports at most 10000 network nodes efficiently. However, it is easy to configure, modify, and extend using inheritance and polymorphism features of the Python language. We bundle several classes representing Network Nodes, Master Servers, and Cluster Groups to the users' satisfaction. We believe that data and science should come before programming regarding research, hence our focus on usability rather than pure performance.
 
-The project source code and docstrings follow the conventions enumerated in [Google Styles Available](https://google.github.io/styleguide/pyguide.html). Documentation is also available at our [docsite](https://www.hivessimulator.tech), where a quick-start guide is provided.
+The project source code and docstrings follow the conventions enumerated in [Google Styles Available](https://google.github.io/styleguide/pyguide.html). Documentation is also available at our [docsite](https://hives-e5e1a.web.app/), where a quick-start guide is provided.
 
 ### Credits: 
 * Author and Developer: Francisco Teixeira de Barros from Instituto Superior Técnico - University of Lisbon
