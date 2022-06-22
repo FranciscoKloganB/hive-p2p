@@ -43,7 +43,7 @@ metakernel==0.24.4
 mkl==2019.0
 Mosek==9.2.10
 multiprocess==0.70.10
-numpy==1.18.5
+numpy==1.22.0
 osqp==0.6.1
 packaging==20.4
 pandas==1.0.4
